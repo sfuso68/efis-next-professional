@@ -121,6 +121,8 @@ FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
     age(input.attitude.roll_deg, now, policy_.stale_after, input.health);
     age(input.attitude.pitch_deg, now, policy_.stale_after, input.health);
     age(input.attitude.heading_deg, now, policy_.stale_after, input.health);
+    age(input.attitude.turn_rate_deg_s, now, policy_.stale_after, input.health);
+    age(input.attitude.lateral_acceleration_g, now, policy_.stale_after, input.health);
     age(input.air_data.indicated_airspeed_kt, now, policy_.stale_after, input.health);
     age(input.air_data.pressure_altitude_ft, now, policy_.stale_after, input.health);
     age(input.air_data.vertical_speed_fpm, now, policy_.stale_after, input.health);

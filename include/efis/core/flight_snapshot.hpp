@@ -11,6 +11,16 @@ struct AttitudeState final {
     Sample<double> roll_deg;
     Sample<double> pitch_deg;
     Sample<double> heading_deg;
+
+    // Rateo di imbardata: quanto rapidamente cambia la prua. E' una misura, non
+    // la derivata della prua: differenziare un valore filtrato produce un
+    // numero che segue la prua con ritardo e amplifica il rumore, e in virata
+    // stretta i due non coincidono affatto.
+    Sample<double> turn_rate_deg_s;
+
+    // Accelerazione laterale, quella che sposta la pallina. Zero in virata
+    // corretta; positiva verso l'ala bassa quando si scivola.
+    Sample<double> lateral_acceleration_g;
 };
 
 struct AirDataState final {

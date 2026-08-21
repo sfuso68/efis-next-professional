@@ -8,8 +8,11 @@
 
 #include "efis/instruments/dial.hpp"
 #include "efis/core/altimetry.hpp"
+#include "efis/core/flight_dynamics.hpp"
+#include "efis/providers/simulation_provider.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -284,6 +287,66 @@ int main() {
             "inches typed into a hectopascal field must be rejected, not applied");
     require(efis::is_plausible_setting(1013.25), "the standard setting is plausible");
     require(efis::is_plausible_setting(950.0), "a deep depression is still plausible");
+
+
+    // --- Virata corretta: la fisica che alimenta il virosbandometro ----------
+    //
+    // La relazione sta nel core e non nel simulatore perche' non serve solo a
+    // generare dati finti: servira' al confronto incrociato per verificare che
+    // il rateo misurato dal Pixhawk sia compatibile con inclinazione e
+    // velocita'. Un giroscopio bloccato continua a dichiarare un rateo, e il
+    // modo per accorgersene e' sapere quale rateo dovrebbe avere.
+    require(close_to(efis::coordinated_turn_rate_deg_s(0.0, 100.0), 0.0),
+            "wings level means no turn, whatever the speed");
+    require(efis::coordinated_turn_rate_deg_s(30.0, 100.0) > 0.0,
+            "banking right must turn right");
+    require(close_to(efis::coordinated_turn_rate_deg_s(-30.0, 100.0),
+                     -efis::coordinated_turn_rate_deg_s(30.0, 100.0)),
+            "the turn must be symmetric about wings level");
+
+    // A parita' di inclinazione, piu' si va veloce piu' la virata e' larga.
+    require(efis::coordinated_turn_rate_deg_s(30.0, 60.0) >
+                efis::coordinated_turn_rate_deg_s(30.0, 120.0),
+            "at the same bank a faster aircraft turns more slowly");
+
+    // Un aeromobile fermo e inclinato non sta virando: sta cadendo. Senza
+    // questo caso il quadrante mostrerebbe fondo scala per un aeroplano
+    // parcheggiato.
+    require(close_to(efis::coordinated_turn_rate_deg_s(45.0, 0.0), 0.0),
+            "a standing aircraft is not turning, however it is banked");
+
+    // La virata di riferimento della navigazione strumentale: tre gradi al
+    // secondo, un giro in due minuti. La regola pratica dice che a 100 nodi
+    // serve circa un'inclinazione di 17 gradi, e la formula deve confermarlo.
+    const double standard_bank = efis::bank_for_turn_rate_deg(efis::standard_rate_deg_s, 100.0);
+    require(standard_bank > 14.0 && standard_bank < 20.0,
+            "a standard rate turn at one hundred knots needs about seventeen degrees");
+
+    // Andata e ritorno fra le due relazioni.
+    const double recovered = efis::coordinated_turn_rate_deg_s(standard_bank, 100.0);
+    require(close_to(recovered, efis::standard_rate_deg_s, 1e-9),
+            "bank for a rate and rate for that bank must agree");
+
+    // Il simulatore pubblica le due grandezze, e sono coerenti con la propria
+    // inclinazione: e' cio' che permette di collegare il virosbandometro al
+    // simulatore oggi e al Pixhawk domani senza toccare l'indicatore.
+    efis::SimulationProvider turning{11};
+    const auto flying = turning.sample(efis::MonoTime{} + std::chrono::seconds{30},
+                                       std::chrono::seconds{30});
+    require(flying.attitude.turn_rate_deg_s.origin.signal == efis::SignalId::turn_rate,
+            "the simulator must declare which signal the turn rate is");
+    require(flying.attitude.turn_rate_deg_s.origin.unit == efis::Unit::degree_per_second,
+            "the turn rate must declare its unit");
+    require(flying.attitude.lateral_acceleration_g.origin.unit == efis::Unit::gravity,
+            "lateral acceleration is measured in multiples of gravity");
+    require(close_to(flying.attitude.turn_rate_deg_s.value,
+                     efis::coordinated_turn_rate_deg_s(
+                         flying.attitude.roll_deg.value,
+                         flying.air_data.indicated_airspeed_kt.value),
+                     1e-9),
+            "the simulated turn rate must agree with its own bank and speed");
+    require(flying.attitude.turn_rate_deg_s.origin.simulated,
+            "simulated dynamics stay marked as simulated");
 
 
     std::cout << "All EFIS instrument tests passed\n";

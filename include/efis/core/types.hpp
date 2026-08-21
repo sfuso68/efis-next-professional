@@ -76,6 +76,11 @@ enum class SignalId : std::uint16_t {
     roll = 100,
     pitch,
     heading,
+    // Rateo di imbardata e accelerazione laterale: senza questi due il
+    // virosbandometro e la pallina non hanno sorgente, e vanno misurati, non
+    // ricavati derivando la prua.
+    turn_rate,
+    lateral_acceleration,
 
     // Dati aria
     indicated_airspeed = 200,
@@ -153,7 +158,11 @@ enum class Unit : std::uint8_t {
     ampere,
     // Aggiunta in coda: gli identificativi gia' presenti nelle registrazioni non
     // devono spostarsi.
-    hectopascal
+    hectopascal,
+    degree_per_second,
+    // Accelerazione in multipli di quella di gravita', come la legge un
+    // accelerometro e come la mostra la pallina.
+    gravity
 };
 
 [[nodiscard]] constexpr const char* unit_symbol(Unit unit) noexcept {
@@ -175,6 +184,8 @@ enum class Unit : std::uint8_t {
         case Unit::volt: return "V";
         case Unit::ampere: return "A";
         case Unit::hectopascal: return "hPa";
+        case Unit::degree_per_second: return "deg/s";
+        case Unit::gravity: return "G";
     }
     return "?";
 }
@@ -188,6 +199,8 @@ enum class Unit : std::uint8_t {
         case SignalId::roll: return "roll";
         case SignalId::pitch: return "pitch";
         case SignalId::heading: return "heading";
+        case SignalId::turn_rate: return "turn_rate";
+        case SignalId::lateral_acceleration: return "lateral_acceleration";
         case SignalId::indicated_airspeed: return "indicated_airspeed";
         case SignalId::pressure_altitude: return "pressure_altitude";
         case SignalId::vertical_speed: return "vertical_speed";
