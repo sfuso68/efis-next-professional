@@ -1,6 +1,17 @@
 # Engine CAN V1
 
-Stato: **DEVELOPMENT / NON-CERT**. Versione wire `1`.
+Stato: **SUPERATO** dalla `ADR-007`, che adotta DroneCAN sul bus sensori.
+Versione wire `1`.
+
+> Il documento resta per due ragioni. La prima è che l'analisi delle grandezze
+> che il nodo motore deve misurare vale indipendentemente dal formato con cui
+> viaggiano. La seconda è che la sezione "Perché non DroneCAN" qui sotto è la
+> motivazione che la `ADR-007` corregge: cancellarla nasconderebbe il fatto che
+> è stata scritta, e con più sicurezza di quanta ne fosse giustificata.
+>
+> Il codice che lo implementa resta compilato e coperto da prove finché il
+> decodificatore DroneCAN non lo sostituisce: toglierlo prima lascerebbe il
+> progetto senza alcun percorso per il motore.
 
 ## Scopo
 
@@ -13,6 +24,14 @@ scrittura, e nulla in questa specifica ne definisce uno. Vedi paragrafo 25
 dell'handoff.
 
 ## Perché non DroneCAN
+
+> **Questa sezione è sbagliata.** È conservata perché è stata la motivazione di
+> una decisione, e le due obiezioni tecniche qui sotto — dimensione dello stack e
+> allocazione dinamica — erano affermate con più sicurezza di quanta ne avessero:
+> libcanard è pensato per microcontrollori e lavora con memoria statica. Resta
+> valida soltanto la terza, la leggibilità con `candump`, che però pesa poco
+> contro il fatto che il Pixhawk è collegato al bus e capisce DroneCAN. Vedi
+> `ADR-007`.
 
 DroneCAN è già in uso sul bus del Pixhawk e sarebbe stata la scelta naturale.
 Non viene adottata qui per tre ragioni concrete: richiede uno stack di dimensioni
