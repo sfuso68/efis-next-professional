@@ -1,6 +1,8 @@
 #pragma once
 
 #include "efis/core/flight_snapshot.hpp"
+#include "efis/core/node_health.hpp"
+#include "efis/core/source_arbitrator.hpp"
 
 #include <cstddef>
 #include <filesystem>
@@ -24,6 +26,21 @@ public:
     SegmentedRecorder& operator=(const SegmentedRecorder&) = delete;
 
     void append(const FlightSnapshot& snapshot);
+
+    // Eventi, accanto ai valori.
+    //
+    // Il paragrafo 17.1 dell'handoff chiede un registro degli eventi separato da
+    // quello dei campioni, e il formato V2 li prevede da sempre: mancava chi li
+    // scrivesse. Senza, una registrazione dice quali valori sono passati ma non
+    // quando un nodo se n'e' andato ne' quando una grandezza ha cambiato
+    // origine, che sono le due domande a cui si vuole rispondere rileggendo un
+    // volo andato storto.
+    //
+    // Non contano verso la rotazione del segmento, che misura i campioni: un
+    // evento e' raro e non deve spezzare un segmento a meta'.
+    void append(const NodeStateChange& event);
+    void append(const SourceChangeEvent& event);
+
     void close();
 
     [[nodiscard]] std::size_t recovered_segments() const noexcept {

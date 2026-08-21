@@ -5,8 +5,13 @@
 // partendo dai byte, che e' cosa diversa e per un certo tempo non era vera.
 
 #include "efis/ingest/mavlink_pipeline.hpp"
+#include "efis/ingest/recording_session.hpp"
+#include "efis/io/byte_source.hpp"
+#include "efis/recording/flight_record.hpp"
 
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
@@ -262,6 +267,146 @@ int main() {
         pipeline.clear_events();
         require(pipeline.node_events().empty() && pipeline.source_events().empty(),
                 "clearing must empty both the node and the source event queues");
+    }
+
+
+    // --- Dalla registrazione reale alla black box ----------------------------
+    //
+    // La prova che conta per questo passo: i byte veri di ArduPlane 4.7.0
+    // attraversano la catena, arrivano nel registro a segmenti e si rileggono.
+    // Prima di questo innesto la black box conservava campioni del simulatore
+    // mentre il Pixhawk parlava a vuoto.
+    {
+        const auto directory = std::filesystem::temp_directory_path() /
+            "efis-ingest-replay";
+        std::filesystem::remove_all(directory);
+
+        efis::io::RecordedByteSource source{
+            std::filesystem::path{EFIS_TEST_DATA_DIR} / "mavlink" /
+            "arduplane-4.7.0-usb-20260821.mav"};
+        require(source.size() > 0, "the reference capture must be readable");
+
+        efis::ingest::RecordingSessionStatistics statistics{};
+        {
+            efis::recording::SegmentedRecorder recorder{
+                directory, {.records_per_segment = 100000, .flush_every_records = 1}};
+            efis::ingest::RecordingSession session{recorder};
+
+            int step = 0;
+            while (!source.exhausted() && step < 400) {
+                session.step(source, epoch + std::chrono::milliseconds{20 * ++step});
+            }
+            statistics = session.statistics();
+
+            require(session.pipeline().adapter().statistics().frames_applied > 0,
+                    "the real capture must yield frames the adapter understands");
+            recorder.close();
+        }
+
+        require(statistics.bytes_read == source.size(),
+                "the whole capture must be consumed, not a prefix of it");
+        require(statistics.snapshots_recorded > 0, "snapshots must be recorded");
+
+        std::vector<std::filesystem::path> segments;
+        for (const auto& entry : std::filesystem::directory_iterator{directory}) {
+            if (entry.path().extension() == ".csv") segments.push_back(entry.path());
+        }
+        require(segments.size() == 1, "the recorder must have closed one segment");
+
+        efis::recording::FlightRecord record{};
+        {
+            std::ifstream file{segments.front(), std::ios::binary};
+            record = efis::recording::read_flight_record(file);
+        }
+        std::filesystem::remove_all(directory);
+
+        require(record.schema == 2, "the segment must declare its schema");
+        require(record.malformed_rows == 0,
+                "a segment closed cleanly must contain no unreadable row");
+        require(!record.samples.empty(), "the segment must contain samples");
+
+        // La provenienza deve sopravvivere al giro completo: se si perdesse, la
+        // registrazione sarebbe una colonna di numeri senza significato.
+        bool real_airspeed = false;
+        for (const auto& entry : record.samples) {
+            if (entry.sample.origin.signal != efis::SignalId::indicated_airspeed) continue;
+            if (entry.sample.origin.unit != efis::Unit::knot) continue;
+            if (entry.sample.is_simulated()) continue;
+            real_airspeed = true;
+        }
+        require(real_airspeed,
+                "the recorded airspeed must come from the capture, not from the simulator");
+
+        // Gli eventi devono essere nel registro, non solo nei contatori.
+        require(statistics.source_events_recorded > 0,
+                "choosing a source for the first time is an event and must be recorded");
+        require(!record.source_changes.empty(),
+                "the source change must be re-readable from the segment");
+    }
+
+    // --- Il silenzio finisce nel registro ------------------------------------
+    //
+    // Un collegamento che ammutolisce non produce byte, ma produce storia: il
+    // nodo invecchia e viene dichiarato perduto. Se quella transizione non
+    // arrivasse nel registro, rileggendo il volo non si potrebbe distinguere un
+    // controllore che ha smesso di parlare da uno che non ha mai parlato.
+    {
+        const auto directory = std::filesystem::temp_directory_path() /
+            "efis-ingest-silence";
+        std::filesystem::remove_all(directory);
+
+        efis::io::RecordedByteSource source{
+            std::vector<std::uint8_t>{sys_status(true, 1)}};
+
+        efis::ingest::RecordingSessionStatistics statistics{};
+        {
+            efis::recording::SegmentedRecorder recorder{
+                directory, {.records_per_segment = 100000, .flush_every_records = 1}};
+            efis::ingest::RecordingSession session{recorder};
+
+            session.step(source, epoch + 1s);
+            require(session.statistics().bytes_read > 0, "the first step must read data");
+
+            // Poi piu' niente, per un tempo superiore alla perdita del nodo.
+            for (int tick = 2; tick <= 12; ++tick) {
+                session.step(source, epoch + std::chrono::seconds{tick});
+            }
+            statistics = session.statistics();
+            recorder.close();
+        }
+
+        require(statistics.silent_steps >= 10,
+                "steps without data must be counted as silent, not skipped");
+        require(statistics.node_events_recorded > 0,
+                "losing the node is an event and must be recorded");
+
+        std::vector<std::filesystem::path> segments;
+        for (const auto& entry : std::filesystem::directory_iterator{directory}) {
+            if (entry.path().extension() == ".csv") segments.push_back(entry.path());
+        }
+        require(segments.size() == 1, "one segment must have been closed");
+
+        efis::recording::FlightRecord record{};
+        {
+            std::ifstream file{segments.front(), std::ios::binary};
+            record = efis::recording::read_flight_record(file);
+        }
+        std::filesystem::remove_all(directory);
+
+        bool lost = false;
+        for (const auto& event : record.node_events) {
+            if (event.current == efis::NodeState::lost) lost = true;
+        }
+        require(lost, "the loss of the node must be re-readable from the segment");
+
+        // Un evento gia' scritto non deve tornare al passo successivo: una
+        // registrazione che ripete cento volte la stessa perdita non e' piu'
+        // leggibile.
+        std::size_t losses = 0;
+        for (const auto& event : record.node_events) {
+            if (event.current == efis::NodeState::lost) ++losses;
+        }
+        require(losses == 1, "the same transition must be recorded once, not at every step");
     }
 
     std::cout << "All EFIS ingest tests passed\n";

@@ -43,10 +43,38 @@ public:
 
         if (preferred == nullptr) {
             pending_.reset();
+            if (current != nullptr) return {*current, std::nullopt};
+
+            // Nessuna sorgente utilizzabile e nessuna scelta in precedenza.
+            //
+            // Restituire qui un campione vuoto cancellerebbe l'identita' della
+            // grandezza: il consumatore, e con lui la black box, riceverebbe un
+            // segnale "sconosciuto" senza unita' invece di "velocita' indicata
+            // dal Pixhawk, non utilizzabile". La differenza conta proprio nel
+            // caso peggiore, perche' rileggendo un volo si vuole sapere quale
+            // grandezza e' caduta, non che ne manca una qualsiasi.
+            //
+            // Si conserva quindi la provenienza del primo candidato che ne
+            // dichiara una, e si forza la validita' a non utilizzabile. Il
+            // valore resta quello ricevuto: e' gia' marcato inutilizzabile, e
+            // azzerarlo trasformerebbe un dato scartato in uno zero che sembra
+            // una misura.
+            const Sample<T>* identity = nullptr;
+            for (const auto& candidate : candidates) {
+                if (candidate.origin.signal != SignalId::unknown) {
+                    identity = &candidate;
+                    break;
+                }
+            }
+            if (identity == nullptr && !candidates.empty()) {
+                identity = &candidates.front();
+            }
+
             Sample<T> unavailable{};
-            unavailable.source = selected_;
+            if (identity != nullptr) unavailable = *identity;
+            else unavailable.source = selected_;
             unavailable.validity = Validity::unavailable;
-            return {current != nullptr ? *current : unavailable, std::nullopt};
+            return {unavailable, std::nullopt};
         }
         if (selected_ == SourceId::unknown) {
             return switch_to(*preferred, SourceChangeReason::initial, now);
