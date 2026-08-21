@@ -58,11 +58,15 @@ int main(int argc, char** argv) {
     // Anemometro con le fasce del profilo LSA gia' attivo: VSO 39, VS1 45,
     // VFE 85, VNO 120, VNE 140.
     const Scale asi_scale{40.0, 160.0, -150.0, 300.0, 20.0, 5.0, 0, 0.0};
-    const std::vector<BandRange> asi_bands{
-        {39.0, 85.0, Band::white},
-        {45.0, 120.0, Band::green},
-        {120.0, 140.0, Band::yellow},
-        {140.0, 160.0, Band::red}};
+    // Il profilo aeromobile attivo dichiara le proprie velocita' INDICATIVE,
+    // ereditate dal catalogo legacy e mai confrontate con un POH. Lo strumento
+    // lo dice: una fascia verde e' una dichiarazione di sicurezza, e questa non
+    // l'ha firmata nessuno.
+    const Limits asi_bands{{{39.0, 85.0, Band::white},
+                            {45.0, 120.0, Band::green},
+                            {120.0, 140.0, Band::yellow},
+                            {140.0, 160.0, Band::red}},
+                           LimitsProvenance::indicative};
     const auto airspeed = from(find_signal(flight, SignalId::indicated_airspeed));
 
     write(directory, "01-anemometro-480",
@@ -77,10 +81,14 @@ int main(int argc, char** argv) {
 
     // Contagiri con i limiti del Rotax 912 ULS.
     const Scale rpm_scale{0.0, 6000.0, -150.0, 300.0, 1000.0, 200.0, 0, 0.0};
-    const std::vector<BandRange> rpm_bands{
-        {1400.0, 5500.0, Band::green},
-        {5500.0, 5800.0, Band::yellow},
-        {5800.0, 6000.0, Band::red}};
+    // Del motore il catalogo conosce soltanto rpm_max, di importazione legacy,
+    // e la lista dei limiti e' vuota. Queste fasce sono quindi indicative come
+    // le altre, e nessun quadrante motore puo' pretendere di piu' finche' i
+    // limiti veri non vengono inseriti dal Setup Center.
+    const Limits rpm_bands{{{1400.0, 5500.0, Band::green},
+                            {5500.0, 5800.0, Band::yellow},
+                            {5800.0, 6000.0, Band::red}},
+                           LimitsProvenance::indicative};
     write(directory, "03-contagiri-480",
           describe(rpm_scale, from(find_signal(engine, SignalId::engine_rpm)),
                    Sizing{480.0}, rpm_bands),
@@ -88,10 +96,10 @@ int main(int argc, char** argv) {
 
     // Pressione olio.
     const Scale oil_scale{0.0, 120.0, -150.0, 300.0, 20.0, 5.0, 0, 0.0};
-    const std::vector<BandRange> oil_bands{
-        {0.0, 12.0, Band::red},
-        {12.0, 100.0, Band::green},
-        {100.0, 120.0, Band::red}};
+    const Limits oil_bands{{{0.0, 12.0, Band::red},
+                            {12.0, 100.0, Band::green},
+                            {100.0, 120.0, Band::red}},
+                           LimitsProvenance::indicative};
     write(directory, "04-pressione-olio-480",
           describe(oil_scale, from(find_signal(engine, SignalId::oil_pressure)),
                    Sizing{480.0}, oil_bands),
@@ -191,6 +199,99 @@ int main(int argc, char** argv) {
           describe_turn({{3.0, Validity::simulated, true},
                          {0.09, Validity::simulated, true}}, Sizing{480.0}),
           DialStyle{"T/C", "", 480.0});
+
+    // --- Strumenti motore ----------------------------------------------------
+    //
+    // Del motore il catalogo conosce soltanto rpm_max, di importazione legacy, e
+    // la lista dei limiti e' vuota. Dove non ci sono limiti non si disegnano
+    // fasce: un quadrante senza archi dichiara di non sapere dove siano i
+    // limiti, uno con archi inventati afferma di saperlo.
+    const Limits nessun_limite{};
+
+    write(directory, "20-pressione-alimentazione-480",
+          describe(Scale{10.0, 30.0, -150.0, 300.0, 5.0, 1.0, 0, 0.0},
+                   from(find_signal(engine, SignalId::manifold_pressure)),
+                   Sizing{480.0}, nessun_limite),
+          DialStyle{"MAP", "inHg", 480.0});
+
+    write(directory, "21-temperatura-olio-480",
+          describe(Scale{0.0, 150.0, -150.0, 300.0, 25.0, 5.0, 0, 0.0},
+                   from(find_signal(engine, SignalId::oil_temperature)),
+                   Sizing{480.0}, nessun_limite),
+          DialStyle{"OIL T", "C", 480.0});
+
+    write(directory, "22-flusso-carburante-480",
+          describe(Scale{0.0, 20.0, -150.0, 300.0, 5.0, 1.0, 0, 0.0},
+                   from(find_signal(engine, SignalId::fuel_flow)),
+                   Sizing{480.0}, nessun_limite),
+          DialStyle{"FUEL FLOW", "GPH", 480.0});
+
+    write(directory, "23-tensione-480",
+          describe(Scale{8.0, 16.0, -150.0, 300.0, 2.0, 0.5, 1, 0.0},
+                   from(find_signal(engine, SignalId::bus_voltage)),
+                   Sizing{480.0}, nessun_limite),
+          DialStyle{"VOLT", "V", 480.0});
+
+    write(directory, "24-corrente-480",
+          describe(Scale{-10.0, 40.0, -150.0, 300.0, 10.0, 2.0, 0, 0.0},
+                   from(find_signal(engine, SignalId::alternator_current)),
+                   Sizing{480.0}, nessun_limite),
+          DialStyle{"AMP", "A", 480.0});
+
+    // Due serbatoi su un quadrante solo: e' lo stesso meccanismo dei cilindri,
+    // e serve alla stessa cosa, vedere lo scarto fra i due senza guardarli a
+    // turno.
+    const ClusterReading serbatoi{
+        {from(find_signal(engine, SignalId::fuel_quantity_left)),
+         from(find_signal(engine, SignalId::fuel_quantity_right))},
+        true};
+    write(directory, "25-carburante-biago-480",
+          describe_cluster(Scale{0.0, 20.0, -150.0, 300.0, 5.0, 1.0, 0, 0.0},
+                           serbatoi, Sizing{480.0}, nessun_limite),
+          DialStyle{"FUEL", "GAL", 480.0});
+
+    // I quattro cilindri sullo stesso quadrante. L'informazione utile non e'
+    // quanto valga ciascuno ma quanto si scostino fra loro: un cilindro che sale
+    // mentre gli altri restano fermi si vede a colpo d'occhio soltanto cosi'.
+    ClusterReading cilindri;
+    cilindri.simulated = true;
+    for (int index = 0; index < 4; ++index) {
+        cilindri.channels.push_back(from(find_signal(
+            engine, static_cast<SignalId>(
+                        static_cast<int>(SignalId::cylinder_head_temperature_1) + index))));
+    }
+    const Scale cht_scale{100.0, 260.0, -150.0, 300.0, 20.0, 5.0, 0, 0.0};
+    write(directory, "26-cht-quattro-lancette-480",
+          describe_cluster(cht_scale, cilindri, Sizing{480.0}, nessun_limite),
+          DialStyle{"CHT", "C", 480.0});
+
+    // Una sonda perduta: restano tre lancette e la dicitura. Il quadrante
+    // continua a servire, ma il confronto per cui esiste e' degradato.
+    ClusterReading sonda_persa = cilindri;
+    sonda_persa.channels[1] = {0.0, Validity::unavailable, false};
+    write(directory, "27-cht-sonda-persa-480",
+          describe_cluster(cht_scale, sonda_persa, Sizing{480.0}, nessun_limite),
+          DialStyle{"CHT", "C", 480.0});
+
+    ClusterReading gas_scarico;
+    gas_scarico.simulated = true;
+    for (int index = 0; index < 4; ++index) {
+        gas_scarico.channels.push_back(from(find_signal(
+            engine, static_cast<SignalId>(
+                        static_cast<int>(SignalId::exhaust_gas_temperature_1) + index))));
+    }
+    write(directory, "28-egt-quattro-lancette-480",
+          describe_cluster(Scale{600.0, 900.0, -150.0, 300.0, 50.0, 10.0, 0, 0.0},
+                           gas_scarico, Sizing{480.0}, nessun_limite),
+          DialStyle{"EGT", "C", 480.0});
+
+    // Lo stesso contagiri con i limiti indicativi, per vedere la differenza
+    // fra un quadrante che dichiara la provenienza delle fasce e uno che non ne
+    // ha affatto.
+    write(directory, "29-contagiri-senza-limiti-480",
+          describe(rpm_scale, from(find_signal(engine, SignalId::engine_rpm)),
+                   Sizing{480.0}, nessun_limite),
+          DialStyle{"RPM", "1/min", 480.0});
 
     return 0;
 }

@@ -1,6 +1,7 @@
 #include "instrument_source.hpp"
 
 #include "efis/core/signal_access.hpp"
+#include "efis/instruments/dial.hpp"
 
 #include <QVariant>
 
@@ -15,6 +16,11 @@ int validity_of(const Sample<double>& sample) {
 }  // namespace
 
 InstrumentSource::InstrumentSource(QObject* parent) : QObject(parent) {
+    // La simulazione e' una sorgente registrata, non un provider chiamato
+    // direttamente: cosi' lo stato che arriva agli strumenti e' gia' passato
+    // dall'arbitrato, come quello del PFD.
+    router_.set_simulation(simulation_);
+
     connect(&timer_, &QTimer::timeout, this, &InstrumentSource::step);
     // Venti volte al secondo: il simulatore non ha bisogno di piu', e il costo
     // del ridisegno va misurato su una cadenza realistica, non su una scelta
@@ -27,7 +33,7 @@ void InstrumentSource::step() {
     const auto now = MonoClock::now();
     const auto elapsed =
         std::chrono::duration_cast<std::chrono::milliseconds>(now - started_);
-    snapshot_ = model_.normalize(provider_.sample(now, elapsed), now);
+    snapshot_ = model_.normalize(router_.poll(now, elapsed), now);
 
     if (!failed_signal_.isEmpty()) {
         // Il guasto viene applicato allo snapshot, non al provider: e' cosi' che
@@ -130,6 +136,14 @@ double InstrumentSource::slip() const {
 }
 int InstrumentSource::slipValidity() const {
     return validity_of(snapshot_.attitude.lateral_acceleration_g);
+}
+
+int InstrumentSource::limitsProvenance() const {
+    // Il profilo attivo dichiara le proprie velocita INDICATIVE, ereditate dal
+    // catalogo legacy e mai confrontate con un POH. Verra letto dal profilo
+    // quando la pagina sara configurabile; scriverlo qui a mano sarebbe stato
+    // comodo dichiararle verificate, ed e esattamente cio che non si fa.
+    return static_cast<int>(efis::instruments::LimitsProvenance::indicative);
 }
 
 bool InstrumentSource::simulated() const {

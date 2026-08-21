@@ -44,6 +44,11 @@ std::string cardinal_text(double bearing_deg) {
     return std::to_string(rounded / 10);
 }
 
+const std::vector<BandRange>& empty_bands() {
+    static const std::vector<BandRange> none;
+    return none;
+}
+
 std::string format(double value, int decimals) {
     std::ostringstream out;
     out << std::fixed << std::setprecision(std::max(0, decimals)) << value;
@@ -105,8 +110,16 @@ namespace {
 // `label_scale` moltiplica il valore prima di scriverlo: la faccia
 // dell'altimetro e' graduata in centinaia di piedi e riporta le cifre da 0 a 9,
 // non da 0 a 900.
-void build_face(const Scale& scale, const Sizing& sizing,
-                const std::vector<BandRange>& bands, double label_scale, Dial& dial) {
+void build_face(const Scale& scale, const Sizing& sizing, const Limits& limits,
+                double label_scale, Dial& dial) {
+    dial.limits = limits.provenance;
+
+    // Una provenienza assente non disegna nulla, quali che siano le fasce
+    // passate. Un quadrante senza archi dichiara di non sapere dove siano i
+    // limiti; uno con archi che nessuno ha verificato afferma di saperlo.
+    const std::vector<BandRange>& bands =
+        limits.provenance == LimitsProvenance::absent ? empty_bands() : limits.bands;
+
     for (const BandRange& range : bands) {
         const double from = std::max(range.from, scale.minimum);
         const double to = std::min(range.to, scale.maximum);
@@ -168,7 +181,7 @@ void build_face(const Scale& scale, const Sizing& sizing,
 }  // namespace
 
 Dial describe(const Scale& scale, const Reading& reading, const Sizing& sizing,
-              const std::vector<BandRange>& bands) {
+              const Limits& limits) {
     Dial dial;
     dial.simulated = reading.simulated;
 
@@ -178,7 +191,7 @@ Dial describe(const Scale& scale, const Reading& reading, const Sizing& sizing,
         return dial;
     }
 
-    build_face(scale, sizing, bands, 1.0, dial);
+    build_face(scale, sizing, limits, 1.0, dial);
 
     // --- Lancetta e annuncio -------------------------------------------------
     //
@@ -222,7 +235,7 @@ Dial describe_altimeter(const AltimeterReading& reading, const Sizing& sizing) {
 
     Dial dial;
     dial.simulated = reading.altitude.simulated;
-    build_face(face, sizing, {}, 0.01, dial);
+    build_face(face, sizing, Limits{}, 0.01, dial);
 
     // La finestrella e' a ore tre, dove sta su quasi tutti gli altimetri. Vuota
     // significa regolazione non disponibile: mostrare 1013 direbbe che e'
@@ -315,6 +328,59 @@ Dial describe_heading(const HeadingReading& reading, const Sizing& sizing) {
         dial.needles.push_back(
             Needle{normalise_heading(reading.bug.value - heading), 1.0, 0.0,
                    NeedleKind::bug});
+    }
+
+    return dial;
+}
+
+Dial describe_cluster(const Scale& scale, const ClusterReading& reading,
+                      const Sizing& sizing, const Limits& limits) {
+    Dial dial;
+    dial.simulated = reading.simulated;
+
+    const double span = scale.maximum - scale.minimum;
+    if (span <= 0.0) {
+        dial.annunciation = Annunciation::failed;
+        dial.limits = limits.provenance;
+        return dial;
+    }
+
+    build_face(scale, sizing, limits, 1.0, dial);
+
+    std::size_t shown = 0;
+    bool any_out_of_range = false;
+    for (const Reading& channel : reading.channels) {
+        if (!is_usable(channel.validity)) continue;
+        ++shown;
+        if (channel.value < scale.minimum || channel.value > scale.maximum) {
+            any_out_of_range = true;
+        }
+        // Tutte le lancette hanno lo stesso peso: i canali sono omogenei, e
+        // dare a uno la lancetta principale suggerirebbe una gerarchia che non
+        // esiste fra quattro cilindri.
+        dial.needles.push_back(Needle{angle_for(scale, channel.value), needle_length,
+                                      needle_tail, NeedleKind::primary});
+    }
+
+    if (shown == 0) {
+        // Nessun canale: lo strumento non ha nulla da mostrare. Distinguere
+        // scaduto da assente richiede che almeno un canale lo dichiari.
+        const bool stale =
+            std::any_of(reading.channels.begin(), reading.channels.end(),
+                        [](const Reading& channel) {
+                            return channel.validity == Validity::stale;
+                        });
+        dial.annunciation = stale ? Annunciation::stale : Annunciation::failed;
+        return dial;
+    }
+
+    if (shown < reading.channels.size()) {
+        // Parziale ha la precedenza sul fuori scala: sapere che manca un
+        // cilindro conta piu' che sapere che un altro e' alto, perche' il
+        // confronto fra loro e' l'informazione per cui il quadrante esiste.
+        dial.annunciation = Annunciation::partial;
+    } else if (any_out_of_range) {
+        dial.annunciation = Annunciation::out_of_range;
     }
 
     return dial;

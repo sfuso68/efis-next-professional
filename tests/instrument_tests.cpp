@@ -8,6 +8,8 @@
 
 #include "efis/instruments/dial.hpp"
 #include "efis/instruments/horizon.hpp"
+#include "efis/instruments/panel.hpp"
+#include "efis/instruments/panel_store.hpp"
 #include "efis/core/altimetry.hpp"
 #include "efis/core/flight_dynamics.hpp"
 #include "efis/providers/simulation_provider.hpp"
@@ -18,6 +20,9 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -150,7 +155,7 @@ int main() {
         {120.0, 140.0, Band::yellow}, // gamma da usare con cautela
         {140.0, 200.0, Band::red}     // oltre la velocita' da non superare
     };
-    const Dial with_bands = describe(asi, valid(95.0), panel, asi_bands);
+    const Dial with_bands = describe(asi, valid(95.0), panel, Limits{asi_bands, LimitsProvenance::indicative});
     require(with_bands.arcs.size() == 4, "every band within the scale must be drawn");
 
     // Le fasce che sbordano vengono ritagliate sui limiti della scala, non
@@ -162,7 +167,7 @@ int main() {
 
     // Una fascia interamente fuori scala non si disegna. Schiacciata contro un
     // estremo indicherebbe un limite che li' non c'e'.
-    const Dial outside = describe(asi, valid(95.0), panel, {{10.0, 30.0, Band::red}});
+    const Dial outside = describe(asi, valid(95.0), panel, Limits{{{10.0, 30.0, Band::red}}, LimitsProvenance::indicative});
     require(outside.arcs.empty(),
             "a band entirely outside the scale must not be drawn at all");
 
@@ -754,6 +759,387 @@ int main() {
             "only when both are gone is the instrument declared failed");
     require(!nothing.standard_marks.empty(),
             "the standard rate marks belong to the dial and stay");
+
+
+    // --- Provenienza dei limiti ----------------------------------------------
+    //
+    // Una fascia verde dice «qui si puo volare», ed e una dichiarazione di
+    // sicurezza. Se nessuno l ha verificata sul manuale, lo strumento deve dirlo
+    // invece di lasciar credere che qualcuno l abbia firmata.
+    const std::vector<BandRange> ranges{{45.0, 120.0, Band::green}};
+
+    const Dial unverified = describe(asi, valid(95.0), panel,
+                                     Limits{ranges, LimitsProvenance::indicative});
+    require(unverified.arcs.size() == 1, "indicative limits are still drawn");
+    require(unverified.limits == LimitsProvenance::indicative,
+            "the dial must declare where its bands came from");
+
+    const Dial checked = describe(asi, valid(95.0), panel,
+                                  Limits{ranges, LimitsProvenance::verified});
+    require(checked.limits == LimitsProvenance::verified,
+            "verified limits must be declared as such");
+    require(checked.arcs.size() == unverified.arcs.size(),
+            "verification changes what is declared, not what is drawn");
+
+    // Il caso che conta: senza limiti configurati non si disegna nulla, anche se
+    // qualcuno passasse delle fasce. Un quadrante senza archi dichiara di non
+    // sapere dove siano i limiti; uno con archi inventati afferma di saperlo.
+    const Dial no_limits = describe(asi, valid(95.0), panel,
+                                    Limits{ranges, LimitsProvenance::absent});
+    require(no_limits.arcs.empty(),
+            "bands with no provenance must not be drawn at all");
+    require(no_limits.limits == LimitsProvenance::absent,
+            "the absence of limits must itself be declared");
+    require(!no_limits.needles.empty(),
+            "missing limits do not stop the instrument from indicating");
+
+    // Il valore prudente e quello di partenza: chi dimentica di dichiarare la
+    // provenienza non ottiene fasce, invece di ottenerle senza avvertimento.
+    const Dial defaulted = describe(asi, valid(95.0), panel, Limits{ranges});
+    require(defaulted.arcs.empty(),
+            "the cautious value must be the default, not the convenient one");
+
+    // --- Quadrante a piu lancette omogenee ------------------------------------
+    //
+    // Su un gruppo di cilindri l informazione utile non e quanto valga ciascuno,
+    // e quanto si scostino fra loro.
+    const Scale cht{100.0, 260.0, -150.0, 300.0, 20.0, 5.0, 0, 0.0};
+    const Limits cht_limits{{{100.0, 220.0, Band::green}, {220.0, 260.0, Band::red}},
+                            LimitsProvenance::indicative};
+
+    const Dial four = describe_cluster(
+        cht, {{valid(178.0), valid(181.0), valid(184.0), valid(187.0)}, false},
+        panel, cht_limits);
+    require(four.needles.size() == 4, "four cylinders means four needles");
+    require(four.annunciation == Annunciation::none,
+            "four healthy cylinders raise nothing");
+
+    // Tutte le lancette hanno lo stesso peso: fra quattro cilindri non esiste
+    // una gerarchia, e darne una a uno solo la suggerirebbe.
+    for (const Needle& needle : four.needles) {
+        require(needle.kind == NeedleKind::primary,
+                "homogeneous channels must not be drawn with different ranks");
+    }
+
+    // Le lancette seguono l ordine dei canali: il terzo cilindro deve stare dove
+    // ci si aspetta il terzo cilindro.
+    require(close_to(four.needles[2].angle_deg, angle_for(cht, 184.0)),
+            "each needle must sit at its own channel value");
+
+    // Un canale perduto non spegne lo strumento, ma degrada il confronto per cui
+    // esiste, e va detto.
+    const Dial three_cylinders = describe_cluster(
+        cht, {{valid(178.0), {0.0, efis::Validity::unavailable, false},
+               valid(184.0), valid(187.0)}, false},
+        panel, cht_limits);
+    require(three_cylinders.needles.size() == 3, "a lost channel removes only its own needle");
+    require(three_cylinders.annunciation == Annunciation::partial,
+            "a partly working cluster must declare it");
+    require(std::string{annunciation_text(Annunciation::partial)} == "PARZIALE",
+            "the partial wording must stay stable");
+
+    // Parziale ha la precedenza sul fuori scala: sapere che manca un cilindro
+    // conta piu che sapere che un altro e alto.
+    const Dial hot_and_partial = describe_cluster(
+        cht, {{valid(300.0), {0.0, efis::Validity::unavailable, false},
+               valid(184.0), valid(187.0)}, false},
+        panel, cht_limits);
+    require(hot_and_partial.annunciation == Annunciation::partial,
+            "a missing channel matters more than a high one");
+
+    // Tutti i canali perduti: lo strumento non ha nulla da mostrare.
+    const efis::instruments::Reading gone{0.0, efis::Validity::unavailable, false};
+    const Dial none_left = describe_cluster(cht, {{gone, gone, gone, gone}, false},
+                                            panel, cht_limits);
+    require(none_left.needles.empty(), "with no channel there is nothing to indicate");
+    require(none_left.annunciation == Annunciation::failed,
+            "a cluster with no channel at all is failed, not partial");
+    require(!none_left.ticks.empty(), "the dial face stays");
+
+    // Scaduto resta distinto da assente anche qui.
+    const efis::instruments::Reading old_value{180.0, efis::Validity::stale, false};
+    const Dial all_stale = describe_cluster(
+        cht, {{old_value, old_value, old_value, old_value}, false}, panel, cht_limits);
+    require(all_stale.annunciation == Annunciation::stale,
+            "stale channels must not be reported as missing");
+
+    // Fuori scala con tutti i canali presenti.
+    const Dial too_hot = describe_cluster(
+        cht, {{valid(178.0), valid(181.0), valid(184.0), valid(400.0)}, false},
+        panel, cht_limits);
+    require(too_hot.annunciation == Annunciation::out_of_range,
+            "a channel beyond the scale must be declared");
+    require(too_hot.needles.size() == 4, "the other channels keep indicating");
+
+    // Due serbatoi sullo stesso quadrante: e lo stesso meccanismo dei cilindri.
+    const Scale fuel{0.0, 20.0, -150.0, 300.0, 5.0, 1.0, 0, 0.0};
+    const Dial tanks = describe_cluster(fuel, {{valid(18.0), valid(11.0)}, false},
+                                        panel, Limits{});
+    require(tanks.needles.size() == 2, "two tanks means two needles");
+    require(tanks.arcs.empty(),
+            "with no configured limits the fuel gauge shows no bands");
+
+
+    // --- Pannello configurabile ------------------------------------------------
+    //
+    // Le regole che decidono se una disposizione sia accettabile sono regole di
+    // sicurezza, non di presentazione. Una pagina che promette uno strumento
+    // senza sorgente, o che schiaccia sei quadranti dove non si leggono, il
+    // pilota la scopre in volo.
+    // La soglia di leggibilita e quella predefinita: 240 px, la dimensione piu
+    // piccola a cui gli strumenti sono stati davvero guardati.
+    const Surface panel_1024{1024.0, 600.0};
+
+    const PanelLayout six = classic_six_pack();
+    require(validate(six, panel_1024).accepted(),
+            "the classic six pack must be valid at the panel resolution");
+    require(six.pages.size() == 1 && six.pages[0].slots.size() == 6,
+            "the six pack has six instruments on one page");
+
+    auto has_problem = [](const ValidationResult& result, LayoutProblem problem) {
+        for (const LayoutIssue& issue : result.issues) {
+            if (issue.problem == problem) return true;
+        }
+        return false;
+    };
+
+    // Ogni motivo di rifiuto va detto per esteso: «configurazione non valida»
+    // non permette a nessuno di correggerla.
+    require(std::string{layout_problem_text(LayoutProblem::signal_unavailable)} ==
+                "GRANDEZZA_ASSENTE",
+            "the reasons must be stated in words that can be acted on");
+
+    // Due strumenti nella stessa posizione: uno coprirebbe l altro.
+    PanelLayout overlapping = classic_six_pack();
+    overlapping.pages[0].slots.push_back({0, 0, InstrumentKind::vertical_speed});
+    const auto overlap_result = validate(overlapping, panel_1024);
+    require(!overlap_result.accepted() &&
+                has_problem(overlap_result, LayoutProblem::overlapping_slots),
+            "two instruments in one place must be refused");
+
+    // La posizione del problema viene indicata, invece di lasciarla cercare.
+    bool located = false;
+    for (const LayoutIssue& issue : overlap_result.issues) {
+        if (issue.problem != LayoutProblem::overlapping_slots) continue;
+        if (issue.page == 0 && issue.row == 0 && issue.column == 0) located = true;
+    }
+    require(located, "the problem must say where it is");
+
+    // Strumento fuori dalla griglia dichiarata.
+    PanelLayout beyond_grid = classic_six_pack();
+    beyond_grid.pages[0].slots.push_back({5, 9, InstrumentKind::airspeed});
+    require(has_problem(validate(beyond_grid, panel_1024), LayoutProblem::slot_outside_grid),
+            "a slot outside the grid must be refused");
+
+    // Griglia senza righe.
+    PanelLayout no_grid = classic_six_pack();
+    no_grid.pages[0].rows = 0;
+    require(has_problem(validate(no_grid, panel_1024), LayoutProblem::empty_grid),
+            "a grid with no rows must be refused");
+
+    // Tipo sconosciuto: viene da una versione piu recente, oppure il file e
+    // stato modificato a mano. In entrambi i casi non si indovina.
+    PanelLayout unknown = classic_six_pack();
+    unknown.pages[0].slots[0].kind = static_cast<InstrumentKind>(60000);
+    require(has_problem(validate(unknown, panel_1024), LayoutProblem::unknown_instrument),
+            "an unknown instrument must be refused, not guessed");
+
+    // Disposizione vuota.
+    PanelLayout empty;
+    require(has_problem(validate(empty, panel_1024), LayoutProblem::empty_layout),
+            "a layout with no instruments must be refused");
+
+    // Leggibilita. Gli stessi sei strumenti su un display circolare piccolo non
+    // ci stanno: e il vincolo che la classe Round ha imposto fin dall inizio.
+    const Surface round_480{480.0, 480.0};
+    require(!validate(six, round_480).accepted(),
+            "six instruments do not fit on a small round display");
+    require(has_problem(validate(six, round_480), LayoutProblem::illegible_at_resolution),
+            "the refusal must name legibility, not something else");
+
+    // Un solo strumento sulla stessa superficie ci sta benissimo.
+    PanelLayout single;
+    PanelPage one;
+    one.name = "Singolo";
+    one.rows = 1;
+    one.columns = 1;
+    one.slots = {{0, 0, InstrumentKind::airspeed}};
+    single.pages.push_back(one);
+    require(validate(single, round_480).accepted(),
+            "one instrument on a round display is exactly what it is for");
+
+    // Capability. Il paragrafo 18 vuole una sola codebase con differenze per
+    // capability, non per fork: uno strumento che richiede la catena EMS non
+    // compare su un profilo Standard.
+    PanelLayout standard_with_egt = classic_six_pack();
+    standard_with_egt.pages[0].slots[0].kind = InstrumentKind::exhaust_gas_temperature;
+    require(has_problem(validate(standard_with_egt, panel_1024),
+                        LayoutProblem::capability_required),
+            "an instrument beyond the profile must be refused");
+
+    standard_with_egt.capability = Capability::professional;
+    require(validate(standard_with_egt, panel_1024).accepted(),
+            "the same instrument is fine once the profile allows it");
+
+    require(validate(engine_page(), panel_1024).accepted(),
+            "the engine page must be valid on a professional profile");
+
+    // Catalogo. Ogni strumento offerto deve avere le proprie grandezze
+    // effettivamente disponibili, altrimenti il menu promette cio' che il
+    // pannello non puo' mantenere.
+    require(!instrument_catalogue().empty(), "the menu must offer something");
+    for (const InstrumentDefinition& entry : instrument_catalogue()) {
+        require(find_instrument(entry.kind) == &entry,
+                "every catalogued instrument must be findable by its kind");
+        require(!entry.required.empty(),
+                "an instrument with no source is not an instrument");
+        for (const efis::SignalId signal : entry.required) {
+            const bool in_flight = [signal] {
+                for (const efis::SignalId candidate : efis::flight_signals()) {
+                    if (candidate == signal) return true;
+                }
+                return false;
+            }();
+            const bool in_engine = [signal] {
+                for (const efis::SignalId candidate : efis::engine_signals()) {
+                    if (candidate == signal) return true;
+                }
+                return false;
+            }();
+            require(in_flight || in_engine,
+                    "the menu must not offer an instrument whose source does not exist");
+        }
+    }
+    require(find_instrument(static_cast<InstrumentKind>(60000)) == nullptr,
+            "an unknown kind must not resolve to a definition");
+
+
+    // --- Persistenza del pannello ---------------------------------------------
+    //
+    // Stessa disciplina del profilo aeromobile, che il paragrafo 5 impone a ogni
+    // configurazione critica: si valida, si attiva in modo atomico lasciando una
+    // copia e una riga di registro, e si puo' tornare indietro.
+    const auto panel_dir = std::filesystem::temp_directory_path() / "efis-panel-tests";
+    std::filesystem::remove_all(panel_dir);
+    const PanelPaths paths{panel_dir / "active" / "panel.json",
+                           panel_dir / "backups",
+                           panel_dir / "audit" / "panel-audit.log"};
+
+    // Andata e ritorno: cio' che si scrive si deve poter rileggere identico,
+    // altrimenti la configurazione salvata non e' quella che il pilota ha
+    // scelto.
+    const PanelLayout original = classic_six_pack();
+    const ParseResult reread = from_json(to_json(original));
+    require(reread.ok(), "what was written must be readable again");
+    require(reread.layout->pages.size() == original.pages.size(),
+            "the number of pages must survive the round trip");
+    require(reread.layout->pages[0].slots.size() == 6,
+            "the instruments must survive the round trip");
+    require(reread.layout->pages[0].slots[1].kind == InstrumentKind::attitude,
+            "each instrument must come back in its own place");
+    require(reread.layout->pages[0].name == original.pages[0].name,
+            "the page name must survive");
+
+    // Il lettore e' severo di proposito. Uno permissivo accetterebbe un file
+    // quasi giusto e produrrebbe una disposizione quasi giusta, che e' la
+    // condizione peggiore: il pannello si apre e manca qualcosa.
+    require(!from_json("").ok(), "empty text is not a layout");
+    require(from_json("").problem == ParseProblem::malformed,
+            "empty text must be reported as malformed");
+    require(!from_json("{\"pages\": []}").ok(),
+            "a layout without a schema version must be refused");
+    require(from_json("{\"pages\": []}").problem == ParseProblem::missing_field,
+            "the missing field must be named as such");
+
+    // Uno schema piu' recente non si interpreta: indovinare che cosa siano i
+    // campi nuovi produrrebbe una disposizione plausibile e sbagliata.
+    const ParseResult future = from_json("{\"schema_version\": 99, \"pages\": []}");
+    require(!future.ok(), "a newer schema must not be guessed at");
+    require(future.problem == ParseProblem::unsupported_schema,
+            "the refusal must name the schema, not something else");
+
+    // Una chiave sconosciuta non si ignora: se qualcuno l ha scritta si aspetta
+    // che conti.
+    const ParseResult surprise =
+        from_json("{\"schema_version\": 1, \"sorpresa\": 3, \"pages\": []}");
+    require(!surprise.ok(), "an unknown key must be refused, not ignored");
+    require(surprise.field == "sorpresa", "the refusal must name the key it found");
+
+    // Un tipo sbagliato viene detto per quello che e'.
+    const ParseResult wrong =
+        from_json("{\"schema_version\": 1, \"profile_id\": 7, \"pages\": []}");
+    require(wrong.problem == ParseProblem::wrong_type,
+            "a field of the wrong type must be reported as such");
+    require(std::string{parse_problem_text(ParseProblem::wrong_type)} == "TIPO_ERRATO",
+            "the wording must stay stable");
+
+    // Attivazione. Prima non c'e' nulla da leggere.
+    PanelStore store{paths};
+    require(!store.load().ok(), "with no file there is nothing to load");
+
+    const ActivationReport first = store.activate(original, panel_1024);
+    require(first.outcome == ActivationOutcome::activated,
+            "a valid layout must be activated");
+    require(std::filesystem::exists(paths.active), "the active file must exist");
+    require(first.backup.empty(),
+            "the first activation has nothing to back up");
+    require(store.load().ok(), "what was activated must be loadable");
+
+    // Una disposizione rifiutata non tocca nulla. Non deve poter sostituire una
+    // funzionante nemmeno per un istante.
+    PanelLayout broken = classic_six_pack();
+    broken.pages[0].slots.push_back({0, 0, InstrumentKind::vertical_speed});
+    const ActivationReport refused = store.activate(broken, panel_1024);
+    require(refused.outcome == ActivationOutcome::rejected,
+            "an invalid layout must be refused");
+    require(!refused.validation.accepted(),
+            "the refusal must carry the reason");
+    const ParseResult after_refusal = store.load();
+    require(after_refusal.ok() && after_refusal.layout->pages[0].slots.size() == 6,
+            "a refused activation must leave the previous layout untouched");
+
+    // Seconda attivazione: lascia una copia della precedente.
+    PanelLayout second = classic_six_pack();
+    second.revision = 2;
+    second.pages[0].slots[5].kind = InstrumentKind::tachometer;
+    const ActivationReport again = store.activate(second, panel_1024);
+    require(again.outcome == ActivationOutcome::activated, "the second must activate too");
+    require(!again.backup.empty() && std::filesystem::exists(again.backup),
+            "activating over an existing layout must leave a backup");
+    require(store.load().layout->revision == 2, "the new revision must be active");
+
+    // Si puo' tornare indietro.
+    require(store.rollback(), "the previous layout must be restorable");
+    require(store.load().layout->revision == 1,
+            "after rollback the previous revision is active again");
+    require(store.load().layout->pages[0].slots[5].kind == InstrumentKind::vertical_speed,
+            "rollback must restore the instruments, not just the number");
+
+    // Il registro di controllo ha visto passare tutto: attivazioni, rifiuto e
+    // ripristino. Senza registro un ripristino non si distingue da una modifica.
+    require(std::filesystem::exists(paths.audit), "every attempt must leave a record");
+    // Il registro si legge dentro un blocco, cosi' il file e' gia' chiuso quando
+    // piu' sotto la directory di prova viene rimossa. Su Windows un file ancora
+    // aperto non si cancella e remove_all lancia: una prova che si porta dietro
+    // un descrittore aperto non e' portabile.
+    const std::string audit_text = [&paths] {
+        std::ifstream audit_file{paths.audit};
+        return std::string{std::istreambuf_iterator<char>{audit_file},
+                           std::istreambuf_iterator<char>{}};
+    }();
+    require(audit_text.find("ATTIVATA") != std::string::npos,
+            "the record must show the activations");
+    require(audit_text.find("RIFIUTATA") != std::string::npos,
+            "the record must show the refusal too, not only the successes");
+    require(audit_text.find("RIPRISTINATA") != std::string::npos,
+            "the record must show the rollback");
+
+    // Senza copia di sicurezza non si torna indietro, e lo si dice.
+    PanelStore fresh{{panel_dir / "altro" / "panel.json", panel_dir / "altro-backup",
+                      panel_dir / "altro" / "audit.log"}};
+    require(!fresh.rollback(), "with no backup there is nothing to restore");
+
+    std::filesystem::remove_all(panel_dir);
 
 
     std::cout << "All EFIS instrument tests passed\n";

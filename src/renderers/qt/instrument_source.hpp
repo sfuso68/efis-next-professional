@@ -1,12 +1,15 @@
 #pragma once
 
 #include "efis/core/flight_model.hpp"
-#include "efis/providers/simulation_provider.hpp"
+#include "efis/core/flight_source.hpp"
+#include "efis/providers/simulation_source.hpp"
 
 #include <QObject>
 #include <QQmlEngine>
 #include <QTimer>
 #include <QVariantList>
+
+#include <memory>
 
 // Alimenta la pagina analogica con lo stato di volo.
 //
@@ -15,10 +18,11 @@
 // deve poter mostrare la bandierina invece di una lancetta e non puo' farlo se
 // riceve soltanto un numero.
 //
-// Legge dal simulatore attraverso il modello di volo, cioe' dalla stessa catena
-// del PFD digitale. Quando l'adapter MAVLink alimentera' lo stesso snapshot, qui
-// non cambiera' nulla: e' il motivo per cui gli strumenti non parlano con i
-// provider.
+// Legge attraverso il router delle sorgenti e il modello di volo, cioe' dalla
+// stessa catena del PFD digitale: la simulazione entra come una sorgente fra le
+// altre e lo stato arriva gia' arbitrato. Collegare qui il Pixhawk significa
+// registrare una seconda sorgente nel router, e nient'altro: e' il motivo per
+// cui gli strumenti non parlano con i provider.
 class InstrumentSource : public QObject {
     Q_OBJECT
     QML_ELEMENT
@@ -51,6 +55,9 @@ class InstrumentSource : public QObject {
 
     Q_PROPERTY(bool simulated READ simulated NOTIFY updated)
 
+    // Provenienza dei limiti del profilo attivo, secondo efis::LimitsProvenance.
+    Q_PROPERTY(int limitsProvenance READ limitsProvenance CONSTANT)
+
 public:
     explicit InstrumentSource(QObject* parent = nullptr);
 
@@ -80,6 +87,7 @@ public:
     double slip() const;
     int slipValidity() const;
     bool simulated() const;
+    int limitsProvenance() const;
 
 signals:
     void updated();
@@ -87,7 +95,9 @@ signals:
 private:
     void step();
 
-    efis::SimulationProvider provider_{42};
+    std::shared_ptr<efis::SimulationSource> simulation_{
+        std::make_shared<efis::SimulationSource>(42)};
+    efis::FlightSourceRouter router_{};
     efis::FlightModel model_;
     efis::FlightSnapshot snapshot_;
     efis::MonoTime started_{efis::MonoClock::now()};

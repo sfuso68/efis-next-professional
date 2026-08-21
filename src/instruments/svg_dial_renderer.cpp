@@ -64,7 +64,7 @@ std::string annulus(double centre, double radius, double start_deg, double end_d
 // Dicitura di stato e marcatura di simulazione: identiche su ogni strumento,
 // perche' significano la stessa cosa ovunque compaiano.
 std::string annunciation_markup(Annunciation annunciation, bool simulated, double size,
-                                double centre, double radius) {
+                                double centre, double radius, bool provisional = false) {
     std::ostringstream svg;
     svg << std::fixed << std::setprecision(2);
     if (annunciation != Annunciation::none) {
@@ -74,6 +74,15 @@ std::string annunciation_markup(Annunciation annunciation, bool simulated, doubl
             << number(radius * 0.15) << "' font-weight='700' fill='" << colour << "'>"
             << annunciation_text(annunciation) << "</text>";
     }
+    if (provisional) {
+        // Le fasce ci sono ma nessuno le ha verificate sul manuale. Dirlo sul
+        // quadrante e' l'unico modo perche' non vengano scambiate per limiti
+        // approvati.
+        svg << "<text x='" << centre << "' y='" << number(centre + radius * 0.88)
+            << "' text-anchor='middle' font-family='DejaVu Sans, sans-serif' font-size='"
+            << number(radius * 0.10) << "' fill='" << amber << "'>LIMITI INDICATIVI</text>";
+    }
+
     if (simulated) {
         const double inset = size * 0.02;
         svg << "<rect x='" << number(inset) << "' y='" << number(inset) << "' width='"
@@ -210,31 +219,9 @@ std::string render_svg(const Dial& dial, const DialStyle& style) {
     svg << "<circle cx='" << centre << "' cy='" << centre << "' r='" << number(size * 0.022)
         << "' fill='" << primary << "'/>";
 
-    // Dicitura di stato. Ambra per cio' che si e' fermato, rosso per cio' che
-    // non c'e' piu'.
-    if (dial.annunciation != Annunciation::none) {
-        const char* colour = dial.annunciation == Annunciation::failed ? warning : amber;
-        svg << "<text x='" << centre << "' y='" << number(centre + radius * 0.72)
-            << "' text-anchor='middle' font-family='DejaVu Sans, sans-serif' font-size='"
-            << number(radius * 0.15) << "' font-weight='700' fill='" << colour << "'>"
-            << annunciation_text(dial.annunciation) << "</text>";
-    }
-
-    // Marcatura del dato simulato. Sul quadrante singolo e' una cornice, perche'
-    // qui non esiste la pagina che la porterebbe: il pilota deve vederlo con la
-    // visione periferica, senza doverlo leggere.
-    if (dial.simulated) {
-        const double inset = size * 0.02;
-        svg << "<rect x='" << number(inset) << "' y='" << number(inset)
-            << "' width='" << number(size - 2 * inset) << "' height='"
-            << number(size - 2 * inset) << "' fill='none' stroke='" << amber
-            << "' stroke-width='" << number(size * 0.012) << "' rx='" << number(size * 0.02)
-            << "'/>";
-        svg << "<text x='" << centre << "' y='" << number(size - inset * 2.2)
-            << "' text-anchor='middle' font-family='DejaVu Sans, sans-serif' font-size='"
-            << number(radius * 0.12) << "' font-weight='700' fill='" << amber
-            << "'>SIMULAZIONE</text>";
-    }
+    svg << annunciation_markup(dial.annunciation, dial.simulated, size, centre,
+                               radius,
+                               dial.limits == LimitsProvenance::indicative);
 
     svg << "</svg>";
     return svg.str();

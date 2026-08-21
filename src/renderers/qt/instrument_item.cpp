@@ -112,15 +112,16 @@ void InstrumentItem::paintDial(QPainter& painter, double size) {
     } else if (kind_ == Heading) {
         dial = describe_heading({reading(), secondReading()}, sizing(size));
     } else {
-        std::vector<BandRange> ranges;
+        Limits limits;
+        limits.provenance = static_cast<LimitsProvenance>(limits_provenance_);
         for (const QVariant& entry : bands_) {
             const QVariantList triple = entry.toList();
             if (triple.size() != 3) continue;
-            ranges.push_back(BandRange{triple[0].toDouble(), triple[1].toDouble(),
-                                       static_cast<Band>(triple[2].toInt())});
+            limits.bands.push_back(BandRange{triple[0].toDouble(), triple[1].toDouble(),
+                                             static_cast<Band>(triple[2].toInt())});
         }
         const Scale scale{minimum_, maximum_, -150.0, 300.0, major_step_, minor_step_, 0, 0.0};
-        dial = describe(scale, reading(), sizing(size), ranges);
+        dial = describe(scale, reading(), sizing(size), limits);
     }
 
     painter.setPen(QPen{colour(style::bezel), size * style::bezel_width});
@@ -187,6 +188,7 @@ void InstrumentItem::paintDial(QPainter& painter, double size) {
                         size * style::hub_radius);
     painter.setBrush(Qt::NoBrush);
 
+    provisional_limits_ = dial.limits == LimitsProvenance::indicative;
     paintAnnunciation(painter, size, dial.annunciation, dial.simulated);
     paintTitle(painter, size);
 }
@@ -260,6 +262,7 @@ void InstrumentItem::paintHorizon(QPainter& painter, double size) {
     painter.drawEllipse(QPointF{centre, centre}, size * 0.012, size * 0.012);
     painter.setBrush(Qt::NoBrush);
 
+    provisional_limits_ = false;
     paintAnnunciation(painter, size, horizon.annunciation, horizon.simulated);
     paintTitle(painter, size);
 }
@@ -316,6 +319,7 @@ void InstrumentItem::paintTurn(QPainter& painter, double size) {
         painter.setBrush(Qt::NoBrush);
     }
 
+    provisional_limits_ = false;
     paintAnnunciation(painter, size, coordinator.annunciation, coordinator.simulated);
     paintTitle(painter, size);
 }
@@ -332,6 +336,14 @@ void InstrumentItem::paintAnnunciation(QPainter& painter, double size,
         draw_text(painter, QPointF{centre, centre + radius * 0.72},
                   radius * style::annunciation_height,
                   QString::fromLatin1(annunciation_text(annunciation)), text_colour);
+    }
+
+    if (provisional_limits_) {
+        // Le fasce ci sono ma nessuno le ha verificate sul manuale. Dirlo sul
+        // quadrante e' l'unico modo perche' non vengano scambiate per limiti
+        // approvati.
+        draw_text(painter, QPointF{centre, centre + radius * 0.88}, radius * 0.10,
+                  QStringLiteral("LIMITI INDICATIVI"), colour(style::amber), false);
     }
 
     if (is_simulated) {
@@ -380,5 +392,6 @@ SETTER(double, setMaximum, maximum_)
 SETTER(double, setMajorStep, major_step_)
 SETTER(double, setMinorStep, minor_step_)
 SETTER(const QVariantList&, setBands, bands_)
+SETTER(int, setLimitsProvenance, limits_provenance_)
 
 #undef SETTER

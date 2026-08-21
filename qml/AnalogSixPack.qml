@@ -27,8 +27,10 @@ Item {
             kind: InstrumentItem.LinearDial
             title: "IAS"; unit: "KT"
             minimum: 40; maximum: 160; majorStep: 20; minorStep: 5
-            // Le fasce vengono dalle velocita' del profilo aeromobile attivo.
+            // Le fasce vengono dalle velocita' del profilo aeromobile attivo, che
+            // le dichiara indicative: mai confrontate con un POH.
             bands: page.source.airspeedBands
+            limitsProvenance: page.source.limitsProvenance
             value: page.source.airspeed
             validity: page.source.airspeedValidity
             simulated: page.source.simulated

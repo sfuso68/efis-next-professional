@@ -66,6 +66,27 @@ struct Label final {
 // rosso il limite da non superare.
 enum class Band : std::uint8_t { white, green, yellow, red };
 
+// Da dove vengono i limiti che le fasce disegnano.
+//
+// Non e' una sfumatura burocratica. Una fascia verde dice «qui si puo' volare»,
+// ed e' una dichiarazione di sicurezza: se nessuno l'ha verificata sul manuale
+// dell'aeromobile o del motore, lo strumento deve dirlo invece di lasciar
+// credere che qualcuno l'abbia firmata. Il paragrafo 5 dell'handoff vieta che un
+// limite indicativo diventi operativo senza verifica.
+enum class LimitsProvenance : std::uint8_t {
+    // Nessun limite configurato. Non si disegna alcuna fascia: un quadrante
+    // senza archi dichiara di non sapere dove siano i limiti, un quadrante con
+    // archi inventati afferma di saperlo.
+    absent,
+
+    // Limiti presenti ma non verificati sul manuale. Le fasce si disegnano e lo
+    // strumento dichiara che sono indicative.
+    indicative,
+
+    // Limiti verificati sul manuale dell'aeromobile o del motore.
+    verified
+};
+
 struct Arc final {
     double start_deg{};
     double end_deg{};
@@ -124,7 +145,13 @@ enum class Annunciation : std::uint8_t {
     // Dato scaduto: c'era, non e' piu' attuale.
     stale,
     // Valore fuori dai limiti della scala.
-    out_of_range
+    out_of_range,
+
+    // Alcuni canali di uno strumento a piu' lancette mancano, altri no. Su un
+    // gruppo di cilindri l'informazione utile e' lo scarto fra loro: perderne
+    // uno non spegne lo strumento, ma degrada proprio cio' per cui esiste, e
+    // va detto.
+    partial
 };
 
 [[nodiscard]] constexpr const char* annunciation_text(Annunciation value) noexcept {
@@ -133,6 +160,7 @@ enum class Annunciation : std::uint8_t {
         case Annunciation::failed: return "FAIL";
         case Annunciation::stale: return "STALE";
         case Annunciation::out_of_range: return "RANGE";
+        case Annunciation::partial: return "PARZIALE";
     }
     return "FAIL";
 }
@@ -163,6 +191,11 @@ struct Dial final {
     Window window;
 
     Annunciation annunciation{Annunciation::none};
+
+    // Provenienza delle fasce disegnate. Il renderer la mostra: un arco verde
+    // che nessuno ha verificato non deve poter essere scambiato per uno
+    // verificato.
+    LimitsProvenance limits{LimitsProvenance::absent};
 
     // Vero se il valore mostrato non descrive il mondo reale. La marcatura
     // vera e propria e' compito della pagina, ma lo strumento deve dichiararlo
@@ -207,6 +240,16 @@ struct BandRange final {
     Band band{Band::green};
 };
 
+// Le fasce, insieme a dove sono state prese.
+//
+// I due dati stanno insieme di proposito: chi passa delle fasce e' obbligato a
+// dichiararne la provenienza, e non puo' farlo per distrazione. Le fasce di una
+// provenienza assente non vengono disegnate, quali che siano.
+struct Limits final {
+    std::vector<BandRange> bands;
+    LimitsProvenance provenance{LimitsProvenance::absent};
+};
+
 // Cio' che si sa del valore da mostrare.
 struct Reading final {
     double value{};
@@ -235,8 +278,7 @@ struct Sizing final {
 // verrebbe disegnata fuori dal quadrante, e una che cade interamente fuori non
 // viene disegnata affatto.
 [[nodiscard]] Dial describe(const Scale& scale, const Reading& reading,
-                            const Sizing& sizing,
-                            const std::vector<BandRange>& bands = {});
+                            const Sizing& sizing, const Limits& limits = {});
 
 // Angolo corrispondente a un valore sulla scala.
 //
@@ -300,5 +342,27 @@ struct HeadingReading final {
 // Riporta un angolo nell'intervallo [0, 360). Le prue si avvolgono: 370 gradi
 // sono 10, non un valore fuori scala da limitare.
 [[nodiscard]] double normalise_heading(double heading_deg) noexcept;
+
+// --- Quadrante a piu' lancette omogenee --------------------------------------
+//
+// Diverso dall'altimetro, dove tre lancette leggono la stessa grandezza su tre
+// decadi. Qui ogni lancetta legge un canale diverso della stessa grandezza: i
+// quattro cilindri, i due serbatoi.
+//
+// Mostrarli insieme non e' una scelta di spazio. Su un gruppo di cilindri
+// l'informazione utile non e' quanto valga ciascuno, e' quanto si scostino fra
+// loro: un cilindro che sale mentre gli altri restano fermi si vede a colpo
+// d'occhio soltanto se sono sullo stesso quadrante. Con un selettore bisogna
+// guardarli a turno, e nessuno lo fa finche' non e' tardi.
+//
+// Ogni canale ha la propria validita': perderne uno non spegne lo strumento, ma
+// degrada proprio il confronto per cui esiste, e la dicitura lo dichiara.
+struct ClusterReading final {
+    std::vector<Reading> channels;
+    bool simulated{};
+};
+
+[[nodiscard]] Dial describe_cluster(const Scale& scale, const ClusterReading& reading,
+                                    const Sizing& sizing, const Limits& limits = {});
 
 }  // namespace efis::instruments

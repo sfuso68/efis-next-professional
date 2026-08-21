@@ -40,6 +40,8 @@ add_library(efis_core
     src/core/flight_dynamics.cpp
     src/core/signal_access.cpp
     src/instruments/dial.cpp
+    src/instruments/panel.cpp
+    src/instruments/panel_store.cpp
     src/instruments/horizon.cpp
     src/instruments/svg_dial_renderer.cpp
 )
@@ -135,6 +137,7 @@ if(EFIS_BUILD_QT_RENDERER)
         )
         target_link_libraries(efis-pfd-qt PRIVATE
             efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Quick3D Qt6::QuickControls2 Qt6::Concurrent Qt6::Network)
+
         # Pagina analogica come applicazione a se'. Gli strumenti entreranno nel
         # selettore con la fase 3, quando esistera' la configurazione che li
         # dispone; fino ad allora serve poterli vedere sul display vero, che e'
@@ -221,6 +224,14 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_dronecan_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_dronecan_tests COMMAND efis_dronecan_tests)
+
+    # La geometria degli strumenti analogici ha un eseguibile proprio: verifica
+    # come un valore viene mostrato, non quanto vale. Una lancetta assente e una
+    # ferma su zero contengono la stessa quantita' di inchiostro e due
+    # informazioni opposte, e questa e' la categoria che se ne accorge.
+    add_executable(efis_instrument_tests tests/instrument_tests.cpp)
+    target_link_libraries(efis_instrument_tests PRIVATE efis_core)
+    add_test(NAME efis_instrument_tests COMMAND efis_instrument_tests)
 
     add_executable(efis_safety_tests tests/safety_tests.cpp)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)

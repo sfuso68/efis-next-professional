@@ -1,6 +1,6 @@
 # Strumenti analogici — specifica V1
 
-Stato: fase 0 realizzata, fasi 1–4 da realizzare
+Stato: fasi 0, 1 e 2 realizzate; fase 3 ai passi 1 e 2; fase 4 da realizzare
 Data: 21 agosto 2026
 Riferimenti: `CLAUDE_CODE_HANDOFF_2026-08-21.md` §2, §5, §18, §19, §22;
 `EFIS_UI_DESIGN_SYSTEM.md`; ADR-002; ADR-005
@@ -121,21 +121,23 @@ ingannare.
 ## Fasi
 
 **Fase 0 — fondamenta. Realizzata.** Geometria dei quadranti nel core
-(`d888d01`), regolazione barometrica e quota indicata (`32c0a8d`), rateo di
-virata e accelerazione laterale (`42c8b01`), accesso alle grandezze per
-identificativo (`038b8cd`), renderer SVG per poterli guardare (`ff8d231`).
+(`include/efis/instruments/dial.hpp`), regolazione barometrica e quota indicata
+(`altimetry`), rateo di virata e accelerazione laterale (`flight_dynamics`),
+accesso alle grandezze per identificativo (`signal_access`), renderer SVG per
+poterli guardare (`efis-render-dials`).
 
-**Fase 1 — i sei strumenti di volo.** Orizzonte, anemometro, altimetro,
+**Fase 1 — i sei strumenti di volo. Realizzata.** Orizzonte, anemometro, altimetro,
 variometro, girodirezionale, virosbandometro. Ognuno con bandierina, dato
 scaduto e marcatura di simulazione.
 
-**Fase 2 — strumenti motore.** Compresi CHT ed EGT a quattro lancette, con
+**Fase 2 — strumenti motore. Realizzata.** Compresi CHT ed EGT a quattro lancette, con
 archi dai limiti del profilo motore.
 
-**Fase 3 — pagine e configurazione.** `config/panels/` versionato, catalogo dei
-tipi, modelli classici con slot sostituibili, staging → validazione →
-attivazione atomica con backup, audit e rollback, come per il profilo
-aeromobile. Voce `ANALOG` nel selettore, con sottomenu.
+**Fase 3 — pagine e configurazione. Ai passi 1 e 2.** Fatti: catalogo dei
+tipi, modelli classici con slot sostituibili, validazione contro la superficie,
+e attivazione atomica con backup, audit e rollback, come per il profilo
+aeromobile. Restano: `config/panels/` versionato e la voce `ANALOG` nel
+selettore, con il suo sottomenu.
 
 **Fase 4 — navigazione e display circolari.** CDI con OBS regolabile in volo,
 pagina a strumento singolo per la classe Round, prova termica prolungata.

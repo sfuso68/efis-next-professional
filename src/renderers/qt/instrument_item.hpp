@@ -65,6 +65,12 @@ private:
     // dal profilo aeromobile, non dallo strumento.
     Q_PROPERTY(QVariantList bands READ bands WRITE setBands NOTIFY changed)
 
+    // Provenienza dei limiti, secondo efis::LimitsProvenance: 0 assente,
+    // 1 indicativa, 2 verificata. Chi passa delle fasce deve dichiarare da dove
+    // vengono, e il valore prudente e' quello di partenza.
+    Q_PROPERTY(int limitsProvenance READ limitsProvenance WRITE setLimitsProvenance
+                   NOTIFY changed)
+
 public:
     explicit InstrumentItem(QQuickItem* parent = nullptr);
 
@@ -84,6 +90,7 @@ public:
     double majorStep() const { return major_step_; }
     double minorStep() const { return minor_step_; }
     QVariantList bands() const { return bands_; }
+    int limitsProvenance() const { return limits_provenance_; }
 
     void setKind(Kind value);
     void setValue(double value);
@@ -99,6 +106,7 @@ public:
     void setMajorStep(double value);
     void setMinorStep(double value);
     void setBands(const QVariantList& value);
+    void setLimitsProvenance(int value);
 
 signals:
     void changed();
@@ -129,4 +137,7 @@ private:
     double major_step_{10.0};
     double minor_step_{2.0};
     QVariantList bands_;
+    int limits_provenance_{};
+    // Ricavato dal quadrante a ogni disegno, non impostato da fuori.
+    mutable bool provisional_limits_{};
 };

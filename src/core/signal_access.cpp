@@ -33,6 +33,8 @@ const Sample<double>* find_signal(const FlightSnapshot& snapshot,
         case SignalId::latitude: return &snapshot.position.latitude_deg;
         case SignalId::longitude: return &snapshot.position.longitude_deg;
         case SignalId::ground_speed: return &snapshot.position.ground_speed_kt;
+        case SignalId::gnss_vertical_speed:
+            return &snapshot.position.gnss_vertical_speed_fpm;
 
         case SignalId::commanded_roll: return &snapshot.guidance.commanded_roll_deg;
         case SignalId::commanded_pitch: return &snapshot.guidance.commanded_pitch_deg;
@@ -79,7 +81,7 @@ const Sample<double>* find_signal(const engine::EngineSnapshot& snapshot,
 }
 
 std::span<const SignalId> flight_signals() noexcept {
-    static constexpr std::array<SignalId, 20> list{
+    static constexpr std::array<SignalId, 21> list{
         SignalId::roll,
         SignalId::pitch,
         SignalId::heading,
@@ -93,6 +95,7 @@ std::span<const SignalId> flight_signals() noexcept {
         SignalId::latitude,
         SignalId::longitude,
         SignalId::ground_speed,
+        SignalId::gnss_vertical_speed,
         SignalId::commanded_roll,
         SignalId::commanded_pitch,
         SignalId::selected_altitude,
