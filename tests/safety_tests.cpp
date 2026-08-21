@@ -458,7 +458,11 @@ int main() {
         efis::FlightModel model{};
         for (int step = 0; step < 40; ++step) {
             const auto at = epoch + std::chrono::seconds{step};
-            model.normalize(cruising(at, 0.0, 59.0, 0.0, 0.0), at);
+            // Lo snapshot prodotto qui non interessa: conta solo che la
+            // sorveglianza veda passare il tempo con valori fermi. Lo scarto va
+            // dichiarato, altrimenti nodiscard lo segnala e il progetto smette
+            // di compilare senza avvisi.
+            static_cast<void>(model.normalize(cruising(at, 0.0, 59.0, 0.0, 0.0), at));
         }
         const auto after_stop = epoch + 41s;
         const auto first_moving = model.normalize(
