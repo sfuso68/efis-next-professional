@@ -3,8 +3,14 @@
 # Riferimento: CLAUDE_CODE_HANDOFF_2026-08-21.md §19 (sicurezza) e §22 (vincoli)
 # ---------------------------------------------------------------------------
 
-# Artefatti di build
-/build/
+# Artefatti di build.
+#
+# Il modello vale per qualunque nome: sullo stesso repository lavorano piu'
+# alberi in parallelo, e ciascuno si crea la propria directory (build-qt,
+# build-core, build/win-claude). Con la sola regola /build/ le altre restavano
+# tracciabili, e in un progetto dove un `git add -A` ha gia' inglobato file non
+# voluti questo e' un rischio concreto, non teorico.
+/build*/
 /.cache/
 compile_commands.json
 
