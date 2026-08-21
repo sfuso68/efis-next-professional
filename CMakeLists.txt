@@ -35,7 +35,6 @@ add_library(efis_core
     src/ingest/recording_session.cpp
     src/io/byte_source.cpp
     src/io/can_source.cpp
-    src/providers/engine_can_adapter.cpp
     src/bench/sensor_bench.cpp
 )
 target_include_directories(efis_core PUBLIC include)
@@ -182,14 +181,6 @@ if(EFIS_BUILD_TESTS)
     # Le protezioni contro il dato plausibile ma falso hanno un eseguibile
     # proprio: verificano una categoria diversa dal calcolo, e tenerle separate
     # fa vedere subito quale delle due e' caduta.
-    # Il bus motore ha un eseguibile proprio: verifica un protocollo, non una
-    # grandezza, e si prova senza hardware con una cattura candump.
-    add_executable(efis_engine_can_tests tests/engine_can_tests.cpp)
-    target_link_libraries(efis_engine_can_tests PRIVATE efis_core)
-    target_compile_definitions(efis_engine_can_tests PRIVATE
-        EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
-    add_test(NAME efis_engine_can_tests COMMAND efis_engine_can_tests)
-
     add_executable(efis_safety_tests tests/safety_tests.cpp)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)
     add_test(NAME efis_safety_tests COMMAND efis_safety_tests)
