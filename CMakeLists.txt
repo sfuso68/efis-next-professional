@@ -13,6 +13,8 @@ add_library(efis_core
     src/core/alert_engine.cpp
     src/core/flight_model.cpp
     src/core/node_health.cpp
+    src/core/stasis_monitor.cpp
+    src/core/cross_check.cpp
     src/recording/flight_record.cpp
     src/recording/snapshot_recorder.cpp
     src/recording/segmented_recorder.cpp
@@ -22,6 +24,7 @@ add_library(efis_core
     src/providers/engine_simulation_provider.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
+    src/io/byte_source.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
@@ -148,4 +151,11 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_core_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_core_tests COMMAND efis_core_tests)
+
+    # Le protezioni contro il dato plausibile ma falso hanno un eseguibile
+    # proprio: verificano una categoria diversa dal calcolo, e tenerle separate
+    # fa vedere subito quale delle due e' caduta.
+    add_executable(efis_safety_tests tests/safety_tests.cpp)
+    target_link_libraries(efis_safety_tests PRIVATE efis_core)
+    add_test(NAME efis_safety_tests COMMAND efis_safety_tests)
 endif()

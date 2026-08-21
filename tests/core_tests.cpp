@@ -3,6 +3,7 @@
 #include "efis/core/node_health.hpp"
 #include "efis/providers/mavlink_parser.hpp"
 #include "efis/providers/mavlink_adapter.hpp"
+#include "efis/io/byte_source.hpp"
 #include "efis/providers/mavlink_parser.hpp"
 #include "mavlink_reference_frames.hpp"
 #include "efis/providers/simulation_provider.hpp"
@@ -1071,7 +1072,82 @@ int main() {
             "the unit must survive the disk round trip");
     require(disk_airspeed.sample.is_simulated(),
             "a recording made from simulated data must still say so on replay");
+    // Il flusso va chiuso prima di cancellare la cartella: su Windows un file
+    // ancora aperto non e' cancellabile, e remove_all solleva un'eccezione. Su
+    // Linux la cancellazione riesce comunque, ed e' il motivo per cui il difetto
+    // si vedeva soltanto su una delle due piattaforme.
+    segment_file.close();
     std::filesystem::remove_all(replay_directory);
+
+    // --- Trasporto e replay, ADR-003 -----------------------------------------
+    //
+    // Il trasporto muove byte e non sa cosa trasportano; l'adapter interpreta
+    // MAVLink e non sa da dove arrivino i byte. A unirli e' chi li usa. Questa
+    // separazione e' la ragione per cui la stessa catena funzionera' su seriale
+    // e su rete senza toccare ne' l'uno ne' l'altro.
+    efis::io::RecordedByteSource replay_source{capture_path, 512};
+    require(replay_source.size() == 68443, "the replay must load the whole replay_source");
+    require(!replay_source.exhausted(), "a replay_source just opened is not exhausted");
+
+    // La consegna e' frammentata di proposito: una seriale non allinea mai i
+    // dati ai confini dei messaggi, e un replay che restituisse tutto in una
+    // volta non eserciterebbe il caso normale.
+    std::array<std::uint8_t, 4096> transfer{};
+    require(replay_source.read(std::span<std::uint8_t>{transfer.data(), transfer.size()}) == 512,
+            "the replay must honour its chunk size, not the caller buffer");
+    replay_source.rewind();
+    require(replay_source.position() == 0, "rewinding must return to the beginning");
+
+    // Il replay guida l'adapter senza che nessuno dei due conosca l'altro.
+    efis::MavlinkAdapter transport_adapter{{.stale_after = 1000ms, .lost_after = 3000ms}};
+    const auto moved = efis::io::pump(replay_source, transport_adapter, arrival);
+    require(moved == 68443, "the pump must move every byte of the replay_source");
+    require(replay_source.exhausted(), "the replay_source must be exhausted once drained");
+
+    // Stessi byte, stesso risultato: e' cio' che rende il replay un banco e non
+    // un aneddoto. Il paragrafo 17.3 dell'handoff chiede esattamente questo.
+    require(transport_adapter.parser_statistics().frames ==
+                adapter.parser_statistics().frames,
+            "replaying through the transport must decode the same frames");
+    require(transport_adapter.statistics().frames_applied ==
+                adapter.statistics().frames_applied,
+            "replaying through the transport must apply the same messages");
+    require(transport_adapter.snapshot().attitude.roll_deg.value ==
+                adapter.snapshot().attitude.roll_deg.value,
+            "the transport must not alter a single value");
+    require(transport_adapter.snapshot().position.latitude_deg.validity ==
+                efis::Validity::unavailable,
+            "the validity rules must survive the change of transport");
+
+    // Due riproduzioni della stessa registrazione devono coincidere fino
+    // all'ultimo campione: senza determinismo un banco non dimostra nulla.
+    replay_source.rewind();
+    efis::MavlinkAdapter second_pass{{.stale_after = 1000ms, .lost_after = 3000ms}};
+    efis::io::pump(replay_source, second_pass, arrival);
+    require(second_pass.parser_statistics().frames == transport_adapter.parser_statistics().frames,
+            "two replays of one replay_source must decode the same frame count");
+    require(second_pass.snapshot().air_data.pressure_altitude_ft.value ==
+                transport_adapter.snapshot().air_data.pressure_altitude_ft.value,
+            "two replays of one replay_source must end on the same values");
+    require(second_pass.statistics().sequence_wraps == transport_adapter.statistics().sequence_wraps,
+            "even the sequence wrap count must be reproducible");
+
+    // Dimensione del blocco diversa, stesso risultato: i confini di consegna non
+    // devono influenzare cio' che si decodifica.
+    efis::io::RecordedByteSource fragmented{capture_path, 7};
+    efis::MavlinkAdapter piecemeal{{.stale_after = 1000ms, .lost_after = 3000ms}};
+    efis::io::pump(fragmented, piecemeal, arrival, 64);
+    require(piecemeal.parser_statistics().frames == transport_adapter.parser_statistics().frames,
+            "fragmentation must not change how many frames are recovered");
+
+    // Una sorgente vuota non e' un errore: non ha nulla da dare e lo dichiara.
+    efis::io::RecordedByteSource empty_source{std::vector<std::uint8_t>{}};
+    efis::MavlinkAdapter idle{};
+    require(empty_source.exhausted(), "an empty source is exhausted from the start");
+    require(efis::io::pump(empty_source, idle, arrival) == 0,
+            "an empty source must move no bytes and must not hang");
+    require(idle.parser_statistics().frames == 0,
+            "no bytes can produce no frames");
 
     std::cout << "All EFIS core tests passed\n";
 }
