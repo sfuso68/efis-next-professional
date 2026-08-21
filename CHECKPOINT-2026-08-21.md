@@ -32,10 +32,14 @@ interpretati, arbitrati, sorvegliati, normalizzati, registrati nella black box e
 mostrati al banco prova sul display reale. Nessun pezzo della catena è più un
 modulo corretto lasciato fuori dal percorso.
 
-Stato complessivo: **il banco di sviluppo è coerente e riproducibile**, e il
-backbone dati è completo dall'ingresso dei byte fino alla pagina che li mostra.
-Il lavoro che segue non è più completamento di P1 ma apertura di P4, con gli
-adapter ESP32-S3 e SocketCAN.
+P4 è cominciato. L'adapter del nodo sensori ESP32 e il trasporto SocketCAN
+esistono, e il trasporto è stato provato sul bus vero del nodo black box. La
+seconda catena indipendente però **non è ancora innestata** nella catena di
+ingestione: esiste e non arbitra contro il Pixhawk.
+
+Stato complessivo: **il banco di sviluppo è coerente e riproducibile**, il
+backbone dati è completo dall'ingresso dei byte fino alla pagina che li mostra, e
+il secondo bus è letto ma non ancora unito al primo.
 
 ---
 
@@ -169,7 +173,7 @@ servito da `efis-pfd.service`, lasciato attivo per tutta la durata.
 | Configurazione | riuscita, con `-DEFIS_REQUIRE_QT_RENDERER=ON` |
 | Target compilati | tutti, `efis-pfd-qt` compreso |
 | Diagnostica GCC | **zero** fra warning ed errori, con `-Wall -Wextra -Wpedantic -Wconversion` |
-| Test | `ctest` 5 / 5 superati |
+| Test | `ctest` 8 / 8 superati |
 | Temperatura finale | 60.4 °C, nessun throttling |
 
 Il backup `CMakeLists.txt.pre-claude-20260821` è stato creato prima della copia
@@ -177,7 +181,7 @@ del file modificato.
 
 ### 5.2 Windows — ambiente secondario
 
-MSVC 19.51.36256.0 con Ninja: **5 / 5 test superati**. Dal pomeriggio del 21
+MSVC 19.51.36256.0 con Ninja: **8 / 8 test superati**. Dal pomeriggio del 21
 agosto il target Qt è costruibile anche qui, perché Qt Quick 3D è stato
 installato: vedi sezione 6.2.
 
@@ -390,18 +394,92 @@ I due numeri liberi nella numerazione delle ADR sono stati usati:
 
 ### 8.7 Copertura di test
 
-Da 1 asserzione a **481**, distribuite su cinque eseguibili registrati in `ctest`:
+Da 1 asserzione a **564**, distribuite su otto eseguibili registrati in `ctest`:
 
 | Eseguibile | Asserzioni | Copre |
 |---|---:|---|
 | `efis_core_tests` | 264 | Campione, salute nodi, parser e adapter MAVLink, registro di volo, replay, display |
 | `efis_safety_tests` | 92 | Valore fermo e confronto incrociato |
 | `efis_arbitration_tests` | 56 | Arbitrato per grandezza, failover e reversione |
+| `efis_esp32_tests` | 38 | Adapter del nodo sensori ESP32 |
 | `efis_ingest_tests` | 36 | Che le protezioni siano raggiunte dai byte, e la registrazione verso la black box |
 | `efis_bench_tests` | 33 | Il banco prova alimentato dalla registrazione reale |
+| `efis_can_source_tests` | 27 | Trasporto CAN, formato candump, sorgente che non si apre |
+| `efis_engine_tests` | 18 | Nodo motore |
 
-Comprendono frame di riferimento prodotti da pymavlink, la registrazione reale di
-ArduPlane 4.7.0 e prove di mutazione sulle proprietà di sicurezza.
+---
+
+## 8bis. P4 — EMS reale, in corso
+
+### 8bis.1 Il protocollo non è stato inventato
+
+Nel progetto non esisteva alcuna specifica del nodo sensori: l'handoff dichiara
+al paragrafo 6 che manca la definizione delle sorgenti reali. È stata **ricavata
+dal firmware vero**, `EFIS_Freenove_v4_8_.ino` versione 4.0.0, che rimanda a un
+`PROTOCOLLO_CAN.md` non presente in nessun repository. Il codice che trasmette
+era quindi l'unica descrizione autorevole, ed è stato letto invece che
+immaginato. Il risultato è in `docs/protocols/ESP32_CAN_V1.md`, che dichiara la
+propria provenienza: una specifica ricavata da un sorgente altrui non ha lo
+stesso valore di una concordata, e sul bus non viaggia alcun numero di versione.
+
+Il nodo non è un modulo motore, come l'elenco del paragrafo 6 lascerebbe
+intendere: è **assetto, dati aria e posizione**. Sensori diversi da quelli del
+Pixhawk, alimentazione diversa, bus diverso, firmware diverso. È la seconda
+catena indipendente che dà qualcosa da confrontare al controllo incrociato.
+
+### 8bis.2 Stato delle voci
+
+| # | Voce | Stato | Nota |
+|---|---|---|---|
+| 1 | Adapter ESP32-S3 su CAN | fatto | Con le scale, la gerarchia di calibrazione e le tre trappole del protocollo documentate |
+| 2 | Trasporto SocketCAN | fatto | Provato sul bus vero, non solo su registrazioni |
+| 3 | Innesto nella catena di ingestione | **da fare** | `Esp32CanAdapter` ha zero riferimenti in `src/ingest/`: la seconda catena esiste e non arbitra contro il Pixhawk |
+| 4 | Mappa dei canali reale | da fare | |
+| 5 | Calibrazione dei sensori | da fare | |
+| 6 | Limiti verificati da manuale motore | da fare | Primo punto che richiede una fonte esterna al codice |
+
+### 8bis.3 Che cosa ha trovato il bus vero
+
+Il trasporto era verificato su registrazioni. Provarlo su `vcan0` del nodo black
+box, iniettando i frame con `cansend`, ha trovato **tre difetti che nessuna
+registrazione avrebbe potuto mostrare**:
+
+- la pressione differenziale era dichiarata senza unità, e il monitor la mostrava
+  con un punto interrogativo al posto dei Pascal. È esattamente ciò che il campo
+  `unit` esiste per impedire;
+- con il nodo dichiarato perduto, assetto e quota diventavano non disponibili
+  mentre **la pressione differenziale restava valida**: l'invalidazione al
+  silenzio copriva i soli campioni dello snapshot di volo e lasciava fuori le
+  grandezze che il banco prova mostra per prime;
+- il monitor deduceva "mai ricevuto" dall'identificativo di segnale, e mostrava
+  come mai arrivata una pressione statica appena letta.
+
+Valori letti dal bus attraverso il nucleo, dopo le correzioni:
+
+```
+rollio                     4.12 deg   VALIDO
+beccheggio                -1.32 deg   VALIDO
+prua                      90.00 deg   VALIDO
+velocita indicata         87.40 kt    VALIDO
+quota                   3200.00 ft    VALIDO
+pressione statica       1013.20 hPa   VALIDO
+pressione differenziale   47.50 Pa    VALIDO
+bus: 52 frame, 0 errori, 0 remoti, 0 persi dal kernel
+adapter: 12 applicati, 40 ignorati, 0 troncati
+```
+
+I 1013,20 hPa dimostrano che l'offset di 1000 viene rimosso davvero. I 40 frame
+ignorati sono traffico di altri identificativi già presente su quel bus, prodotto
+da `bbxlog.service`: dimostrano che l'adapter prende i propri frame e lascia
+stare il resto, cosa che un bus vuoto non avrebbe potuto mostrare.
+
+### 8bis.4 Il limite, dichiarato
+
+**Il nodo ESP32 fisico non è ancora collegato.** `vcan0` dimostra socket, filtro
+e conversione; le prove sull'adapter dimostrano la conformità alla specifica
+ricavata dal firmware. Nessuna delle due dimostra che il modulo dica ciò che il
+firmware sembra dire. Quando sarà collegato servirà una registrazione vera, come
+è stato per il Pixhawk.
 
 ---
 
@@ -419,33 +497,34 @@ ArduPlane 4.7.0 e prove di mutazione sulle proprietà di sicurezza.
 
 ## 10. Punto esatto di ripartenza
 
-P1 è chiuso. I tre collegamenti che mancavano sono stati fatti e verificati: le
-protezioni sul percorso dei dati, la registrazione dall'adapter verso la black
-box, il banco prova alimentato da dati reali e catturato dal display vero.
+P1 è chiuso. P4 ha i due mattoni che gli servivano, l'adapter e il trasporto, e
+si ferma davanti allo stesso genere di lavoro che aveva chiuso P1: il
+collegamento.
 
-Il lavoro che segue apre **P4**, e il primo passo non richiede ancora di toccare
-il Pixhawk:
+1. **Innestare il nodo ESP32 nella catena di ingestione.** `MavlinkPipeline`
+   compone una sola sorgente; qui ne servono due, ed è il caso per cui
+   l'arbitrato è stato fatto per grandezza. Quando le due catene saranno unite,
+   il confronto incrociato avrà finalmente due opinioni indipendenti da
+   confrontare invece di una sola contraddetta dalla velocità al suolo.
+2. Mappa dei canali reale e calibrazione.
+3. Limiti letti dal manuale motore. È il primo punto che richiede una fonte
+   esterna al codice, e non va stimato.
 
-1. Adapter ESP32-S3, seriale o CAN. La catena è già predisposta a riceverlo:
-   `SnapshotContribution` porta l'identità della sorgente e l'arbitrato è per
-   grandezza, quindi una seconda sorgente si innesta senza riscrivere nulla.
-2. Adapter SocketCAN sul Raspberry. Le interfacce `can_a`, `can_b` e `vcan0`
-   esistono già sul nodo black box, e `vcan0` permette di provarlo senza
-   hardware.
-3. Mappa dei canali reale e limiti verificati sul manuale motore.
-
-Poi P2, la chiusura del PFD, che a differenza di P4 richiede catture dal display
-a ogni passo.
+Poi P2, la chiusura del PFD, che a differenza di P4 richiede una cattura dal
+display a ogni passo.
 
 ### Aperto e non bloccante
 
-- **Audit in sola lettura** di server, black box e ground station (sezione 7).
-  Solo il PFD è stato verificato a fondo.
+- **Audit in sola lettura** di server e ground station. Il PFD e il nodo black
+  box sono stati usati e verificati; gli altri due no.
 - **Serializzazione wire** del Display Data Protocol V2. `ADR-003` ha fissato i
   confini, non il formato sul filo.
 - **Prestazioni del Setup Center**: con il pannello del banco aperto sopra il
   resto, il log riportava 9,4 fps. Non è il regime del PFD e non è stato
   indagato.
+- **Il nodo EMS sul RPi4** è stato messo in servizio come unità di sistema su
+  eglfs. Va tenuto presente che eglfs prende il DRM master in esclusiva, quindi
+  non può condividere il pannello con l'impianto precedente.
 
 ### Da non perdere di vista
 
@@ -453,11 +532,10 @@ Il `get_throttled` a `0x0` non chiude il punto dell'alimentazione: il registro s
 azzera a ogni riavvio e la prova termica prolungata del paragrafo 8.4 non è stata
 eseguita.
 
-`ARSPD_USE` resta `0` e nessun parametro del Pixhawk è stato letto o scritto in
-nessun momento della giornata. La scala del paragrafo 25 non è stata risalita di
-un gradino: tutto quanto fatto resta osservazione in sola lettura, ed è la
-ragione per cui il banco prova dichiara in verde di non alimentare il controllo
-di volo.
+`ARSPD_USE` resta `0` e nessun parametro del Pixhawk è stato letto o scritto. Il
+nodo sensori ESP32 non è collegato. Nulla di quanto costruito è mai stato messo
+in condizione di comandare qualcosa: la scala del paragrafo 25 resta al primo
+gradino, osservazione in sola lettura.
 
 ---
 
