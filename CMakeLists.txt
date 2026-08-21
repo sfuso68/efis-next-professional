@@ -120,6 +120,28 @@ if(EFIS_BUILD_QT_RENDERER)
         )
         target_link_libraries(efis-pfd-qt PRIVATE
             efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Quick3D Qt6::QuickControls2 Qt6::Concurrent Qt6::Network)
+        # Pagina analogica come applicazione a se'. Gli strumenti entreranno nel
+        # selettore con la fase 3, quando esistera' la configurazione che li
+        # dispone; fino ad allora serve poterli vedere sul display vero, che e'
+        # l'unica prova valida per una modifica di interfaccia.
+        qt_add_executable(efis-instruments-qt
+            src/apps/instruments_qt_main.cpp
+            src/renderers/qt/instrument_item.cpp
+            src/renderers/qt/instrument_item.hpp
+            src/renderers/qt/instrument_source.cpp
+            src/renderers/qt/instrument_source.hpp
+        )
+        qt_add_qml_module(efis-instruments-qt
+            URI EfisInstruments
+            VERSION 1.0
+            QML_FILES
+                qml/InstrumentsMain.qml
+                qml/AnalogSixPack.qml
+        )
+        target_include_directories(efis-instruments-qt PRIVATE src/renderers/qt)
+        target_link_libraries(efis-instruments-qt PRIVATE
+            efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick)
+
     else()
         # Un fallimento silenzioso qui e' inaccettabile: senza questo target non
         # esiste alcuna interfaccia di volo, e una configurazione riuscita darebbe
