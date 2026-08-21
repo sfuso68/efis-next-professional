@@ -1,6 +1,9 @@
 #include "efis/core/flight_model.hpp"
 #include "efis/core/source_arbitrator.hpp"
 #include "efis/core/node_health.hpp"
+#include "efis/providers/mavlink_parser.hpp"
+#include "efis/providers/mavlink_parser.hpp"
+#include "mavlink_reference_frames.hpp"
 #include "efis/providers/simulation_provider.hpp"
 #include "efis/providers/engine_simulation_provider.hpp"
 #include "efis/recording/snapshot_recorder.hpp"
@@ -17,6 +20,11 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <cstdint>
+#include <iterator>
+#include <span>
+#include <map>
+#include <vector>
 #include <string>
 
 namespace {
@@ -387,6 +395,391 @@ int main() {
             "an undeclared node must become visible, not be ignored");
     require(std::string{efis::node_state_name(efis::NodeState::lost)} == "LOST",
             "node state names must stay stable for recorded data");
+
+    // --- Parser MAVLink, verificato su frame di riferimento ------------------
+    //
+    // I byte provengono da pymavlink, l'implementazione di riferimento, e non da
+    // questo progetto: se il parser li interpreta correttamente lo fa perche'
+    // rispetta il protocollo, non perche' condivide un malinteso con i test.
+    // Vedi tools/mavlink/generate_test_vectors.py.
+    namespace reference = efis::mavlink::reference;
+
+    auto drain = [](efis::mavlink::Parser& parser, const std::uint8_t* bytes,
+                    std::size_t count) {
+        parser.push(std::span<const std::uint8_t>(bytes, count));
+        std::vector<efis::mavlink::Frame> frames;
+        while (auto frame = parser.next()) frames.push_back(*frame);
+        return frames;
+    };
+    auto single = [&drain](const std::uint8_t* bytes, std::size_t count) {
+        efis::mavlink::Parser parser;
+        const auto frames = drain(parser, bytes, count);
+        require(frames.size() == 1, "a reference stream must yield exactly one frame");
+        return frames.front();
+    };
+    auto value = [](const efis::mavlink::Frame& frame, std::string_view name,
+                    std::size_t index = 0) {
+        const auto* definition = efis::mavlink::find_message(frame.message_id);
+        require(definition != nullptr, "a decoded frame must be in the message table");
+        return efis::mavlink::read_field(*definition, frame, name, index);
+    };
+    auto close_to = [](double got, double expected) {
+        return std::abs(got - expected) < 1e-4;
+    };
+
+    const auto attitude = single(reference::attitude, std::size(reference::attitude));
+    require(attitude.message_id == 30, "ATTITUDE must be identified by its id");
+    require(attitude.version2, "the reference frame is MAVLink 2");
+    require(close_to(value(attitude, "roll").value, -0.5235988),
+            "a negative float field must survive decoding");
+    require(close_to(value(attitude, "pitch").value, 0.1745329),
+            "field offsets must follow the wire order, not the declaration order");
+    require(close_to(value(attitude, "yaw").value, 1.5707963),
+            "the last field of the payload must decode correctly");
+    require(value(attitude, "time_boot_ms").value == 123456.0,
+            "an unsigned field must decode exactly");
+    require(value(attitude, "nonexistent_field").status ==
+                efis::mavlink::FieldStatus::unknown_field,
+            "a field the message does not define must be reported as unknown");
+
+    // Percorso del sensore aria. VFR_HUD porta la velocita' gia' calcolata.
+    const auto hud = single(reference::vfr_hud, std::size(reference::vfr_hud));
+    require(close_to(value(hud, "airspeed").value, 32.5),
+            "indicated airspeed must decode");
+    require(close_to(value(hud, "climb").value, -2.5),
+            "a negative vertical speed must decode");
+    require(value(hud, "heading").value == 42.0,
+            "a small integer packed among floats must keep its offset");
+
+    // SCALED_PRESSURE porta la pressione differenziale grezza e la temperatura.
+    const auto pressure = single(reference::scaled_pressure,
+                                 std::size(reference::scaled_pressure));
+    require(close_to(value(pressure, "press_abs").value, 1013.25),
+            "absolute pressure must decode");
+    require(close_to(value(pressure, "press_diff").value, 0.1718),
+            "the differential pressure of the air data sensor must decode");
+    require(value(pressure, "temperature").value == 2350.0,
+            "sensor temperature must decode as a signed integer");
+
+    // AIRSPEED e' il messaggio dedicato al sensore aria: pressione grezza,
+    // temperatura dell'elemento e flag di stato. E' il contenuto che permette di
+    // sfruttare il Matek ASPD-DLVR oltre alla sola velocita' calcolata, e la
+    // ragione per cui la tabella comprende anche messaggi che il dialetto
+    // stabile di pymavlink non definisce ancora.
+    const auto airspeed = single(reference::airspeed, std::size(reference::airspeed));
+    require(airspeed.message_id == 295, "AIRSPEED must be identified by its id");
+    require(close_to(value(airspeed, "airspeed").value, 8.33),
+            "the computed airspeed must decode");
+    require(close_to(value(airspeed, "raw_press").value, 17.18),
+            "the raw differential pressure must decode: it is the actual measurement");
+    require(value(airspeed, "temperature").value == 2415.0,
+            "the sensing element temperature must decode");
+    require(value(airspeed, "id").value == 0.0,
+            "the sensor instance must decode, so several sensors stay distinct");
+    require(value(airspeed, "flags").ok(),
+            "the sensor status flags must be readable");
+
+    // Maschere a 32 bit: perdere un bit significa perdere lo stato di un sensore.
+    const auto status = single(reference::sys_status, std::size(reference::sys_status));
+    require(value(status, "onboard_control_sensors_present").value ==
+                static_cast<double>(0x1400002FU),
+            "the sensor presence mask must decode bit for bit");
+    require(value(status, "onboard_control_sensors_health").value ==
+                static_cast<double>(0x1400000FU),
+            "the sensor health mask must decode bit for bit");
+
+    // Tempo a 64 bit. Resta esatto perche' sotto i 2^53 rappresentabili.
+    const auto system_time = single(reference::system_time,
+                                    std::size(reference::system_time));
+    require(value(system_time, "time_unix_usec").value == 1755739800000000.0,
+            "a 64 bit timestamp must decode without loss");
+
+    // Zeri finali rimossi. Il satellitare senza fix trasmette zero satelliti e
+    // MAVLink 2 elimina quel byte: il campo sta nella parte base del messaggio,
+    // quindi vale davvero zero e va letto come tale.
+    const auto no_fix = single(reference::gps_no_fix, std::size(reference::gps_no_fix));
+    const auto* gps_definition = efis::mavlink::find_message(24);
+    require(no_fix.payload_length < gps_definition->length,
+            "the reference frame must actually exercise trailing zero removal");
+    require(value(no_fix, "fix_type").value == 1.0, "the fix type must decode");
+    require(value(no_fix, "satellites_visible").ok(),
+            "a trimmed base field is present, not missing");
+    require(value(no_fix, "satellites_visible").value == 0.0,
+            "a trimmed base field is genuinely zero and must read as zero");
+
+    // Campi di estensione mai trasmessi. Qui la differenza conta: `yaw` sta
+    // oltre la parte base, quindi la sua assenza significa che il trasmettitore
+    // non lo conosce. Restituirlo come zero direbbe che l'orientamento e' nord,
+    // che e' un dato inventato.
+    const auto fix = single(reference::gps_fix_3d, std::size(reference::gps_fix_3d));
+    require(value(fix, "fix_type").value == 3.0, "a three dimensional fix must decode");
+    require(value(fix, "satellites_visible").value == 14.0,
+            "the satellite count must decode");
+    require(value(fix, "lat").value == 456484000.0,
+            "latitude must decode as a signed integer");
+    require(fix.payload_length <= gps_definition->base_length,
+            "the reference sender must not transmit the extension fields");
+    require(value(fix, "yaw").status == efis::mavlink::FieldStatus::not_transmitted,
+            "an extension field never transmitted must be absent, not zero");
+    require(value(fix, "h_acc").status == efis::mavlink::FieldStatus::not_transmitted,
+            "accuracy extensions must not be invented when absent");
+
+    // Testo in un campo di caratteri, non necessariamente terminato.
+    const auto text_frame = single(reference::statustext,
+                                   std::size(reference::statustext));
+    require(efis::mavlink::read_text(*efis::mavlink::find_message(253), text_frame,
+                                     "text") == "PreArm: GPS bad fix",
+            "a character field must decode as text");
+
+    // MAVLink 1: intestazione diversa, stesso contenuto.
+    efis::mavlink::Parser legacy_parser;
+    const auto legacy = drain(legacy_parser, reference::attitude_v1,
+                              std::size(reference::attitude_v1)).front();
+    require(!legacy.version2, "a MAVLink 1 frame must be recognised as such");
+    require(close_to(value(legacy, "roll").value, -0.5235988),
+            "MAVLink 1 must decode to the same values as MAVLink 2");
+    require(legacy_parser.statistics().frames_v1 == 1,
+            "MAVLink 1 frames must be counted separately");
+
+    // Frame firmato: i tredici byte di firma vanno consumati, altrimenti
+    // verrebbero letti come inizio del messaggio successivo. Il frame che segue
+    // dimostra che non e' accaduto.
+    efis::mavlink::Parser signed_parser;
+    const auto signed_frames = drain(signed_parser, reference::heartbeat_signed,
+                                     std::size(reference::heartbeat_signed));
+    require(signed_frames.size() == 1, "the signed frame must be accepted");
+    require(signed_frames.front().signed_frame,
+            "a signed frame must be reported as signed, not silently trusted");
+    const auto after_signature = drain(signed_parser, reference::attitude,
+                                       std::size(reference::attitude));
+    require(after_signature.size() == 1,
+            "the signature must be consumed so the next frame still parses");
+
+    // Payload interamente azzerato. MAVLink 2 ne conserva comunque un byte, mai
+    // meno, quindi il primo campo arriva tagliato a meta'.
+    const auto ref_trimmed = single(reference::power_status_trimmed,
+                                std::size(reference::power_status_trimmed));
+    require(ref_trimmed.payload_length == 1,
+            "an all zero payload is trimmed to the single byte the protocol keeps");
+    require(value(ref_trimmed, "Vcc").value == 0.0,
+            "a base field received only in part must be completed with zeros");
+
+    // Un frame consegnato un byte alla volta deve dare lo stesso risultato di uno
+    // consegnato tutto insieme: leggendo da una seriale i confini non si
+    // scelgono.
+    efis::mavlink::Parser dribbled_parser;
+    std::vector<efis::mavlink::Frame> dribbled;
+    for (const std::uint8_t byte : reference::attitude) {
+        const auto batch = drain(dribbled_parser, &byte, 1);
+        dribbled.insert(dribbled.end(), batch.begin(), batch.end());
+    }
+    require(dribbled.size() == 1,
+            "a frame split across reads must still be assembled");
+    require(close_to(value(dribbled.front(), "roll").value, -0.5235988),
+            "a frame split across reads must decode identically");
+
+    // Robustezza del flusso. Rumore prima di un frame valido: va scartato e
+    // contato, e il frame va comunque trovato.
+    efis::mavlink::Parser ref_noisy_parser;
+    const std::uint8_t ref_noise[] = {0x00, 0xFF, 0x12, 0xAB};
+    drain(ref_noisy_parser, ref_noise, std::size(ref_noise));
+    const auto recovered = drain(ref_noisy_parser, reference::attitude,
+                                 std::size(reference::attitude));
+    require(recovered.size() == 1,
+            "the parser must resynchronise after noise on the line");
+    require(ref_noisy_parser.statistics().dropped_bytes == std::size(ref_noise),
+            "discarded bytes must be counted, not silently ignored");
+
+    // Falso avvio: un byte di inizio frame comparso per caso nel rumore. Il
+    // parser legge come lunghezza il byte che segue e attende un messaggio che
+    // non arrivera' mai; solo quando ha abbastanza dati puo' verificare il
+    // checksum, scoprire che non torna e ripartire dal byte successivo.
+    //
+    // L'episodio costa quindi i dati che stavano dentro quella lunghezza
+    // fittizia, non un singolo byte. E' il comportamento di MAVLink e non c'e'
+    // modo di fare meglio senza fidarsi di un campo non verificato. Cio' che
+    // deve essere garantito, ed e' quello che si verifica qui, e' che la
+    // sincronia venga riacquistata da sola.
+    efis::mavlink::Parser false_start_parser;
+    const std::uint8_t false_start[] = {0xFD};
+    drain(false_start_parser, false_start, std::size(false_start));
+    std::vector<efis::mavlink::Frame> after_false_start;
+    for (int repeat = 0; repeat < 10; ++repeat) {
+        const auto batch = drain(false_start_parser, reference::attitude,
+                                 std::size(reference::attitude));
+        after_false_start.insert(after_false_start.end(), batch.begin(), batch.end());
+    }
+    require(!after_false_start.empty(),
+            "after a false frame start the parser must regain synchronisation");
+    require(close_to(value(after_false_start.front(), "roll").value, -0.5235988),
+            "the frames recovered after a false start must decode correctly");
+
+    // Frame corrotto: un solo byte del payload alterato deve far fallire il
+    // controllo, non produrre un valore leggermente sbagliato.
+    efis::mavlink::Parser ref_corrupt_parser;
+    std::vector<std::uint8_t> ref_corrupted(std::begin(reference::attitude),
+                                        std::end(reference::attitude));
+    ref_corrupted[12] = static_cast<std::uint8_t>(ref_corrupted[12] ^ 0x40);
+    const auto ref_corrupt_frames = drain(ref_corrupt_parser, ref_corrupted.data(), ref_corrupted.size());
+    require(ref_corrupt_frames.empty(),
+            "a corrupted frame must be rejected, never delivered");
+    require(ref_corrupt_parser.statistics().crc_errors >= 1,
+            "the checksum failure must be recorded");
+
+    // Messaggio non presente in tabella: senza il suo CRC_EXTRA il checksum non
+    // e' calcolabile, quindi il frame non e' verificabile e non viene consegnato.
+    efis::mavlink::Parser ref_unknown_parser;
+    std::vector<std::uint8_t> unknown(std::begin(reference::attitude),
+                                      std::end(reference::attitude));
+    unknown[7] = 0xFE;
+    const auto ref_unknown_frames = drain(ref_unknown_parser, unknown.data(), unknown.size());
+    require(ref_unknown_frames.empty(), "an unverifiable message must not be delivered");
+    require(ref_unknown_parser.statistics().unknown_messages >= 1,
+            "unknown messages must be counted");
+
+    // La tabella generata deve conservare i valori del protocollo.
+    require(efis::mavlink::find_message(30)->crc_extra == 39,
+            "ATTITUDE keeps its protocol defined CRC_EXTRA");
+    require(efis::mavlink::find_message(295)->crc_extra == 234,
+            "AIRSPEED keeps the CRC_EXTRA the reference implementation computes");
+    require(gps_definition->base_length == 30,
+            "GPS_RAW_INT base length must exclude the extension fields");
+    require(gps_definition->length == 52,
+            "GPS_RAW_INT full length must include the extension fields");
+    require(efis::mavlink::find_message(999999) == nullptr,
+            "an unknown message id must not resolve to a definition");
+
+    // --- Il parser contro l'hardware vero ------------------------------------
+    //
+    // Le prove precedenti usano frame prodotti da pymavlink: dimostrano che il
+    // parser rispetta il protocollo. Questa usa 68 kB registrati in ascolto
+    // passivo dal Pixhawk 6X il 21 agosto 2026, senza trasmettere un solo byte
+    // verso il controllore. Dimostra una cosa diversa e non deducibile dalla
+    // prima: che il parser regge cio' che ArduPlane 4.7.0 emette davvero, con il
+    // suo rumore, i suoi troncamenti e i suoi messaggi.
+    auto definition_of = [](const efis::mavlink::Frame& frame) {
+        const auto* found = efis::mavlink::find_message(frame.message_id);
+        require(found != nullptr, "a delivered frame must be in the message table");
+        return found;
+    };
+
+    const std::filesystem::path capture_path =
+        std::filesystem::path{EFIS_TEST_DATA_DIR} / "mavlink" /
+        "arduplane-4.7.0-usb-20260821.mav";
+    require(std::filesystem::exists(capture_path),
+            "the reference capture must be available to the tests");
+
+    std::ifstream capture_file{capture_path, std::ios::binary};
+    const std::vector<char> capture{std::istreambuf_iterator<char>{capture_file},
+                                    std::istreambuf_iterator<char>{}};
+    require(capture.size() == 68443, "the reference capture must be intact");
+
+    efis::mavlink::Parser recorded;
+    std::map<std::uint32_t, std::uint64_t> seen;
+    std::map<std::uint32_t, efis::mavlink::Frame> first_of;
+    for (char raw : capture) {
+        const auto byte = static_cast<std::uint8_t>(raw);
+        recorded.push(std::span<const std::uint8_t>(&byte, 1));
+        while (const auto frame = recorded.next()) {
+            ++seen[frame->message_id];
+            first_of.try_emplace(frame->message_id, *frame);
+        }
+    }
+
+    // Il conto torna esattamente. La registrazione contiene 2159 frame: il
+    // parser ne consegna 2157 e ne rifiuta 2, PARAM_VALUE e TIMESYNC, che non
+    // sono in tabella e il cui checksum non e' quindi calcolabile. Non ne perde
+    // nessun altro e non ne inventa nessuno.
+    require(recorded.statistics().frames == 2157,
+            "the parser must recover every verifiable frame of the capture");
+    require(recorded.statistics().unknown_messages == 2,
+            "the two messages outside the table must be refused, not guessed");
+    require(recorded.statistics().crc_errors == 0,
+            "a clean USB link must not produce a single checksum failure");
+    require(seen.size() == 27, "every message type of the capture must be decoded");
+    require(seen[0] == 9, "HEARTBEAT count must match the reference decode");
+    require(seen[30] == 85, "ATTITUDE count must match the reference decode");
+    require(seen[24] == 86, "GPS_RAW_INT count must match the reference decode");
+
+    // Assetto, confrontato con la decodifica di pymavlink sugli stessi byte.
+    const auto& attitude_real = first_of.at(30);
+    require(close_to(*efis::mavlink::read_number(*definition_of(attitude_real), attitude_real, "roll"), -0.167344913),
+            "ATTITUDE roll must match the reference decode of the same bytes");
+    require(close_to(*efis::mavlink::read_number(*definition_of(attitude_real), attitude_real, "pitch"), 0.182977259),
+            "ATTITUDE pitch must match the reference decode of the same bytes");
+
+    // --- Il sensore aria ------------------------------------------------------
+    //
+    // AIRSPEED (295) e' il messaggio dedicato al sensore. La versione di
+    // pymavlink usata come riferimento non lo conosce e lo scarta come dato
+    // illeggibile: la sua definizione e' scritta nel progetto. Che tutti i frame
+    // superino il checksum lo dimostra esatto, perche' una sola parola sbagliata
+    // fra nomi e tipi produrrebbe un CRC_EXTRA diverso e li farebbe rifiutare
+    // tutti quanti.
+    require(efis::mavlink::find_message(295) != nullptr,
+            "AIRSPEED must be present in the message table");
+    require(efis::mavlink::find_message(295)->crc_extra == 234,
+            "the AIRSPEED CRC_EXTRA must be the one the real frames validate with");
+    require(seen[295] == 85, "every AIRSPEED frame in the capture must be accepted");
+
+    const auto& airspeed_real = first_of.at(295);
+    require(airspeed_real.payload_length == 10,
+            "the real AIRSPEED frames arrive with their trailing zeros removed");
+    require(close_to(*efis::mavlink::read_number(*definition_of(airspeed_real), airspeed_real, "airspeed"), 0.430416673),
+            "the airspeed computed by the autopilot must decode");
+    require(close_to(*efis::mavlink::read_number(*definition_of(airspeed_real), airspeed_real, "raw_press"), 0.0949074),
+            "the raw differential pressure must decode: it is what the sensor measures");
+    require(*efis::mavlink::read_integer(*definition_of(airspeed_real), airspeed_real, "temperature") == 3385,
+            "the temperature of the sensing element must decode");
+    require(*efis::mavlink::read_integer(*definition_of(airspeed_real), airspeed_real, "flags") == 0,
+            "flags were removed as a trailing zero and really are zero");
+
+    // Lo stesso sensore compare in SCALED_PRESSURE, dove la temperatura
+    // dell'elemento differenziale e' un campo di estensione realmente
+    // trasmesso: deve risultare presente, e deve concordare con AIRSPEED.
+    const auto& pressure_real = first_of.at(29);
+    const auto element_temperature =
+        efis::mavlink::read_integer(*definition_of(pressure_real), pressure_real, "temperature_press_diff");
+    require(element_temperature.has_value(),
+            "a transmitted extension must be read, not treated as absent");
+    require(*element_temperature == 3385,
+            "the two messages must agree on the temperature of the same element");
+
+    // Il sensore e' presente e misura, ma il controllo di volo lo dichiara non
+    // sano, coerentemente con ARSPD_USE a zero. Il dato grezzo va registrato, la
+    // velocita' che ne deriva non va presentata come valida: e' il caso reale su
+    // cui il paragrafo 19 dell'handoff non ammette scorciatoie.
+    constexpr std::uint64_t differential_pressure_bit = 0x20;
+    const auto& sys_status_real = first_of.at(1);
+    const auto present_mask =
+        *efis::mavlink::read_unsigned(*definition_of(sys_status_real), sys_status_real, "onboard_control_sensors_present");
+    const auto health_mask =
+        *efis::mavlink::read_unsigned(*definition_of(sys_status_real), sys_status_real, "onboard_control_sensors_health");
+    require((present_mask & differential_pressure_bit) != 0,
+            "the differential pressure sensor must be reported as present");
+    require((health_mask & differential_pressure_bit) == 0,
+            "the recorded state has the differential pressure sensor unhealthy");
+
+    // Stato reale del satellitare al momento della registrazione: comunicante,
+    // senza fix. Il paragrafo 13 impone di trattare come invalide le coordinate
+    // ricevute in questa condizione.
+    const auto& gps_real = first_of.at(24);
+    require(*efis::mavlink::read_integer(*definition_of(gps_real), gps_real, "fix_type") == 1,
+            "the recorded GNSS state must still be no fix");
+    require(*efis::mavlink::read_integer(*definition_of(gps_real), gps_real, "satellites_visible") == 0,
+            "the recorded GNSS state must still report zero satellites");
+    require(*efis::mavlink::read_integer(*definition_of(gps_real), gps_real, "lat") == 0,
+            "without a fix the reported position is not a position");
+
+    // Il tempo UTC non e' ancora affidabile: senza fix il controllore non ha una
+    // sorgente di tempo, e lo dichiara con uno zero. Va propagato come assenza,
+    // non come istante zero.
+    require(*efis::mavlink::read_unsigned(*definition_of(first_of.at(2)), first_of.at(2), "time_unix_usec") == 0,
+            "without a GNSS fix the autopilot declares UTC as unavailable");
+
+    require(efis::mavlink::read_text(*definition_of(first_of.at(253)), first_of.at(253), "text") ==
+                "PreArm: Hardware safety switch",
+            "the recorded pre-arm warning must decode as text");
 
     std::cout << "All EFIS core tests passed\n";
 }

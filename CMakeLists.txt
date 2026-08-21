@@ -19,6 +19,7 @@ add_library(efis_core
     src/display/display_model.cpp
     src/providers/simulation_provider.cpp
     src/providers/engine_simulation_provider.cpp
+    src/providers/mavlink_parser.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
@@ -136,6 +137,13 @@ endif()
 if(EFIS_BUILD_TESTS)
     enable_testing()
     add_executable(efis_core_tests tests/core_tests.cpp)
+    target_include_directories(efis_core_tests PRIVATE tests)
     target_link_libraries(efis_core_tests PRIVATE efis_core efis_reference_renderer)
+    # Le registrazioni di riferimento restano file binari sul disco invece di
+    # essere trasformate in array C++: cosi' si possono riascoltare con gli
+    # strumenti MAVLink e confrontare con l'hardware, che e' il motivo per cui
+    # sono state acquisite.
+    target_compile_definitions(efis_core_tests PRIVATE
+        EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_core_tests COMMAND efis_core_tests)
 endif()

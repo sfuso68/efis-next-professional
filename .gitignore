@@ -31,6 +31,11 @@ secrets/
 *.pfx
 *.hash
 
+# Le registrazioni di riferimento per i test sono un'eccezione deliberata alle
+# esclusioni che seguono: sono piccole, immutabili e servono a dimostrare che il
+# parser regge i byte veri dell'hardware, non solo quelli che abbiamo costruito.
+!/tests/data/**
+
 # Log applicativi, di volo e telemetria (vanno nella black box, non in git)
 *.log
 *.tlog
