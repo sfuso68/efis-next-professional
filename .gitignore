@@ -3,8 +3,14 @@
 # Riferimento: CLAUDE_CODE_HANDOFF_2026-08-21.md §19 (sicurezza) e §22 (vincoli)
 # ---------------------------------------------------------------------------
 
-# Artefatti di build
-/build/
+# Artefatti di build.
+#
+# Il modello vale per qualunque nome: sullo stesso repository lavorano piu'
+# alberi in parallelo, e ciascuno si crea la propria directory (build-qt,
+# build-core, build/win-claude). Con la sola regola /build/ le altre restavano
+# tracciabili, e in un progetto dove un `git add -A` ha gia' inglobato file non
+# voluti questo e' un rischio concreto, non teorico.
+/build*/
 /.cache/
 compile_commands.json
 
@@ -31,11 +37,6 @@ secrets/
 *.pfx
 *.hash
 
-# Le registrazioni di riferimento per i test sono un'eccezione deliberata alle
-# esclusioni che seguono: sono piccole, immutabili e servono a dimostrare che il
-# parser regge i byte veri dell'hardware, non solo quelli che abbiamo costruito.
-!/tests/data/**
-
 # Log applicativi, di volo e telemetria (vanno nella black box, non in git)
 *.log
 *.tlog
@@ -55,3 +56,11 @@ secrets/
 # Sistema
 Thumbs.db
 .DS_Store
+
+# Le registrazioni di riferimento per i test sono un'eccezione deliberata alle
+# esclusioni qui sopra: sono piccole, immutabili, e servono a dimostrare che il
+# codice regge i dati veri dell'hardware e non solo quelli che abbiamo costruito.
+#
+# Deve stare in fondo: git applica i pattern in ordine e vince l'ultimo che
+# corrisponde. Piu' in alto, `*.log` e `*.bin` la annullerebbero.
+!/tests/data/**

@@ -67,6 +67,6 @@ Item {
         }
     }
 
-    ProfessionalSystemsDeck { id: deck; anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+    ProfessionalSystemsDeck { id: deck; engineDataState: controller.engineDataState; anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
         height: 140*root.uiScale; uiScale: root.uiScale; controller: root.controller }
 }
