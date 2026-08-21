@@ -30,11 +30,11 @@ add_library(efis_core
     src/providers/mavlink_adapter.cpp
     src/providers/esp32_can_adapter.cpp
     src/io/can_source.cpp
+    src/providers/dronecan.cpp
     src/io/socketcan_source.cpp
     src/ingest/mavlink_pipeline.cpp
     src/ingest/recording_session.cpp
     src/io/byte_source.cpp
-    src/io/can_source.cpp
     src/bench/sensor_bench.cpp
 )
 target_include_directories(efis_core PUBLIC include)
@@ -181,6 +181,14 @@ if(EFIS_BUILD_TESTS)
     # Le protezioni contro il dato plausibile ma falso hanno un eseguibile
     # proprio: verificano una categoria diversa dal calcolo, e tenerle separate
     # fa vedere subito quale delle due e' caduta.
+    # DroneCAN ha un eseguibile proprio: verifica un protocollo e il suo
+    # riassemblaggio multi-frame, categoria diversa dal calcolo di una grandezza.
+    add_executable(efis_dronecan_tests tests/dronecan_tests.cpp)
+    target_link_libraries(efis_dronecan_tests PRIVATE efis_core)
+    target_compile_definitions(efis_dronecan_tests PRIVATE
+        EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
+    add_test(NAME efis_dronecan_tests COMMAND efis_dronecan_tests)
+
     add_executable(efis_safety_tests tests/safety_tests.cpp)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)
     add_test(NAME efis_safety_tests COMMAND efis_safety_tests)
@@ -197,6 +205,8 @@ if(EFIS_BUILD_TESTS)
 
     add_executable(efis_can_source_tests tests/can_source_tests.cpp)
     target_link_libraries(efis_can_source_tests PRIVATE efis_core)
+    target_compile_definitions(efis_can_source_tests PRIVATE
+        EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_can_source_tests COMMAND efis_can_source_tests)
 
     # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
