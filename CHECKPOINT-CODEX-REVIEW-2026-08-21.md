@@ -240,3 +240,27 @@ Fino a quella decisione, il punto sicuro da conservare è:
 - 10/10 test superati;
 - working tree pulito;
 - nessuna modifica hardware o a `main` effettuata durante questa revisione.
+
+## 10. Consolidamento EFIS NEXT Professional
+
+Dopo la decisione del proprietario di mantenere e completare EFIS NEXT
+Professional è stato creato il ramo locale:
+
+`work/codex-professional-integration`
+
+Operazioni concluse:
+
+- checkpoint di revisione versionato nel commit `5816b7d`;
+- ramo `work/claude-strumenti-p1` integrato senza modificare `main`;
+- conflitti risolti conservando l'implementazione analogica più recente;
+- preservato l'ordine degli identificativi `Unit` già adottato da `main`, per
+  non cambiare il significato dei valori serializzati nelle registrazioni;
+- eliminata una dichiarazione CMake duplicata di `efis_instrument_tests`
+  emersa soltanto durante la build integrata;
+- build completa Windows riuscita;
+- 10/10 test CTest superati sulla base integrata.
+
+Il ramo integrato è ora la base locale raccomandata per il prossimo lavoro. Non
+è stato eseguito alcun push e `main` resta invariato. Il prossimo gate rimane la
+scelta del repository remoto definitivo, seguita dall'integrazione multi-source
+MAVLink + ESP32.

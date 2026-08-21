@@ -247,14 +247,6 @@ if(EFIS_BUILD_TESTS)
     target_link_libraries(efis_esp32_tests PRIVATE efis_core)
     add_test(NAME efis_esp32_tests COMMAND efis_esp32_tests)
 
-    # La geometria degli strumenti analogici ha un eseguibile proprio: verifica
-    # come un valore viene mostrato, non quanto vale. Una lancetta assente e una
-    # ferma su zero contengono la stessa quantita' di inchiostro e due
-    # informazioni opposte, e questa e' la categoria che se ne accorge.
-    add_executable(efis_instrument_tests tests/instrument_tests.cpp)
-    target_link_libraries(efis_instrument_tests PRIVATE efis_core)
-    add_test(NAME efis_instrument_tests COMMAND efis_instrument_tests)
-
     add_executable(efis_can_source_tests tests/can_source_tests.cpp)
     target_link_libraries(efis_can_source_tests PRIVATE efis_core)
     target_compile_definitions(efis_can_source_tests PRIVATE
