@@ -15,6 +15,13 @@ Rectangle {
     required property real commandedPitch
     required property bool flightDirectorActive
     required property bool navigationValid
+    // Larghezza degli strumenti che coprono i bordi della superficie. La
+    // superficie si estende sotto i nastri, quindi senza questa misura le sue
+    // targhette finiscono sopra di essi: e' cosi' che la targhetta imagery
+    // copriva l'etichetta IAS e la sua unita'.
+    property real leftInstrumentInset: 0
+    property real rightInstrumentInset: 0
+
     property string imageryState: "NO PACKAGE"
     property bool imageryOfflineReady: false
     property int imageryTileCount: 0
@@ -39,14 +46,36 @@ Rectangle {
 
     Terrain3DSurface { anchors.fill: parent; roll: vision.roll; pitch: vision.pitch; heading: vision.heading; latitude: vision.latitude; longitude: vision.longitude; altitude: vision.altitude }
 
-    Rectangle {
+    // Targhette di stato della superficie, raccolte in una colonna sola.
+    //
+    // Stanno a destra dei nastri e sotto l'arco di prua: sono le uniche due
+    // fasce dove non coprono uno strumento. Prima erano collocate a coordinate
+    // fisse dal bordo, che e' il bordo della superficie e non quello dell'area
+    // libera, e finivano sopra il nastro velocita'.
+    Column {
         z: 30
-        anchors { left: parent.left; top: parent.top; leftMargin: 10*vision.uiScale; topMargin: 8*vision.uiScale }
-        width: 142*vision.uiScale; height: 28*vision.uiScale; radius: 3*vision.uiScale
-        color: "#A8050D14"; border.color: vision.imageryOfflineReady ? theme.green : theme.amber
-        Column { anchors.centerIn: parent; spacing: 0
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: vision.imageryOfflineReady ? "IMAGERY • OFFLINE READY" : "IMAGERY • "+vision.imageryState; color: vision.imageryOfflineReady ? theme.green : theme.amber; font.pixelSize: 7*vision.uiScale; font.bold: true }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: vision.imageryTileCount+" TILES"+(vision.imageryCoverageGaps>0 ? " • "+vision.imageryCoverageGaps+" GAPS" : ""); color: theme.secondary; font.pixelSize: 6*vision.uiScale }
+        spacing: 6*vision.uiScale
+        anchors {
+            left: parent.left
+            top: parent.top
+            leftMargin: vision.leftInstrumentInset + 8*vision.uiScale
+            topMargin: headingArc.height + 6*vision.uiScale
+        }
+
+        Rectangle {
+            width: 142*vision.uiScale; height: 28*vision.uiScale; radius: 3*vision.uiScale
+            color: "#A8050D14"; border.color: vision.imageryOfflineReady ? theme.green : theme.amber
+            Column { anchors.centerIn: parent; spacing: 0
+                Text { anchors.horizontalCenter: parent.horizontalCenter; text: vision.imageryOfflineReady ? "IMAGERY • OFFLINE READY" : "IMAGERY • "+vision.imageryState; color: vision.imageryOfflineReady ? theme.green : theme.amber; font.pixelSize: 7*vision.uiScale; font.bold: true }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; text: vision.imageryTileCount+" TILES"+(vision.imageryCoverageGaps>0 ? " • "+vision.imageryCoverageGaps+" GAPS" : ""); color: theme.secondary; font.pixelSize: 6*vision.uiScale }
+            }
+        }
+
+        Rectangle {
+            width: 151*vision.uiScale; height: 35*vision.uiScale; radius: 3*vision.uiScale
+            color: "#9A050D14"; border.color: theme.borderBright
+            Text { x: 7*vision.uiScale; y: 5*vision.uiScale; text: "QUICK 3D • REAL DEM • TAWS"; color: theme.cyan; font.pixelSize: 7*vision.uiScale; font.bold: true }
+            Text { x: 7*vision.uiScale; y: 19*vision.uiScale; text: "COP-DEM GLO-30 • N46E012 • GPU • NON-CERT"; color: theme.amber; font.pixelSize: 6*vision.uiScale; font.bold: true }
         }
     }
 
@@ -151,8 +180,4 @@ Rectangle {
         }
     }
 
-    Rectangle { anchors { left: parent.left; top: parent.top; leftMargin: 120*vision.uiScale; topMargin: 66*vision.uiScale } width: 151*vision.uiScale; height: 35*vision.uiScale; radius: 3*vision.uiScale; color: "#9A050D14"; border.color: theme.borderBright
-        Text { x: 7*vision.uiScale; y: 5*vision.uiScale; text: "QUICK 3D • REAL DEM • TAWS"; color: theme.cyan; font.pixelSize: 7*vision.uiScale; font.bold: true }
-        Text { x: 7*vision.uiScale; y: 19*vision.uiScale; text: "COP-DEM GLO-30 • N46E012 • GPU • NON-CERT"; color: theme.amber; font.pixelSize: 6*vision.uiScale; font.bold: true }
-    }
 }

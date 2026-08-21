@@ -1,0 +1,34 @@
+#!/bin/sh
+set -eu
+
+# Avvio del nodo EMS.
+#
+# A differenza di run-pfd.sh questo script non fissa il percorso del progetto:
+# lo ricava da dove si trova. Il nodo EMS nasce su una macchina che ospita gia'
+# l'EFIS vecchio, e su quella macchina l'utente e la cartella non sono quelli
+# del banco PFD. Un percorso scritto qui dentro obbligherebbe a modificare un
+# file versionato per installare, e la modifica locale sarebbe la prima cosa a
+# divergere dal repository.
+script_dir=$(cd "$(dirname "$0")" && pwd)
+project_dir=$(cd "$script_dir/../.." && pwd)
+build_dir="${EFIS_BUILD_DIR:-$project_dir/build/dev}"
+binary="$build_dir/efis-ems-qt"
+
+log_dir="$project_dir/logs"
+mkdir -p "$log_dir"
+
+if [ ! -x "$binary" ]; then
+    printf '%s event=launcher_abort reason=missing_binary path=%s\n' \
+        "$(date --iso-8601=seconds)" "$binary" >> "$log_dir/ems.log"
+    printf 'efis-ems-qt non trovato in %s\n' "$binary" >&2
+    exit 1
+fi
+
+export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-wayland}"
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+export EFIS_KIOSK=1
+export QSG_RENDER_LOOP="${QSG_RENDER_LOOP:-threaded}"
+
+printf '%s event=launcher_start node=ems binary=%s\n' \
+    "$(date --iso-8601=seconds)" "$binary" >> "$log_dir/ems.log"
+exec "$binary" >> "$log_dir/ems.log" 2>&1

@@ -27,6 +27,7 @@ add_library(efis_core
     src/providers/engine_simulation_provider.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
+    src/providers/esp32_can_adapter.cpp
     src/ingest/mavlink_pipeline.cpp
     src/ingest/recording_session.cpp
     src/io/byte_source.cpp
@@ -193,6 +194,10 @@ if(EFIS_BUILD_TESTS)
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_ingest_tests COMMAND efis_ingest_tests)
 
+    add_executable(efis_esp32_tests tests/esp32_tests.cpp)
+    target_link_libraries(efis_esp32_tests PRIVATE efis_core)
+    add_test(NAME efis_esp32_tests COMMAND efis_esp32_tests)
+
     # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
     # sorgente fornisce una grandezza, non quanto vale. Un guasto qui non sposta
     # un numero, cambia chi lo dice.
@@ -201,4 +206,61 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_arbitration_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_arbitration_tests COMMAND efis_arbitration_tests)
+endif()
+
+# --- Nodo EMS ---------------------------------------------------------------
+# La sezione motore come processo a se', per il RPi4. Non e' una variante ridotta
+# del PFD: e' il confine di modulo della ADR-002 portato a confine di processo.
+# Da qui discendono i due vincoli di questo blocco. Primo, l'elenco dei
+# componenti Qt e' suo e non tocca Quick3D, Network e Concurrent: un nodo motore
+# non ha terreno da rasterizzare ne' meteo da scaricare, e chiederli lo
+# renderebbe incostruibile dove servono di meno. Secondo, i file QML sono gli
+# stessi del PFD, non copie: una modifica alla pagina motore fatta su questo nodo
+# e' gia' nel display completo, che e' la ragione per cui il nodo esiste.
+option(EFIS_BUILD_EMS_NODE "Build the standalone EMS engine node when Qt is available" ON)
+
+if(EFIS_BUILD_EMS_NODE)
+    set(EFIS_EMS_QT_COMPONENTS Core Gui Qml Quick QuickControls2)
+    find_package(Qt6 6.8 QUIET COMPONENTS ${EFIS_EMS_QT_COMPONENTS})
+    if(Qt6_FOUND)
+        qt_standard_project_setup(REQUIRES 6.8)
+        qt_add_executable(efis-ems-qt
+            src/nodes/ems/main.cpp
+            src/nodes/ems/ems_controller.cpp
+            src/nodes/ems/ems_controller.hpp
+            src/renderers/qt/circular_gauge_item.cpp
+            src/renderers/qt/circular_gauge_item.hpp
+        )
+        qt_add_qml_module(efis-ems-qt
+            URI EfisNextEms
+            VERSION 1.0
+            QML_FILES
+                qml/EmsMain.qml
+                qml/AdaptiveEmsView.qml
+                qml/CommandRail.qml
+                qml/ProfessionalCircularGauge.qml
+                qml/Theme.qml
+        )
+        target_include_directories(efis-ems-qt PRIVATE
+            src/nodes/ems src/renderers/qt)
+        target_link_libraries(efis-ems-qt PRIVATE
+            efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2)
+    else()
+        # Stesso principio del renderer completo: se il nodo non si costruisce va
+        # detto, perche' un binario vecchio in build/ e una configurazione
+        # riuscita insieme fanno credere che la modifica sia stata provata.
+        message(WARNING
+            "efis-ems-qt NON verra' costruito: Qt 6.8 con ${EFIS_EMS_QT_COMPONENTS} non trovato. "
+            "Indicare l'installazione con -DCMAKE_PREFIX_PATH oppure configurare con "
+            "-DEFIS_BUILD_EMS_NODE=OFF.")
+    endif()
+endif()
+
+if(EFIS_BUILD_TESTS)
+    # Le prove del motore hanno un eseguibile proprio perche' il nodo EMS e' un
+    # processo proprio: quando cade, deve dire che e' caduta la sezione motore e
+    # non "il core".
+    add_executable(efis_engine_tests tests/engine_tests.cpp)
+    target_link_libraries(efis_engine_tests PRIVATE efis_core)
+    add_test(NAME efis_engine_tests COMMAND efis_engine_tests)
 endif()

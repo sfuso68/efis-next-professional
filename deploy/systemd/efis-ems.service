@@ -1,0 +1,22 @@
+[Unit]
+Description=EFIS Next Engine Monitoring Node
+Documentation=file:///%h/efis-next/docs/deployment/RPI4_EMS.md
+After=graphical-session.target
+PartOf=graphical-session.target
+# Nessun Conflicts con l'EFIS vecchio: i due impianti restano separati e
+# operativi, come dichiara il README. Questa unita' non deve poter fermare
+# l'altro, e non porta un nome che possa collidere con il suo.
+
+[Service]
+Type=simple
+WorkingDirectory=%h/efis-next
+ExecStart=%h/efis-next/deploy/scripts/run-ems.sh
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=5
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical-session.target

@@ -17,6 +17,7 @@ Item {
         selectedCourse: controller.selectedCourse; commandedRoll: controller.commandedRoll;
         commandedPitch: controller.commandedPitch; flightDirectorActive: controller.flightDirectorActive;
         navigationValid: controller.navigationValid
+        leftInstrumentInset: 118*root.uiScale; rightInstrumentInset: 120*root.uiScale
         imageryState: controller.imageryState; imageryOfflineReady: controller.imageryOfflineReady
         imageryTileCount: controller.imageryTileCount; imageryCoverageGaps: controller.imageryCoverageGaps }
 
