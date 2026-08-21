@@ -34,6 +34,12 @@ add_library(efis_core
     src/io/can_source.cpp
     src/providers/engine_can_adapter.cpp
     src/bench/sensor_bench.cpp
+    src/core/altimetry.cpp
+    src/core/flight_dynamics.cpp
+    src/core/signal_access.cpp
+    src/instruments/dial.cpp
+    src/instruments/horizon.cpp
+    src/instruments/svg_dial_renderer.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
@@ -56,6 +62,11 @@ target_link_libraries(efis_reference_renderer PUBLIC efis_core)
 
 add_executable(efis-render-pfd src/apps/render_pfd_main.cpp)
 target_link_libraries(efis-render-pfd PRIVATE efis_reference_renderer)
+
+# Produce quadranti in SVG per poterli guardare mentre si scrivono, e in
+# seguito per confrontarli con le immagini di riferimento.
+add_executable(efis-render-dials src/apps/render_dials_main.cpp)
+target_link_libraries(efis-render-dials PRIVATE efis_core)
 
 if(EFIS_BUILD_QT_RENDERER)
     set(EFIS_QT_COMPONENTS Core Gui Qml Quick Quick3D QuickControls2 Concurrent Network)
@@ -119,6 +130,28 @@ if(EFIS_BUILD_QT_RENDERER)
         )
         target_link_libraries(efis-pfd-qt PRIVATE
             efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Quick3D Qt6::QuickControls2 Qt6::Concurrent Qt6::Network)
+        # Pagina analogica come applicazione a se'. Gli strumenti entreranno nel
+        # selettore con la fase 3, quando esistera' la configurazione che li
+        # dispone; fino ad allora serve poterli vedere sul display vero, che e'
+        # l'unica prova valida per una modifica di interfaccia.
+        qt_add_executable(efis-instruments-qt
+            src/apps/instruments_qt_main.cpp
+            src/renderers/qt/instrument_item.cpp
+            src/renderers/qt/instrument_item.hpp
+            src/renderers/qt/instrument_source.cpp
+            src/renderers/qt/instrument_source.hpp
+        )
+        qt_add_qml_module(efis-instruments-qt
+            URI EfisInstruments
+            VERSION 1.0
+            QML_FILES
+                qml/InstrumentsMain.qml
+                qml/AnalogSixPack.qml
+        )
+        target_include_directories(efis-instruments-qt PRIVATE src/renderers/qt)
+        target_link_libraries(efis-instruments-qt PRIVATE
+            efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick)
+
     else()
         # Un fallimento silenzioso qui e' inaccettabile: senza questo target non
         # esiste alcuna interfaccia di volo, e una configurazione riuscita darebbe
@@ -197,6 +230,14 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_esp32_tests tests/esp32_tests.cpp)
     target_link_libraries(efis_esp32_tests PRIVATE efis_core)
     add_test(NAME efis_esp32_tests COMMAND efis_esp32_tests)
+
+    # La geometria degli strumenti analogici ha un eseguibile proprio: verifica
+    # come un valore viene mostrato, non quanto vale. Una lancetta assente e una
+    # ferma su zero contengono la stessa quantita' di inchiostro e due
+    # informazioni opposte, e questa e' la categoria che se ne accorge.
+    add_executable(efis_instrument_tests tests/instrument_tests.cpp)
+    target_link_libraries(efis_instrument_tests PRIVATE efis_core)
+    add_test(NAME efis_instrument_tests COMMAND efis_instrument_tests)
 
     # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
     # sorgente fornisce una grandezza, non quanto vale. Un guasto qui non sposta

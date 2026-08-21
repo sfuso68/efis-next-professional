@@ -142,7 +142,12 @@ int main() {
     // Ogni prima selezione e' un evento: la black box deve poter ricostruire da
     // dove veniva ciascuna grandezza fin dall'inizio, non solo dopo il primo
     // guasto.
-    require(arbitrator.events().size() == 18,
+    //
+    // Il numero e' scritto per esteso di proposito. Aggiungere una grandezza
+    // arbitrata fa fallire questa riga, e chi la aggiorna deve prima essersi
+    // chiesto se quella grandezza vada davvero arbitrata: la regolazione
+    // barometrica, per esempio, non va, perche' il pilota e' uno solo.
+    require(arbitrator.events().size() == 20,
             "every arbitrated signal must announce its initial source");
     require(arbitrator.events().front().reason == efis::SourceChangeReason::initial,
             "the first selection must be recorded as initial, not as a failover");
