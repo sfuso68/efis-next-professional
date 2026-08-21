@@ -6,13 +6,13 @@
 // si migliora qui compare nel PFD senza alcun travaso, perche' e' lo stesso file.
 
 #include "ems_controller.hpp"
+#include "capture_request.hpp"
 #include "circular_gauge_item.hpp"
 
 #include <QCursor>
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QGuiApplication>
-#include <QImage>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickWindow>
@@ -100,14 +100,20 @@ int main(int argc, char* argv[]) {
             const int delay = qEnvironmentVariableIntValue("EFIS_CAPTURE_DELAY_MS") > 0
                 ? qEnvironmentVariableIntValue("EFIS_CAPTURE_DELAY_MS") : 3000;
             QTimer::singleShot(delay, window, [window, capturePath] {
-                const auto image = window->grabWindow();
-                const bool saved = !image.isNull() && image.save(capturePath);
-                qInfo().noquote() << "event=capture node=ems saved=" << saved
-                                  << "path=" << capturePath
-                                  << "size=" << image.width() << "x" << image.height();
+                const bool saved = efis::ems::capture_window(window, capturePath);
+                qInfo().noquote() << "event=capture node=ems trigger=startup saved="
+                                  << saved << "path=" << capturePath;
                 QGuiApplication::exit(saved ? 0 : 2);
             });
         }
+    }
+
+    // Cattura su richiesta, a programma in marcia. Serve il caso opposto a
+    // quello sopra: non fotografare un avvio fatto apposta, ma cio' che il
+    // pannello sta mostrando adesso, senza fermare il servizio che lo mostra.
+    if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().front())) {
+        efis::ems::install_capture_signal(window,
+            qEnvironmentVariable("EFIS_CAPTURE_DIR", QStringLiteral("logs")));
     }
 
     if (qEnvironmentVariableIsSet("EFIS_KIOSK")) {

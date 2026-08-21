@@ -97,14 +97,34 @@ Perché diventassero protezione reale, e non soltanto codice disponibile,
 mancavano tre passi. Due sono stati compiuti; uno resta, ed è quello che non si
 chiude scrivendo codice.
 
-1. **Taratura per segnale. Aperta.** Le soglie di stasi e le tolleranze di
-   confronto sono scelte con criterio fisico e documentate una per una in
-   `FlightModelPolicy`, ma **non sono validate su registrazioni di volo vere**.
-   Servono a far comparire un guasto grossolano, non a misurare quanto un
-   sensore stia derivando. Restano marcate `DEVELOPMENT` finché non esistono
-   voli registrati su cui verificarle: nessuna quantità di prove sintetiche può
-   sostituirli, perché il punto è proprio sapere quanto quelle grandezze si
-   muovono davvero in volo.
+1. **Taratura per segnale. Metà fatta, metà aperta, e le due metà si tarano con
+   dati diversi.**
+
+   Le **risoluzioni** sono misurate, il 21 agosto 2026, sulla registrazione reale
+   del banco a 10 Hz, con `tools/tuning/measure_signal_noise.py`. La risoluzione
+   deve stare sopra il rumore del sensore, e la ragione non è di forma: un pitot
+   o uno statico ostruito non congela l'elettronica, continua a leggere la
+   pressione intrappolata con il proprio rumore. Il valore balla anche quando non
+   descrive più il mondo, e se la risoluzione sta dentro quel ballo il ballo passa
+   per movimento.
+
+   La misura ha trovato un difetto reale in questo stesso lavoro: **la quota era
+   tarata a un piede mentre il rumore misurato al 99° percentile è due**. Il 27,7%
+   dei campioni a riposo superava la soglia, e con i centocinquanta campioni
+   richiesti per dichiarare la stasi il rilevatore della statica ostruita non
+   sarebbe scattato **mai**. Corretta a cinque piedi. La velocità aveva un margine
+   del 13% ed è passata da mezzo nodo a uno. Assetto e velocità al suolo avevano
+   già margine ampio.
+
+   Il **tempo**, `suspect_after`, resta aperto e marcato `DEVELOPMENT`. Quanto a
+   lungo una quota sana possa restare immobile a cinquemila piedi si misura solo
+   in volo: a terra ogni grandezza sta ferma per definizione, e non esistono
+   ancora voli registrati. La registrazione disponibile dura otto secondi e
+   contiene per giunta l'assestamento del barometro all'avvio.
+
+   Un test in `tests/safety_tests.cpp` fissa l'invariante — la risoluzione deve
+   superare il rumore misurato, con margine — così la taratura non può regredire
+   in silenzio verso un rilevatore inerte.
 2. **Collegamento allo stato di volo. Fatto.** `FlightModel` esegue stasi e
    confronto incrociato su ogni normalizzazione, e `ingest::MavlinkPipeline`
    compone la catena dai byte del Pixhawk allo stato protetto. Un cancello sulla
