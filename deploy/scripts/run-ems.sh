@@ -24,8 +24,14 @@ if [ ! -x "$binary" ]; then
     exit 1
 fi
 
-export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-wayland}"
-export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+# La piattaforma la decide il nodo, non questo script: il RPi4 disegna su eglfs
+# perche' non ha compositore, un nodo con Wayland la imposta a wayland. Il
+# valore arriva dall'unita' systemd, che e' il posto dove la differenza fra due
+# macchine e' leggibile.
+export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-eglfs}"
+if [ "$QT_QPA_PLATFORM" = wayland ]; then
+    export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+fi
 export EFIS_KIOSK=1
 export QSG_RENDER_LOOP="${QSG_RENDER_LOOP:-threaded}"
 
