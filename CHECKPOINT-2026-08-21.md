@@ -54,7 +54,7 @@ macchina.
 | Baseline | `0f499c8` — stato del progetto al 21 agosto 2026 |
 | Correzione build | `403552b` — rilevamento Qt esplicito |
 | Ramo principale | `main` |
-| Ramo di lavoro | `work/p1-backbone-dati` |
+| Ramo di lavoro | `work/claude-p1`, nato come `work/p1-backbone-dati` |
 | File versionati | 294 |
 | Dimensione repository | 26 MB |
 
@@ -228,7 +228,7 @@ Correzione (commit `403552b`, `CMakeLists.txt`):
 
 Il comportamento a Qt completo è invariato: verificato sul RPi5, 106/106 target.
 
-### 6.2 Qt Quick 3D assente su Windows — APERTO, richiede l'utente
+### 6.2 Qt Quick 3D assente su Windows — RISOLTO
 
 Diagnosi prodotta dalla correzione precedente:
 
@@ -239,10 +239,15 @@ componenti mancanti nell'installazione Qt: Qt6Quick3D
 `C:/Qt/6.11.1/msvc2022_64` contiene solo `Qt6Quick3DSpatialAudio`; manca il
 modulo Quick3D richiesto da `Terrain3DSurface.qml` e `TerrainTile3D.qml`.
 
-Rimedio: `C:/Qt/MaintenanceTool.exe` → *Add or remove components* → Qt 6.11.1 →
-*Additional Libraries* → *Qt Quick 3D*. Richiede l'interfaccia grafica.
+Il modulo è stato installato nel pomeriggio del 21 agosto
+(`qt.qt6.6111.addons.qtquick3d.win64_msvc2022_64`), quindi
+`-DEFIS_REQUIRE_QT_RENDERER=ON` ora configura senza avvisi anche su Windows e
+`efis-pfd-qt.exe` si costruisce in locale.
 
-Non è bloccante: il RPi5 compila l'intero progetto ed è il target reale.
+Resta però una cosa che Windows non può dare: la **cattura dal display reale a
+1024 × 600**, che è l'unica prova valida per una modifica di interfaccia. Windows
+è diventato il ciclo veloce; il Raspberry Pi 5 resta il luogo in cui una modifica
+alla UI si considera verificata.
 
 ### 6.3 Esecuzione dei binari bloccata su Windows — VINCOLO PERMANENTE
 
