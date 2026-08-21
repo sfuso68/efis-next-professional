@@ -29,6 +29,7 @@ add_library(efis_core
     src/bench/sensor_bench.cpp
     src/core/altimetry.cpp
     src/core/flight_dynamics.cpp
+    src/core/signal_access.cpp
     src/instruments/dial.cpp
 )
 target_include_directories(efis_core PUBLIC include)

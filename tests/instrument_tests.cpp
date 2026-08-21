@@ -10,6 +10,8 @@
 #include "efis/core/altimetry.hpp"
 #include "efis/core/flight_dynamics.hpp"
 #include "efis/providers/simulation_provider.hpp"
+#include "efis/providers/engine_simulation_provider.hpp"
+#include "efis/core/signal_access.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -347,6 +349,69 @@ int main() {
             "the simulated turn rate must agree with its own bank and speed");
     require(flying.attitude.turn_rate_deg_s.origin.simulated,
             "simulated dynamics stay marked as simulated");
+
+
+    // --- Accesso alle grandezze per identificativo ---------------------------
+    //
+    // Il renderer espone una proprieta' per grandezza. Finche' gli strumenti li
+    // decide chi scrive il codice quel modello regge; con strumenti scelti dal
+    // pilota no, perche' il pannello deve poter chiedere una grandezza che
+    // nessuno aveva previsto sarebbe stata chiesta.
+    const auto snapshot = efis::SimulationProvider{5}.sample(
+        efis::MonoTime{} + std::chrono::seconds{20}, std::chrono::seconds{20});
+    const auto engine = efis::EngineSimulationProvider{5}.sample(
+        efis::MonoTime{} + std::chrono::seconds{20}, std::chrono::seconds{20});
+
+    const auto* airspeed_sample = efis::find_signal(snapshot,
+                                                    efis::SignalId::indicated_airspeed);
+    require(airspeed_sample != nullptr, "a signal the state carries must resolve");
+    require(airspeed_sample->value == snapshot.air_data.indicated_airspeed_kt.value,
+            "the lookup must return the field itself, not a copy of something else");
+    require(airspeed_sample->origin.signal == efis::SignalId::indicated_airspeed,
+            "the resolved sample must declare the signal that was asked for");
+
+    // Chiedere allo stato sbagliato non da' un valore sbagliato: non da' nulla.
+    require(efis::find_signal(snapshot, efis::SignalId::engine_rpm) == nullptr,
+            "an engine quantity is not in the flight state");
+    require(efis::find_signal(engine, efis::SignalId::roll) == nullptr,
+            "a flight quantity is not in the engine state");
+    require(efis::find_signal(snapshot, efis::SignalId::unknown) == nullptr,
+            "the unknown signal must resolve to nothing");
+
+    require(efis::find_signal(engine, efis::SignalId::cylinder_head_temperature_3) != nullptr,
+            "each cylinder must be reachable on its own");
+    require(efis::find_signal(engine, efis::SignalId::cylinder_head_temperature_3)->value ==
+                engine.cht_c[2].value,
+            "the third cylinder must resolve to the third cylinder, not another one");
+
+    // L'elenco e la corrispondenza devono restare d'accordo. Se divergessero, il
+    // menu offrirebbe strumenti che nessuno sa alimentare, oppure nasconderebbe
+    // grandezze che il sistema produce. Non c'e' nulla che lo garantisca a
+    // compilazione: lo garantisce questa prova.
+    for (const efis::SignalId signal : efis::flight_signals()) {
+        require(efis::find_signal(snapshot, signal) != nullptr,
+                "every signal the menu offers must be reachable in the flight state");
+    }
+    for (const efis::SignalId signal : efis::engine_signals()) {
+        require(efis::find_signal(engine, signal) != nullptr,
+                "every signal the menu offers must be reachable in the engine state");
+    }
+    require(!efis::flight_signals().empty() && !efis::engine_signals().empty(),
+            "the menus must not be empty");
+
+    // Nessuna grandezza compare in entrambi gli elenchi: sarebbe ambiguo quale
+    // stato interrogare.
+    for (const efis::SignalId flight : efis::flight_signals()) {
+        for (const efis::SignalId motor : efis::engine_signals()) {
+            require(flight != motor,
+                    "no quantity may belong to both states at once");
+        }
+    }
+
+    // La regolazione barometrica e' raggiungibile come le altre, benche' non sia
+    // una misura: la finestra di Kollsman e' uno strumento come gli altri.
+    require(efis::find_signal(snapshot, efis::SignalId::baro_setting) != nullptr,
+            "the altimeter setting must be reachable like any other quantity");
 
 
     std::cout << "All EFIS instrument tests passed\n";
