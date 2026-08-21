@@ -49,6 +49,13 @@ constexpr FieldAccess<double> numeric_fields[] = {
     {SignalId::ground_speed,
      [](const FlightSnapshot& s) -> const Sample<double>& { return s.position.ground_speed_kt; },
      [](FlightSnapshot& s) -> Sample<double>& { return s.position.ground_speed_kt; }},
+    {SignalId::gnss_vertical_speed,
+     [](const FlightSnapshot& s) -> const Sample<double>& {
+         return s.position.gnss_vertical_speed_fpm;
+     },
+     [](FlightSnapshot& s) -> Sample<double>& {
+         return s.position.gnss_vertical_speed_fpm;
+     }},
 
     {SignalId::commanded_roll,
      [](const FlightSnapshot& s) -> const Sample<double>& { return s.guidance.commanded_roll_deg; },

@@ -187,6 +187,108 @@ void MavlinkAdapter::apply(const mavlink::Frame& frame, MonoTime now) {
             break;
         }
 
+        case 193: {  // EKF_STATUS_REPORT
+            // I valori dei bit sono quelli dell'enumerazione EKF_STATUS_FLAGS
+            // del protocollo. Un bit acceso significa stima sana e disponibile.
+            constexpr std::uint32_t ekf_attitude = 1U;
+            constexpr std::uint32_t ekf_velocity_horizontal = 2U;
+            constexpr std::uint32_t ekf_velocity_vertical = 4U;
+            constexpr std::uint32_t ekf_position_horizontal_absolute = 16U;
+            constexpr std::uint32_t ekf_constant_position_mode = 128U;
+            constexpr std::uint32_t ekf_uninitialised = 1024U;
+            constexpr std::uint32_t ekf_gnss_glitching = 32768U;
+
+            const auto flags = mavlink::read_unsigned(definition, frame, "flags");
+            if (flags) {
+                const auto bits = static_cast<std::uint32_t>(*flags);
+                estimator_.reported = true;
+                estimator_.flags = bits;
+                estimator_.attitude_healthy = (bits & ekf_attitude) != 0;
+                estimator_.horizontal_velocity_healthy =
+                    (bits & ekf_velocity_horizontal) != 0;
+                estimator_.vertical_velocity_healthy =
+                    (bits & ekf_velocity_vertical) != 0;
+                estimator_.horizontal_position_healthy =
+                    (bits & ekf_position_horizontal_absolute) != 0;
+                estimator_.uninitialised = (bits & ekf_uninitialised) != 0;
+                estimator_.dead_reckoning = (bits & ekf_constant_position_mode) != 0;
+                estimator_.gnss_glitching = (bits & ekf_gnss_glitching) != 0;
+            }
+
+            auto variance = [&](const char* name, double& destination) {
+                if (const auto value = mavlink::read_number(definition, frame, name)) {
+                    destination = *value;
+                }
+            };
+            variance("velocity_variance", estimator_.velocity_variance);
+            variance("pos_horiz_variance", estimator_.horizontal_position_variance);
+            variance("pos_vert_variance", estimator_.vertical_position_variance);
+            variance("compass_variance", estimator_.compass_variance);
+            variance("airspeed_variance", estimator_.airspeed_variance);
+
+            revalidate();
+            ++statistics_.frames_applied;
+            break;
+        }
+
+        case 241: {  // VIBRATION
+            auto axis = [&](const char* name, double& destination) {
+                if (const auto value = mavlink::read_number(definition, frame, name)) {
+                    destination = *value;
+                }
+            };
+            axis("vibration_x", vibration_.x_axis);
+            axis("vibration_y", vibration_.y_axis);
+            axis("vibration_z", vibration_.z_axis);
+
+            // I contatori di saturazione non tornano indietro. Interessa il
+            // momento in cui crescono, non il fatto che in passato l'aeromobile
+            // abbia vibrato: quello resta vero per tutto il volo e non dice piu'
+            // nulla su adesso.
+            bool grown = false;
+            auto clipping = [&](const char* name, std::uint32_t& destination) {
+                const auto value = mavlink::read_unsigned(definition, frame, name);
+                if (!value) return;
+                const auto counted = static_cast<std::uint32_t>(*value);
+                if (vibration_.reported && counted > destination) grown = true;
+                destination = counted;
+            };
+            clipping("clipping_0", vibration_.clipping_0);
+            clipping("clipping_1", vibration_.clipping_1);
+            clipping("clipping_2", vibration_.clipping_2);
+            vibration_.clipping_increasing = grown;
+            vibration_.reported = true;
+
+            ++statistics_.frames_applied;
+            break;
+        }
+
+        case 33: {  // GLOBAL_POSITION_INT
+            // Se ne prende soltanto la velocita' verticale. Posizione e prua
+            // arrivano gia' da GPS_RAW_INT e ATTITUDE, e prenderle due volte
+            // significherebbe farle dipendere da quale messaggio arriva per
+            // ultimo invece che dall'arbitrato.
+            //
+            // `vz` e' in centimetri al secondo e positiva verso il basso, come
+            // vuole la convenzione NED. La quota sale quando vz e' negativa,
+            // quindi il segno va invertito: una salita deve leggersi positiva
+            // sullo strumento, come la velocita' verticale barometrica accanto
+            // a cui verra' confrontata.
+            const auto down = mavlink::read_integer(definition, frame, "vz");
+            if (down) {
+                constexpr double feet_per_minute_per_metre_per_second = 196.850393700787;
+                const double metres_per_second = static_cast<double>(*down) / 100.0;
+                snapshot_.position.gnss_vertical_speed_fpm = measured(
+                    -metres_per_second * feet_per_minute_per_metre_per_second,
+                    static_cast<double>(*down), SignalId::gnss_vertical_speed,
+                    Unit::foot_per_minute,
+                    gnss_fix_type_ >= gnss_fix_3d ? Validity::valid
+                                                  : Validity::unavailable);
+            }
+            ++statistics_.frames_applied;
+            break;
+        }
+
         case 295: {  // AIRSPEED
             const auto pressure = mavlink::read_number(definition, frame, "raw_press");
             const auto temperature = mavlink::read_integer(definition, frame, "temperature");
@@ -262,8 +364,53 @@ void MavlinkAdapter::revalidate() {
                                                             : Validity::unavailable;
     for (Sample<double>* sample : {&snapshot_.position.latitude_deg,
                                    &snapshot_.position.longitude_deg,
-                                   &snapshot_.position.ground_speed_kt}) {
+                                   &snapshot_.position.ground_speed_kt,
+                                   &snapshot_.position.gnss_vertical_speed_fpm}) {
         if (sample->origin.signal != SignalId::unknown) sample->validity = position;
+    }
+
+    // L'autopilota dichiara sane le proprie stime. Quando dice di no, il valore
+    // continua a essere mostrato ma marcato degradato, non rimosso: una stima
+    // che l'autopilota giudica cattiva puo' essere ancora approssimativamente
+    // giusta, e toglierla al pilota nel momento in cui gli serve sarebbe peggio
+    // che mostrargliela dichiarando che non e' affidabile.
+    //
+    // Vale anche per il filtro non inizializzato, che pure sembrerebbe il caso
+    // piu' grave. I bit descrivono lo stato dell'EKF, non quello del messaggio
+    // di assetto: ArduPilot pubblica l'assetto anche quando l'EKF non e' pronto,
+    // ricavandolo altrimenti. Dedurre da un bit dell'EKF che l'assetto non
+    // esista sarebbe un'affermazione sugli interni dell'autopilota che qui non
+    // e' verificata, e produrrebbe uno strumento vuoto dove ce n'e' uno incerto.
+    // La condizione resta distinta e leggibile in EstimatorState::uninitialised.
+    if (estimator_.reported) {
+        const Validity attitude =
+            estimator_.attitude_healthy ? Validity::valid : Validity::degraded;
+        for (Sample<double>* sample : {&snapshot_.attitude.roll_deg,
+                                       &snapshot_.attitude.pitch_deg,
+                                       &snapshot_.attitude.heading_deg}) {
+            if (sample->origin.signal != SignalId::unknown) sample->validity = attitude;
+        }
+
+        if (snapshot_.position.gnss_vertical_speed_fpm.origin.signal !=
+                SignalId::unknown &&
+            snapshot_.position.gnss_vertical_speed_fpm.validity == Validity::valid &&
+            !estimator_.vertical_velocity_healthy) {
+            snapshot_.position.gnss_vertical_speed_fpm.validity = Validity::degraded;
+        }
+
+        // Navigazione a stima e satellitare che salta: in entrambi i casi il fix
+        // resta dichiarato valido mentre la posizione non descrive piu' dove si
+        // trova l'aeromobile. Sono le sole notizie che lo rivelano.
+        if (estimator_.dead_reckoning || estimator_.gnss_glitching ||
+            !estimator_.horizontal_position_healthy) {
+            for (Sample<double>* sample : {&snapshot_.position.latitude_deg,
+                                           &snapshot_.position.longitude_deg}) {
+                if (sample->origin.signal != SignalId::unknown &&
+                    sample->validity == Validity::valid) {
+                    sample->validity = Validity::degraded;
+                }
+            }
+        }
     }
 
     const Validity airspeed = differential_pressure_healthy_ ? Validity::valid

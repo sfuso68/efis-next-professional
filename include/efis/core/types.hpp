@@ -86,6 +86,11 @@ enum class SignalId : std::uint16_t {
     longitude,
     ground_speed,
 
+    // Velocita' verticale ricavata dal satellitare, distinta da quella
+    // barometrica: sono due catene fisicamente indipendenti, ed e' proprio la
+    // loro indipendenza a renderle confrontabili.
+    gnss_vertical_speed,
+
     // Guida di volo
     flight_director_active = 400,
     commanded_roll,
@@ -185,6 +190,7 @@ enum class Unit : std::uint8_t {
         case SignalId::latitude: return "latitude";
         case SignalId::longitude: return "longitude";
         case SignalId::ground_speed: return "ground_speed";
+        case SignalId::gnss_vertical_speed: return "gnss_vertical_speed";
         case SignalId::flight_director_active: return "flight_director_active";
         case SignalId::commanded_roll: return "commanded_roll";
         case SignalId::commanded_pitch: return "commanded_pitch";

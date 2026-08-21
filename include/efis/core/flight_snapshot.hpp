@@ -23,6 +23,11 @@ struct PositionState final {
     Sample<double> latitude_deg;
     Sample<double> longitude_deg;
     Sample<double> ground_speed_kt;
+
+    // Velocita' verticale ricavata dal satellitare. Sta qui e non fra i dati
+    // aria perche' e' cio' che la distingue: non passa dalla presa statica, e
+    // quindi non si guasta insieme a quella barometrica.
+    Sample<double> gnss_vertical_speed_fpm;
 };
 
 struct GuidanceState final {
@@ -67,6 +72,12 @@ struct SystemHealth final {
 
     // Campi marcati in disaccordo dal confronto fra catene indipendenti.
     std::uint32_t disagreeing_fields{};
+
+    // Campi che l'autopilota, o un'altra sorgente, dichiara di qualita' ridotta.
+    // Continuano a essere mostrati: degradato non e' assente, ed e' proprio la
+    // distinzione che permette di non togliere al pilota un valore che potrebbe
+    // essergli ancora utile.
+    std::uint32_t degraded_fields{};
 
     // Grandezza ferma da segnalare per prima. Una spia che dice soltanto "un
     // dato e' fermo" costringe il pilota a cercare quale, nel momento in cui ha

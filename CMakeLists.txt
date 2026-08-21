@@ -27,6 +27,8 @@ add_library(efis_core
     src/providers/engine_simulation_provider.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
+    src/ingest/mavlink_pipeline.cpp
+    src/ingest/recording_session.cpp
     src/io/byte_source.cpp
     src/bench/sensor_bench.cpp
 )
@@ -171,6 +173,12 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_safety_tests tests/safety_tests.cpp)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)
     add_test(NAME efis_safety_tests COMMAND efis_safety_tests)
+
+    add_executable(efis_ingest_tests tests/ingest_tests.cpp)
+    target_link_libraries(efis_ingest_tests PRIVATE efis_core)
+    target_compile_definitions(efis_ingest_tests PRIVATE
+        EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
+    add_test(NAME efis_ingest_tests COMMAND efis_ingest_tests)
 
     # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
     # sorgente fornisce una grandezza, non quanto vale. Un guasto qui non sposta

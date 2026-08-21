@@ -37,6 +37,74 @@ struct AirDataSensorState final {
 };
 
 // Cio' che l'adapter ha incontrato, oltre ai valori.
+// Autodiagnosi del filtro di stato dell'autopilota.
+//
+// ArduPilot confronta gia' fra loro le proprie sorgenti e pubblica il risultato
+// di quel confronto. Ignorarlo significherebbe rifare peggio, con meno dati, un
+// lavoro gia' fatto meglio: e' il confronto incrociato piu' economico che
+// abbiamo, e finora veniva decodificato e buttato.
+//
+// Sui bit di stato si decide, sulle varianze no. I bit sono un giudizio che
+// l'autopilota esprime esplicitamente; le varianze sono numeri di cui il
+// protocollo non dichiara la soglia oltre la quale sono cattive. Inventarne una
+// qui produrrebbe un allarme il cui significato nessuno saprebbe interpretare,
+// quindi vengono registrate per la diagnosi e la black box, e non decidono
+// nulla.
+struct EstimatorState final {
+    // L'autopilota ha riportato almeno una volta. Falso non significa sano:
+    // significa che non si sa, ed e' una condizione diversa.
+    bool reported{};
+
+    std::uint32_t flags{};
+
+    // Un bit acceso significa che quella stima e' sana e disponibile.
+    bool attitude_healthy{};
+    bool horizontal_velocity_healthy{};
+    bool vertical_velocity_healthy{};
+    bool horizontal_position_healthy{};
+
+    // Il filtro non e' inizializzato: non esiste alcuna stima, il che e'
+    // diverso da una stima cattiva.
+    bool uninitialised{};
+
+    // Navigazione a stima: l'autopilota tiene la posizione ferma perche' non ha
+    // di meglio. La posizione continua a essere pubblicata e non descrive piu'
+    // dove si trova l'aeromobile.
+    bool dead_reckoning{};
+
+    // Il satellitare sta saltando. Il fix resta dichiarato valido, ed e' per
+    // questo che il bit serve: e' l'unico modo di sapere che non lo e'.
+    bool gnss_glitching{};
+
+    // Registrate, non usate per decidere. La varianza sulla velocita' vera
+    // dell'aria e' il giudizio che l'autopilota da' proprio sul sensore Matek.
+    double velocity_variance{};
+    double horizontal_position_variance{};
+    double vertical_position_variance{};
+    double compass_variance{};
+    double airspeed_variance{};
+};
+
+// Vibrazioni misurate dagli accelerometri.
+//
+// Contano perche' una vibrazione forte degrada l'assetto prima ancora che il
+// filtro se ne accorga, e i contatori di saturazione dicono che qualche
+// campione e' stato scartato del tutto. Non tornano mai indietro: conta la loro
+// crescita, non il valore assoluto.
+struct VibrationState final {
+    bool reported{};
+    double x_axis{};
+    double y_axis{};
+    double z_axis{};
+    std::uint32_t clipping_0{};
+    std::uint32_t clipping_1{};
+    std::uint32_t clipping_2{};
+
+    // Vero se un contatore e' cresciuto dall'ultimo messaggio: e' il momento in
+    // cui l'accelerometro ha saturato, non il fatto che sia saturato in passato.
+    bool clipping_increasing{};
+};
+
 struct MavlinkAdapterStatistics final {
     std::uint64_t frames_applied{};
 
@@ -68,6 +136,14 @@ public:
     void consume(std::span<const std::uint8_t> bytes, MonoTime now);
 
     [[nodiscard]] const FlightSnapshot& snapshot() const noexcept { return snapshot_; }
+    [[nodiscard]] const EstimatorState& estimator() const noexcept {
+        return estimator_;
+    }
+
+    [[nodiscard]] const VibrationState& vibration() const noexcept {
+        return vibration_;
+    }
+
     [[nodiscard]] const AirDataSensorState& air_data_sensor() const noexcept {
         return air_data_;
     }
@@ -138,6 +214,8 @@ private:
     std::int64_t gnss_fix_type_{};
     std::int64_t gnss_satellites_{};
     bool differential_pressure_healthy_{};
+    EstimatorState estimator_{};
+    VibrationState vibration_{};
     UtcMicros utc_{utc_unavailable};
 };
 

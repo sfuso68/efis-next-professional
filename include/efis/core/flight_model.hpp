@@ -53,6 +53,17 @@ struct FlightModelPolicy final {
     // giornata ventosa.
     CrossCheckPolicy speed_agreement{.tolerance = 60.0,
                                      .dwell = std::chrono::milliseconds{5000}};
+
+    // Confronto fra velocita' verticale barometrica e satellitare.
+    //
+    // Le due catene non condividono nulla: una dipende dalla presa statica, che
+    // si ostruisce con ghiaccio o insetti, l'altra dalla costellazione. E'
+    // questa indipendenza a rendere il confronto utile, ed e' anche il motivo
+    // per cui una tolleranza piu' stretta di quella sulle velocita' orizzontali
+    // e' giustificata: qui non c'e' un vento a separarle, solo il ritardo dei
+    // rispettivi filtri e le raffiche verticali.
+    CrossCheckPolicy vertical_agreement{.tolerance = 400.0,
+                                        .dwell = std::chrono::milliseconds{5000}};
 };
 
 // Normalizza lo stato di volo: invecchiamento, sorveglianza del valore fermo,
@@ -80,6 +91,10 @@ public:
         return speed_check_.result();
     }
 
+    [[nodiscard]] const CrossCheckResult& vertical_agreement() const noexcept {
+        return vertical_check_.result();
+    }
+
     [[nodiscard]] const FlightModelPolicy& policy() const noexcept { return policy_; }
 
 private:
@@ -88,6 +103,7 @@ private:
     FlightModelPolicy policy_;
     StasisMonitor stasis_;
     CrossCheck speed_check_;
+    CrossCheck vertical_check_;
 };
 
 }  // namespace efis

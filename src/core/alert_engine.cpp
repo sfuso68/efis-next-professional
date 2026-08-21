@@ -59,6 +59,14 @@ AlertState AlertEngine::evaluate(const FlightSnapshot& s) const {
                                  AlertSeverity::warning, false});
     }
 
+    // Un campo degradato resta mostrato, quindi la sua qualita' ridotta deve
+    // essere detta: un valore che si vede e non si sa quanto valga e' peggio di
+    // uno che si vede sapendo che e' incerto.
+    if (s.health.degraded_fields > 0) {
+        result.active.push_back({"DATA_DEGRADED", "DATA DEGRADED",
+                                 AlertSeverity::caution, false});
+    }
+
     if (is_simulated(s.attitude.roll_deg) ||
         is_simulated(s.air_data.indicated_airspeed_kt) ||
         is_simulated(s.air_data.pressure_altitude_ft)) {

@@ -63,6 +63,26 @@ void SegmentedRecorder::append(const FlightSnapshot& snapshot) {
     if (records_in_segment_ >= settings_.records_per_segment) close_segment();
 }
 
+void SegmentedRecorder::append(const NodeStateChange& event) {
+    if (!stream_.is_open()) open_segment();
+    FlightRecordWriter::write_node_event(stream_, event);
+    ++records_since_flush_;
+    if (records_since_flush_ >= settings_.flush_every_records) {
+        stream_.flush();
+        records_since_flush_ = 0;
+    }
+}
+
+void SegmentedRecorder::append(const SourceChangeEvent& event) {
+    if (!stream_.is_open()) open_segment();
+    FlightRecordWriter::write_source_change(stream_, event);
+    ++records_since_flush_;
+    if (records_since_flush_ >= settings_.flush_every_records) {
+        stream_.flush();
+        records_since_flush_ = 0;
+    }
+}
+
 void SegmentedRecorder::close_segment() {
     if (!stream_.is_open()) return;
     stream_.flush();
