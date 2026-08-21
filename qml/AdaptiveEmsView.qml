@@ -9,13 +9,13 @@ Item {
     Rectangle { anchors.fill: parent; color: theme.background }
     CommandRail { id: rail; anchors { left: parent.left; right: parent.right; top: parent.top } height: 54*root.uiScale; uiScale: root.uiScale
         viewName: "EMS • ENGINE SYSTEMS"; healthLevel: controller.engineHealth
-        alertText: controller.engineFaultMode === "NONE" ? "ENGINE NORMAL" : controller.engineFaultMode; alertSeverity: controller.engineHealth
+        alertText: controller.engineDataState === "FAIL" ? "NO ENGINE DATA" : controller.engineFaultMode === "NONE" ? "ENGINE NORMAL" : controller.engineFaultMode; alertSeverity: controller.engineHealth
         flightDirectorActive: false; selectedAltitude: 0; dataSourceState: controller.dataSourceState; sensorNodeState: controller.sensorNodeState; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
     Item { id: content; anchors { left: parent.left; right: parent.right; top: rail.bottom; bottom: footer.top; margins: 7*root.uiScale } }
 
     Rectangle { id: gaugesPanel; anchors { left: content.left; right: alerts.left; top: content.top; rightMargin: 7*root.uiScale }
         height: 174*root.uiScale; radius: 4*root.uiScale; color: "#CA08131C"; border.color: theme.borderBright
-        Text { x: 10*root.uiScale; y: 6*root.uiScale; text: "PRIMARY ENGINE INSTRUMENTS • SIM"; color: theme.cyan; font.pixelSize: 8*root.uiScale; font.bold: true }
+        Text { x: 10*root.uiScale; y: 6*root.uiScale; text: "PRIMARY ENGINE INSTRUMENTS • " + controller.engineDataState; color: theme.cyan; font.pixelSize: 8*root.uiScale; font.bold: true }
         Row { anchors { fill: parent; margins: 8*root.uiScale; topMargin: 24*root.uiScale } spacing: 5*root.uiScale
             Repeater { model: [
                 {n:"RPM",v:controller.engineRpm,u:"RPM",min:0,max:3000,gs:800,ge:2600,d:0},
@@ -34,7 +34,7 @@ Item {
         Text { x: 10*root.uiScale; y: 27*root.uiScale; text: controller.engineHealth === 0 ? "NORMAL" : controller.engineHealth === 1 ? "CAUTION" : "WARNING"; color: root.healthColor; font.pixelSize: 25*root.uiScale; font.bold: true }
         Rectangle { x: 10*root.uiScale; y: 61*root.uiScale; width: parent.width-20*root.uiScale; height: 1; color: theme.border }
         Text { x: 10*root.uiScale; y: 73*root.uiScale; text: "ACTIVE MESSAGE"; color: theme.secondary; font.pixelSize: 7*root.uiScale; font.bold: true }
-        Text { x: 10*root.uiScale; y: 91*root.uiScale; width: parent.width-20*root.uiScale; elide: Text.ElideRight; text: controller.engineFaultMode === "NONE" ? "NO ACTIVE ENGINE ALERTS" : controller.engineFaultMode; color: root.healthColor; font.pixelSize: 11*root.uiScale; font.bold: true }
+        Text { x: 10*root.uiScale; y: 91*root.uiScale; width: parent.width-20*root.uiScale; elide: Text.ElideRight; text: controller.engineDataState === "FAIL" ? "NO CHANNEL IS MEASURING" : controller.engineFaultMode === "NONE" ? "NO ACTIVE ENGINE ALERTS" : controller.engineFaultMode; color: root.healthColor; font.pixelSize: 11*root.uiScale; font.bold: true }
         Rectangle { x: 10*root.uiScale; y: 121*root.uiScale; width: parent.width-20*root.uiScale; height: 38*root.uiScale; color: "#9A0C1A24"; border.color: theme.borderBright
             Text { anchors.centerIn: parent; text: "SIMULATE NEXT FAULT"; color: theme.cyan; font.pixelSize: 8*root.uiScale; font.bold: true }
             MouseArea { anchors.fill: parent; onClicked: controller.cycleEngineFault() } }

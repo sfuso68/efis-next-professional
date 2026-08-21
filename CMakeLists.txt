@@ -15,6 +15,7 @@ add_library(efis_core
     src/core/node_health.cpp
     src/core/snapshot_arbitrator.cpp
     src/core/flight_source.cpp
+    src/core/engine_source.cpp
     src/core/stasis_monitor.cpp
     src/core/cross_check.cpp
     src/recording/flight_record.cpp

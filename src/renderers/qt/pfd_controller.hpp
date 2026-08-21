@@ -3,7 +3,8 @@
 #include "efis/core/flight_model.hpp"
 #include "efis/core/flight_source.hpp"
 #include "efis/providers/simulation_source.hpp"
-#include "efis/providers/engine_simulation_provider.hpp"
+#include "efis/core/engine_source.hpp"
+#include "efis/providers/engine_simulation_source.hpp"
 
 #include <memory>
 
@@ -46,6 +47,7 @@ class PfdController final : public QObject {
     Q_PROPERTY(bool showingSimulatedData READ showingSimulatedData NOTIFY snapshotChanged)
     Q_PROPERTY(QString dataSourceState READ dataSourceState NOTIFY snapshotChanged)
     Q_PROPERTY(QString sensorNodeState READ sensorNodeState NOTIFY snapshotChanged)
+    Q_PROPERTY(QString engineDataState READ engineDataState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong blackBoxRecords READ blackBoxRecords NOTIFY snapshotChanged)
@@ -132,6 +134,7 @@ public:
     [[nodiscard]] bool showingSimulatedData() const;
     [[nodiscard]] QString dataSourceState() const;
     [[nodiscard]] QString sensorNodeState() const;
+    [[nodiscard]] QString engineDataState() const;
     Q_INVOKABLE void cycleSimulationRole();
     [[nodiscard]] qulonglong sequence() const;
     [[nodiscard]] QString blackBoxState() const;
@@ -222,13 +225,16 @@ private:
     [[nodiscard]] QString stagingProfilePath() const;
     [[nodiscard]] QString backupDirectoryPath() const;
     void appendSetupAudit(const QString& action, const QString& result, const QString& detail) const;
+    void applySimulationRole(efis::SimulationRole role);
     // Il display non conosce piu' una sorgente concreta: consuma cio' che il
     // router arbitra. Aggiungere il collegamento verso il nodo di ingestion
     // significhera' registrare una sorgente in piu', non toccare questa classe.
     std::shared_ptr<efis::SimulationSource> simulation_{
         std::make_shared<efis::SimulationSource>(42)};
     efis::FlightSourceRouter router_{};
-    efis::EngineSimulationProvider engine_provider_{84};
+    std::shared_ptr<efis::EngineSimulationSource> engine_simulation_{
+        std::make_shared<efis::EngineSimulationSource>(84)};
+    efis::EngineSourceRouter engine_router_{};
     efis::FlightModel model_{};
     efis::MonoTime started_at_{efis::MonoClock::now()};
     efis::FlightSnapshot snapshot_{};

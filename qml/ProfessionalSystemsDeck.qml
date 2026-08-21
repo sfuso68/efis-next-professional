@@ -4,6 +4,7 @@ Rectangle {
     id: deck
     required property var controller
     property real uiScale: 1
+    property string engineDataState: "FAIL"
     Theme { id: theme }
     color: "#050D14"; border.color: theme.borderBright
 
@@ -13,7 +14,7 @@ Rectangle {
 
         Rectangle {
             width: 710*deck.uiScale; height: parent.height; color: "#D9071119"; border.color: theme.border; radius: 3*deck.uiScale
-            Text { x: 8*deck.uiScale; y: 5*deck.uiScale; text: "ENGINE • SIM"; color: theme.secondary; font.pixelSize: 7*deck.uiScale; font.bold: true }
+            Text { x: 8*deck.uiScale; y: 5*deck.uiScale; text: "ENGINE • " + deck.engineDataState; color: theme.secondary; font.pixelSize: 7*deck.uiScale; font.bold: true }
             Row { anchors { left: parent.left; right: temperatures.left; top: parent.top; bottom: parent.bottom; margins: 5*deck.uiScale; topMargin: 20*deck.uiScale } spacing: 3*deck.uiScale
                 Repeater { model: [
                     {n:"RPM",v:controller.engineRpm,u:"RPM",min:0,max:3000,gs:800,ge:2600,d:0},
@@ -52,7 +53,7 @@ Rectangle {
         Rectangle { width: 90*deck.uiScale; height: parent.height; color: "#D9071119"; border.color: theme.border; radius: 3*deck.uiScale
             Text { x: 8*deck.uiScale; y: 5*deck.uiScale; text: "FUEL"; color: theme.secondary; font.pixelSize: 7*deck.uiScale; font.bold: true }
             Text { anchors.centerIn: parent; y: -9*deck.uiScale; text: (controller.fuelLeft+controller.fuelRight).toFixed(1); color: theme.primary; font.pixelSize: 20*deck.uiScale; font.bold: true }
-            Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 9*deck.uiScale } text: "GAL USABLE • SIM"; color: theme.cyan; font.pixelSize: 7*deck.uiScale; font.bold: true }
+            Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 9*deck.uiScale } text: "GAL USABLE • " + deck.engineDataState; color: theme.cyan; font.pixelSize: 7*deck.uiScale; font.bold: true }
             Rectangle { x: 10*deck.uiScale; y: 28*deck.uiScale; width: 11*deck.uiScale; height: 54*deck.uiScale; color: "#162630"; Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: parent.height*.72; color: theme.green } }
             Rectangle { anchors { right: parent.right; rightMargin: 10*deck.uiScale } y: 28*deck.uiScale; width: 11*deck.uiScale; height: 54*deck.uiScale; color: "#162630"; Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: parent.height*.72; color: theme.green } }
         }
