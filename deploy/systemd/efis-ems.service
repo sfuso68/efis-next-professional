@@ -28,6 +28,18 @@ Environment=QT_QPA_PLATFORM=eglfs
 ExecStart=/home/pi/efis-next/deploy/scripts/run-ems.sh
 Restart=on-failure
 RestartSec=5
+
+# Su eglfs Qt installa un gestore per il terminale virtuale che, ricevuto
+# SIGTERM, fa uscire il programma con codice 1. Senza questa riga ogni arresto
+# voluto lascerebbe l'unita' in stato failed, cioe' un arresto normale
+# somiglierebbe a un guasto. Non e' una particolarita' del nodo EMS: il 21
+# agosto 2026 il journal mostra che anche efis.service, l'EFIS vecchio, esce
+# con status=1/FAILURE ogni volta che viene fermato, sulla stessa piattaforma.
+#
+# Perche' la riga non nasconda un guasto vero, il programma non usa il codice 1
+# per nessun proprio fallimento: 3 e' la pagina QML non caricata, 2 la cattura
+# fallita, e restano entrambi guasti agli occhi di systemd.
+SuccessExitStatus=1
 TimeoutStopSec=5
 KillSignal=SIGTERM
 StandardOutput=journal

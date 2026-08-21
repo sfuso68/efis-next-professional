@@ -31,7 +31,15 @@ int main(int argc, char* argv[]) {
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ems", &controller);
     engine.loadFromModule("EfisNextEms", "EmsMain");
-    if (engine.rootObjects().isEmpty()) return 1;
+    // Non 1, e non e' un capriccio. Su eglfs Qt installa un proprio gestore per
+    // il terminale virtuale che, ricevuto SIGTERM, fa uscire il programma con
+    // codice 1: ogni arresto voluto lascerebbe l'unita' in stato failed, e
+    // l'unita' dichiara infatti SuccessExitStatus=1 per non chiamare guasto un
+    // arresto. Se il fallimento del QML uscisse anch'esso con 1, quella riga lo
+    // nasconderebbe, e un nodo che non ha caricato la pagina si presenterebbe
+    // come fermato di proposito. Sono due fatti diversi e devono avere due
+    // codici diversi. Lo stesso vale per il 2 della cattura, piu' sotto.
+    if (engine.rootObjects().isEmpty()) return 3;
 
     qInfo().noquote() << "event=startup product=efis-next component=ems version=0.1.0"
                       << "qt=" << qVersion()
