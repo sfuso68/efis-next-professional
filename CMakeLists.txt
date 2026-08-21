@@ -39,6 +39,11 @@ add_library(efis_core
     src/core/altimetry.cpp
     src/core/flight_dynamics.cpp
     src/core/signal_access.cpp
+    src/instruments/dial.cpp
+    src/instruments/panel.cpp
+    src/instruments/panel_store.cpp
+    src/instruments/horizon.cpp
+    src/instruments/svg_dial_renderer.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
@@ -64,6 +69,11 @@ target_link_libraries(efis_reference_renderer PUBLIC efis_core)
 
 add_executable(efis-render-pfd src/apps/render_pfd_main.cpp)
 target_link_libraries(efis-render-pfd PRIVATE efis_reference_renderer)
+
+# Produce quadranti in SVG per poterli guardare mentre si scrivono, e in
+# seguito per confrontarli con le immagini di riferimento.
+add_executable(efis-render-dials src/apps/render_dials_main.cpp)
+target_link_libraries(efis-render-dials PRIVATE efis_core)
 
 if(EFIS_BUILD_QT_RENDERER)
     set(EFIS_QT_COMPONENTS Core Gui Qml Quick Quick3D QuickControls2 Concurrent Network)
@@ -192,6 +202,14 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_dronecan_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_dronecan_tests COMMAND efis_dronecan_tests)
+
+    # La geometria degli strumenti analogici ha un eseguibile proprio: verifica
+    # come un valore viene mostrato, non quanto vale. Una lancetta assente e una
+    # ferma su zero contengono la stessa quantita' di inchiostro e due
+    # informazioni opposte, e questa e' la categoria che se ne accorge.
+    add_executable(efis_instrument_tests tests/instrument_tests.cpp)
+    target_link_libraries(efis_instrument_tests PRIVATE efis_core)
+    add_test(NAME efis_instrument_tests COMMAND efis_instrument_tests)
 
     add_executable(efis_safety_tests tests/safety_tests.cpp)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)
