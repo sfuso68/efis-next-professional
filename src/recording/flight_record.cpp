@@ -145,8 +145,8 @@ bool read_node_row(const std::vector<std::string_view>& f, RecordedNodeEvent& ou
 }
 
 bool read_source_row(const std::vector<std::string_view>& f, SourceChangeEvent& out) {
-    if (f.size() != 5) return false;
-    std::int64_t mono{}, previous{}, selected{}, reason{};
+    if (f.size() != 5 && f.size() != 6) return false;
+    std::int64_t mono{}, previous{}, selected{}, reason{}, signal{};
     if (!parse_int(f[1], mono) || !parse_int(f[2], previous) ||
         !parse_int(f[3], selected) || !parse_int(f[4], reason)) {
         return false;
@@ -157,6 +157,14 @@ bool read_source_row(const std::vector<std::string_view>& f, SourceChangeEvent& 
         return false;
     }
     out.timestamp = from_micros(mono);
+    if (f.size() == 6) {
+        if (!parse_int(f[5], signal) ||
+            !to_enum(signal,
+                     static_cast<std::int64_t>(SignalId::exhaust_gas_temperature_4),
+                     out.signal)) {
+            return false;
+        }
+    }
     return true;
 }
 
@@ -207,7 +215,7 @@ void FlightRecordWriter::write_node_event(std::ostream& out, const NodeStateChan
 void FlightRecordWriter::write_source_change(std::ostream& out,
                                              const SourceChangeEvent& e) {
     out << "source," << micros(e.timestamp) << ',' << code(e.previous) << ','
-        << code(e.selected) << ',' << code(e.reason) << '\n';
+        << code(e.selected) << ',' << code(e.reason) << ',' << code(e.signal) << '\n';
 }
 
 FlightRecord read_flight_record(std::istream& input) {

@@ -15,6 +15,10 @@ struct SourceChangeEvent final {
     SourceId selected{SourceId::unknown};
     SourceChangeReason reason{SourceChangeReason::initial};
     MonoTime timestamp{};
+
+    // Grandezza interessata dal cambio. In coda per mantenere compatibili gli
+    // initializer e i record prodotti prima dell'introduzione del campo.
+    SignalId signal{SignalId::unknown};
 };
 
 template <class T>
@@ -37,7 +41,12 @@ public:
         const Sample<T>* preferred = nullptr;
         const Sample<T>* current = nullptr;
         for (const auto& candidate : candidates) {
-            if (candidate.source == selected_) current = &candidate;
+            // `unknown` significa che non esiste una selezione. Un campione
+            // vuoto ha anch'esso sorgente unknown: trattarlo come corrente
+            // cancellerebbe l'identita' del primo dato reale non utilizzabile.
+            if (selected_ != SourceId::unknown && candidate.source == selected_) {
+                current = &candidate;
+            }
             if (preferred == nullptr && candidate.usable()) preferred = &candidate;
         }
 

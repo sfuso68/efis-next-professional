@@ -44,7 +44,7 @@ void SnapshotRecorder::write_source_change(std::ostream& out,
                                            const SourceChangeEvent& e) {
     out << "source_change," << micros(e.timestamp) << ",0,"
         << id(e.previous) << ',' << id(e.selected) << ',' << id(e.reason)
-        << ",,,,,,,\n";
+        << ',' << id(e.signal) << ",,,,,,\n";
 }
 
 }  // namespace efis::recording

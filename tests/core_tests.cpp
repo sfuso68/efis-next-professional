@@ -942,7 +942,8 @@ int main() {
         written, {4097, efis::NodeState::online, efis::NodeState::stale, epoch + 4s});
     efis::recording::FlightRecordWriter::write_source_change(
         written, {efis::SourceId::simulation, efis::SourceId::pixhawk_primary,
-                  efis::SourceChangeReason::failover, epoch + 5s});
+                  efis::SourceChangeReason::failover, epoch + 5s,
+                  efis::SignalId::indicated_airspeed});
 
     std::istringstream to_read{written.str()};
     const auto replayed = efis::recording::read_flight_record(to_read);
@@ -953,6 +954,9 @@ int main() {
     require(replayed.node_events.size() == 1, "node events must survive the round trip");
     require(replayed.source_changes.size() == 1,
             "source changes must survive the round trip");
+    require(replayed.source_changes.front().signal ==
+                efis::SignalId::indicated_airspeed,
+            "a source change must retain the identity of the affected signal");
 
     const efis::RecordedSampleLookup found = find_recorded(
         replayed.samples, efis::SignalId::indicated_airspeed);

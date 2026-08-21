@@ -132,6 +132,13 @@ FlightSnapshot SimulationProvider::sample(MonoTime now,
     out.position.latitude_deg = simulated(routeLatitude, SignalId::latitude, Unit::degree, now, sequence_);
     out.position.longitude_deg = simulated(routeLongitude, SignalId::longitude, Unit::degree, now, sequence_);
     out.position.ground_speed_kt = simulated(std::max(0.0, indicatedAirspeed + 4.0), SignalId::ground_speed, Unit::knot, now, sequence_);
+    // Catena verticale indipendente del GNSS. Nella simulazione nominale segue
+    // lo stesso profilo della quota barometrica: pubblicarla separatamente e'
+    // essenziale per esercitare sia il confronto ADR/GNSS sia il failover per
+    // grandezza senza lasciare un segnale arbitrato privo di sorgente.
+    out.position.gnss_vertical_speed_fpm = simulated(
+        routeVerticalSpeed, SignalId::gnss_vertical_speed,
+        Unit::foot_per_minute, now, sequence_);
     out.guidance.flight_director_active = simulated(true, SignalId::flight_director_active, Unit::boolean, now, sequence_);
     out.guidance.commanded_roll_deg = simulated(4.0, SignalId::commanded_roll, Unit::degree, now, sequence_);
     out.guidance.commanded_pitch_deg = simulated(1.5, SignalId::commanded_pitch, Unit::degree, now, sequence_);

@@ -121,6 +121,38 @@ std::vector<std::uint8_t> gps_fix_3d(std::uint8_t sequence) {
     return frame_v2(24, 24, payload, sequence);
 }
 
+void put_i16(efis::can::Frame& frame, std::uint8_t offset, int value) {
+    const auto raw = static_cast<std::uint16_t>(static_cast<std::int16_t>(value));
+    frame.data[offset] = static_cast<std::uint8_t>(raw & 0xFFU);
+    frame.data[offset + 1] = static_cast<std::uint8_t>((raw >> 8U) & 0xFFU);
+}
+
+efis::can::Frame esp32_attitude(bool imu_ok, bool barometer_ok, bool pitot_ok) {
+    efis::can::Frame frame{};
+    frame.id = efis::esp32_can::id_attitude;
+    frame.length = 8;
+    put_i16(frame, 0, 0);
+    put_i16(frame, 2, 0);
+    put_i16(frame, 4, 9000);
+    frame.data[6] = static_cast<std::uint8_t>((imu_ok ? 1U : 0U) |
+                                              (barometer_ok ? 2U : 0U) |
+                                              (pitot_ok ? 4U : 0U));
+    frame.data[7] = static_cast<std::uint8_t>(3U | (3U << 2U) |
+                                              (3U << 4U) | (3U << 6U));
+    return frame;
+}
+
+efis::can::Frame esp32_air_data(double airspeed_kt, int altitude_ft) {
+    efis::can::Frame frame{};
+    frame.id = efis::esp32_can::id_air_data;
+    frame.length = 8;
+    put_i16(frame, 0, static_cast<int>(airspeed_kt * 10.0));
+    put_i16(frame, 2, altitude_ft);
+    put_i16(frame, 4, 132);  // 1013,2 hPa con offset wire di 1000 hPa.
+    put_i16(frame, 6, 475);  // 47,5 Pa.
+    return frame;
+}
+
 }  // namespace
 
 int main() {
@@ -152,6 +184,46 @@ int main() {
                 "the arbitrator must be in the path and name the chosen source");
         require(pipeline.arbitrator().statistics().mislabelled_samples == 0,
                 "the adapter must not put a quantity in the wrong field");
+    }
+
+    // --- Due bus entrano davvero nello stesso arbitro -----------------------
+    //
+    // Il Pixhawk e' preferito. Quando dichiara non sano il proprio sensore di
+    // pressione differenziale, il solo segnale IAS passa immediatamente alla
+    // catena ESP32; quota e assetto non devono essere trascinati dal guasto.
+    {
+        efis::ingest::MavlinkPipeline pipeline;
+        pipeline.consume(sys_status(true, 1), epoch + 1s);
+        pipeline.consume(vfr_hud(120.0, 118.0, 3000.0, 2), epoch + 1s);
+        pipeline.consume_can(esp32_attitude(true, true, true), epoch + 1s);
+        pipeline.consume_can(esp32_air_data(87.4, 3200), epoch + 1s);
+
+        require(pipeline.selected_for(efis::SignalId::indicated_airspeed) ==
+                    efis::SourceId::pixhawk_primary,
+                "the preferred Pixhawk airspeed must win while healthy");
+        require(std::abs(pipeline.state().air_data.indicated_airspeed_kt.value -
+                         120.0) < 0.5,
+                "the selected value must be the Pixhawk value before failure");
+
+        pipeline.consume(sys_status(false, 3), epoch + 1100ms);
+        require(pipeline.selected_for(efis::SignalId::indicated_airspeed) ==
+                    efis::SourceId::esp32_legacy,
+                "an unhealthy Pixhawk pitot must fail over immediately to ESP32");
+        require(std::abs(pipeline.state().air_data.indicated_airspeed_kt.value -
+                         87.4) < 0.05,
+                "the protected state must carry the ESP32 value after failover");
+        require(pipeline.arbitrator().statistics().failovers >= 1,
+                "the cross-bus failover must be counted for the black box");
+
+        bool airspeed_change_recorded = false;
+        for (const auto& event : pipeline.source_events()) {
+            if (event.signal == efis::SignalId::indicated_airspeed &&
+                event.selected == efis::SourceId::esp32_legacy) {
+                airspeed_change_recorded = true;
+            }
+        }
+        require(airspeed_change_recorded,
+                "the black box event stream must name the ESP32 failover");
     }
 
     // --- Il sensore dichiarato non sano non produce una velocita' valida -----

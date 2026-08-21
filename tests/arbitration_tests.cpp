@@ -174,7 +174,7 @@ int main() {
     // arbitrata fa fallire questa riga, e chi la aggiorna deve prima essersi
     // chiesto se quella grandezza vada davvero arbitrata: la regolazione
     // barometrica, per esempio, non va, perche' il pilota e' uno solo.
-    require(arbitrator.events().size() == 20,
+    require(arbitrator.events().size() == 21,
             "every arbitrated signal must announce its initial source");
     require(arbitrator.events().front().reason == efis::SourceChangeReason::initial,
             "the first selection must be recorded as initial, not as a failover");
