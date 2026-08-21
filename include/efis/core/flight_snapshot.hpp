@@ -11,12 +11,37 @@ struct AttitudeState final {
     Sample<double> roll_deg;
     Sample<double> pitch_deg;
     Sample<double> heading_deg;
+
+    // Rateo di imbardata: quanto rapidamente cambia la prua. E' una misura, non
+    // la derivata della prua: differenziare un valore filtrato produce un
+    // numero che segue la prua con ritardo e amplifica il rumore, e in virata
+    // stretta i due non coincidono affatto.
+    Sample<double> turn_rate_deg_s;
+
+    // Accelerazione laterale, quella che sposta la pallina. Zero in virata
+    // corretta; positiva verso l'ala bassa quando si scivola.
+    Sample<double> lateral_acceleration_g;
 };
 
 struct AirDataState final {
     Sample<double> indicated_airspeed_kt;
+
+    // Quota con la regolazione standard: quella che finisce nella black box e
+    // che si confronta fra voli diversi.
     Sample<double> pressure_altitude_ft;
+
     Sample<double> vertical_speed_fpm;
+
+    // Regolazione impostata dal pilota sull'altimetro, in ettopascal. Non e'
+    // una misura: la sua provenienza e' SourceId::pilot_setting, e finche' il
+    // pilota non la tocca vale la standard con provenienza sconosciuta. La
+    // distinzione permette di sapere, rileggendo un volo, se la regolazione era
+    // scelta o soltanto ereditata.
+    Sample<double> baro_setting_hpa;
+
+    // Quota che l'altimetro indica con quella regolazione. Coincide con la
+    // quota di pressione solo quando la regolazione e' quella standard.
+    Sample<double> indicated_altitude_ft;
 };
 
 struct PositionState final {

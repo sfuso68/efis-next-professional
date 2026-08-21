@@ -36,6 +36,9 @@ add_library(efis_core
     src/ingest/recording_session.cpp
     src/io/byte_source.cpp
     src/bench/sensor_bench.cpp
+    src/core/altimetry.cpp
+    src/core/flight_dynamics.cpp
+    src/core/signal_access.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
@@ -124,6 +127,7 @@ if(EFIS_BUILD_QT_RENDERER)
         )
         target_link_libraries(efis-pfd-qt PRIVATE
             efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Quick3D Qt6::QuickControls2 Qt6::Concurrent Qt6::Network)
+
     else()
         # Un fallimento silenzioso qui e' inaccettabile: senza questo target non
         # esiste alcuna interfaccia di volo, e una configurazione riuscita darebbe

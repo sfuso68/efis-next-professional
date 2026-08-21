@@ -15,7 +15,13 @@ enum class SourceId : std::uint16_t {
     esp32_legacy,
     dlvr_legacy,
     nav_rf,
-    nav_synthetic
+    nav_synthetic,
+    // Valore inserito dal pilota, non misurato da alcun sensore. La
+    // provenienza va distinta perche' un dato inserito non invecchia come una
+    // misura e non ha qualita' del segnale, ma puo' essere sbagliato: la
+    // regolazione barometrica errata e' una causa classica di quota errata.
+    // Aggiunta in coda: gli identificativi gia' registrati non si spostano.
+    pilot_setting
 };
 
 enum class Quality : std::uint8_t { unknown, poor, nominal, high };
@@ -70,6 +76,11 @@ enum class SignalId : std::uint16_t {
     roll = 100,
     pitch,
     heading,
+    // Rateo di imbardata e accelerazione laterale: senza questi due il
+    // virosbandometro e la pallina non hanno sorgente, e vanno misurati, non
+    // ricavati derivando la prua.
+    turn_rate,
+    lateral_acceleration,
 
     // Dati aria
     indicated_airspeed = 200,
@@ -80,6 +91,11 @@ enum class SignalId : std::uint16_t {
     // dell'elemento, che serve a compensarla.
     differential_pressure,
     air_data_temperature,
+    // Regolazione impostata sull'altimetro, e quota che ne risulta. Restano due
+    // segnali distinti dalla quota di pressione: registrare solo quest'ultima
+    // renderebbe incomparabili due voli condotti con regolazioni diverse.
+    baro_setting,
+    indicated_altitude,
 
     // Posizione
     latitude = 300,
@@ -148,7 +164,11 @@ enum class Unit : std::uint8_t {
     // Aggiunte in coda: gli identificativi gia' presenti nelle registrazioni non
     // devono spostarsi.
     hectopascal,
-    pascal
+    pascal,
+    degree_per_second,
+    // Accelerazione in multipli di quella di gravita', come la legge un
+    // accelerometro e come la mostra la pallina.
+    gravity
 };
 
 [[nodiscard]] constexpr const char* unit_symbol(Unit unit) noexcept {
@@ -171,6 +191,8 @@ enum class Unit : std::uint8_t {
         case Unit::ampere: return "A";
         case Unit::hectopascal: return "hPa";
         case Unit::pascal: return "Pa";
+        case Unit::degree_per_second: return "deg/s";
+        case Unit::gravity: return "G";
     }
     return "?";
 }
@@ -184,11 +206,15 @@ enum class Unit : std::uint8_t {
         case SignalId::roll: return "roll";
         case SignalId::pitch: return "pitch";
         case SignalId::heading: return "heading";
+        case SignalId::turn_rate: return "turn_rate";
+        case SignalId::lateral_acceleration: return "lateral_acceleration";
         case SignalId::indicated_airspeed: return "indicated_airspeed";
         case SignalId::pressure_altitude: return "pressure_altitude";
         case SignalId::vertical_speed: return "vertical_speed";
         case SignalId::differential_pressure: return "differential_pressure";
         case SignalId::air_data_temperature: return "air_data_temperature";
+        case SignalId::baro_setting: return "baro_setting";
+        case SignalId::indicated_altitude: return "indicated_altitude";
         case SignalId::latitude: return "latitude";
         case SignalId::longitude: return "longitude";
         case SignalId::ground_speed: return "ground_speed";

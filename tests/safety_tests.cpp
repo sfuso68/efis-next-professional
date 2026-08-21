@@ -7,6 +7,7 @@
 
 #include "efis/core/cross_check.hpp"
 #include "efis/core/stasis_monitor.hpp"
+#include "efis/core/flight_dynamics.hpp"
 #include "efis/core/flight_model.hpp"
 #include "efis/providers/mavlink_adapter.hpp"
 
@@ -261,6 +262,13 @@ int main() {
         fill(snapshot.attitude.roll_deg, roll, efis::SignalId::roll);
         fill(snapshot.attitude.pitch_deg, 2.0 + roll, efis::SignalId::pitch);
         fill(snapshot.attitude.heading_deg, 42.0, efis::SignalId::heading);
+        // Il rateo di virata segue dall'inclinazione e dalla velocita' di questo
+        // stesso istantaneo: un volo di prova incoerente con se stesso non
+        // proverebbe granche'.
+        fill(snapshot.attitude.turn_rate_deg_s,
+             efis::coordinated_turn_rate_deg_s(roll, airspeed), efis::SignalId::turn_rate);
+        fill(snapshot.attitude.lateral_acceleration_g, 0.0,
+             efis::SignalId::lateral_acceleration);
         fill(snapshot.air_data.indicated_airspeed_kt, airspeed,
              efis::SignalId::indicated_airspeed);
         fill(snapshot.air_data.pressure_altitude_ft, altitude,

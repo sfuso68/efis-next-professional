@@ -29,6 +29,12 @@ constexpr FieldAccess<double> numeric_fields[] = {
     {SignalId::heading,
      [](const FlightSnapshot& s) -> const Sample<double>& { return s.attitude.heading_deg; },
      [](FlightSnapshot& s) -> Sample<double>& { return s.attitude.heading_deg; }},
+    {SignalId::turn_rate,
+     [](const FlightSnapshot& s) -> const Sample<double>& { return s.attitude.turn_rate_deg_s; },
+     [](FlightSnapshot& s) -> Sample<double>& { return s.attitude.turn_rate_deg_s; }},
+    {SignalId::lateral_acceleration,
+     [](const FlightSnapshot& s) -> const Sample<double>& { return s.attitude.lateral_acceleration_g; },
+     [](FlightSnapshot& s) -> Sample<double>& { return s.attitude.lateral_acceleration_g; }},
 
     {SignalId::indicated_airspeed,
      [](const FlightSnapshot& s) -> const Sample<double>& { return s.air_data.indicated_airspeed_kt; },

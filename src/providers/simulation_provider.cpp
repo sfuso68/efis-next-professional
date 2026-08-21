@@ -1,4 +1,5 @@
 #include "efis/providers/simulation_provider.hpp"
+#include "efis/core/flight_dynamics.hpp"
 
 #include <algorithm>
 #include <array>
@@ -88,6 +89,27 @@ FlightSnapshot SimulationProvider::sample(MonoTime now,
     out.attitude.heading_deg = simulated(simulatedHeading + 1.5 * std::sin(phase * 0.035), SignalId::heading, Unit::degree, now, sequence_);
     const double indicatedAirspeed = airspeed_profile(seconds);
     out.air_data.indicated_airspeed_kt = simulated(indicatedAirspeed, SignalId::indicated_airspeed, Unit::knot, now, sequence_);
+
+    // Rateo di virata coerente con l'inclinazione e la velocita' del momento.
+    // Ricavarlo dalla relazione della virata corretta, invece che derivando la
+    // prua, e' cio' che rende il virosbandometro simulato un banco utile: il
+    // Pixhawk reale misura la stessa grandezza, e l'adapter la collegera' allo
+    // stesso campo senza che l'indicatore se ne accorga.
+    const double simulatedBank = out.attitude.roll_deg.value;
+    const double turnRate = coordinated_turn_rate_deg_s(simulatedBank, indicatedAirspeed);
+    out.attitude.turn_rate_deg_s = simulated(turnRate, SignalId::turn_rate,
+                                             Unit::degree_per_second, now, sequence_);
+
+    // La pallina. In virata corretta sta al centro, ed e' il caso quasi sempre.
+    // Una fase di scivolata viene introdotta di proposito: una pallina che non
+    // si muove mai non dimostra che l'indicatore funziona, dimostra solo che
+    // disegna qualcosa al centro.
+    const double slipPhase = std::sin(phase * 0.021);
+    const double slip = slipPhase > 0.85 ? (slipPhase - 0.85) * 1.6 : 0.0;
+    out.attitude.lateral_acceleration_g = simulated(
+        std::copysign(slip, simulatedBank), SignalId::lateral_acceleration,
+        Unit::gravity, now, sequence_);
+
     constexpr double pi = 3.141592653589793;
     const double smoothProgress = routeProgress * routeProgress * (3.0 - 2.0 * routeProgress);
     const double lateralOffset = 0.0020 * std::sin(routeProgress * pi);
