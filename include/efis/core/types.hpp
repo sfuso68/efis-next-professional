@@ -145,9 +145,10 @@ enum class Unit : std::uint8_t {
     gallon_per_hour,
     volt,
     ampere,
-    // Aggiunta in coda: gli identificativi gia' presenti nelle registrazioni non
+    // Aggiunte in coda: gli identificativi gia' presenti nelle registrazioni non
     // devono spostarsi.
-    hectopascal
+    hectopascal,
+    pascal
 };
 
 [[nodiscard]] constexpr const char* unit_symbol(Unit unit) noexcept {
@@ -169,6 +170,7 @@ enum class Unit : std::uint8_t {
         case Unit::volt: return "V";
         case Unit::ampere: return "A";
         case Unit::hectopascal: return "hPa";
+        case Unit::pascal: return "Pa";
     }
     return "?";
 }

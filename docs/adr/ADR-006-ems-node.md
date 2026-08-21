@@ -53,6 +53,42 @@ verificarli entrambi.
   che si aspetta dal proprio `controller` diventa un'interfaccia vera fra due
   implementazioni invece che una convenzione interna a una sola.
 
+## Il pannello resta di uno solo dei due
+
+Rilevato collegandosi al nodo dopo aver preso la decisione, e va scritto qui
+perché smentisce l'ipotesi con cui era stata presa. L'EFIS vecchio non è
+un'applicazione web: è un'applicazione Qt che gira con `QT_QPA_PLATFORM=eglfs`,
+cioè direttamente su KMS/DRM, e **prende il DRM master in esclusiva**. Il RPi4
+non ha né Wayland né X, e il suo target di default è `multi-user.target`.
+
+Quindi «separati e operativi» sul pannello non è possibile: il secondo programma
+che parte non ottiene il display. La separazione resta vera per tutto il resto —
+sorgenti, cartella, unità systemd, e i due servizi `efis-web` ed `efis-plan`,
+che non toccano il pannello e continuano a girare accanto al nodo motore.
+
+Il 21 agosto 2026 la scelta è stata dare il display al nodo EMS, disabilitando
+`efis.service` all'avvio senza rimuovere nulla, e senza dichiarare
+`Conflicts=efis.service` nell'unità. La mutua esclusione resta perciò a carico
+di chi la ricorda: è una scelta, non una svista, e chi cambiasse idea trova in
+`docs/deployment/RPI4_EMS.md` la ragione per cui aggiungerla sarebbe
+difendibile.
+
+Il 21 agosto 2026 la decisione è stata portata fino in fondo: il RPi4 diventa
+stabilmente il nodo motore di EFIS Next, e **l'EFIS vecchio diventa
+secondario** — non rimosso, non modificato, ma non più il programma che il nodo
+avvia da solo.
+
+Conseguenza operativa per l'interfaccia: senza compositore non esiste `grim`,
+quindi la cattura dal display vero — che sul RPi5 è la sola verifica valida per
+una modifica di layout — con gli strumenti esistenti qui non si fa. Il nodo ha
+perciò una cattura propria (`EFIS_CAPTURE`), che risolve il problema per metà e
+va conosciuta per l'altra metà: con la piattaforma `offscreen` Qt carica il
+backend *software* dello scene graph, che non disegna i nodi di geometria
+personalizzati, e `CircularGaugeItem` è uno di quelli. Una cattura offscreen
+prova quindi il **layout** — ingombri, sovrapposizioni, adattamento alla
+risoluzione — e non prova gli **strumenti**, che vi compaiono senza quadrante.
+Per quelli serve `eglfs`, cioè il pannello.
+
 ## Limiti correnti
 
 Il nodo si alimenta dal solo `EngineSimulationProvider`, come dichiara la

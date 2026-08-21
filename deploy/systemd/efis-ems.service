@@ -1,22 +1,49 @@
 [Unit]
 Description=EFIS Next Engine Monitoring Node
-Documentation=file:///%h/efis-next/docs/deployment/RPI4_EMS.md
-After=graphical-session.target
-PartOf=graphical-session.target
-# Nessun Conflicts con l'EFIS vecchio: i due impianti restano separati e
-# operativi, come dichiara il README. Questa unita' non deve poter fermare
-# l'altro, e non porta un nome che possa collidere con il suo.
+Documentation=file:///home/pi/efis-next/docs/deployment/RPI4_EMS.md
+After=multi-user.target
+StartLimitIntervalSec=0
+
+# Unita' di sistema, non utente, e percorsi espliciti: e' la stessa forma che
+# efis.service usa su questo nodo per l'EFIS vecchio. Chi mantiene la macchina
+# conosce gia' quella forma, e farne una diversa per il solo gusto di essere
+# piu' generici costringerebbe a impararne due. Un servizio utente avrebbe
+# richiesto in piu' `loginctl enable-linger` per partire senza login, cioe' un
+# pezzo di configurazione non versionato.
+#
+# Nessuna dipendenza da graphical-session.target: il nodo disegna con eglfs,
+# cioe' direttamente su KMS/DRM, e non c'e' compositore da attendere.
+#
+# Nessun Conflicts con efis.service, per scelta esplicita del 21 agosto 2026.
+# I due programmi non possono pero' tenere il pannello DSI insieme, perche'
+# eglfs prende il DRM master in esclusiva: per riavviare l'EFIS vecchio a mano
+# bisogna prima fermare questo nodo. La procedura e' in RPI4_EMS.md.
 
 [Service]
 Type=simple
-WorkingDirectory=%h/efis-next
-ExecStart=%h/efis-next/deploy/scripts/run-ems.sh
+User=pi
+WorkingDirectory=/home/pi/efis-next
+Environment=HOME=/home/pi
+Environment=QT_QPA_PLATFORM=eglfs
+ExecStart=/home/pi/efis-next/deploy/scripts/run-ems.sh
 Restart=on-failure
-RestartSec=2
+RestartSec=5
+
+# Su eglfs Qt installa un gestore per il terminale virtuale che, ricevuto
+# SIGTERM, fa uscire il programma con codice 1. Senza questa riga ogni arresto
+# voluto lascerebbe l'unita' in stato failed, cioe' un arresto normale
+# somiglierebbe a un guasto. Non e' una particolarita' del nodo EMS: il 21
+# agosto 2026 il journal mostra che anche efis.service, l'EFIS vecchio, esce
+# con status=1/FAILURE ogni volta che viene fermato, sulla stessa piattaforma.
+#
+# Perche' la riga non nasconda un guasto vero, il programma non usa il codice 1
+# per nessun proprio fallimento: 3 e' la pagina QML non caricata, 2 la cattura
+# fallita, e restano entrambi guasti agli occhi di systemd.
+SuccessExitStatus=1
 TimeoutStopSec=5
 KillSignal=SIGTERM
 StandardOutput=journal
 StandardError=journal
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=multi-user.target

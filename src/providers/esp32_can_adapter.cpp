@@ -159,7 +159,7 @@ void Esp32CanAdapter::apply_air_data(const can::Frame& frame, MonoTime now) {
                  Unit::hectopascal, node_, now, sequence_);
     state_.differential_pressure_pa =
         measured(differential, can::read_i16(frame, 6), SignalId::differential_pressure,
-                 Unit::unknown, node_, now, sequence_);
+                 Unit::pascal, node_, now, sequence_);
 }
 
 void Esp32CanAdapter::apply_health(const can::Frame& frame, MonoTime now) {
@@ -287,6 +287,9 @@ void Esp32CanAdapter::update(MonoTime now) {
     // Nodo scaduto o perduto: i valori che ha lasciato non sono piu' attuali.
     // Lasciarli validi significherebbe mostrare l'ultimo assetto buono di un
     // sensore che non parla piu'.
+    // Tutte le grandezze, comprese quelle che non stanno nello snapshot di volo.
+    // Fermarsi allo snapshot lascerebbe valide proprio le misure che il banco
+    // mostra per prime, come la pressione differenziale del sensore aria.
     for (Sample<double>* sample : {&snapshot_.attitude.roll_deg,
                                    &snapshot_.attitude.pitch_deg,
                                    &snapshot_.attitude.heading_deg,
@@ -294,8 +297,14 @@ void Esp32CanAdapter::update(MonoTime now) {
                                    &snapshot_.air_data.pressure_altitude_ft,
                                    &snapshot_.position.latitude_deg,
                                    &snapshot_.position.longitude_deg,
-                                   &snapshot_.position.ground_speed_kt}) {
-        if (sample->origin.signal != SignalId::unknown) {
+                                   &snapshot_.position.ground_speed_kt,
+                                   &state_.load_factor_g,
+                                   &state_.temperature_c,
+                                   &state_.differential_pressure_pa,
+                                   &state_.static_pressure_hpa,
+                                   &state_.gnss_altitude_ft,
+                                   &state_.gnss_track_deg}) {
+        if (sample->received_at != MonoTime{}) {
             sample->validity = Validity::unavailable;
         }
     }
