@@ -59,6 +59,19 @@ struct SystemHealth final {
     HealthLevel level{HealthLevel::warning};
     std::uint32_t unavailable_fields{};
     std::uint32_t stale_fields{};
+
+    // Campi che continuano ad arrivare freschi ma il cui valore non cambia piu'.
+    // Non sono scaduti: sono fermi, che e' una condizione diversa e piu'
+    // insidiosa, perche' ogni altro controllo li considera buoni. Vedi ADR-004.
+    std::uint32_t suspect_fields{};
+
+    // Campi marcati in disaccordo dal confronto fra catene indipendenti.
+    std::uint32_t disagreeing_fields{};
+
+    // Grandezza ferma da segnalare per prima. Una spia che dice soltanto "un
+    // dato e' fermo" costringe il pilota a cercare quale, nel momento in cui ha
+    // meno tempo per farlo.
+    SignalId frozen_signal{SignalId::unknown};
 };
 
 struct FlightSnapshot final {

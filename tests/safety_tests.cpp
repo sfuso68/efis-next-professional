@@ -7,6 +7,7 @@
 
 #include "efis/core/cross_check.hpp"
 #include "efis/core/stasis_monitor.hpp"
+#include "efis/core/flight_model.hpp"
 
 #include <chrono>
 #include <cstdlib>
@@ -221,6 +222,250 @@ int main() {
 
     require(std::string{efis::agreement_name(efis::Agreement::disagree)} == "DISAGREE",
             "agreement names must stay stable for recorded data");
+
+
+    // --- Collegamento allo stato di volo --------------------------------------
+    //
+    // I due meccanismi provati sopra in isolamento devono ora comparire nella
+    // salute del sistema e negli allarmi, altrimenti restano codice disponibile
+    // e non protezione.
+
+    auto has_alert = [](const efis::FlightSnapshot& snapshot, const char* code) {
+        for (const auto& alert : snapshot.alerts.active) {
+            if (alert.code == code) return true;
+        }
+        return false;
+    };
+    auto alert_message = [](const efis::FlightSnapshot& snapshot, const char* code) {
+        for (const auto& alert : snapshot.alerts.active) {
+            if (alert.code == code) return alert.message;
+        }
+        return std::string{};
+    };
+
+    // Costruisce uno stato di volo in crociera, con tutti i campi utilizzabili e
+    // freschi. I valori sono plausibili ma irrilevanti: conta che si muovano.
+    auto cruising = [](efis::MonoTime at, double airspeed, double altitude,
+                       double roll, double ground_speed) {
+        efis::FlightSnapshot snapshot{};
+        auto fill = [&](efis::Sample<double>& field, double value,
+                        efis::SignalId signal) {
+            field = reading(value, signal, at);
+        };
+        fill(snapshot.attitude.roll_deg, roll, efis::SignalId::roll);
+        fill(snapshot.attitude.pitch_deg, 2.0 + roll, efis::SignalId::pitch);
+        fill(snapshot.attitude.heading_deg, 42.0, efis::SignalId::heading);
+        fill(snapshot.air_data.indicated_airspeed_kt, airspeed,
+             efis::SignalId::indicated_airspeed);
+        fill(snapshot.air_data.pressure_altitude_ft, altitude,
+             efis::SignalId::pressure_altitude);
+        fill(snapshot.air_data.vertical_speed_fpm, 0.0, efis::SignalId::vertical_speed);
+        fill(snapshot.position.latitude_deg, 45.6, efis::SignalId::latitude);
+        fill(snapshot.position.longitude_deg, 12.2, efis::SignalId::longitude);
+        fill(snapshot.position.ground_speed_kt, ground_speed,
+             efis::SignalId::ground_speed);
+        fill(snapshot.guidance.commanded_roll_deg, 0.0, efis::SignalId::commanded_roll);
+        fill(snapshot.guidance.commanded_pitch_deg, 0.0, efis::SignalId::commanded_pitch);
+        fill(snapshot.guidance.selected_altitude_ft, 5500.0,
+             efis::SignalId::selected_altitude);
+        fill(snapshot.guidance.selected_course_deg, 42.0,
+             efis::SignalId::selected_course);
+        fill(snapshot.guidance.selected_airspeed_kt, 95.0,
+             efis::SignalId::selected_airspeed);
+        fill(snapshot.navigation.cdi_deviation_dots, 0.1, efis::SignalId::cdi_deviation);
+        fill(snapshot.navigation.glide_slope_dots, 0.0,
+             efis::SignalId::glide_slope_deviation);
+        snapshot.guidance.flight_director_active =
+            efis::Sample<bool>{true, efis::SourceId::pixhawk_primary, at, at,
+                               efis::Quality::nominal, efis::Validity::valid, 1};
+        snapshot.navigation.to_flag =
+            efis::Sample<bool>{true, efis::SourceId::pixhawk_primary, at, at,
+                               efis::Quality::nominal, efis::Validity::valid, 1};
+        return snapshot;
+    };
+
+    // Volo sano: tutto si muove, nessuna delle due protezioni interviene.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot healthy_state{};
+        for (int step = 0; step < 30; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            healthy_state = model.normalize(
+                cruising(at, 95.0 + static_cast<double>(step) * 0.3,
+                         5500.0 + static_cast<double>(step) * 4.0,
+                         2.0 + static_cast<double>(step % 5) * 0.4,
+                         100.0 + static_cast<double>(step) * 0.3),
+                at);
+        }
+        require(healthy_state.health.suspect_fields == 0,
+                "a healthy flight must not raise a frozen data warning");
+        require(healthy_state.health.disagreeing_fields == 0,
+                "a healthy flight must not raise a disagreement");
+        require(healthy_state.health.level == efis::HealthLevel::normal,
+                "a healthy flight must stay at normal health");
+        require(!has_alert(healthy_state, "DATA_FROZEN"),
+                "no frozen alert during a healthy flight");
+    }
+
+    // Pitot ostruito in crociera. La velocita' indicata si ferma, tutto il resto
+    // continua a muoversi, e ogni campione resta fresco e valido. E' il guasto
+    // che nessuno dei controlli preesistenti sarebbe in grado di vedere.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot blocked{};
+        for (int step = 0; step < 30; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            const double airspeed = step < 5 ? 95.0 + static_cast<double>(step) * 0.3
+                                             : 96.2;
+            blocked = model.normalize(
+                cruising(at, airspeed,
+                         5500.0 + static_cast<double>(step) * 4.0,
+                         2.0 + static_cast<double>(step % 5) * 0.4,
+                         100.0 + static_cast<double>(step) * 0.3),
+                at);
+        }
+        require(blocked.air_data.indicated_airspeed_kt.usable(),
+                "the frozen airspeed still looks perfectly valid: that is the danger");
+        require(blocked.health.suspect_fields >= 1,
+                "a frozen airspeed must be counted in the system health");
+        require(blocked.health.frozen_signal == efis::SignalId::indicated_airspeed,
+                "the health must name which quantity has stopped moving");
+        require(blocked.health.level == efis::HealthLevel::caution,
+                "a frozen quantity must raise the health level");
+        require(has_alert(blocked, "DATA_FROZEN"),
+                "a frozen airspeed must reach the alert list");
+        require(alert_message(blocked, "DATA_FROZEN") == "indicated_airspeed FROZEN",
+                "the alert must name the quantity, not just say that one is frozen");
+    }
+
+    // A terra fermi non si grida. Assetto, quota e velocita' sono legittimamente
+    // costanti a motore acceso, e un allarme a ogni sosta e' un allarme che
+    // nessuno guarda piu'.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot parked{};
+        for (int step = 0; step < 60; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            parked = model.normalize(cruising(at, 0.0, 59.0, 0.0, 0.0), at);
+        }
+        require(parked.health.suspect_fields == 0,
+                "a stationary aircraft must not be reported as frozen");
+        require(!has_alert(parked, "DATA_FROZEN"),
+                "no frozen alert while parked, however long the wait");
+    }
+
+    // Il caso che giustifica il cancello sulla velocita' al suolo: durante la
+    // corsa di decollo la sorveglianza si apre, e un pitot gia' ostruito viene
+    // colto proprio quando comincia a contare.
+    //
+    // Le due protezioni intervengono in momenti diversi. La stasi matura per
+    // prima, quando la velocita' indicata e' ferma da abbastanza tempo; poi il
+    // divario con la velocita' al suolo supera ogni vento plausibile e scatta il
+    // confronto, che marca la velocita' indicata come inutilizzabile. Da quel
+    // momento la stasi non la sorveglia piu', perche' non sorveglia i dati gia'
+    // dichiarati inservibili. La copertura non si interrompe: cambia soltanto
+    // quale meccanismo la fornisce, e la segnalazione al pilota si aggrava da
+    // avvertimento a allarme.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot rolling{};
+        bool airspeed_named_frozen = false;
+        bool airspeed_flagged_throughout = true;
+        bool roll_started = false;
+        for (int step = 0; step < 40; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            const double ground_speed = static_cast<double>(step) * 3.0;
+            rolling = model.normalize(
+                cruising(at, 12.0, 59.0 + static_cast<double>(step) * 2.0,
+                         0.2 * static_cast<double>(step % 3), ground_speed),
+                at);
+            if (rolling.health.frozen_signal == efis::SignalId::indicated_airspeed) {
+                airspeed_named_frozen = true;
+                roll_started = true;
+            }
+            if (rolling.health.disagreeing_fields > 0) roll_started = true;
+            // Una volta cominciata la segnalazione non deve piu' interrompersi:
+            // un buco fra la fine di una protezione e l'inizio dell'altra
+            // lascerebbe il pilota senza avviso proprio durante il decollo.
+            if (roll_started && rolling.health.suspect_fields == 0 &&
+                rolling.health.disagreeing_fields == 0) {
+                airspeed_flagged_throughout = false;
+            }
+        }
+        require(airspeed_named_frozen,
+                "a pitot already blocked must be named once the roll begins");
+        require(airspeed_flagged_throughout,
+                "the warning must not lapse when one protection hands over to the other");
+        require(rolling.health.disagreeing_fields == 2,
+                "by the end of the roll the speed disagreement must be declared");
+        require(rolling.health.level == efis::HealthLevel::warning,
+                "the blocked pitot must end the roll as a warning, not a caution");
+    }
+
+    // Confronto incrociato: velocita' indicata ferma mentre quella al suolo
+    // cresce oltre ogni vento plausibile. Entrambe vengono marcate, perche' il
+    // confronto non dice quale delle due menta.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot diverged{};
+        for (int step = 0; step < 20; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            diverged = model.normalize(
+                cruising(at, 60.0, 5500.0 + static_cast<double>(step) * 4.0,
+                         2.0 + static_cast<double>(step % 5) * 0.4,
+                         60.0 + static_cast<double>(step) * 8.0),
+                at);
+        }
+        require(diverged.health.disagreeing_fields == 2,
+                "a disagreement must mark both chains, not one");
+        require(diverged.air_data.indicated_airspeed_kt.validity ==
+                    efis::Validity::disagree,
+                "the indicated airspeed must be marked in disagreement");
+        require(diverged.position.ground_speed_kt.validity == efis::Validity::disagree,
+                "the ground speed must be marked in disagreement too");
+        require(!diverged.air_data.indicated_airspeed_kt.usable(),
+                "a value in disagreement must not be presented as usable");
+        require(diverged.health.level == efis::HealthLevel::warning,
+                "a disagreement must raise the health level to warning");
+        require(has_alert(diverged, "DATA_DISAGREE"),
+                "the disagreement must reach the alert list");
+    }
+
+    // Una protezione non deve disattivarne un'altra. Il confronto marca la
+    // velocita' al suolo come inutilizzabile: se il moto fosse valutato dopo, il
+    // cancello si chiuderebbe e la sorveglianza della stasi si spegnerebbe in
+    // silenzio proprio mentre e' in corso un guasto.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot both{};
+        for (int step = 0; step < 30; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            both = model.normalize(
+                cruising(at, 60.0, 5500.0,
+                         2.0 + static_cast<double>(step % 5) * 0.4,
+                         60.0 + static_cast<double>(step) * 8.0),
+                at);
+        }
+        require(both.health.disagreeing_fields == 2,
+                "the disagreement must still be declared");
+        require(both.health.suspect_fields >= 1,
+                "the frozen altitude must still be caught while a disagreement runs");
+    }
+
+    // La sorveglianza riparte da capo dopo una sosta: il valore costante
+    // osservato a terra non deve contare come immobilita' al decollo successivo.
+    {
+        efis::FlightModel model{};
+        for (int step = 0; step < 40; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            model.normalize(cruising(at, 0.0, 59.0, 0.0, 0.0), at);
+        }
+        const auto after_stop = epoch + 41s;
+        const auto first_moving = model.normalize(
+            cruising(after_stop, 40.0, 59.0, 0.0, 45.0), after_stop);
+        require(first_moving.health.suspect_fields == 0,
+                "the watch must restart after a stop, not inherit the standstill");
+    }
 
     std::cout << "All EFIS safety tests passed\n";
 }

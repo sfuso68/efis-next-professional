@@ -23,32 +23,121 @@ void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
 
 }  // namespace
 
+FlightModel::FlightModel(FlightModelPolicy policy)
+    : policy_(policy), speed_check_(policy.speed_agreement) {
+    configure_stasis();
+}
+
 FlightModel::FlightModel(std::chrono::milliseconds stale_after)
-    : stale_after_(stale_after) {}
+    : FlightModel(FlightModelPolicy{.stale_after = stale_after}) {}
 
-FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) const {
-    age(input.attitude.roll_deg, now, stale_after_, input.health);
-    age(input.attitude.pitch_deg, now, stale_after_, input.health);
-    age(input.attitude.heading_deg, now, stale_after_, input.health);
-    age(input.air_data.indicated_airspeed_kt, now, stale_after_, input.health);
-    age(input.air_data.pressure_altitude_ft, now, stale_after_, input.health);
-    age(input.air_data.vertical_speed_fpm, now, stale_after_, input.health);
-    age(input.position.latitude_deg, now, stale_after_, input.health);
-    age(input.position.longitude_deg, now, stale_after_, input.health);
-    age(input.position.ground_speed_kt, now, stale_after_, input.health);
-    age(input.guidance.flight_director_active, now, stale_after_, input.health);
-    age(input.guidance.commanded_roll_deg, now, stale_after_, input.health);
-    age(input.guidance.commanded_pitch_deg, now, stale_after_, input.health);
-    age(input.guidance.selected_altitude_ft, now, stale_after_, input.health);
-    age(input.guidance.selected_course_deg, now, stale_after_, input.health);
-    age(input.guidance.selected_airspeed_kt, now, stale_after_, input.health);
-    age(input.navigation.cdi_deviation_dots, now, stale_after_, input.health);
-    age(input.navigation.glide_slope_dots, now, stale_after_, input.health);
-    age(input.navigation.to_flag, now, stale_after_, input.health);
+void FlightModel::configure_stasis() {
+    stasis_.configure(SignalId::indicated_airspeed,
+                      {.suspect_after = policy_.air_data_suspect_after,
+                       .resolution = policy_.airspeed_resolution_kt,
+                       .applicable = true});
+    stasis_.configure(SignalId::pressure_altitude,
+                      {.suspect_after = policy_.air_data_suspect_after,
+                       .resolution = policy_.altitude_resolution_ft,
+                       .applicable = true});
+    stasis_.configure(SignalId::roll,
+                      {.suspect_after = policy_.attitude_suspect_after,
+                       .resolution = policy_.attitude_resolution_deg,
+                       .applicable = true});
+    stasis_.configure(SignalId::pitch,
+                      {.suspect_after = policy_.attitude_suspect_after,
+                       .resolution = policy_.attitude_resolution_deg,
+                       .applicable = true});
+    stasis_.configure(SignalId::ground_speed,
+                      {.suspect_after = policy_.ground_speed_suspect_after,
+                       .resolution = policy_.ground_speed_resolution_kt,
+                       .applicable = true});
 
-    if (input.health.unavailable_fields > 0) {
+    // Prua e velocita' verticale sono deliberatamente escluse. Con un pilota
+    // automatico che tiene bene, entrambe possono restare dentro la risoluzione
+    // dello strumento per parecchi secondi senza che nulla sia guasto: una
+    // soglia le farebbe gridare durante un volo perfettamente sano. Andranno
+    // sorvegliate con un criterio diverso, non con questo.
+}
+
+FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
+    age(input.attitude.roll_deg, now, policy_.stale_after, input.health);
+    age(input.attitude.pitch_deg, now, policy_.stale_after, input.health);
+    age(input.attitude.heading_deg, now, policy_.stale_after, input.health);
+    age(input.air_data.indicated_airspeed_kt, now, policy_.stale_after, input.health);
+    age(input.air_data.pressure_altitude_ft, now, policy_.stale_after, input.health);
+    age(input.air_data.vertical_speed_fpm, now, policy_.stale_after, input.health);
+    age(input.position.latitude_deg, now, policy_.stale_after, input.health);
+    age(input.position.longitude_deg, now, policy_.stale_after, input.health);
+    age(input.position.ground_speed_kt, now, policy_.stale_after, input.health);
+    age(input.guidance.flight_director_active, now, policy_.stale_after, input.health);
+    age(input.guidance.commanded_roll_deg, now, policy_.stale_after, input.health);
+    age(input.guidance.commanded_pitch_deg, now, policy_.stale_after, input.health);
+    age(input.guidance.selected_altitude_ft, now, policy_.stale_after, input.health);
+    age(input.guidance.selected_course_deg, now, policy_.stale_after, input.health);
+    age(input.guidance.selected_airspeed_kt, now, policy_.stale_after, input.health);
+    age(input.navigation.cdi_deviation_dots, now, policy_.stale_after, input.health);
+    age(input.navigation.glide_slope_dots, now, policy_.stale_after, input.health);
+    age(input.navigation.to_flag, now, policy_.stale_after, input.health);
+
+    // Se l'aeromobile sia in moto si stabilisce adesso, prima di ogni altra
+    // valutazione. Il confronto qui sotto puo' marcare la velocita' al suolo
+    // come inutilizzabile, e leggerla dopo farebbe chiudere il cancello del
+    // moto: una protezione ne disattiverebbe un'altra in silenzio, che e'
+    // esattamente il genere di interazione che non deve esistere.
+    const auto& ground = input.position.ground_speed_kt;
+    const bool in_motion = ground.usable() && ground.value >= policy_.motion_threshold_kt;
+
+    // Confronto fra catene indipendenti. Va eseguito dopo l'invecchiamento, cosi'
+    // un campione gia' scaduto non viene usato come termine di paragone: il
+    // disaccordo che ne risulterebbe dipenderebbe dal guasto gia' rilevato.
+    const auto agreement = speed_check_.compare(input.air_data.indicated_airspeed_kt,
+                                                input.position.ground_speed_kt, now);
+    if (agreement.agreement == Agreement::disagree) {
+        apply_disagreement(agreement, input.air_data.indicated_airspeed_kt,
+                           input.position.ground_speed_kt);
+        input.health.disagreeing_fields += 2;
+    }
+
+    // Sorveglianza del valore fermo, sospesa mentre l'aeromobile non e' in moto.
+    //
+    // A terra fermi, assetto quota e velocita' sono legittimamente costanti: ogni
+    // soglia produrrebbe un allarme a ogni sosta, e un allarme che grida sempre
+    // e' un allarme che nessuno guarda piu'. La sorveglianza si apre durante la
+    // corsa di decollo.
+    //
+    // Se la velocita' al suolo fosse a sua volta ferma su zero mentre
+    // l'aeromobile accelera davvero, questo cancello resterebbe chiuso. Non e'
+    // una svista: quel caso lo intercetta il confronto qui sopra, perche' la
+    // velocita' indicata crescerebbe mentre quella al suolo resta a zero. Le due
+    // protezioni si coprono a vicenda proprio dove ciascuna e' cieca.
+    if (in_motion) {
+        const std::array<const Sample<double>*, 5> watched{
+            &input.air_data.indicated_airspeed_kt,
+            &input.air_data.pressure_altitude_ft,
+            &input.attitude.roll_deg,
+            &input.attitude.pitch_deg,
+            &input.position.ground_speed_kt};
+
+        for (const Sample<double>* sample : watched) {
+            if (stasis_.observe(*sample, now) != Motion::suspect) continue;
+            ++input.health.suspect_fields;
+            // Si nomina la prima grandezza ferma nell'ordine in cui sono
+            // elencate, che e' l'ordine di gravita': una velocita' ferma conta
+            // piu' di una quota ferma, che conta piu' di un assetto fermo.
+            if (input.health.frozen_signal == SignalId::unknown) {
+                input.health.frozen_signal = sample->origin.signal;
+            }
+        }
+    } else {
+        // Fermi, la sorveglianza riparte da capo: il valore costante osservato a
+        // terra non deve essere contato come immobilita' al decollo successivo.
+        stasis_.reset();
+    }
+
+    if (input.health.unavailable_fields > 0 || input.health.disagreeing_fields > 0) {
         input.health.level = HealthLevel::warning;
-    } else if (input.health.stale_fields > 0) {
+    } else if (input.health.stale_fields > 0 || input.health.suspect_fields > 0) {
         input.health.level = HealthLevel::caution;
     } else {
         input.health.level = HealthLevel::normal;
