@@ -15,6 +15,7 @@ Rectangle {
     property bool airportSelectorVisible: false
     property bool airportNearestOnly: false
     property bool connectivityVisible: false
+    property bool benchVisible: false
     property string airportQuery: ""
     function visibleAirports() {
         const source=airportNearestOnly ? controller.nearestAirports : controller.airportCatalog
@@ -46,7 +47,8 @@ Rectangle {
         case 3: return [
             {t:"FLIGHT COMPUTER",v:"PIXHAWK 6X",s:"PLANNED",c:theme.amber}, {t:"GNSS",v:"M10",s:"PLANNED",c:theme.amber},
             {t:"AIRSPEED",v:"MATEK ASPD-DLVR",s:"PLANNED",c:theme.amber}, {t:"IMU PRIMARY",v:"PIXHAWK",s:"NOT CONNECTED",c:theme.secondary},
-            {t:"AIR DATA BACKUP",v:"ESP32-S3",s:"INTERFACE READY",c:theme.cyan}, {t:"CALIBRATION",v:"GUIDED WIZARD",s:"GROUND ONLY",c:theme.primary}]
+            {t:"AIR DATA BACKUP",v:"ESP32-S3",s:"INTERFACE READY",c:theme.cyan},
+            {t:"BANCO PROVA SENSORI",v:"MAVLINK MONITOR-ONLY",s:"OSSERVAZIONE",c:theme.green,a:"bench"}, {t:"CALIBRATION",v:"GUIDED WIZARD",s:"GROUND ONLY",c:theme.primary}]
         case 4: return [
             {t:"CONNECTIVITY",v:connectivity.state,s:"TAP • "+connectivity.activeSsid,c:connectivity.state === "ONLINE" ? theme.green : theme.amber,a:"connectivity"}, {t:"HOTSPOT / WI-FI",v:connectivity.activeSsid,s:connectivity.message,c:theme.cyan,a:"connectivity"},
             {t:"CAN A",v:"500 KBIT/S",s:"PIXHAWK / PANEL",c:theme.cyan}, {t:"CAN MENU TREE",v:"V2",s:"RPi4 COMPATIBLE",c:theme.green},
@@ -104,7 +106,7 @@ Rectangle {
                 Text { x: 14*overlay.uiScale; y: 12*overlay.uiScale; text: modelData.t; color: theme.secondary; font.pixelSize: 8*overlay.uiScale; font.bold: true }
                 Text { x: 14*overlay.uiScale; y: 39*overlay.uiScale; width: parent.width-25*overlay.uiScale; text: modelData.v; color: modelData.c; font.pixelSize: 17*overlay.uiScale; font.bold: true; elide: Text.ElideRight }
                 Text { x: 14*overlay.uiScale; anchors { bottom: parent.bottom; bottomMargin: 12*overlay.uiScale } text: modelData.s; color: theme.secondary; font.pixelSize: 7*overlay.uiScale; font.bold: true }
-                MouseArea { anchors.fill: parent; enabled: modelData.a !== undefined; onClicked: { if (modelData.a === "airport") overlay.airportSelectorVisible=true; else if (modelData.a === "connectivity") overlay.connectivityVisible=true; else { overlay.catalogMode=modelData.a; overlay.catalogVisible=true } } }
+                MouseArea { anchors.fill: parent; enabled: modelData.a !== undefined; onClicked: { if (modelData.a === "airport") overlay.airportSelectorVisible=true; else if (modelData.a === "bench") overlay.benchVisible=true; else if (modelData.a === "connectivity") overlay.connectivityVisible=true; else { overlay.catalogMode=modelData.a; overlay.catalogVisible=true } } }
             } }
         }
     }
@@ -425,4 +427,17 @@ Rectangle {
             TapHandler { enabled: overlay.stagedSelection !== ""; onTapped: { if (overlay.controller.stagingStatus === "READY_TO_APPLY") overlay.controller.applyStagedAircraft(); else overlay.verificationVisible=true } }
         }
     }
+
+    // Banco prova sensori. Il pannello vive in un file proprio: e' l'unica
+    // pagina che mostra dati provenienti dall'hardware invece che dal
+    // simulatore, e tenerla separata rende evidente dove passa quel confine.
+    SensorBenchPanel {
+        visible: overlay.benchVisible
+        z: 41
+        anchors { left: sidebar.right; right: parent.right; top: header.bottom; bottom: footer.top }
+        uiScale: overlay.uiScale
+        theme: theme
+        onClosed: overlay.benchVisible = false
+    }
+
 }

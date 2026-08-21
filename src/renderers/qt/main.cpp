@@ -4,6 +4,7 @@
 #include "circular_gauge_item.hpp"
 #include "connectivity_service.hpp"
 #include "weather_service.hpp"
+#include "sensor_bench_controller.hpp"
 
 #include <QGuiApplication>
 #include <QCursor>
@@ -37,6 +38,8 @@ int main(int argc, char* argv[]) {
     engine.rootContext()->setContextProperty("pfd", &controller);
     engine.rootContext()->setContextProperty("connectivity", &connectivity);
     engine.rootContext()->setContextProperty("weather", &weather);
+    SensorBenchController sensorBench;
+    engine.rootContext()->setContextProperty("bench", &sensorBench);
     engine.rootContext()->setContextProperty(
         "startupPage", qEnvironmentVariable("EFIS_START_PAGE", "PFD"));
     engine.loadFromModule("EfisNext", "Main");
