@@ -187,6 +187,32 @@ void MavlinkAdapter::apply(const mavlink::Frame& frame, MonoTime now) {
             break;
         }
 
+        case 33: {  // GLOBAL_POSITION_INT
+            // Se ne prende soltanto la velocita' verticale. Posizione e prua
+            // arrivano gia' da GPS_RAW_INT e ATTITUDE, e prenderle due volte
+            // significherebbe farle dipendere da quale messaggio arriva per
+            // ultimo invece che dall'arbitrato.
+            //
+            // `vz` e' in centimetri al secondo e positiva verso il basso, come
+            // vuole la convenzione NED. La quota sale quando vz e' negativa,
+            // quindi il segno va invertito: una salita deve leggersi positiva
+            // sullo strumento, come la velocita' verticale barometrica accanto
+            // a cui verra' confrontata.
+            const auto down = mavlink::read_integer(definition, frame, "vz");
+            if (down) {
+                constexpr double feet_per_minute_per_metre_per_second = 196.850393700787;
+                const double metres_per_second = static_cast<double>(*down) / 100.0;
+                snapshot_.position.gnss_vertical_speed_fpm = measured(
+                    -metres_per_second * feet_per_minute_per_metre_per_second,
+                    static_cast<double>(*down), SignalId::gnss_vertical_speed,
+                    Unit::foot_per_minute,
+                    gnss_fix_type_ >= gnss_fix_3d ? Validity::valid
+                                                  : Validity::unavailable);
+            }
+            ++statistics_.frames_applied;
+            break;
+        }
+
         case 295: {  // AIRSPEED
             const auto pressure = mavlink::read_number(definition, frame, "raw_press");
             const auto temperature = mavlink::read_integer(definition, frame, "temperature");
@@ -262,7 +288,8 @@ void MavlinkAdapter::revalidate() {
                                                             : Validity::unavailable;
     for (Sample<double>* sample : {&snapshot_.position.latitude_deg,
                                    &snapshot_.position.longitude_deg,
-                                   &snapshot_.position.ground_speed_kt}) {
+                                   &snapshot_.position.ground_speed_kt,
+                                   &snapshot_.position.gnss_vertical_speed_fpm}) {
         if (sample->origin.signal != SignalId::unknown) sample->validity = position;
     }
 

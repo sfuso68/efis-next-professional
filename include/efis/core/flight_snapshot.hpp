@@ -23,6 +23,11 @@ struct PositionState final {
     Sample<double> latitude_deg;
     Sample<double> longitude_deg;
     Sample<double> ground_speed_kt;
+
+    // Velocita' verticale ricavata dal satellitare. Sta qui e non fra i dati
+    // aria perche' e' cio' che la distingue: non passa dalla presa statica, e
+    // quindi non si guasta insieme a quella barometrica.
+    Sample<double> gnss_vertical_speed_fpm;
 };
 
 struct GuidanceState final {

@@ -471,5 +471,117 @@ int main() {
                 "the watch must restart after a stop, not inherit the standstill");
     }
 
+
+    // --- Presa statica ostruita ------------------------------------------------
+    //
+    // Il confronto fra velocita' verticale barometrica e satellitare intercetta
+    // il guasto che la sola sorveglianza della stasi non vede: la presa statica
+    // si ostruisce, il barometro smette di seguire la quota, e il satellitare
+    // continua a vederla cambiare.
+    //
+    // Si confrontano le velocita' e non le quote. Quella barometrica e quella
+    // satellitare differiscono sempre, per regolazione barometrica e separazione
+    // del geoide: uno scarto costante di centinaia di piedi e' normale, e un
+    // confronto sui valori assoluti direbbe "disaccordo" a ogni volo.
+
+    // Costruisce uno stato con le due velocita' verticali indipendenti.
+    auto climbing = [&cruising](efis::MonoTime at, double baro_fpm, double gnss_fpm,
+                                double altitude, double ground_speed) {
+        auto snapshot = cruising(at, 95.0, altitude, 2.0, ground_speed);
+        snapshot.air_data.vertical_speed_fpm =
+            reading(baro_fpm, efis::SignalId::vertical_speed, at);
+        snapshot.position.gnss_vertical_speed_fpm =
+            reading(gnss_fpm, efis::SignalId::gnss_vertical_speed, at);
+        return snapshot;
+    };
+
+    // Salita sana: le due catene concordano entro la tolleranza.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot climb{};
+        for (int step = 0; step < 20; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            climb = model.normalize(
+                climbing(at, 700.0 + static_cast<double>(step % 4) * 20.0,
+                         680.0 + static_cast<double>(step % 3) * 25.0,
+                         2000.0 + static_cast<double>(step) * 12.0, 100.0),
+                at);
+        }
+        require(climb.health.disagreeing_fields == 0,
+                "two vertical chains that agree must not be reported as disagreeing");
+        require(climb.air_data.vertical_speed_fpm.usable(),
+                "an agreeing barometric vertical speed stays usable");
+        require(model.vertical_agreement().agreement == efis::Agreement::agree,
+                "the vertical cross check must report agreement");
+    }
+
+    // Presa statica ostruita: il barometro si ferma su zero mentre il satellitare
+    // continua a dichiarare una salita. Nessun vento puo' spiegarlo, perche' qui
+    // il vento non c'entra: le due grandezze descrivono lo stesso moto.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot blocked{};
+        for (int step = 0; step < 20; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            blocked = model.normalize(
+                climbing(at, 0.0, 800.0,
+                         2000.0 + static_cast<double>(step) * 12.0, 100.0),
+                at);
+        }
+        require(blocked.health.disagreeing_fields >= 2,
+                "a blocked static port must be caught by the vertical cross check");
+        require(blocked.air_data.vertical_speed_fpm.validity == efis::Validity::disagree,
+                "the barometric vertical speed must be marked in disagreement");
+        require(blocked.position.gnss_vertical_speed_fpm.validity ==
+                    efis::Validity::disagree,
+                "the satellite vertical speed must be marked too: neither is trusted");
+        require(blocked.health.level == efis::HealthLevel::warning,
+                "a vertical disagreement must raise the health level to warning");
+    }
+
+    // Una raffica verticale produce uno scarto istantaneo del tutto normale. Se
+    // bastasse quello, lo strumento griderebbe a ogni giornata turbolenta.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot gusty{};
+        for (int step = 0; step < 20; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            // Uno scarto oltre la tolleranza per un solo campione ogni cinque,
+            // troppo breve per superare la persistenza richiesta.
+            const double gnss = step % 5 == 0 ? 1400.0 : 520.0;
+            gusty = model.normalize(
+                climbing(at, 500.0, gnss,
+                         2000.0 + static_cast<double>(step) * 8.0, 100.0),
+                at);
+        }
+        require(gusty.health.disagreeing_fields == 0,
+                "a transient gust must not be declared a disagreement");
+    }
+
+    // Senza fix tridimensionale la velocita' verticale satellitare non e' un
+    // termine di paragone, e il confronto deve tacere invece di dichiarare un
+    // disaccordo che dipende dal guasto gia' noto.
+    {
+        efis::FlightModel model{};
+        efis::FlightSnapshot without_fix{};
+        for (int step = 0; step < 20; ++step) {
+            const auto at = epoch + std::chrono::seconds{step};
+            auto snapshot = climbing(at, 0.0, 800.0,
+                                     2000.0 + static_cast<double>(step) * 12.0, 100.0);
+            snapshot.position.gnss_vertical_speed_fpm.validity =
+                efis::Validity::unavailable;
+            without_fix = model.normalize(snapshot, at);
+        }
+        require(model.vertical_agreement().agreement == efis::Agreement::unknown,
+                "without a usable satellite chain the comparison must stay unknown");
+        require(without_fix.air_data.vertical_speed_fpm.validity !=
+                    efis::Validity::disagree,
+                "a missing comparison must not be turned into a disagreement");
+    }
+
+    require(std::string{efis::signal_name(efis::SignalId::gnss_vertical_speed)} ==
+                "gnss_vertical_speed",
+            "the new signal name must stay stable for recorded data");
+
     std::cout << "All EFIS safety tests passed\n";
 }

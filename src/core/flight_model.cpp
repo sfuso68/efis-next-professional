@@ -9,6 +9,18 @@ namespace {
 template <class T>
 void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
          SystemHealth& health) {
+    // Un campo che nessuna sorgente ha mai pubblicato non e' un campo guasto:
+    // e' un campo che nessuno fornisce. La distinzione e' la stessa che vale per
+    // i nodi fra "mai sentito" e "perduto", e conta per la stessa ragione. Senza
+    // di essa basterebbe aggiungere una grandezza al modello, o collegare un
+    // autopilota che non trasmette un certo messaggio, per tenere la salute in
+    // allarme per sempre a causa di un dato che nessuno aveva promesso. Un
+    // allarme permanente e' un allarme che nessuno guarda piu'.
+    //
+    // Una perdita vera resta contata: un campione pubblicato conserva il proprio
+    // segnale d'origine anche quando la sorgente tace.
+    if (sample.origin.signal == SignalId::unknown) return;
+
     if (sample.validity == Validity::unavailable) {
         ++health.unavailable_fields;
         return;
@@ -24,7 +36,9 @@ void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
 }  // namespace
 
 FlightModel::FlightModel(FlightModelPolicy policy)
-    : policy_(policy), speed_check_(policy.speed_agreement) {
+    : policy_(policy),
+      speed_check_(policy.speed_agreement),
+      vertical_check_(policy.vertical_agreement) {
     configure_stasis();
 }
 
@@ -70,6 +84,7 @@ FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
     age(input.position.latitude_deg, now, policy_.stale_after, input.health);
     age(input.position.longitude_deg, now, policy_.stale_after, input.health);
     age(input.position.ground_speed_kt, now, policy_.stale_after, input.health);
+    age(input.position.gnss_vertical_speed_fpm, now, policy_.stale_after, input.health);
     age(input.guidance.flight_director_active, now, policy_.stale_after, input.health);
     age(input.guidance.commanded_roll_deg, now, policy_.stale_after, input.health);
     age(input.guidance.commanded_pitch_deg, now, policy_.stale_after, input.health);
@@ -96,6 +111,25 @@ FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
     if (agreement.agreement == Agreement::disagree) {
         apply_disagreement(agreement, input.air_data.indicated_airspeed_kt,
                            input.position.ground_speed_kt);
+        input.health.disagreeing_fields += 2;
+    }
+
+    // Velocita' verticale barometrica contro satellitare. E' il confronto che
+    // ADR-004 indicava come necessario e che finora mancava, e intercetta la
+    // presa statica ostruita: il barometro smette di seguire la quota mentre il
+    // satellitare continua a vederla cambiare.
+    //
+    // Si confrontano le velocita' e non le quote. La quota barometrica e quella
+    // satellitare differiscono sempre, per regolazione barometrica e separazione
+    // del geoide, e uno scarto costante di centinaia di piedi e' normale: un
+    // confronto sui valori assoluti direbbe "disaccordo" a ogni volo. Le loro
+    // variazioni invece devono coincidere, perche' descrivono lo stesso moto.
+    const auto vertical = vertical_check_.compare(input.air_data.vertical_speed_fpm,
+                                                  input.position.gnss_vertical_speed_fpm,
+                                                  now);
+    if (vertical.agreement == Agreement::disagree) {
+        apply_disagreement(vertical, input.air_data.vertical_speed_fpm,
+                           input.position.gnss_vertical_speed_fpm);
         input.health.disagreeing_fields += 2;
     }
 
