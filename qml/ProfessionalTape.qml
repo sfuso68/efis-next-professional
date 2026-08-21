@@ -92,7 +92,15 @@ Rectangle {
             Rectangle { anchors.right: tape.rightSide ? undefined : parent.right; anchors.left: tape.rightSide ? parent.left : undefined;
                 width: (index%2===0 ? 22 : 11)*tape.uiScale; height: (index%2===0 ? 2 : 1)*tape.uiScale;
                 color: index%2===0 ? "#E6F0F5" : "#91A8B5" }
-            Text { visible: index%2===0; anchors.verticalCenter: parent.verticalCenter;
+            // L'etichetta centrale della scala ripeterebbe il valore che il
+            // riquadro mostra gia' in grande, e cadrebbe proprio dove passano il
+            // riquadro stesso e la barra di tendenza: sull'ALT traspariva da
+            // sotto il riquadro semitrasparente, sull'IAS finiva sotto la barra
+            // magenta. Il numero al puntatore lo dice il riquadro; sulla scala
+            // servono i riferimenti vicini, non la ripetizione di quello.
+            Text { visible: index%2===0 &&
+                       Math.abs(parent.y - tape.height/2) > 33*tape.uiScale;
+                   anchors.verticalCenter: parent.verticalCenter;
                 anchors.right: tape.rightSide ? undefined : parent.right; anchors.left: tape.rightSide ? parent.left : undefined;
                 anchors.rightMargin: 24*tape.uiScale; anchors.leftMargin: 24*tape.uiScale;
                 text: Math.max(0, Math.round(parent.tickValue)); color: "#F4F7FA"; font.pixelSize: 12*tape.uiScale; font.bold: true;
@@ -144,7 +152,12 @@ Rectangle {
     Rectangle {
         visible: tape.valid && Math.abs(tape.trend)>0.1; width: 3*tape.uiScale
         height: Math.min(80*tape.uiScale, Math.max(8*tape.uiScale, Math.abs(tape.trend/tape.step)*50*tape.uiScale))
-        x: tape.rightSide ? 29*tape.uiScale : tape.width-32*tape.uiScale
+        // Accanto alla scala, non sopra il riquadro del valore. Sul nastro
+        // altitudine la barra cadeva dentro il riquadro e tagliava in due la
+        // prima cifra della quota, che e' il numero che deve restare leggibile
+        // per primo. Il vettore di tendenza appartiene alla scala: e' li' che
+        // dice qualcosa, sovrapposto alle cifre toglie soltanto.
+        x: tape.rightSide ? 7*tape.uiScale : tape.width-32*tape.uiScale
         y: tape.height/2 - (tape.trend>0 ? height : 0); color: theme.magenta
         Rectangle { width: 11*tape.uiScale; height: 3*tape.uiScale; anchors.horizontalCenter: parent.horizontalCenter;
             anchors.top: tape.trend>0 ? parent.top : undefined; anchors.bottom: tape.trend<=0 ? parent.bottom : undefined; color: theme.magenta }
