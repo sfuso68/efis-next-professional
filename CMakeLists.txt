@@ -27,6 +27,7 @@ add_library(efis_core
     src/providers/engine_simulation_provider.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
+    src/providers/esp32_can_adapter.cpp
     src/ingest/mavlink_pipeline.cpp
     src/ingest/recording_session.cpp
     src/io/byte_source.cpp
@@ -182,6 +183,10 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_ingest_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_ingest_tests COMMAND efis_ingest_tests)
+
+    add_executable(efis_esp32_tests tests/esp32_tests.cpp)
+    target_link_libraries(efis_esp32_tests PRIVATE efis_core)
+    add_test(NAME efis_esp32_tests COMMAND efis_esp32_tests)
 
     # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
     # sorgente fornisce una grandezza, non quanto vale. Un guasto qui non sposta
