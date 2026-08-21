@@ -122,14 +122,42 @@ std::string render_svg(const Dial& dial, const DialStyle& style) {
             << style.unit << "</text>";
     }
 
-    // Lancetta. Quando non c'e', non c'e': e' l'informazione principale del
-    // quadrante guasto, e disegnarne una qualunque la cancellerebbe.
+    // Finestrella, sotto le lancette perche' non deve coprirle.
+    if (dial.window.present) {
+        const Point at = polar(dial.window.angle_deg, radius * dial.window.radius);
+        const double height = radius * dial.window.height;
+        const double width =
+            height * (0.72 * static_cast<double>(dial.window.text.size()) + 0.8);
+        svg << "<rect x='" << number(centre + at.x - width / 2.0) << "' y='"
+            << number(centre + at.y - height * 0.72) << "' width='" << number(width)
+            << "' height='" << number(height * 1.44) << "' rx='" << number(height * 0.18)
+            << "' fill='" << background << "' stroke='" << bezel << "' stroke-width='"
+            << number(size * 0.004) << "'/>";
+        svg << "<text x='" << number(centre + at.x) << "' y='"
+            << number(centre + at.y + height * 0.36)
+            << "' text-anchor='middle' font-family='DejaVu Sans, sans-serif' font-size='"
+            << number(height) << "' font-weight='700' fill='" << cyan << "'>"
+            << dial.window.text << "</text>";
+    }
+
+    // Lancette. Quando non ci sono, non ci sono: e' l'informazione principale
+    // del quadrante guasto, e disegnarne una qualunque la cancellerebbe.
+    //
+    // Lunghezza e spessore distinguono le tre. Sull'altimetro a tre lancette la
+    // lettura errata di mille piedi nasce dal confonderne due, e la differenza
+    // di spessore e' cio' che la rende difficile.
     for (const Needle& needle : dial.needles) {
+        double width = size * 0.016;
+        switch (needle.kind) {
+            case NeedleKind::primary: width = size * 0.014; break;
+            case NeedleKind::secondary: width = size * 0.026; break;
+            case NeedleKind::tertiary: width = size * 0.034; break;
+        }
         const Point tip = polar(needle.angle_deg, radius * needle.length);
         const Point tail = polar(needle.angle_deg + 180.0, radius * needle.tail);
         svg << "<line x1='" << number(centre + tail.x) << "' y1='" << number(centre + tail.y)
             << "' x2='" << number(centre + tip.x) << "' y2='" << number(centre + tip.y)
-            << "' stroke='" << primary << "' stroke-width='" << number(size * 0.016)
+            << "' stroke='" << primary << "' stroke-width='" << number(width)
             << "' stroke-linecap='round'/>";
     }
     svg << "<circle cx='" << centre << "' cy='" << centre << "' r='" << number(size * 0.022)

@@ -75,10 +75,19 @@ struct Arc final {
 };
 
 enum class NeedleKind : std::uint8_t {
-    // Lancetta principale, quella che porta la lettura.
+    // Lancetta principale: la piu' lunga e la piu' sottile. Sull'altimetro e'
+    // quella delle centinaia, che compie un giro ogni mille piedi.
     primary,
-    // Lancetta secondaria: le centinaia dell'altimetro, il secondo serbatoio.
-    secondary
+    // Lancetta secondaria: piu' corta e piu' larga. Le migliaia dell'altimetro,
+    // il secondo serbatoio su un indicatore bi-ago.
+    secondary,
+    // Lancetta terziaria: le decine di migliaia dell'altimetro, disegnata come
+    // un indice corto vicino al centro.
+    //
+    // La gerarchia non e' estetica. Su un altimetro a tre lancette la lettura
+    // errata di mille piedi e' l'incidente classico, e nasce dal confondere due
+    // lancette simili: sono deliberatamente diverse per lunghezza e spessore.
+    tertiary
 };
 
 struct Needle final {
@@ -118,6 +127,15 @@ enum class Annunciation : std::uint8_t {
     return "FAIL";
 }
 
+// Finestrella con un valore scritto, non indicato da una lancetta.
+struct Window final {
+    bool present{};
+    double angle_deg{};
+    double radius{};
+    double height{};
+    std::string text;
+};
+
 struct Dial final {
     std::vector<Tick> ticks;
     std::vector<Label> labels;
@@ -127,6 +145,12 @@ struct Dial final {
     // Annunciation: una lancetta assente e' un'informazione, una lancetta su
     // zero e' una bugia.
     std::vector<Needle> needles;
+
+    // Finestrella sul quadrante: la regolazione barometrica dell'altimetro, e in
+    // futuro il cilindro selezionato o il serbatoio attivo. Il testo e' gia'
+    // formattato perche' la scelta dell'unita' e' del profilo, non dello
+    // strumento.
+    Window window;
 
     Annunciation annunciation{Annunciation::none};
 
@@ -211,5 +235,32 @@ struct Sizing final {
 // di una alta impossibile. Il superamento si dichiara con l'annuncio, non
 // facendo girare la lancetta.
 [[nodiscard]] double angle_for(const Scale& scale, double value) noexcept;
+
+// --- Altimetro a tre lancette ------------------------------------------------
+//
+// Ha una funzione propria perche' non e' un quadrante a scala lineare: tre
+// lancette leggono la stessa grandezza su tre decadi diverse, e ciascuna compie
+// un giro completo quando la precedente ne compie un decimo.
+//
+// La lettura errata di mille piedi e' l'incidente classico dell'altimetro a tre
+// lancette, e nasce dal confondere la lancetta delle migliaia con quella delle
+// decine di migliaia. Le tre sono percio' deliberatamente diverse per lunghezza
+// e spessore, e la piu' lunga e' quella che si muove piu' in fretta, come sugli
+// strumenti veri.
+//
+// La finestrella riporta la regolazione gia' formattata: l'unita' la sceglie il
+// pilota nel profilo, e lo strumento non deve saperne nulla.
+struct AltimeterReading final {
+    // Quota indicata, cioe' gia' corretta per la regolazione.
+    Reading altitude;
+
+    // Testo della finestrella, per esempio "1013" oppure "29.92". Vuoto se la
+    // regolazione non e' disponibile: una finestrella vuota dichiara che la
+    // regolazione manca, una che mostra 1013 direbbe che e' standard.
+    std::string setting_text;
+};
+
+[[nodiscard]] Dial describe_altimeter(const AltimeterReading& reading,
+                                      const Sizing& sizing);
 
 }  // namespace efis::instruments

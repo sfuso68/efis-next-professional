@@ -114,5 +114,29 @@ int main(int argc, char** argv) {
           describe(asi_scale, {195.0, Validity::valid, false}, Sizing{480.0}, asi_bands),
           DialStyle{"IAS", "KT", 480.0});
 
+    // Altimetro a tre lancette, con la quota indicata e la regolazione
+    // effettivamente in uso: entrambe vengono dal core, non da qui.
+    const auto indicated = from(find_signal(flight, SignalId::indicated_altitude));
+    const auto* setting = find_signal(flight, SignalId::baro_setting);
+    const std::string setting_text =
+        setting != nullptr && setting->usable()
+            ? std::to_string(static_cast<int>(setting->value + 0.5))
+            : std::string{};
+
+    write(directory, "09-altimetro-480",
+          describe_altimeter({indicated, setting_text}, Sizing{480.0}),
+          DialStyle{"ALT", "FT", 480.0});
+
+    write(directory, "10-altimetro-240",
+          describe_altimeter({indicated, setting_text}, Sizing{240.0}),
+          DialStyle{"ALT", "FT", 240.0});
+
+    // Le lancette si avvolgono e non hanno estremi: un dato corrotto
+    // mostrerebbe una quota bassa credibile. Fuori dai limiti non si indica.
+    write(directory, "11-altimetro-implausibile-480",
+          describe_altimeter({{1000000.0, Validity::valid, false}, setting_text},
+                             Sizing{480.0}),
+          DialStyle{"ALT", "FT", 480.0});
+
     return 0;
 }

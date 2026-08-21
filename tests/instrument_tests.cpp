@@ -414,5 +414,100 @@ int main() {
             "the altimeter setting must be reachable like any other quantity");
 
 
+    // --- Altimetro a tre lancette --------------------------------------------
+    //
+    // La lettura errata di mille piedi e' l'incidente classico di questo
+    // strumento, e nasce dal confondere la lancetta delle migliaia con quella
+    // delle decine di migliaia. Le tre devono essere distinguibili per
+    // costruzione, non per attenzione di chi guarda.
+    const Sizing altimeter_size{480.0};
+    const Dial at_5400 = describe_altimeter({valid(5400.0), "1013"}, altimeter_size);
+    require(at_5400.needles.size() == 3, "an altimeter shows three needles");
+
+    const Scale hundreds_scale{0.0, 1000.0, 0.0, 360.0, 100.0, 20.0, 0, 1000.0};
+    const Scale thousands_scale{0.0, 10000.0, 0.0, 360.0, 1000.0, 200.0, 0, 10000.0};
+    auto needle_of = [](const Dial& dial, NeedleKind kind) {
+        for (const Needle& needle : dial.needles) {
+            if (needle.kind == kind) return needle;
+        }
+        return Needle{};
+    };
+    require(close_to(needle_of(at_5400, NeedleKind::primary).angle_deg,
+                     angle_for(hundreds_scale, 5400.0)),
+            "the hundreds needle must show the remainder within the thousand");
+    require(close_to(needle_of(at_5400, NeedleKind::secondary).angle_deg,
+                     angle_for(thousands_scale, 5400.0)),
+            "the thousands needle must show the remainder within ten thousand");
+
+    // La piu' lunga e' quella che si muove piu' in fretta: e' la convenzione
+    // degli strumenti veri, e invertirla renderebbe la lettura errata piu'
+    // probabile invece che meno.
+    require(needle_of(at_5400, NeedleKind::primary).length >
+                needle_of(at_5400, NeedleKind::secondary).length,
+            "the fastest needle must be the longest one");
+    require(needle_of(at_5400, NeedleKind::secondary).length >
+                needle_of(at_5400, NeedleKind::tertiary).length,
+            "the slowest needle must be the shortest one");
+
+    // Cento piedi piu' in su, la lancetta delle centinaia si sposta di un
+    // decimo di giro esatto.
+    const Dial at_5500 = describe_altimeter({valid(5500.0), "1013"}, altimeter_size);
+    require(close_to(needle_of(at_5500, NeedleKind::primary).angle_deg -
+                         needle_of(at_5400, NeedleKind::primary).angle_deg,
+                     36.0),
+            "one hundred feet must move the hundreds needle by a tenth of a turn");
+
+    // La faccia riporta le cifre da 0 a 9, perche' la sua unita' e' il
+    // centinaio di piedi. Scrivere 900 al posto di 9 renderebbe illeggibile
+    // qualunque altimetro.
+    require(has_label(at_5400, "9") && has_label(at_5400, "0"),
+            "the altimeter face is numbered in hundreds of feet");
+    require(!has_label(at_5400, "900"),
+            "the face must not be numbered in feet, or it becomes unreadable");
+    require(at_5400.labels.size() == 10, "the face carries ten figures, zero to nine");
+
+    // La finestrella riporta la regolazione gia' formattata: l'unita' la sceglie
+    // il pilota nel profilo, e lo strumento non deve saperne nulla.
+    require(at_5400.window.present && at_5400.window.text == "1013",
+            "the Kollsman window must show the setting");
+    const Dial in_inches = describe_altimeter({valid(5400.0), "29.92"}, altimeter_size);
+    require(in_inches.window.text == "29.92",
+            "the window shows whatever unit the profile chose");
+
+    // Finestrella vuota significa regolazione non disponibile. Mostrare 1013
+    // direbbe che la regolazione e' standard, che e' un'affermazione diversa.
+    const Dial no_setting = describe_altimeter({valid(5400.0), ""}, altimeter_size);
+    require(!no_setting.window.present,
+            "a missing setting leaves the window empty, it does not claim standard");
+
+    // Dato assente o scaduto: nessuna lancetta, come su ogni altro quadrante.
+    const Dial altimeter_failed = describe_altimeter(
+        {{0.0, efis::Validity::unavailable, false}, "1013"}, altimeter_size);
+    require(altimeter_failed.needles.empty(),
+            "a failed altimeter must not show needles on zero");
+    require(altimeter_failed.annunciation == Annunciation::failed,
+            "a failed altimeter must say so");
+    require(altimeter_failed.window.present,
+            "the setting stays readable even when the altitude is not");
+
+    // Il caso che rende pericoloso un altimetro di fronte a un dato corrotto.
+    // Le lancette si avvolgono e non hanno estremi da cui uscire: un milione di
+    // piedi si avvolgerebbe e mostrerebbe una quota bassa perfettamente
+    // credibile. Fuori dai limiti di plausibilita' non si indica nulla.
+    const Dial absurd = describe_altimeter({valid(1000000.0), "1013"}, altimeter_size);
+    require(absurd.needles.empty(),
+            "an implausible altitude must not be shown wrapped as a credible one");
+    require(absurd.annunciation == Annunciation::out_of_range,
+            "an implausible altitude must be declared out of range");
+    const Dial deep = describe_altimeter({valid(-5000.0), "1013"}, altimeter_size);
+    require(deep.needles.empty(), "an impossible depth must not be indicated either");
+
+    // Sotto il livello del mare ma plausibile: si indica, perche' esistono
+    // aeroporti sotto il livello del mare e la quota puo' essere negativa.
+    const Dial below = describe_altimeter({valid(-200.0), "1013"}, altimeter_size);
+    require(below.needles.size() == 3,
+            "a plausible negative altitude must still be indicated");
+
+
     std::cout << "All EFIS instrument tests passed\n";
 }
