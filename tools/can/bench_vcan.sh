@@ -50,12 +50,23 @@ sleep 1
 cansend "$interface" 100#7CFF9C01282307FF
 # Dati aria: 87,4 kt, 3200 ft, 1013,2 hPa, 47,5 Pa di differenziale.
 cansend "$interface" 101#6A03800C8400DB01
-# Salute: battito 1, 1,00 g, 21,0 °C.
-cansend "$interface" 200#0100640000D20000
 # Satellitare: fix presente, 11 satelliti, HDOP 1,2.
 cansend "$interface" 302#010B0C0000000000
 # Comando diretto al nodo: deve essere ignorato, non interpretato.
 cansend "$interface" 018#0000000000000000
+
+# Battito ripetuto. Un solo battito farebbe scadere il nodo durante
+# l'osservazione, e la prova misurerebbe l'invecchiamento invece della lettura:
+# il nodo va tenuto vivo come lo sarebbe davvero.
+# Il contatore e' little-endian: il byte basso viene per primo, e per valori
+# sotto 256 il byte alto resta zero.
+i=1
+while [ "$i" -le 12 ]; do
+    low=$(printf '%02X' "$i")
+    cansend "$interface" "200#${low}00640000D20000"
+    i=$((i + 1))
+    sleep 0.25
+done
 
 wait "$monitor_pid" || true
 
@@ -69,6 +80,12 @@ grep -q "4.12" "$output" || fail "il rollio non e' stato letto dal bus"
 grep -q "87.40" "$output" || fail "la velocita' indicata non e' stata letta dal bus"
 grep -q "1013.20" "$output" || fail "la pressione statica non e' stata letta dal bus"
 grep -q "11 satelliti" "$output" || fail "lo stato satellitare non e' arrivato"
-grep -q "1 ignorati" "$output" || fail "il comando 0x018 doveva essere ignorato e contato"
+# Il comando 0x018 non deve essere applicato. Contare gli ignorati non basta su
+# un bus condiviso, dove passa anche traffico di altri: si contano invece i frame
+# applicati, che devono essere esattamente i quindici del protocollo inviati qui.
+# Se il comando venisse interpretato ne risulterebbero sedici.
+grep -q "applied=15" "$output" || fail "il comando 0x018 non doveva essere applicato"
+grep -qE "adapter: [0-9]+ applicati, [1-9][0-9]* ignorati" "$output" ||
+    fail "i frame di altri identificativi devono essere contati come ignorati"
 
 echo "PROVA SUPERATA: i frame iniettati su $interface sono stati letti e interpretati"

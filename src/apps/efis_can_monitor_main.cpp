@@ -40,7 +40,7 @@ const char* validity_text(efis::Validity validity) {
 }
 
 void print_row(const char* name, const efis::Sample<double>& sample) {
-    if (sample.origin.signal == efis::SignalId::unknown) {
+    if (sample.received_at == efis::MonoTime{}) {
         std::printf("  %-22s  %-12s %s\n", name, "———", "mai ricevuto");
         return;
     }
