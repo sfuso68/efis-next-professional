@@ -1,0 +1,8 @@
+{
+  "status": "REJECTED_METADATA_ONLY",
+  "reason": "Archives contain quicklook JPEG and INSPIRE XML only; no DEM GeoTIFF payload.",
+  "install_allowed": false,
+  "activate_allowed": false,
+  "replacement_dataset": "COP-DEM_GLO-30-DGED/2024_1",
+  "replacement_product_type": "SAR_DGE_30_A4AD"
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "profile_id": "lsa-sim-bench",
+  "revision": 1,
+  "state": "SIMULATION",
+  "catalog_version": "1.0.0-seed",
+  "aircraft": {
+    "manufacturer": "EFIS NEXT",
+    "model": "LSA SIM",
+    "variant": "BENCH",
+    "registration": "EFIS-TEST",
+    "category": "LSA",
+    "mtow_kg": 600,
+    "empty_weight_kg": 300,
+    "fuel_capacity_l": 136.3
+  },
+  "engine": {
+    "manufacturer": "Rotax",
+    "model": "912 ULS",
+    "cylinders": 4,
+    "status": "INDICATIVE"
+  },
+  "speeds_kt": {
+    "VSO": 39,
+    "VS1": 45,
+    "VFE": 85,
+    "VX": 62,
+    "VY": 68,
+    "VA": 105,
+    "VNO": 120,
+    "VNE": 140,
+    "BEST_GLIDE": 65,
+    "VREF": 55
+  },
+  "units": {
+    "airspeed": "KT",
+    "altitude": "FT",
+    "pressure": "INHG",
+    "temperature": "C",
+    "fuel": "L"
+  },
+  "evidence": {
+    "status": "INDICATIVE",
+    "source": "Legacy EFIS catalog import",
+    "warning": "Simulation only. Replace with the current approved POH/AFM for the installed aircraft."
+  }
+}
+

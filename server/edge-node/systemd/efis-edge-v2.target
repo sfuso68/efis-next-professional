@@ -1,0 +1,7 @@
+[Unit]
+Description=EFIS EDGE V2 non-flight-critical shadow services
+Wants=efis-edge-health.service efis-edge-weather.service
+After=blackbox.target
+
+[Install]
+WantedBy=multi-user.target

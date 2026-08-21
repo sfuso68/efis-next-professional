@@ -1,0 +1,12 @@
+{
+  "schema": "efis-next.flight-route.v1",
+  "route_id": "LIPH-LIDB",
+  "departure": "LIPH",
+  "destination": "LIDB",
+  "route": [
+    [45.648399, 12.194400],
+    [45.820000, 12.215000],
+    [46.000000, 12.235000],
+    [46.166549, 12.250389]
+  ]
+}

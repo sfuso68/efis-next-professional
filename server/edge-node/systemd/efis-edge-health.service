@@ -1,0 +1,21 @@
+[Unit]
+Description=EFIS EDGE V2 health API (shadow read-only)
+After=network.target bbxlog.service bbxmqtt.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/efis-edge-v2
+ExecStart=/usr/bin/python3 /home/pi/efis-edge-v2/edge_health.py --output status/edge-health.json --bind 127.0.0.1 --port 18091
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/pi/efis-edge-v2/status
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+
+[Install]
+WantedBy=efis-edge-v2.target

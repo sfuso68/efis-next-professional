@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EFIS NEXT Terrain Package",
+  "type": "object",
+  "required": ["schema_version", "package_id", "created_utc", "source", "vertical_datum", "tiles"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "package_id": {"type": "string"},
+    "created_utc": {"type": "string"},
+    "source": {
+      "type": "object",
+      "required": ["title", "edition", "attribution", "status"]
+    },
+    "vertical_datum": {"type": "string"},
+    "tiles": {"type": "array", "items": {"type": "object"}}
+  }
+}

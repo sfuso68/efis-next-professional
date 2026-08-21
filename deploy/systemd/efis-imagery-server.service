@@ -1,0 +1,23 @@
+[Unit]
+Description=EFIS NEXT Imagery Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/efis-imagery
+Environment=EFIS_IMAGERY_HOST=127.0.0.1
+Environment=EFIS_IMAGERY_PORT=8090
+Environment=EFIS_IMAGERY_ROOT=/srv/efis-imagery
+Environment=EFIS_IMAGERY_CATALOG=/opt/efis-imagery/config/imagery/server-catalog.json
+ExecStart=/usr/bin/python3 /opt/efis-imagery/server/imagery_server.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/srv/efis-imagery /opt/efis-imagery
+
+[Install]
+WantedBy=multi-user.target

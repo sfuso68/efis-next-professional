@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodic EFIS EDGE V2 weather refresh
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=10min
+RandomizedDelaySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

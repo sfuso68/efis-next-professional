@@ -1,0 +1,15 @@
+# EFIS NEXT — normalizzazione fine riga.
+# Il codice viene compilato e deployato su Debian aarch64 (RPi5, black box) e
+# su Windows. Gli script di deploy e le unit systemd DEVONO restare LF, quindi
+# tutto il testo e' normalizzato a LF indipendentemente dalla piattaforma.
+* text=auto eol=lf
+
+# Binari: nessuna conversione, nessun diff testuale.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.db    binary
+*.tif   binary
+*.tiff  binary
+*.zip   binary
+*.pdf   binary

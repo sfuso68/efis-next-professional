@@ -1,0 +1,36 @@
+{
+  "database_version": "0.1.0-development",
+  "source": {
+    "name": "EFIS NEXT Treviso development scenario",
+    "provider": "EFIS NEXT",
+    "edition": "2026-08-18",
+    "source_class": "DEVELOPMENT",
+    "licence": "Internal simulation data only"
+  },
+  "airports": [
+    {
+      "icao": "LIPH",
+      "iata": "TSF",
+      "name": "Treviso Sant'Angelo",
+      "city": "Treviso",
+      "country": "IT",
+      "latitude_deg": 45.6484,
+      "longitude_deg": 12.1944,
+      "elevation_ft": 59,
+      "airport_type": "CIVIL",
+      "status": "DEVELOPMENT",
+      "runways": [
+        {
+          "designator_low": "07",
+          "designator_high": "25",
+          "true_heading_low_deg": 73.5,
+          "true_heading_high_deg": 253.5,
+          "length_m": 2420,
+          "width_m": 45,
+          "surface": "ASPHALT",
+          "status": "DEVELOPMENT"
+        }
+      ]
+    }
+  ]
+}

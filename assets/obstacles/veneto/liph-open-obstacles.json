@@ -1,0 +1,8780 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-08-18T05:15:40Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 955114457,
+  "lat": 45.5921325,
+  "lon": 12.2589260,
+  "tags": {
+    "design": "delta",
+    "line_attachment": "suspension",
+    "power": "tower",
+    "structure": "lattice"
+  }
+},
+{
+  "type": "node",
+  "id": 955114606,
+  "lat": 45.5932969,
+  "lon": 12.2641828,
+  "tags": {
+    "design": "delta",
+    "line_attachment": "suspension",
+    "power": "tower",
+    "structure": "lattice"
+  }
+},
+{
+  "type": "node",
+  "id": 955115222,
+  "lat": 45.5960386,
+  "lon": 12.2795708,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 955115581,
+  "lat": 45.5973587,
+  "lon": 12.2843243,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 955115884,
+  "lat": 45.5940271,
+  "lon": 12.2683114,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 955116223,
+  "lat": 45.5908681,
+  "lon": 12.2549010,
+  "tags": {
+    "design": "delta",
+    "line_attachment": "suspension",
+    "power": "tower",
+    "structure": "lattice"
+  }
+},
+{
+  "type": "node",
+  "id": 955117069,
+  "lat": 45.5991235,
+  "lon": 12.2878381,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 955117381,
+  "lat": 45.5950272,
+  "lon": 12.2738843,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685852,
+  "lat": 45.5911060,
+  "lon": 12.1498507,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685857,
+  "lat": 45.5911163,
+  "lon": 12.1162139,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685860,
+  "lat": 45.5911739,
+  "lon": 12.1910960,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685863,
+  "lat": 45.5924990,
+  "lon": 12.1946449,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685866,
+  "lat": 45.5928798,
+  "lon": 12.1166128,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685867,
+  "lat": 45.5939462,
+  "lon": 12.1984851,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685873,
+  "lat": 45.5946499,
+  "lon": 12.1170171,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685875,
+  "lat": 45.5952299,
+  "lon": 12.2019229,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685877,
+  "lat": 45.5964213,
+  "lon": 12.1174244,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685899,
+  "lat": 45.5966515,
+  "lon": 12.2057306,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685902,
+  "lat": 45.5974537,
+  "lon": 12.2453219,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685905,
+  "lat": 45.5981477,
+  "lon": 12.2097350,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685908,
+  "lat": 45.5982342,
+  "lon": 12.1178404,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685913,
+  "lat": 45.5995620,
+  "lon": 12.2134944,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685917,
+  "lat": 45.5995752,
+  "lon": 12.2176748,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685919,
+  "lat": 45.5995917,
+  "lon": 12.2218208,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685923,
+  "lat": 45.5996090,
+  "lon": 12.2260592,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685926,
+  "lat": 45.5996216,
+  "lon": 12.2303347,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685929,
+  "lat": 45.5996359,
+  "lon": 12.2340537,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685932,
+  "lat": 45.5996572,
+  "lon": 12.2393441,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685947,
+  "lat": 45.5996802,
+  "lon": 12.2451799,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685948,
+  "lat": 45.5996944,
+  "lon": 12.2507648,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685949,
+  "lat": 45.5997204,
+  "lon": 12.2453644,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685951,
+  "lat": 45.5997218,
+  "lon": 12.2456478,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685954,
+  "lat": 45.6000055,
+  "lon": 12.1182360,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685958,
+  "lat": 45.6008518,
+  "lon": 12.2542842,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685962,
+  "lat": 45.6009570,
+  "lon": 12.2464192,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685965,
+  "lat": 45.6017735,
+  "lon": 12.1186398,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685969,
+  "lat": 45.6020664,
+  "lon": 12.2580357,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685973,
+  "lat": 45.6032001,
+  "lon": 12.2615127,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685976,
+  "lat": 45.6035913,
+  "lon": 12.1190578,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685985,
+  "lat": 45.6044729,
+  "lon": 12.2654753,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685986,
+  "lat": 45.6053956,
+  "lon": 12.1194714,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685987,
+  "lat": 45.6057749,
+  "lon": 12.2694850,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685989,
+  "lat": 45.6069789,
+  "lon": 12.2731903,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685990,
+  "lat": 45.6071676,
+  "lon": 12.1198719,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685992,
+  "lat": 45.6081405,
+  "lon": 12.2767598,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685993,
+  "lat": 45.6090527,
+  "lon": 12.1203057,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821685996,
+  "lat": 45.6093260,
+  "lon": 12.2804028,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686013,
+  "lat": 45.6105045,
+  "lon": 12.2840437,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686017,
+  "lat": 45.6108357,
+  "lon": 12.1207116,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686021,
+  "lat": 45.6118465,
+  "lon": 12.2882018,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686023,
+  "lat": 45.6127325,
+  "lon": 12.1211517,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686027,
+  "lat": 45.6145078,
+  "lon": 12.1215453,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686039,
+  "lat": 45.6162896,
+  "lon": 12.1219530,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686047,
+  "lat": 45.6180048,
+  "lon": 12.1223503,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686054,
+  "lat": 45.6197318,
+  "lon": 12.1227430,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686058,
+  "lat": 45.6214795,
+  "lon": 12.1231403,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686062,
+  "lat": 45.6232382,
+  "lon": 12.1235446,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686066,
+  "lat": 45.6251109,
+  "lon": 12.1242833,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686072,
+  "lat": 45.6269350,
+  "lon": 12.1249899,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686080,
+  "lat": 45.6287987,
+  "lon": 12.1257290,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686085,
+  "lat": 45.6305573,
+  "lon": 12.1264147,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686096,
+  "lat": 45.6322804,
+  "lon": 12.1270939,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686097,
+  "lat": 45.6338029,
+  "lon": 12.1276910,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686100,
+  "lat": 45.6352333,
+  "lon": 12.1282500,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686103,
+  "lat": 45.6368014,
+  "lon": 12.1288490,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686110,
+  "lat": 45.6385429,
+  "lon": 12.1295173,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686128,
+  "lat": 45.6401836,
+  "lon": 12.1301509,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686131,
+  "lat": 45.6417698,
+  "lon": 12.1307626,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686134,
+  "lat": 45.6436078,
+  "lon": 12.1314738,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686136,
+  "lat": 45.6453554,
+  "lon": 12.1321265,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686138,
+  "lat": 45.6473904,
+  "lon": 12.1329057,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686148,
+  "lat": 45.6494604,
+  "lon": 12.1337177,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686153,
+  "lat": 45.6515458,
+  "lon": 12.1345088,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686159,
+  "lat": 45.6535008,
+  "lon": 12.1352612,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686164,
+  "lat": 45.6555396,
+  "lon": 12.1360237,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686168,
+  "lat": 45.6574768,
+  "lon": 12.1367809,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686170,
+  "lat": 45.6595581,
+  "lon": 12.1375916,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686172,
+  "lat": 45.6614646,
+  "lon": 12.1383113,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686175,
+  "lat": 45.6634149,
+  "lon": 12.1390672,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686179,
+  "lat": 45.6653457,
+  "lon": 12.1398135,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686183,
+  "lat": 45.6674189,
+  "lon": 12.1406118,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686190,
+  "lat": 45.6694146,
+  "lon": 12.1413771,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686193,
+  "lat": 45.6712465,
+  "lon": 12.1420784,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686197,
+  "lat": 45.6718581,
+  "lon": 12.1423194,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686200,
+  "lat": 45.6737290,
+  "lon": 12.1430342,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686206,
+  "lat": 45.6755712,
+  "lon": 12.1437343,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686207,
+  "lat": 45.6775303,
+  "lon": 12.1444968,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686209,
+  "lat": 45.6794601,
+  "lon": 12.1452331,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686211,
+  "lat": 45.6814188,
+  "lon": 12.1459852,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686213,
+  "lat": 45.6834630,
+  "lon": 12.1468411,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686216,
+  "lat": 45.6855436,
+  "lon": 12.1477157,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686235,
+  "lat": 45.6875809,
+  "lon": 12.1485619,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686244,
+  "lat": 45.6895853,
+  "lon": 12.1493944,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686254,
+  "lat": 45.6917336,
+  "lon": 12.1503033,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686257,
+  "lat": 45.6934298,
+  "lon": 12.1510058,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686264,
+  "lat": 45.6953640,
+  "lon": 12.1518061,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686269,
+  "lat": 45.6973895,
+  "lon": 12.1526526,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686273,
+  "lat": 45.6996198,
+  "lon": 12.1535805,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686289,
+  "lat": 45.7038211,
+  "lon": 12.1540707,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686291,
+  "lat": 45.7052986,
+  "lon": 12.1559500,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686293,
+  "lat": 45.7069561,
+  "lon": 12.1566498,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686294,
+  "lat": 45.7088482,
+  "lon": 12.1574406,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686296,
+  "lat": 45.7094475,
+  "lon": 12.1576874,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686298,
+  "lat": 45.7113162,
+  "lon": 12.1584637,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686311,
+  "lat": 45.7131836,
+  "lon": 12.1592447,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686316,
+  "lat": 45.7145229,
+  "lon": 12.1598041,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686321,
+  "lat": 45.7163422,
+  "lon": 12.1604350,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1821686326,
+  "lat": 45.7184415,
+  "lon": 12.1611524,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1846072629,
+  "lat": 45.6974116,
+  "lon": 12.1725443,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1846072631,
+  "lat": 45.6985041,
+  "lon": 12.1728865,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 1915420888,
+  "lat": 45.6470110,
+  "lon": 12.1206936,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2018546541,
+  "lat": 45.5902189,
+  "lon": 12.2691469,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2018609492,
+  "lat": 45.5931074,
+  "lon": 12.2703156,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923661,
+  "lat": 45.5900083,
+  "lon": 12.1037419,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923662,
+  "lat": 45.5930768,
+  "lon": 12.1038453,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923663,
+  "lat": 45.5962278,
+  "lon": 12.1039409,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923664,
+  "lat": 45.5990523,
+  "lon": 12.1040688,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923665,
+  "lat": 45.6018716,
+  "lon": 12.1041946,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923666,
+  "lat": 45.6047440,
+  "lon": 12.1043228,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923667,
+  "lat": 45.6075010,
+  "lon": 12.1044414,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923668,
+  "lat": 45.6102803,
+  "lon": 12.1045648,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923669,
+  "lat": 45.6130428,
+  "lon": 12.1057661,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923670,
+  "lat": 45.6159222,
+  "lon": 12.1070391,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923671,
+  "lat": 45.6186966,
+  "lon": 12.1082610,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923672,
+  "lat": 45.6215521,
+  "lon": 12.1095102,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923673,
+  "lat": 45.6242607,
+  "lon": 12.1106983,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923674,
+  "lat": 45.6269990,
+  "lon": 12.1118985,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923675,
+  "lat": 45.6298748,
+  "lon": 12.1131745,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923676,
+  "lat": 45.6326420,
+  "lon": 12.1143923,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923677,
+  "lat": 45.6352292,
+  "lon": 12.1155282,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923678,
+  "lat": 45.6382732,
+  "lon": 12.1168605,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923679,
+  "lat": 45.6411791,
+  "lon": 12.1181361,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923680,
+  "lat": 45.6440499,
+  "lon": 12.1193907,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923681,
+  "lat": 45.6470073,
+  "lon": 12.1207005,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923682,
+  "lat": 45.6500105,
+  "lon": 12.1215416,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923683,
+  "lat": 45.6529466,
+  "lon": 12.1223560,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923684,
+  "lat": 45.6558503,
+  "lon": 12.1231708,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923685,
+  "lat": 45.6587090,
+  "lon": 12.1239723,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923686,
+  "lat": 45.6615616,
+  "lon": 12.1247693,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923687,
+  "lat": 45.6644525,
+  "lon": 12.1255770,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923688,
+  "lat": 45.6671814,
+  "lon": 12.1263394,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923689,
+  "lat": 45.6700198,
+  "lon": 12.1271325,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923690,
+  "lat": 45.6728728,
+  "lon": 12.1279213,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923691,
+  "lat": 45.6755948,
+  "lon": 12.1286876,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923692,
+  "lat": 45.6784853,
+  "lon": 12.1294914,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923693,
+  "lat": 45.6813135,
+  "lon": 12.1302816,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923694,
+  "lat": 45.6842026,
+  "lon": 12.1306200,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923695,
+  "lat": 45.6871462,
+  "lon": 12.1309647,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923696,
+  "lat": 45.6900039,
+  "lon": 12.1312984,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923697,
+  "lat": 45.6928056,
+  "lon": 12.1316238,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923698,
+  "lat": 45.6957338,
+  "lon": 12.1319627,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923699,
+  "lat": 45.6985728,
+  "lon": 12.1322913,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923700,
+  "lat": 45.7015469,
+  "lon": 12.1326423,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923701,
+  "lat": 45.7045638,
+  "lon": 12.1330042,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923702,
+  "lat": 45.7075372,
+  "lon": 12.1333326,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923703,
+  "lat": 45.7103308,
+  "lon": 12.1336586,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923704,
+  "lat": 45.7132306,
+  "lon": 12.1339980,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923705,
+  "lat": 45.7161645,
+  "lon": 12.1343258,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2206923706,
+  "lat": 45.7190585,
+  "lon": 12.1346737,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245482,
+  "lat": 45.6727068,
+  "lon": 12.1283765,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245483,
+  "lat": 45.6713645,
+  "lon": 12.1210204,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245484,
+  "lat": 45.6704952,
+  "lon": 12.1162744,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245486,
+  "lat": 45.6680996,
+  "lon": 12.1094414,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245487,
+  "lat": 45.6671800,
+  "lon": 12.1076079,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245488,
+  "lat": 45.6709319,
+  "lon": 12.1186643,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245489,
+  "lat": 45.6699928,
+  "lon": 12.1135332,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245490,
+  "lat": 45.6718706,
+  "lon": 12.1237885,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245491,
+  "lat": 45.6721482,
+  "lon": 12.1252974,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245492,
+  "lat": 45.6724238,
+  "lon": 12.1268048,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213245493,
+  "lat": 45.6692092,
+  "lon": 12.1115952,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213252109,
+  "lat": 45.6653615,
+  "lon": 12.1040632,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213252111,
+  "lat": 45.6664087,
+  "lon": 12.1061003,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213252112,
+  "lat": 45.6634772,
+  "lon": 12.1004668,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213252113,
+  "lat": 45.6644083,
+  "lon": 12.1021902,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2213267541,
+  "lat": 45.6766265,
+  "lon": 12.1031466,
+  "tags": {
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 2213271932,
+  "lat": 45.6822641,
+  "lon": 12.1045003,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 2213293369,
+  "lat": 45.6591713,
+  "lon": 12.2433451,
+  "tags": {
+    "man_made": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2214861394,
+  "lat": 45.6720262,
+  "lon": 12.1291234,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169769,
+  "lat": 45.6699304,
+  "lon": 12.1592166,
+  "tags": {
+    "line_attachment": "anchor",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169771,
+  "lat": 45.6897830,
+  "lon": 12.1691825,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169774,
+  "lat": 45.7115622,
+  "lon": 12.1771643,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169777,
+  "lat": 45.7153488,
+  "lon": 12.1784212,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169782,
+  "lat": 45.6749591,
+  "lon": 12.1620168,
+  "tags": {
+    "line_attachment": "suspension",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169785,
+  "lat": 45.7095882,
+  "lon": 12.1765420,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169787,
+  "lat": 45.6656485,
+  "lon": 12.1562990,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169789,
+  "lat": 45.6824536,
+  "lon": 12.1656362,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169791,
+  "lat": 45.6798520,
+  "lon": 12.1643932,
+  "tags": {
+    "line_attachment": "suspension",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169794,
+  "lat": 45.7056913,
+  "lon": 12.1752718,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169812,
+  "lat": 45.7190084,
+  "lon": 12.1796212,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169817,
+  "lat": 45.6973750,
+  "lon": 12.1725777,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169819,
+  "lat": 45.6984803,
+  "lon": 12.1729318,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169822,
+  "lat": 45.6871524,
+  "lon": 12.1679110,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169826,
+  "lat": 45.6690312,
+  "lon": 12.1586195,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169828,
+  "lat": 45.6731659,
+  "lon": 12.1611569,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169830,
+  "lat": 45.6846829,
+  "lon": 12.1667268,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169832,
+  "lat": 45.6672838,
+  "lon": 12.1574302,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169838,
+  "lat": 45.6954076,
+  "lon": 12.1719249,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282169840,
+  "lat": 45.7131651,
+  "lon": 12.1779545,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282172283,
+  "lat": 45.7003856,
+  "lon": 12.1735544,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282172284,
+  "lat": 45.7172126,
+  "lon": 12.1790324,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282172285,
+  "lat": 45.6936002,
+  "lon": 12.1710446,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282172286,
+  "lat": 45.7023367,
+  "lon": 12.1741919,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174838,
+  "lat": 45.6134184,
+  "lon": 12.1485827,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174839,
+  "lat": 45.6444571,
+  "lon": 12.1492479,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174840,
+  "lat": 45.6345104,
+  "lon": 12.1491030,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174842,
+  "lat": 45.6191443,
+  "lon": 12.1487704,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174843,
+  "lat": 45.6419362,
+  "lon": 12.1492155,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174844,
+  "lat": 45.6266778,
+  "lon": 12.1489797,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174845,
+  "lat": 45.6477385,
+  "lon": 12.1493015,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174846,
+  "lat": 45.6458259,
+  "lon": 12.1492532,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174847,
+  "lat": 45.6386138,
+  "lon": 12.1491728,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174848,
+  "lat": 45.6571049,
+  "lon": 12.1504994,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174849,
+  "lat": 45.6516385,
+  "lon": 12.1493713,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174850,
+  "lat": 45.6171035,
+  "lon": 12.1486996,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174851,
+  "lat": 45.6604426,
+  "lon": 12.1527688,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174852,
+  "lat": 45.6535771,
+  "lon": 12.1493766,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174853,
+  "lat": 45.6621440,
+  "lon": 12.1539326,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174854,
+  "lat": 45.6364196,
+  "lon": 12.1491460,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174855,
+  "lat": 45.6307143,
+  "lon": 12.1490494,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174856,
+  "lat": 45.6247645,
+  "lon": 12.1489367,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174857,
+  "lat": 45.6211290,
+  "lon": 12.1488026,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174858,
+  "lat": 45.6229787,
+  "lon": 12.1488724,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174859,
+  "lat": 45.6555232,
+  "lon": 12.1494142,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174860,
+  "lat": 45.6587464,
+  "lon": 12.1515994,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174861,
+  "lat": 45.6287223,
+  "lon": 12.1490118,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174862,
+  "lat": 45.6639253,
+  "lon": 12.1551326,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174863,
+  "lat": 45.6326499,
+  "lon": 12.1490762,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174865,
+  "lat": 45.6151070,
+  "lon": 12.1486363,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282174867,
+  "lat": 45.6497073,
+  "lon": 12.1493283,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177932,
+  "lat": 45.6115084,
+  "lon": 12.1485344,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177933,
+  "lat": 45.5968717,
+  "lon": 12.1492479,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177934,
+  "lat": 45.6063785,
+  "lon": 12.1482501,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177935,
+  "lat": 45.6044983,
+  "lon": 12.1484379,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177936,
+  "lat": 45.6080035,
+  "lon": 12.1483574,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177937,
+  "lat": 45.6095458,
+  "lon": 12.1484110,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177938,
+  "lat": 45.6006138,
+  "lon": 12.1488563,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177939,
+  "lat": 45.5950062,
+  "lon": 12.1494517,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282177940,
+  "lat": 45.5987784,
+  "lon": 12.1490494,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182685,
+  "lat": 45.6938794,
+  "lon": 12.1596229,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182688,
+  "lat": 45.6961575,
+  "lon": 12.1611410,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182691,
+  "lat": 45.7001815,
+  "lon": 12.1645260,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182694,
+  "lat": 45.7116037,
+  "lon": 12.1763009,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182697,
+  "lat": 45.7022228,
+  "lon": 12.1666358,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182699,
+  "lat": 45.6855604,
+  "lon": 12.1543604,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182703,
+  "lat": 45.6826560,
+  "lon": 12.1521127,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182706,
+  "lat": 45.6982969,
+  "lon": 12.1625733,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182708,
+  "lat": 45.6781130,
+  "lon": 12.1490834,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182711,
+  "lat": 45.7037481,
+  "lon": 12.1682328,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182714,
+  "lat": 45.7186223,
+  "lon": 12.1835981,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182717,
+  "lat": 45.6705727,
+  "lon": 12.1445214,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182722,
+  "lat": 45.7056962,
+  "lon": 12.1702605,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182724,
+  "lat": 45.6761415,
+  "lon": 12.1477584,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182727,
+  "lat": 45.6915787,
+  "lon": 12.1580994,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182742,
+  "lat": 45.6893266,
+  "lon": 12.1565759,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182745,
+  "lat": 45.7152407,
+  "lon": 12.1800667,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182747,
+  "lat": 45.7135065,
+  "lon": 12.1778351,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182750,
+  "lat": 45.6737655,
+  "lon": 12.1461824,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182753,
+  "lat": 45.7074157,
+  "lon": 12.1719933,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182756,
+  "lat": 45.7094235,
+  "lon": 12.1740317,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2282182758,
+  "lat": 45.7169032,
+  "lon": 12.1817957,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2349922122,
+  "lat": 45.7110780,
+  "lon": 12.2619607,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2349922124,
+  "lat": 45.7122354,
+  "lon": 12.2685526,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2349922126,
+  "lat": 45.7115631,
+  "lon": 12.2643939,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2349922127,
+  "lat": 45.7121171,
+  "lon": 12.2693308,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2349922129,
+  "lat": 45.7142399,
+  "lon": 12.2687106,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2349924127,
+  "lat": 45.7055822,
+  "lon": 12.2712467,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2351540346,
+  "lat": 45.7105315,
+  "lon": 12.2656530,
+  "tags": {
+    "man_made": "mast",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 2351540956,
+  "lat": 45.7116698,
+  "lon": 12.2658192,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di Vodafone è \"Inter-site\" su LTE Italy.",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 2371993555,
+  "lat": 45.6765804,
+  "lon": 12.1268074,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 2401547338,
+  "lat": 45.6773521,
+  "lon": 12.1549854,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 2997278020,
+  "lat": 45.6533522,
+  "lon": 12.2695563,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2997278022,
+  "lat": 45.6536260,
+  "lon": 12.2704610,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2997279007,
+  "lat": 45.6556340,
+  "lon": 12.2716081,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 2997279105,
+  "lat": 45.6574851,
+  "lon": 12.2727187,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3032685233,
+  "lat": 45.6222386,
+  "lon": 12.2899858,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3032685234,
+  "lat": 45.6246959,
+  "lon": 12.2794084,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3032685333,
+  "lat": 45.6232991,
+  "lon": 12.2853368,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3032685433,
+  "lat": 45.6240831,
+  "lon": 12.2817992,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3084524935,
+  "lat": 45.5931128,
+  "lon": 12.1496351,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3084525034,
+  "lat": 45.6771552,
+  "lon": 12.1630729,
+  "tags": {
+    "line_attachment": "suspension",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3084525134,
+  "lat": 45.6916679,
+  "lon": 12.1700953,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3084525634,
+  "lat": 45.6026127,
+  "lon": 12.1486521,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3084525733,
+  "lat": 45.6717467,
+  "lon": 12.1604529,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3084525833,
+  "lat": 45.7076530,
+  "lon": 12.1758747,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073669,
+  "lat": 45.5922626,
+  "lon": 12.2445699,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073670,
+  "lat": 45.5949633,
+  "lon": 12.2449633,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073671,
+  "lat": 45.6032723,
+  "lon": 12.2471026,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073672,
+  "lat": 45.6033489,
+  "lon": 12.2479122,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073673,
+  "lat": 45.6048901,
+  "lon": 12.2478398,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073674,
+  "lat": 45.6052983,
+  "lon": 12.2491610,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073675,
+  "lat": 45.6067008,
+  "lon": 12.2486566,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073676,
+  "lat": 45.6076439,
+  "lon": 12.2506424,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073677,
+  "lat": 45.6084168,
+  "lon": 12.2494283,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073678,
+  "lat": 45.6097218,
+  "lon": 12.2519717,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073679,
+  "lat": 45.6100512,
+  "lon": 12.2501682,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073680,
+  "lat": 45.6117669,
+  "lon": 12.2509261,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073681,
+  "lat": 45.6118442,
+  "lon": 12.2533236,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073682,
+  "lat": 45.6137973,
+  "lon": 12.2518580,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073683,
+  "lat": 45.6141419,
+  "lon": 12.2547452,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073684,
+  "lat": 45.6157637,
+  "lon": 12.2527182,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073685,
+  "lat": 45.6161810,
+  "lon": 12.2573659,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073686,
+  "lat": 45.6178366,
+  "lon": 12.2536788,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073687,
+  "lat": 45.6184278,
+  "lon": 12.2602251,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073688,
+  "lat": 45.6194700,
+  "lon": 12.2544375,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073689,
+  "lat": 45.6204493,
+  "lon": 12.2616952,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073690,
+  "lat": 45.6215684,
+  "lon": 12.2552208,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073691,
+  "lat": 45.6227146,
+  "lon": 12.2633466,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073692,
+  "lat": 45.6231395,
+  "lon": 12.2641435,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073693,
+  "lat": 45.6232151,
+  "lon": 12.2653766,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073694,
+  "lat": 45.6233266,
+  "lon": 12.2672630,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073695,
+  "lat": 45.6235677,
+  "lon": 12.2559830,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073696,
+  "lat": 45.6258970,
+  "lon": 12.2568214,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073697,
+  "lat": 45.6270091,
+  "lon": 12.2664888,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073698,
+  "lat": 45.6279019,
+  "lon": 12.2575069,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073699,
+  "lat": 45.6292969,
+  "lon": 12.2681462,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073700,
+  "lat": 45.6298840,
+  "lon": 12.2584058,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073701,
+  "lat": 45.6317931,
+  "lon": 12.2699647,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073702,
+  "lat": 45.6319362,
+  "lon": 12.2594315,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073703,
+  "lat": 45.6332293,
+  "lon": 12.2598813,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073704,
+  "lat": 45.6339355,
+  "lon": 12.2719130,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073705,
+  "lat": 45.6348862,
+  "lon": 12.2606121,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073706,
+  "lat": 45.6358726,
+  "lon": 12.2736964,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073707,
+  "lat": 45.6366629,
+  "lon": 12.2614102,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073708,
+  "lat": 45.6384716,
+  "lon": 12.2760678,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073709,
+  "lat": 45.6388874,
+  "lon": 12.2625373,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073710,
+  "lat": 45.6406841,
+  "lon": 12.2634099,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073711,
+  "lat": 45.6413013,
+  "lon": 12.2766469,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073712,
+  "lat": 45.6426647,
+  "lon": 12.2643597,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073713,
+  "lat": 45.6436058,
+  "lon": 12.2782971,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073714,
+  "lat": 45.6444766,
+  "lon": 12.2652320,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073715,
+  "lat": 45.6459477,
+  "lon": 12.2799766,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073716,
+  "lat": 45.6464624,
+  "lon": 12.2662195,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073717,
+  "lat": 45.6476377,
+  "lon": 12.2669209,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073718,
+  "lat": 45.6479244,
+  "lon": 12.2813944,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073719,
+  "lat": 45.6496629,
+  "lon": 12.2679818,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073720,
+  "lat": 45.6507643,
+  "lon": 12.2823178,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073721,
+  "lat": 45.6515866,
+  "lon": 12.2691787,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073722,
+  "lat": 45.6529172,
+  "lon": 12.2676921,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073723,
+  "lat": 45.6537350,
+  "lon": 12.2832798,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073725,
+  "lat": 45.6563279,
+  "lon": 12.2834081,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073726,
+  "lat": 45.6567390,
+  "lon": 12.2842763,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073727,
+  "lat": 45.6593861,
+  "lon": 12.2742589,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073728,
+  "lat": 45.6595218,
+  "lon": 12.2841158,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073729,
+  "lat": 45.6608381,
+  "lon": 12.2755556,
+  "tags": {
+    "description": "T. 23-685F P 168/A 23685F",
+    "name": "Terna",
+    "operator": "Terna S.p.A.",
+    "operator:wikidata": "Q936325",
+    "operator:wikipedia": "it:Terna (azienda)",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073730,
+  "lat": 45.6620709,
+  "lon": 12.2828332,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073731,
+  "lat": 45.6626629,
+  "lon": 12.2769136,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073732,
+  "lat": 45.6644064,
+  "lon": 12.2782242,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073733,
+  "lat": 45.6649725,
+  "lon": 12.2815975,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073734,
+  "lat": 45.6661978,
+  "lon": 12.2795703,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073735,
+  "lat": 45.6678458,
+  "lon": 12.2803798,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073736,
+  "lat": 45.6682976,
+  "lon": 12.2811497,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073737,
+  "lat": 45.6694505,
+  "lon": 12.2719958,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073738,
+  "lat": 45.6695632,
+  "lon": 12.2719640,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073739,
+  "lat": 45.6696645,
+  "lon": 12.2709579,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073740,
+  "lat": 45.6701108,
+  "lon": 12.2825109,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073741,
+  "lat": 45.6701312,
+  "lon": 12.2755624,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073742,
+  "lat": 45.6705889,
+  "lon": 12.2800993,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073743,
+  "lat": 45.6707264,
+  "lon": 12.2799303,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073744,
+  "lat": 45.6710614,
+  "lon": 12.2824220,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073745,
+  "lat": 45.6729569,
+  "lon": 12.2798721,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073746,
+  "lat": 45.6729954,
+  "lon": 12.2823445,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073747,
+  "lat": 45.6750789,
+  "lon": 12.2822420,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073748,
+  "lat": 45.6751585,
+  "lon": 12.2796609,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073749,
+  "lat": 45.6771225,
+  "lon": 12.2794770,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073750,
+  "lat": 45.6771882,
+  "lon": 12.2821454,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073751,
+  "lat": 45.6792126,
+  "lon": 12.2820647,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073752,
+  "lat": 45.6796522,
+  "lon": 12.2792297,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073753,
+  "lat": 45.6811795,
+  "lon": 12.2835456,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073754,
+  "lat": 45.6819089,
+  "lon": 12.2790086,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073755,
+  "lat": 45.6829993,
+  "lon": 12.2849474,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073756,
+  "lat": 45.6841509,
+  "lon": 12.2780704,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073757,
+  "lat": 45.6847887,
+  "lon": 12.2862938,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073758,
+  "lat": 45.6866543,
+  "lon": 12.2876929,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073759,
+  "lat": 45.6867663,
+  "lon": 12.2770093,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073760,
+  "lat": 45.6884442,
+  "lon": 12.2890478,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073761,
+  "lat": 45.6891790,
+  "lon": 12.2760148,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073764,
+  "lat": 45.6916906,
+  "lon": 12.2752956,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073766,
+  "lat": 45.6942773,
+  "lon": 12.2745413,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073768,
+  "lat": 45.6966452,
+  "lon": 12.2738490,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073770,
+  "lat": 45.6990305,
+  "lon": 12.2731579,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073772,
+  "lat": 45.7008713,
+  "lon": 12.2726090,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073775,
+  "lat": 45.7033623,
+  "lon": 12.2718756,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073778,
+  "lat": 45.7080517,
+  "lon": 12.2705266,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073780,
+  "lat": 45.7099561,
+  "lon": 12.2699685,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3085073789,
+  "lat": 45.7163847,
+  "lon": 12.2680896,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231320564,
+  "lat": 45.6831384,
+  "lon": 12.1812803,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231320866,
+  "lat": 45.6803731,
+  "lon": 12.1965090,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231320867,
+  "lat": 45.6875416,
+  "lon": 12.1736754,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231353178,
+  "lat": 45.6887195,
+  "lon": 12.1713162,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231355765,
+  "lat": 45.5958566,
+  "lon": 12.2433158,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231356163,
+  "lat": 45.6017607,
+  "lon": 12.2464309,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231357462,
+  "lat": 45.6815285,
+  "lon": 12.1841794,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231357570,
+  "lat": 45.5916514,
+  "lon": 12.2410961,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231357571,
+  "lat": 45.5977483,
+  "lon": 12.2443484,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231357572,
+  "lat": 45.6800451,
+  "lon": 12.1903314,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231357573,
+  "lat": 45.6846799,
+  "lon": 12.1785385,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231358065,
+  "lat": 45.6798537,
+  "lon": 12.1867985,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231360062,
+  "lat": 45.6859290,
+  "lon": 12.1763906,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231360161,
+  "lat": 45.5939444,
+  "lon": 12.2423160,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3231360461,
+  "lat": 45.6802063,
+  "lon": 12.1932970,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351307,
+  "lat": 45.5938222,
+  "lon": 12.2724935,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351308,
+  "lat": 45.5957015,
+  "lon": 12.2742443,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351309,
+  "lat": 45.5974778,
+  "lon": 12.2759101,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351310,
+  "lat": 45.5995317,
+  "lon": 12.2778295,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351311,
+  "lat": 45.6011785,
+  "lon": 12.2793711,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351312,
+  "lat": 45.6030409,
+  "lon": 12.2811038,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351313,
+  "lat": 45.6047817,
+  "lon": 12.2827322,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351314,
+  "lat": 45.6065346,
+  "lon": 12.2843520,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351315,
+  "lat": 45.6082754,
+  "lon": 12.2859935,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351316,
+  "lat": 45.6105233,
+  "lon": 12.2872875,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351317,
+  "lat": 45.6128077,
+  "lon": 12.2885859,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3233351318,
+  "lat": 45.6151171,
+  "lon": 12.2899046,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855235825,
+  "lat": 45.6515481,
+  "lon": 12.2619764,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855237696,
+  "lat": 45.6507197,
+  "lon": 12.2593385,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855237890,
+  "lat": 45.6511570,
+  "lon": 12.2604897,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855237898,
+  "lat": 45.6511609,
+  "lon": 12.2603673,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855238074,
+  "lat": 45.6517931,
+  "lon": 12.2605764,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855238106,
+  "lat": 45.6519986,
+  "lon": 12.2638606,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855238217,
+  "lat": 45.6525057,
+  "lon": 12.2606612,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855238377,
+  "lat": 45.6529140,
+  "lon": 12.2676950,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3855238424,
+  "lat": 45.6533697,
+  "lon": 12.2612057,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3857510879,
+  "lat": 45.6462584,
+  "lon": 12.2561520,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3857510901,
+  "lat": 45.6470171,
+  "lon": 12.2566934,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3857510913,
+  "lat": 45.6477099,
+  "lon": 12.2570847,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3857510927,
+  "lat": 45.6484357,
+  "lon": 12.2575312,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3892515344,
+  "lat": 45.6359333,
+  "lon": 12.2352152,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 3892515747,
+  "lat": 45.6366835,
+  "lon": 12.2372115,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317989491,
+  "lat": 45.6571102,
+  "lon": 12.2857714,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317989492,
+  "lat": 45.6556326,
+  "lon": 12.2800346,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317989493,
+  "lat": 45.6557704,
+  "lon": 12.2816569,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317989494,
+  "lat": 45.6554875,
+  "lon": 12.2785365,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317989498,
+  "lat": 45.6584169,
+  "lon": 12.2894769,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317989500,
+  "lat": 45.6576246,
+  "lon": 12.2873487,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317989501,
+  "lat": 45.6546303,
+  "lon": 12.2749132,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317989502,
+  "lat": 45.6550564,
+  "lon": 12.2767141,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4317998422,
+  "lat": 45.6542178,
+  "lon": 12.2731726,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4327947530,
+  "lat": 45.6768169,
+  "lon": 12.2551870,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 4327947531,
+  "lat": 45.6675369,
+  "lon": 12.2637342,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 4342228411,
+  "lat": 45.6511437,
+  "lon": 12.2497088,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 5558708772,
+  "lat": 45.7083806,
+  "lon": 12.2613346,
+  "tags": {
+    "man_made": "tower",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 5558708773,
+  "lat": 45.7091730,
+  "lon": 12.2614187,
+  "tags": {
+    "man_made": "tower",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 5558708774,
+  "lat": 45.7091372,
+  "lon": 12.2624181,
+  "tags": {
+    "man_made": "tower",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 5558708775,
+  "lat": 45.7083088,
+  "lon": 12.2622826,
+  "tags": {
+    "man_made": "tower",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550927,
+  "lat": 45.5916802,
+  "lon": 12.1224689,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550928,
+  "lat": 45.5941239,
+  "lon": 12.1227318,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550929,
+  "lat": 45.5965412,
+  "lon": 12.1229893,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550930,
+  "lat": 45.5991424,
+  "lon": 12.1232736,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550931,
+  "lat": 45.6015370,
+  "lon": 12.1235150,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550932,
+  "lat": 45.6039052,
+  "lon": 12.1237725,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550933,
+  "lat": 45.6063558,
+  "lon": 12.1240139,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550934,
+  "lat": 45.6086075,
+  "lon": 12.1242607,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550935,
+  "lat": 45.6112869,
+  "lon": 12.1245342,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550936,
+  "lat": 45.6134258,
+  "lon": 12.1247649,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550937,
+  "lat": 45.6155984,
+  "lon": 12.1249956,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550938,
+  "lat": 45.6176245,
+  "lon": 12.1261221,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550939,
+  "lat": 45.6199846,
+  "lon": 12.1273881,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550940,
+  "lat": 45.6219280,
+  "lon": 12.1284664,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550941,
+  "lat": 45.6243066,
+  "lon": 12.1297592,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550942,
+  "lat": 45.6266214,
+  "lon": 12.1310252,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550943,
+  "lat": 45.6285346,
+  "lon": 12.1320873,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550944,
+  "lat": 45.6304815,
+  "lon": 12.1331549,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550945,
+  "lat": 45.6327097,
+  "lon": 12.1343726,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550946,
+  "lat": 45.6351892,
+  "lon": 12.1357298,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550947,
+  "lat": 45.6373572,
+  "lon": 12.1368939,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550948,
+  "lat": 45.6396376,
+  "lon": 12.1374303,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550949,
+  "lat": 45.6418767,
+  "lon": 12.1379507,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550950,
+  "lat": 45.6439619,
+  "lon": 12.1384066,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550951,
+  "lat": 45.6491484,
+  "lon": 12.1396190,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550952,
+  "lat": 45.6513046,
+  "lon": 12.1401125,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550953,
+  "lat": 45.6536782,
+  "lon": 12.1406490,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550954,
+  "lat": 45.6559317,
+  "lon": 12.1411532,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550955,
+  "lat": 45.6606297,
+  "lon": 12.1422315,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550956,
+  "lat": 45.6628829,
+  "lon": 12.1427411,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 5730550957,
+  "lat": 45.6673104,
+  "lon": 12.1437684,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 6440482075,
+  "lat": 45.6744652,
+  "lon": 12.2130639,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 6895960991,
+  "lat": 45.7182730,
+  "lon": 12.1979574,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:5g:WindTre": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 8741405938,
+  "lat": 45.6480309,
+  "lon": 12.1997112,
+  "tags": {
+    "aeroway": "tower",
+    "man_made": "tower",
+    "tower:type": "aircraft_control"
+  }
+},
+{
+  "type": "node",
+  "id": 10780262586,
+  "lat": 45.6887866,
+  "lon": 12.2500857,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 10780262587,
+  "lat": 45.6865022,
+  "lon": 12.2485565,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 10780262588,
+  "lat": 45.6948124,
+  "lon": 12.2504085,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286713,
+  "lat": 45.7101537,
+  "lon": 12.2483870,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286714,
+  "lat": 45.7096840,
+  "lon": 12.2460488,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286715,
+  "lat": 45.7106460,
+  "lon": 12.2511762,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286716,
+  "lat": 45.7109855,
+  "lon": 12.2529838,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286721,
+  "lat": 45.7111304,
+  "lon": 12.2552156,
+  "tags": {
+    "line_attachment": "suspension",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286722,
+  "lat": 45.7112636,
+  "lon": 12.2570679,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286723,
+  "lat": 45.7114109,
+  "lon": 12.2593255,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286724,
+  "lat": 45.7112439,
+  "lon": 12.2606050,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286779,
+  "lat": 45.6763834,
+  "lon": 12.2488025,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286780,
+  "lat": 45.6994989,
+  "lon": 12.2511373,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 10780286833,
+  "lat": 45.6963392,
+  "lon": 12.2298541,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:lte:TIM": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782514,
+  "lat": 45.7004643,
+  "lon": 12.2141377,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782515,
+  "lat": 45.7012484,
+  "lon": 12.2156778,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782516,
+  "lat": 45.7021227,
+  "lon": 12.2173677,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782517,
+  "lat": 45.7028459,
+  "lon": 12.2192396,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782518,
+  "lat": 45.7035015,
+  "lon": 12.2209276,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782519,
+  "lat": 45.7041214,
+  "lon": 12.2226649,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782520,
+  "lat": 45.7047863,
+  "lon": 12.2245274,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782521,
+  "lat": 45.7054282,
+  "lon": 12.2263415,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782542,
+  "lat": 45.7067468,
+  "lon": 12.2300658,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782543,
+  "lat": 45.7074061,
+  "lon": 12.2319192,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782544,
+  "lat": 45.7077620,
+  "lon": 12.2340998,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782545,
+  "lat": 45.7090074,
+  "lon": 12.2418889,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782546,
+  "lat": 45.7086710,
+  "lon": 12.2397533,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782547,
+  "lat": 45.7083981,
+  "lon": 12.2380805,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782548,
+  "lat": 45.7080856,
+  "lon": 12.2361023,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994782566,
+  "lat": 45.7060809,
+  "lon": 12.2281748,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786326,
+  "lat": 45.6886237,
+  "lon": 12.2020905,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786327,
+  "lat": 45.6900757,
+  "lon": 12.2026614,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786328,
+  "lat": 45.6912350,
+  "lon": 12.2031469,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786329,
+  "lat": 45.6926128,
+  "lon": 12.2036988,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786330,
+  "lat": 45.6941906,
+  "lon": 12.2043380,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786331,
+  "lat": 45.6953181,
+  "lon": 12.2053277,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786332,
+  "lat": 45.6964440,
+  "lon": 12.2063470,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786333,
+  "lat": 45.6972458,
+  "lon": 12.2078866,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786334,
+  "lat": 45.6980457,
+  "lon": 12.2094503,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786335,
+  "lat": 45.6996729,
+  "lon": 12.2126048,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11994786336,
+  "lat": 45.6988475,
+  "lon": 12.2110060,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685122,
+  "lat": 45.6688961,
+  "lon": 12.1870190,
+  "tags": {
+    "fixme": "continue power line",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685124,
+  "lat": 45.6712146,
+  "lon": 12.1891041,
+  "tags": {
+    "fixme": "position estimated",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685125,
+  "lat": 45.6704715,
+  "lon": 12.1884325,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685126,
+  "lat": 45.6728116,
+  "lon": 12.1905433,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685127,
+  "lat": 45.6720521,
+  "lon": 12.1898611,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685128,
+  "lat": 45.6745097,
+  "lon": 12.1920737,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685129,
+  "lat": 45.6736822,
+  "lon": 12.1913253,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685130,
+  "lat": 45.6753369,
+  "lon": 12.1928219,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685131,
+  "lat": 45.6761484,
+  "lon": 12.1935341,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685132,
+  "lat": 45.6768428,
+  "lon": 12.1941589,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997685133,
+  "lat": 45.6775502,
+  "lon": 12.1948390,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687370,
+  "lat": 45.6861050,
+  "lon": 12.2110396,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687371,
+  "lat": 45.6852933,
+  "lon": 12.2092765,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687372,
+  "lat": 45.6845477,
+  "lon": 12.2076233,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687375,
+  "lat": 45.6823236,
+  "lon": 12.2043986,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687376,
+  "lat": 45.6818007,
+  "lon": 12.2034831,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687377,
+  "lat": 45.6838810,
+  "lon": 12.2071979,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687378,
+  "lat": 45.6839740,
+  "lon": 12.2063428,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687379,
+  "lat": 45.6833442,
+  "lon": 12.2062198,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687380,
+  "lat": 45.6828018,
+  "lon": 12.2052538,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687381,
+  "lat": 45.6832817,
+  "lon": 12.2047677,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687382,
+  "lat": 45.6808925,
+  "lon": 12.2013473,
+  "tags": {
+    "man_made": "mast",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687383,
+  "lat": 45.6804615,
+  "lon": 12.1996361,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687384,
+  "lat": 45.6804371,
+  "lon": 12.2003415,
+  "tags": {
+    "man_made": "mast"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687385,
+  "lat": 45.6780527,
+  "lon": 12.1958013,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687386,
+  "lat": 45.6787060,
+  "lon": 12.1971043,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687389,
+  "lat": 45.6793249,
+  "lon": 12.1983272,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687391,
+  "lat": 45.6872430,
+  "lon": 12.2015262,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 11997687392,
+  "lat": 45.6858915,
+  "lon": 12.2017470,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 12128378782,
+  "lat": 45.5948803,
+  "lon": 12.2421457,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 12128379123,
+  "lat": 45.5985173,
+  "lon": 12.2627824,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 12755512559,
+  "lat": 45.6599319,
+  "lon": 12.2155403,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 12773547201,
+  "lat": 45.6168779,
+  "lon": 12.2456611,
+  "tags": {
+    "communication:5g:Vodafone": "no",
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 12802790515,
+  "lat": 45.7197936,
+  "lon": 12.2747174,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 12802790516,
+  "lat": 45.7185720,
+  "lon": 12.2730905,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 12829983714,
+  "lat": 45.6805671,
+  "lon": 12.1497731,
+  "tags": {
+    "man_made": "water_tower"
+  }
+},
+{
+  "type": "node",
+  "id": 12906364774,
+  "lat": 45.6963483,
+  "lon": 12.2504293,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 12906364779,
+  "lat": 45.6976601,
+  "lon": 12.2506979,
+  "tags": {
+    "line_attachment": "suspension",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 12906364780,
+  "lat": 45.7013471,
+  "lon": 12.2517977,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13002781953,
+  "lat": 45.7165758,
+  "lon": 12.1476061,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13002782818,
+  "lat": 45.6815441,
+  "lon": 12.1506284,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è considerato \"Inter-site\" su LTE Italy.",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13002797708,
+  "lat": 45.6735102,
+  "lon": 12.1600865,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13002804452,
+  "lat": 45.6808332,
+  "lon": 12.1118305,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13002804453,
+  "lat": 45.6923093,
+  "lon": 12.1810187,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13002804454,
+  "lat": 45.6734372,
+  "lon": 12.1774283,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13002808850,
+  "lat": 45.6737184,
+  "lon": 12.1777219,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è considerato \"Inter-site\" su LTE Italy.",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13002814225,
+  "lat": 45.7189894,
+  "lon": 12.1149074,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13046074543,
+  "lat": 45.6358211,
+  "lon": 12.1068309,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13046074544,
+  "lat": 45.6382978,
+  "lon": 12.1061095,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13046074545,
+  "lat": 45.6392821,
+  "lon": 12.1072038,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di Vodafone è \"Inter-site\" su LTE Italy",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884013,
+  "lat": 45.6185191,
+  "lon": 12.1018072,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884014,
+  "lat": 45.6138918,
+  "lon": 12.1296770,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884027,
+  "lat": 45.6144360,
+  "lon": 12.1399122,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884028,
+  "lat": 45.5957763,
+  "lon": 12.1534196,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "Lte Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884029,
+  "lat": 45.5945867,
+  "lon": 12.1545558,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884030,
+  "lat": 45.5945134,
+  "lon": 12.1557261,
+  "tags": {
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884031,
+  "lat": 45.5934768,
+  "lon": 12.1543763,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884032,
+  "lat": 45.5996024,
+  "lon": 12.1724434,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884033,
+  "lat": 45.6023196,
+  "lon": 12.1646480,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047884034,
+  "lat": 45.6054184,
+  "lon": 12.1628847,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13047941019,
+  "lat": 45.7192504,
+  "lon": 12.1140011,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063325186,
+  "lat": 45.6765119,
+  "lon": 12.1359812,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063325187,
+  "lat": 45.6730386,
+  "lon": 12.1395407,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063325199,
+  "lat": 45.6685138,
+  "lon": 12.1601589,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063325200,
+  "lat": 45.6678797,
+  "lon": 12.1607396,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063341302,
+  "lat": 45.6795644,
+  "lon": 12.1615986,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063341303,
+  "lat": 45.6834324,
+  "lon": 12.1535910,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063341304,
+  "lat": 45.7020468,
+  "lon": 12.1431333,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063341305,
+  "lat": 45.7136286,
+  "lon": 12.1559758,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063341306,
+  "lat": 45.7189538,
+  "lon": 12.1549924,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063354621,
+  "lat": 45.6907707,
+  "lon": 12.1838441,
+  "tags": {
+    "communication:5g": "yes",
+    "communication:lte": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "WindTre",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063354622,
+  "lat": 45.6911071,
+  "lon": 12.1847836,
+  "tags": {
+    "communication:5g": "yes",
+    "communication:lte": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "Iliad",
+    "operator:wikidata": "Q55433734",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418140,
+  "lat": 45.6450771,
+  "lon": 12.1419821,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418141,
+  "lat": 45.6434303,
+  "lon": 12.1525931,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418142,
+  "lat": 45.6474129,
+  "lon": 12.1587595,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:WindTre": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418143,
+  "lat": 45.6388716,
+  "lon": 12.1596013,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418144,
+  "lat": 45.6316756,
+  "lon": 12.1614457,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418145,
+  "lat": 45.6289423,
+  "lon": 12.1612842,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418146,
+  "lat": 45.6535733,
+  "lon": 12.1686564,
+  "tags": {
+    "communication:5g:Windtre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418147,
+  "lat": 45.6537859,
+  "lon": 12.1803378,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13063418148,
+  "lat": 45.6524179,
+  "lon": 12.1811476,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316072,
+  "lat": 45.6335354,
+  "lon": 12.2347765,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316073,
+  "lat": 45.6315624,
+  "lon": 12.2424239,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316074,
+  "lat": 45.6236448,
+  "lon": 12.2298690,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316075,
+  "lat": 45.6098095,
+  "lon": 12.2350035,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316076,
+  "lat": 45.6025120,
+  "lon": 12.2653547,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316077,
+  "lat": 45.5909908,
+  "lon": 12.2621779,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316078,
+  "lat": 45.5927229,
+  "lon": 12.2424028,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316079,
+  "lat": 45.5989555,
+  "lon": 12.2371371,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316080,
+  "lat": 45.5994077,
+  "lon": 12.2372046,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13089316081,
+  "lat": 45.5909008,
+  "lon": 12.2175069,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13090102330,
+  "lat": 45.6377268,
+  "lon": 12.2854834,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13090102332,
+  "lat": 45.6367296,
+  "lon": 12.2643936,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13090102333,
+  "lat": 45.6329051,
+  "lon": 12.2643512,
+  "tags": {
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13090102334,
+  "lat": 45.6185922,
+  "lon": 12.2645143,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13090102335,
+  "lat": 45.6107700,
+  "lon": 12.2584330,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13090102336,
+  "lat": 45.6375218,
+  "lon": 12.2490856,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13090465603,
+  "lat": 45.6578128,
+  "lon": 12.2886090,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13090465604,
+  "lat": 45.6566423,
+  "lon": 12.2892258,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:5g:WindTre": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13107903760,
+  "lat": 45.7039231,
+  "lon": 12.2149833,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13107903761,
+  "lat": 45.7097071,
+  "lon": 12.2104695,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13107903762,
+  "lat": 45.7179486,
+  "lon": 12.2201880,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13112691113,
+  "lat": 45.6720886,
+  "lon": 12.2232458,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "operator": "TIM SpA",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13137109672,
+  "lat": 45.7181863,
+  "lon": 12.2797052,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13137109675,
+  "lat": 45.7042887,
+  "lon": 12.2420676,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13137109676,
+  "lat": 45.7022636,
+  "lon": 12.2494032,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13137109677,
+  "lat": 45.7114797,
+  "lon": 12.2569365,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "guyed_tube",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13137109678,
+  "lat": 45.7144941,
+  "lon": 12.2557115,
+  "tags": {
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13137109679,
+  "lat": 45.7141521,
+  "lon": 12.2593288,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069830,
+  "lat": 45.6139228,
+  "lon": 12.1950085,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069831,
+  "lat": 45.6024585,
+  "lon": 12.1758760,
+  "tags": {
+    "fixme": "continue",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069832,
+  "lat": 45.6035097,
+  "lon": 12.1776849,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069833,
+  "lat": 45.6045066,
+  "lon": 12.1794156,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069834,
+  "lat": 45.6055560,
+  "lon": 12.1811389,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069835,
+  "lat": 45.6065946,
+  "lon": 12.1828669,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069836,
+  "lat": 45.6076482,
+  "lon": 12.1846104,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069837,
+  "lat": 45.6086990,
+  "lon": 12.1863417,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069838,
+  "lat": 45.6097436,
+  "lon": 12.1880852,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069839,
+  "lat": 45.6107992,
+  "lon": 12.1898365,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069840,
+  "lat": 45.6118540,
+  "lon": 12.1915871,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069841,
+  "lat": 45.6129108,
+  "lon": 12.1933363,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069842,
+  "lat": 45.6149736,
+  "lon": 12.1967447,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069843,
+  "lat": 45.6160130,
+  "lon": 12.1984646,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069844,
+  "lat": 45.6170542,
+  "lon": 12.2001940,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069845,
+  "lat": 45.6181110,
+  "lon": 12.2019520,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069846,
+  "lat": 45.6191648,
+  "lon": 12.2036916,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069847,
+  "lat": 45.6202116,
+  "lon": 12.2054377,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069848,
+  "lat": 45.6212649,
+  "lon": 12.2071825,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069849,
+  "lat": 45.6222732,
+  "lon": 12.2088663,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069850,
+  "lat": 45.6233030,
+  "lon": 12.2105835,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069851,
+  "lat": 45.6243521,
+  "lon": 12.2123498,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069852,
+  "lat": 45.6253722,
+  "lon": 12.2140723,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069853,
+  "lat": 45.6264147,
+  "lon": 12.2158399,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069854,
+  "lat": 45.6274572,
+  "lon": 12.2175924,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069855,
+  "lat": 45.6285023,
+  "lon": 12.2193577,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069856,
+  "lat": 45.6295461,
+  "lon": 12.2211040,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069857,
+  "lat": 45.6305846,
+  "lon": 12.2228621,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069858,
+  "lat": 45.6316217,
+  "lon": 12.2246203,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069859,
+  "lat": 45.6326801,
+  "lon": 12.2263652,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069860,
+  "lat": 45.6337225,
+  "lon": 12.2280987,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069861,
+  "lat": 45.6347756,
+  "lon": 12.2298244,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069862,
+  "lat": 45.6352726,
+  "lon": 12.2314994,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069863,
+  "lat": 45.6352745,
+  "lon": 12.2321472,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069864,
+  "lat": 45.6352792,
+  "lon": 12.2328278,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13362069865,
+  "lat": 45.6352829,
+  "lon": 12.2334889,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13419158256,
+  "lat": 45.6904534,
+  "lon": 12.2834934,
+  "tags": {
+    "communication:5g": "yes",
+    "communication:lte": "yes",
+    "communication:mobile_phone": "yes",
+    "communication:operator": "Iliad;WindTre",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13419158257,
+  "lat": 45.6927822,
+  "lon": 12.2822571,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "operator": "INWIT",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444816,
+  "lat": 45.7174392,
+  "lon": 12.2703968,
+  "tags": {
+    "fixme": "continue",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444956,
+  "lat": 45.7118918,
+  "lon": 12.2663343,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444957,
+  "lat": 45.7129493,
+  "lon": 12.2733157,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444958,
+  "lat": 45.7126458,
+  "lon": 12.2709399,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444959,
+  "lat": 45.7132619,
+  "lon": 12.2757827,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444960,
+  "lat": 45.7135343,
+  "lon": 12.2779008,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444961,
+  "lat": 45.7138008,
+  "lon": 12.2800058,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444962,
+  "lat": 45.7140775,
+  "lon": 12.2821932,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444963,
+  "lat": 45.7143369,
+  "lon": 12.2841659,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444964,
+  "lat": 45.7146160,
+  "lon": 12.2863640,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444965,
+  "lat": 45.7148510,
+  "lon": 12.2882496,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444985,
+  "lat": 45.7156614,
+  "lon": 12.2883236,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444986,
+  "lat": 45.7156548,
+  "lon": 12.2862430,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444987,
+  "lat": 45.7156582,
+  "lon": 12.2842035,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422444988,
+  "lat": 45.7163202,
+  "lon": 12.2819222,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422445017,
+  "lat": 45.7199936,
+  "lon": 12.2738638,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422445018,
+  "lat": 45.7192547,
+  "lon": 12.2754930,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422445019,
+  "lat": 45.7185184,
+  "lon": 12.2771127,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422445020,
+  "lat": 45.7177756,
+  "lon": 12.2787343,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13422445021,
+  "lat": 45.7170287,
+  "lon": 12.2803673,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298713,
+  "lat": 45.5991658,
+  "lon": 12.2782315,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298714,
+  "lat": 45.6010006,
+  "lon": 12.2792172,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298715,
+  "lat": 45.5998294,
+  "lon": 12.2785186,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298716,
+  "lat": 45.6021112,
+  "lon": 12.2794358,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298718,
+  "lat": 45.6043255,
+  "lon": 12.2796316,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298719,
+  "lat": 45.6054841,
+  "lon": 12.2801425,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298720,
+  "lat": 45.6073377,
+  "lon": 12.2809533,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298728,
+  "lat": 45.6085700,
+  "lon": 12.2814931,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298729,
+  "lat": 45.6099269,
+  "lon": 12.2808841,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298730,
+  "lat": 45.6109384,
+  "lon": 12.2809158,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298731,
+  "lat": 45.6123880,
+  "lon": 12.2802051,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298734,
+  "lat": 45.6148476,
+  "lon": 12.2811212,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298735,
+  "lat": 45.6136096,
+  "lon": 12.2804309,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298736,
+  "lat": 45.6146035,
+  "lon": 12.2801245,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298737,
+  "lat": 45.6159527,
+  "lon": 12.2801805,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298738,
+  "lat": 45.6169841,
+  "lon": 12.2792957,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298739,
+  "lat": 45.6179219,
+  "lon": 12.2784897,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298740,
+  "lat": 45.6188205,
+  "lon": 12.2777152,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298741,
+  "lat": 45.6202491,
+  "lon": 12.2777025,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298742,
+  "lat": 45.6180414,
+  "lon": 12.2675377,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298743,
+  "lat": 45.6188635,
+  "lon": 12.2696424,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298744,
+  "lat": 45.6194790,
+  "lon": 12.2711696,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298745,
+  "lat": 45.6201586,
+  "lon": 12.2728718,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298746,
+  "lat": 45.6209087,
+  "lon": 12.2747344,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298747,
+  "lat": 45.6213106,
+  "lon": 12.2761191,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298748,
+  "lat": 45.6230461,
+  "lon": 12.2783670,
+  "tags": {
+    "building": "transformer_tower",
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298749,
+  "lat": 45.6227120,
+  "lon": 12.2782848,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298750,
+  "lat": 45.6217526,
+  "lon": 12.2776904,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298781,
+  "lat": 45.6251423,
+  "lon": 12.2434580,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298782,
+  "lat": 45.6249623,
+  "lon": 12.2450259,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298783,
+  "lat": 45.6246864,
+  "lon": 12.2473198,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298784,
+  "lat": 45.6244868,
+  "lon": 12.2489908,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298785,
+  "lat": 45.6242466,
+  "lon": 12.2510581,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298786,
+  "lat": 45.6240763,
+  "lon": 12.2524739,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298787,
+  "lat": 45.6236958,
+  "lon": 12.2565208,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298788,
+  "lat": 45.6238360,
+  "lon": 12.2545339,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298789,
+  "lat": 45.6235694,
+  "lon": 12.2583101,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298790,
+  "lat": 45.6231599,
+  "lon": 12.2613050,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298792,
+  "lat": 45.6234569,
+  "lon": 12.2598939,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298793,
+  "lat": 45.6237712,
+  "lon": 12.2690730,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298794,
+  "lat": 45.6241749,
+  "lon": 12.2707964,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298795,
+  "lat": 45.6246370,
+  "lon": 12.2727519,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298796,
+  "lat": 45.6251723,
+  "lon": 12.2750068,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298797,
+  "lat": 45.6253838,
+  "lon": 12.2787639,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971298798,
+  "lat": 45.6256971,
+  "lon": 12.2768633,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971299361,
+  "lat": 45.6250434,
+  "lon": 12.2796209,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971299362,
+  "lat": 45.6257900,
+  "lon": 12.2802601,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971299364,
+  "lat": 45.6275076,
+  "lon": 12.2863786,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971299365,
+  "lat": 45.6271720,
+  "lon": 12.2847693,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971299366,
+  "lat": 45.6268909,
+  "lon": 12.2833241,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971299367,
+  "lat": 45.6265632,
+  "lon": 12.2816304,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971299371,
+  "lat": 45.6270626,
+  "lon": 12.2876000,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13971299372,
+  "lat": 45.6276827,
+  "lon": 12.2896123,
+  "tags": {
+    "power": "tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003640,
+  "lat": 45.6569059,
+  "lon": 12.2028797,
+  "tags": {
+    "communication:5g:Windtre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003641,
+  "lat": 45.6554830,
+  "lon": 12.2046274,
+  "tags": {
+    "communication:lte": "yes",
+    "communication:mobile_phone": "yes",
+    "communication:operator": "Vodafone",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003642,
+  "lat": 45.6552896,
+  "lon": 12.2112307,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:lte:TIM": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "guyed_lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003643,
+  "lat": 45.6403810,
+  "lon": 12.1895348,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003644,
+  "lat": 45.6447373,
+  "lon": 12.1980835,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003645,
+  "lat": 45.6445657,
+  "lon": 12.2048545,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003646,
+  "lat": 45.6493196,
+  "lon": 12.2163845,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003647,
+  "lat": 45.6296225,
+  "lon": 12.1869106,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003648,
+  "lat": 45.6555398,
+  "lon": 12.2267864,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003652,
+  "lat": 45.6567537,
+  "lon": 12.2231381,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003653,
+  "lat": 45.6616041,
+  "lon": 12.2207608,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003654,
+  "lat": 45.6587686,
+  "lon": 12.2104979,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003655,
+  "lat": 45.6629689,
+  "lon": 12.2026642,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003656,
+  "lat": 45.6710171,
+  "lon": 12.2078520,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "guyed_lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003657,
+  "lat": 45.6490417,
+  "lon": 12.2372856,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003658,
+  "lat": 45.6472835,
+  "lon": 12.2446354,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003659,
+  "lat": 45.6489237,
+  "lon": 12.2449573,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003660,
+  "lat": 45.6501071,
+  "lon": 12.2579513,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003661,
+  "lat": 45.6502434,
+  "lon": 12.2624865,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003662,
+  "lat": 45.6485096,
+  "lon": 12.2621721,
+  "tags": {
+    "communication:lte": "yes",
+    "communication:mobile_phone": "yes",
+    "communication:operator": "TIM",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003663,
+  "lat": 45.6437476,
+  "lon": 12.2672371,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003664,
+  "lat": 45.6451876,
+  "lon": 12.2708060,
+  "tags": {
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003665,
+  "lat": 45.6578803,
+  "lon": 12.2845302,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003666,
+  "lat": 45.6600909,
+  "lon": 12.2785463,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003667,
+  "lat": 45.6606147,
+  "lon": 12.2758173,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003668,
+  "lat": 45.6632160,
+  "lon": 12.2645147,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003669,
+  "lat": 45.6655412,
+  "lon": 12.2645964,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003670,
+  "lat": 45.6654083,
+  "lon": 12.2698762,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003671,
+  "lat": 45.6652623,
+  "lon": 12.2742163,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003672,
+  "lat": 45.6612493,
+  "lon": 12.2567887,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003673,
+  "lat": 45.6610845,
+  "lon": 12.2568096,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003674,
+  "lat": 45.6571863,
+  "lon": 12.2600924,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003675,
+  "lat": 45.6563385,
+  "lon": 12.2555131,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003676,
+  "lat": 45.6547490,
+  "lon": 12.2503565,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:5g:WindTre": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003677,
+  "lat": 45.6574574,
+  "lon": 12.2456526,
+  "tags": {
+    "communication:5g:Vodafone": "no",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di Vodafone è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003678,
+  "lat": 45.6552222,
+  "lon": 12.2427341,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di Vodafone è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003679,
+  "lat": 45.6570482,
+  "lon": 12.2416596,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003680,
+  "lat": 45.6591985,
+  "lon": 12.2432449,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003681,
+  "lat": 45.6534725,
+  "lon": 12.2330895,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM e Vodafone è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003682,
+  "lat": 45.6528448,
+  "lon": 12.2326541,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003683,
+  "lat": 45.6703299,
+  "lon": 12.2705101,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003684,
+  "lat": 45.6763277,
+  "lon": 12.2681300,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003688,
+  "lat": 45.6657036,
+  "lon": 12.2566613,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:lte:TIM": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003690,
+  "lat": 45.6619068,
+  "lon": 12.2493508,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:lte:TIM": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003691,
+  "lat": 45.6602605,
+  "lon": 12.2334220,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003694,
+  "lat": 45.6654717,
+  "lon": 12.2276362,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di Vodafone è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003695,
+  "lat": 45.6672985,
+  "lon": 12.2223305,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003696,
+  "lat": 45.6690074,
+  "lon": 12.2247433,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003697,
+  "lat": 45.6688184,
+  "lon": 12.2184338,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003699,
+  "lat": 45.6755983,
+  "lon": 12.2163303,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998003700,
+  "lat": 45.6808752,
+  "lon": 12.2171154,
+  "tags": {
+    "communication:5g": "yes",
+    "communication:5g:operator": "TIM",
+    "communication:lte:operator": "TIM;Vodafone",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032801,
+  "lat": 45.6826843,
+  "lon": 12.2195534,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032802,
+  "lat": 45.6833800,
+  "lon": 12.2190825,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032803,
+  "lat": 45.6834595,
+  "lon": 12.2161151,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032805,
+  "lat": 45.6892329,
+  "lon": 12.2125071,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032806,
+  "lat": 45.6902389,
+  "lon": 12.2155241,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032807,
+  "lat": 45.6957854,
+  "lon": 12.2072291,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032808,
+  "lat": 45.6710775,
+  "lon": 12.2582100,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032809,
+  "lat": 45.6726143,
+  "lon": 12.2586072,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032811,
+  "lat": 45.6780902,
+  "lon": 12.2539102,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032812,
+  "lat": 45.6791252,
+  "lon": 12.2579341,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032815,
+  "lat": 45.6878512,
+  "lon": 12.2600246,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032816,
+  "lat": 45.6953501,
+  "lon": 12.2600901,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032817,
+  "lat": 45.6969026,
+  "lon": 12.2594284,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032818,
+  "lat": 45.6848912,
+  "lon": 12.2466124,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "guyed_lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032819,
+  "lat": 45.6834138,
+  "lon": 12.2532525,
+  "tags": {
+    "communication:5g:Vodafone": "no",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di Vodafone è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032820,
+  "lat": 45.6824864,
+  "lon": 12.2439282,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032821,
+  "lat": 45.6760861,
+  "lon": 12.2440740,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di Vodafone è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032822,
+  "lat": 45.6742486,
+  "lon": 12.2408896,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032823,
+  "lat": 45.6734016,
+  "lon": 12.2494951,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032824,
+  "lat": 45.6696321,
+  "lon": 12.2392351,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:lte:TIM": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032825,
+  "lat": 45.6711667,
+  "lon": 12.2378534,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032826,
+  "lat": 45.6695458,
+  "lon": 12.2363405,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032827,
+  "lat": 45.6724875,
+  "lon": 12.2323730,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:lte:TIM": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032828,
+  "lat": 45.6715414,
+  "lon": 12.2306813,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032829,
+  "lat": 45.6787308,
+  "lon": 12.2341103,
+  "tags": {
+    "communication:5g:TIM": "yes",
+    "communication:5g:Vodafone": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032830,
+  "lat": 45.6803443,
+  "lon": 12.2299263,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:lte:TIM": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032832,
+  "lat": 45.6889948,
+  "lon": 12.2261665,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032833,
+  "lat": 45.6936928,
+  "lon": 12.2313328,
+  "tags": {
+    "communication:5g:Vodafone": "no",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di Vodafone è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032834,
+  "lat": 45.6967352,
+  "lon": 12.2261233,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032835,
+  "lat": 45.6988201,
+  "lon": 12.2234519,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032836,
+  "lat": 45.6872933,
+  "lon": 12.2449841,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:5g:iliad": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032837,
+  "lat": 45.6913221,
+  "lon": 12.2365071,
+  "tags": {
+    "communication:5g:Vodafone": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032838,
+  "lat": 45.6949599,
+  "lon": 12.2346937,
+  "tags": {
+    "communication:5g:iliad": "yes",
+    "communication:lte:iliad": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032842,
+  "lat": 45.6655708,
+  "lon": 12.2386215,
+  "tags": {
+    "communication:5g:WindTre": "yes",
+    "communication:lte:WindTre": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032843,
+  "lat": 45.6658122,
+  "lon": 12.2366436,
+  "tags": {
+    "communication:5g:TIM": "no",
+    "communication:5g:Vodafone": "no",
+    "communication:lte:TIM": "yes",
+    "communication:lte:Vodafone": "yes",
+    "communication:mobile_phone": "yes",
+    "man_made": "mast",
+    "note": "Il 5G di TIM e Vodafone è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "freestanding",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13998032851,
+  "lat": 45.6674722,
+  "lon": 12.2512126,
+  "tags": {
+    "communication:lte": "yes",
+    "communication:mobile_phone": "yes",
+    "communication:operator": "TIM",
+    "man_made": "mast",
+    "note": "Il 5G di TIM è \"Inter-site\" su LTE Italy.",
+    "source": "LTE Italy",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+}
+
+  ]
+}

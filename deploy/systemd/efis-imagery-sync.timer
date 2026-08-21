@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh EFIS NEXT mission imagery cache
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=6h
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

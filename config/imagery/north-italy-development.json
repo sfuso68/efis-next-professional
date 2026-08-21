@@ -1,0 +1,18 @@
+{
+  "schema": "efis-next.imagery-server-manifest.v1",
+  "dataset_id": "north-italy-sentinel2-development",
+  "title": "North Italy Sentinel-2 development imagery",
+  "status": "DEVELOPMENT",
+  "format": "webp",
+  "tile_size": 512,
+  "min_zoom": 8,
+  "max_zoom": 15,
+  "tile_url_template": "https://imagery.invalid/tiles/north-italy-sentinel2-development/{z}/{x}/{y}.webp",
+  "coverage": {"west": 6.5, "south": 43.4, "east": 14.0, "north": 47.1},
+  "source": {
+    "provider": "Copernicus Data Space Ecosystem",
+    "dataset": "Sentinel-2 L2A",
+    "attribution": "Contains modified Copernicus Sentinel data",
+    "licence_review_required": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "dev",
+      "displayName": "EFIS Next development",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/dev",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "EFIS_BUILD_TESTS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [{ "name": "dev", "configurePreset": "dev" }],
+  "testPresets": [{ "name": "dev", "configurePreset": "dev", "output": { "outputOnFailure": true } }]
+}

@@ -1,0 +1,21 @@
+[Unit]
+Description=EFIS EDGE V2 weather cache API
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/efis-edge-v2
+ExecStart=/usr/bin/python3 /home/pi/efis-edge-v2/edge_weather.py --cache cache/weather --serve --bind 127.0.0.1 --port 18092
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/pi/efis-edge-v2/cache/weather
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=efis-edge-v2.target

@@ -1,0 +1,58 @@
+{
+  "catalog_version": "1.0.0-seed",
+  "generated_from": "EFIS NEXT controlled seed",
+  "sources": [
+    {
+      "key": "legacy-indicative",
+      "title": "Legacy EFIS catalog import",
+      "publisher": "Fuso Avionics",
+      "document_ref": "AircraftDB.h / EngineDB.h",
+      "source_class": "LEGACY"
+    }
+  ],
+  "engines": [
+    {
+      "manufacturer": "Rotax",
+      "family": "912",
+      "model": "912 ULS",
+      "variant": "",
+      "cylinders": 4,
+      "power_hp": 100,
+      "rpm_max": 5800,
+      "fuel_type": "MOGAS/AVGAS",
+      "status": "INDICATIVE",
+      "source": "legacy-indicative",
+      "limits": []
+    }
+  ],
+  "aircraft": [
+    {
+      "manufacturer": "EFIS NEXT",
+      "model": "LSA SIM",
+      "variant": "BENCH",
+      "category": "LSA",
+      "icao_type": "ZZZZ",
+      "seats": 2,
+      "empty_weight_kg": 300,
+      "mtow_kg": 600,
+      "fuel_capacity_l": 136.3,
+      "cruise_kt": 120,
+      "default_engine": "Rotax|912 ULS|",
+      "status": "INDICATIVE",
+      "source": "legacy-indicative",
+      "speeds": {
+        "VSO": 39,
+        "VS1": 45,
+        "VFE": 85,
+        "VX": 62,
+        "VY": 68,
+        "VA": 105,
+        "VNO": 120,
+        "VNE": 140,
+        "BEST_GLIDE": 65,
+        "VREF": 55
+      }
+    }
+  ]
+}
+

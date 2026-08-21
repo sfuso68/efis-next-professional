@@ -1,0 +1,18 @@
+[Unit]
+Description=Refresh EFIS EDGE V2 aviation-weather cache
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/efis-edge-v2
+EnvironmentFile=/home/pi/efis-edge-v2/credentials/central.env
+ExecStart=/usr/bin/python3 /home/pi/efis-edge-v2/edge_weather.py --cache cache/weather --sync-url https://mappe.casa.lan --ca-file certs/caddy-root.crt --resolve mappe.casa.lan=192.168.1.6 --icao LIPH --icao LIDB
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/pi/efis-edge-v2/cache/weather
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

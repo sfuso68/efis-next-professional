@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://efis-next.local/schema/radionavigation.schema.json",
+  "title": "EFIS NEXT radionavigation package",
+  "type": "object",
+  "required": ["schema_version", "database_version", "source", "facilities"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "database_version": {"type": "string", "minLength": 1},
+    "source": {
+      "type": "object",
+      "required": ["name", "edition", "status", "attribution", "sha256"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "edition": {"type": "string", "minLength": 1},
+        "effective_from": {"type": ["string", "null"]},
+        "effective_to": {"type": ["string", "null"]},
+        "status": {"enum": ["DEVELOPMENT", "OPERATIONAL"]},
+        "attribution": {"type": "string", "minLength": 1}
+        ,"sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        ,"reference": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "facilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ident", "type", "name", "frequency_khz", "latitude_deg", "longitude_deg", "status"],
+        "properties": {
+          "ident": {"type": "string", "pattern": "^[A-Z0-9]{1,5}$"},
+          "type": {"enum": ["VOR", "VOR_DME", "VORTAC", "NDB", "DME", "ILS", "LOC"]},
+          "name": {"type": "string", "minLength": 1},
+          "frequency_khz": {"type": "integer", "minimum": 190, "maximum": 117950},
+          "latitude_deg": {"type": "number", "minimum": -90, "maximum": 90},
+          "longitude_deg": {"type": "number", "minimum": -180, "maximum": 180},
+          "elevation_ft": {"type": ["number", "null"]},
+          "magnetic_variation_deg": {"type": ["number", "null"]},
+          "service_volume": {"type": ["string", "null"]},
+          "status": {"enum": ["DEVELOPMENT", "OPERATIONAL", "WITHDRAWN"]}
+          ,"source_record_id": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

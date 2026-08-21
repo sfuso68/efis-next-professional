@@ -1,0 +1,14 @@
+{
+  "schema": "efis-next.imagery-area.v1",
+  "area_id": "NORTH-ITALY",
+  "name": "Northern Italy operational coverage",
+  "bounds": {"west": 6.5, "south": 43.4, "east": 14.0, "north": 47.1},
+  "policy": {
+    "baseline_zooms": [8, 9, 10, 11, 12],
+    "on_demand_zooms": [13, 14],
+    "terminal_zoom": 15,
+    "default_cache_quota_gib": 20,
+    "minimum_free_space_gib": 5
+  },
+  "status": "DEVELOPMENT"
+}

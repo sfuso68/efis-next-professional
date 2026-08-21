@@ -1,0 +1,6 @@
+[out:json][timeout:30];
+(
+  node["man_made"~"tower|mast|chimney"](45.59,12.10,45.72,12.29);
+  node["power"="tower"](45.59,12.10,45.72,12.29);
+);
+out;

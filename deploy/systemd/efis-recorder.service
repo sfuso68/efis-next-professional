@@ -1,0 +1,18 @@
+[Unit]
+Description=EFIS Next Mission Recorder (SIM)
+Documentation=file:///home/efis/efis-next/docs/deployment/RPI5_PFD.md
+After=default.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/efis/efis-next
+ExecStart=/home/efis/efis-next/build/dev/efis-recorder /home/efis/efis-next/records /home/efis/efis-next/run/recorder.status
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=10
+KillSignal=SIGTERM
+StandardOutput=append:/home/efis/efis-next/logs/recorder.log
+StandardError=append:/home/efis/efis-next/logs/recorder.log
+
+[Install]
+WantedBy=default.target

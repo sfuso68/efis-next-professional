@@ -1,0 +1,19 @@
+[Unit]
+Description=EFIS Next Primary Flight Display
+Documentation=file:///home/efis/efis-next/README.md
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/efis/efis-next
+ExecStart=/home/efis/efis-next/deploy/scripts/run-pfd.sh
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=5
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical-session.target

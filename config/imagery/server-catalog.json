@@ -1,0 +1,18 @@
+{
+  "schema": "efis-next.imagery-catalog.v1",
+  "catalog_id": "north-italy-development",
+  "generated_utc": "2026-08-19T00:00:00Z",
+  "status": "DEVELOPMENT",
+  "datasets": [
+    {
+      "dataset_id": "north-italy-sentinel2-development",
+      "title": "North Italy Sentinel-2 development imagery",
+      "manifest_path": "manifests/north-italy-sentinel2-development.json",
+      "min_zoom": 8,
+      "max_zoom": 15,
+      "format": "webp",
+      "tile_size": 512,
+      "status": "DEVELOPMENT"
+    }
+  ]
+}

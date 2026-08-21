@@ -1,0 +1,21 @@
+{
+  "schema": "efis-next.scenario.v1",
+  "id": "DOLOMITES-3D",
+  "name": "Dolomites synthetic-vision development flight",
+  "status": "simulation-non-certified",
+  "reference": {
+    "latitude_deg": 46.515,
+    "longitude_deg": 12.5,
+    "terrain_tile": "N46E012.hgt"
+  },
+  "provenance": {
+    "terrain": "Copernicus DEM GLO-30 DGED 2024_1, locally prepared development package",
+    "scenario_geometry": "EFIS NEXT deterministic display-test scenario",
+    "last_reviewed": "2026-08-19"
+  },
+  "limitations": [
+    "Not for navigation",
+    "Not obstacle-cleared",
+    "Terrain and flight path are intended for software development and visual validation"
+  ]
+}

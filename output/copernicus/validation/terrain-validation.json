@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "package_id": "cop-dem-glo30-veneto-2024_1",
+  "vertical_datum": "EGM2008",
+  "tiles": 12,
+  "integrity": [
+    {
+      "key": "N44E010",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N44E011",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N44E012",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N44E013",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N45E010",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N45E011",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N45E012",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N45E013",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N46E010",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N46E011",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N46E012",
+      "size_ok": true,
+      "hash_ok": true
+    },
+    {
+      "key": "N46E013",
+      "size_ok": true,
+      "hash_ok": true
+    }
+  ],
+  "boundaries": [
+    {
+      "a": "N44E010",
+      "b": "N44E011",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N44E010",
+      "b": "N45E010",
+      "edge": "N-S",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N44E011",
+      "b": "N44E012",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N44E011",
+      "b": "N45E011",
+      "edge": "N-S",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N44E012",
+      "b": "N44E013",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N44E012",
+      "b": "N45E012",
+      "edge": "N-S",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N44E013",
+      "b": "N45E013",
+      "edge": "N-S",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N45E010",
+      "b": "N45E011",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N45E010",
+      "b": "N46E010",
+      "edge": "N-S",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N45E011",
+      "b": "N45E012",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N45E011",
+      "b": "N46E011",
+      "edge": "N-S",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N45E012",
+      "b": "N45E013",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N45E012",
+      "b": "N46E012",
+      "edge": "N-S",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N45E013",
+      "b": "N46E013",
+      "edge": "N-S",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N46E010",
+      "b": "N46E011",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N46E011",
+      "b": "N46E012",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    },
+    {
+      "a": "N46E012",
+      "b": "N46E013",
+      "edge": "E-W",
+      "samples": 3601,
+      "maximum_m": 0,
+      "mean_m": 0.0,
+      "p95_m": 0.0,
+      "over_1m": 0
+    }
+  ],
+  "samples": [
+    {
+      "name": "LIPH",
+      "key": "N45E012",
+      "elevation_m": 16,
+      "expected_m": 18.0,
+      "tolerance_m": 10.0,
+      "accepted": true
+    }
+  ],
+  "passed": true,
+  "failures": []
+}

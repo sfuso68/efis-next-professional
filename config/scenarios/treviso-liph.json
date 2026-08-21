@@ -1,0 +1,29 @@
+{
+  "schema": "efis-next.scenario.v1",
+  "id": "treviso-liph-development",
+  "name": "Treviso / Antonio Canova",
+  "icao": "LIPH",
+  "status": "simulation-non-certified",
+  "reference": {
+    "latitude_deg": 45.6484,
+    "longitude_deg": 12.1944,
+    "terrain_tile": "N45E012.hgt"
+  },
+  "runway": {
+    "designators": ["07", "25"],
+    "nominal_length_m": 2420,
+    "nominal_width_m": 45,
+    "true_course_07_deg": 73.5,
+    "true_course_25_deg": 253.5
+  },
+  "provenance": {
+    "terrain": "Copernicus DEM GLO-30 DGED 2024_1, locally prepared development package",
+    "airport_geometry": "development approximation pending authorised ENAV AIP import",
+    "last_reviewed": "2026-08-18"
+  },
+  "limitations": [
+    "Not for navigation",
+    "Not obstacle-cleared",
+    "Runway geometry must be replaced by authorised current AIP data before operational validation"
+  ]
+}

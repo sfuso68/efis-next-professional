@@ -1,0 +1,65 @@
+{
+  "schema": "efis.video.configuration/1",
+  "profileId": "efis-cam-four-channel-lab",
+  "network": {
+    "interface": "video0",
+    "cidr": "10.77.20.0/24",
+    "videoCoreAddress": "10.77.20.2",
+    "operationalWifiAllowed": false
+  },
+  "limits": {
+    "nominalLatencyMs": 180,
+    "cautionLatencyMs": 250,
+    "lostAfterMs": 1000,
+    "maxAggregateMbps": 40,
+    "autoRevertOnLostForward": true
+  },
+  "recording": {
+    "enabled": true,
+    "segmentSeconds": 60,
+    "retainOriginalStreams": true,
+    "recordTelemetrySidecar": true
+  },
+  "cameras": [
+    {
+      "id": "CAM-01",
+      "role": "forward",
+      "variant": "CAM-GS",
+      "address": "10.77.20.11",
+      "stream": "rtsp://10.77.20.11/live/main",
+      "orientationDegrees": 0,
+      "mirror": false,
+      "required": true
+    },
+    {
+      "id": "CAM-02",
+      "role": "left",
+      "variant": "CAM-HDR",
+      "address": "10.77.20.12",
+      "stream": "rtsp://10.77.20.12/live/main",
+      "orientationDegrees": 0,
+      "mirror": false,
+      "required": false
+    },
+    {
+      "id": "CAM-03",
+      "role": "right",
+      "variant": "CAM-HDR",
+      "address": "10.77.20.13",
+      "stream": "rtsp://10.77.20.13/live/main",
+      "orientationDegrees": 0,
+      "mirror": false,
+      "required": false
+    },
+    {
+      "id": "CAM-04",
+      "role": "rear",
+      "variant": "CAM-HDR",
+      "address": "10.77.20.14",
+      "stream": "rtsp://10.77.20.14/live/main",
+      "orientationDegrees": 0,
+      "mirror": false,
+      "required": false
+    }
+  ]
+}

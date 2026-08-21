@@ -1,0 +1,11 @@
+
+# EFIS NEXT machine endpoint. Development allow-list is restricted to the
+# current PFD address; replace with mTLS/device identities before fleet use.
+efis-map.casa.lan {
+	tls internal
+	@pfd remote_ip 192.168.1.45
+	handle @pfd {
+		reverse_proxy mapapp:8000
+	}
+	respond "EFIS device not authorised" 403
+}

@@ -1,0 +1,52 @@
+# ---------------------------------------------------------------------------
+# EFIS NEXT — regole di esclusione
+# Riferimento: CLAUDE_CODE_HANDOFF_2026-08-21.md §19 (sicurezza) e §22 (vincoli)
+# ---------------------------------------------------------------------------
+
+# Artefatti di build
+/build/
+/.cache/
+compile_commands.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Segreti, credenziali e token — non devono MAI entrare nel repository.
+# Copernicus CDSE, Basic Auth imagery, chiavi TLS, hash bcrypt Caddy.
+.env
+.env.*
+*.env
+secrets/
+*.secret
+*.token
+*token*.txt
+*credential*
+*password*
+*.pem
+*.key
+*.p12
+*.pfx
+*.hash
+
+# Log applicativi, di volo e telemetria (vanno nella black box, non in git)
+*.log
+*.tlog
+*.bin
+*.BIN
+/data/recordings/
+/output/logs/
+
+# Dati binari scaricati o generati: DEM Copernicus, texture Sentinel-2,
+# pacchetti terreno e ingest server. Tracciati tramite manifest di checksum,
+# non tramite git. Ricostruibili con gli strumenti in tools/.
+/assets/terrain/
+/output/terrain-packages/
+/output/server-ingest/
+/output/imagery-plans/
+
+# Sistema
+Thumbs.db
+.DS_Store

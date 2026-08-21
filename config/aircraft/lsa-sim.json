@@ -1,0 +1,19 @@
+{
+  "schema": "efis-next.aircraft.v1",
+  "id": "lsa-sim-demo",
+  "status": "simulation-non-certified",
+  "units": "KIAS",
+  "speeds": {
+    "VSO": 39,
+    "VS1": 45,
+    "VFE": 85,
+    "VNO": 120,
+    "VNE": 140,
+    "VX": 62,
+    "VY": 68,
+    "VA": 105,
+    "BEST_GLIDE": 65,
+    "VREF": 55
+  },
+  "warning": "Replace every value with the current approved POH/AFM data for the selected aircraft, weight and configuration."
+}

@@ -1,0 +1,21 @@
+[Unit]
+Description=EFIS NEXT mission imagery synchronisation
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=efis
+Group=efis
+WorkingDirectory=/home/efis/efis-next
+EnvironmentFile=/etc/efis-next/imagery.env
+ExecStart=/usr/bin/python3 tools/imagery/sync_imagery_cache.py --plan output/imagery/plans/treviso-belluno.json --cache output/imagery/cache --base-url https://mappe.casa.lan --workers 4
+ExecStartPost=/usr/bin/python3 tools/imagery/finalize_imagery_package.py --plan output/imagery/plans/treviso-belluno.json --report output/imagery/cache/last-sync-report.json --cache output/imagery/cache --output output/imagery/active-package.json
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/efis/efis-next/output/imagery
+
+[Install]
+WantedBy=multi-user.target

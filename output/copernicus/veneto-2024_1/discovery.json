@@ -1,0 +1,422 @@
+{
+  "schema_version": 1,
+  "collection": "COP-DEM_GLO-30-DGED",
+  "dataset": "COP-DEM_GLO-30-DGED/2024_1",
+  "product_type": "SAR_DGE_30_A4AD",
+  "bbox": [
+    10.6,
+    44.8,
+    13.2,
+    46.7
+  ],
+  "products": [
+    {
+      "Id": "212c7238-6ff1-4144-84dd-c37ba1d1ade5",
+      "Name": "DEM1_SAR_DGE_30_20110408T171540_20140908T170809_ADS_000000_1nvK_b9c07324.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/04/08/DEM1_SAR_DGE_30_20110408T171540_20140908T170809_ADS_000000_1nvK_b9c07324",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              10.0,
+              44.0
+            ],
+            [
+              11.0,
+              44.0
+            ],
+            [
+              11.0,
+              45.0
+            ],
+            [
+              10.0,
+              45.0
+            ],
+            [
+              10.0,
+              44.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-08T16:40:44.237296Z",
+      "TileKey": "N44E010"
+    },
+    {
+      "Id": "c95b77de-bc69-4419-be95-5615ad8e1730",
+      "Name": "DEM1_SAR_DGE_30_20110207T170647_20140828T170807_ADS_000000_dMns_4d478b4e.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/02/07/DEM1_SAR_DGE_30_20110207T170647_20140828T170807_ADS_000000_dMns_4d478b4e",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              11.0,
+              44.0
+            ],
+            [
+              12.0,
+              44.0
+            ],
+            [
+              12.0,
+              45.0
+            ],
+            [
+              11.0,
+              45.0
+            ],
+            [
+              11.0,
+              44.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-08T17:06:52.768378Z",
+      "TileKey": "N44E011"
+    },
+    {
+      "Id": "1418a681-cbd5-492b-b6e4-b5e97c4d0e88",
+      "Name": "DEM1_SAR_DGE_30_20110207T170647_20140327T170756_ADS_000000_QsVu_97e8120a.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/02/07/DEM1_SAR_DGE_30_20110207T170647_20140327T170756_ADS_000000_QsVu_97e8120a",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              12.0,
+              44.0
+            ],
+            [
+              13.0,
+              44.0
+            ],
+            [
+              13.0,
+              45.0
+            ],
+            [
+              12.0,
+              45.0
+            ],
+            [
+              12.0,
+              44.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-08T16:43:08.280746Z",
+      "TileKey": "N44E012"
+    },
+    {
+      "Id": "e10bb816-9447-496a-b1c9-54b629f3293f",
+      "Name": "DEM1_SAR_DGE_30_20110213T165903_20131012T051033_ADS_000000_VKd0_1b24224c.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/02/13/DEM1_SAR_DGE_30_20110213T165903_20131012T051033_ADS_000000_VKd0_1b24224c",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              13.0,
+              44.0
+            ],
+            [
+              14.0,
+              44.0
+            ],
+            [
+              14.0,
+              45.0
+            ],
+            [
+              13.0,
+              45.0
+            ],
+            [
+              13.0,
+              44.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-09T09:20:45.081940Z",
+      "TileKey": "N44E013"
+    },
+    {
+      "Id": "02845c85-2bea-4d49-8ad3-9316493a09e7",
+      "Name": "DEM1_SAR_DGE_30_20110517T170701_20140828T170856_ADS_000000_JXNV_910e4698.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/05/17/DEM1_SAR_DGE_30_20110517T170701_20140828T170856_ADS_000000_JXNV_910e4698",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              10.0,
+              45.0
+            ],
+            [
+              11.0,
+              45.0
+            ],
+            [
+              11.0,
+              46.0
+            ],
+            [
+              10.0,
+              46.0
+            ],
+            [
+              10.0,
+              45.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-08T16:40:19.795888Z",
+      "TileKey": "N45E010"
+    },
+    {
+      "Id": "929a3448-d5d1-4ec6-ace5-b5223c932afc",
+      "Name": "DEM1_SAR_DGE_30_20110207T170647_20140806T170856_ADS_000000_UpVL_2e88a714.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/02/07/DEM1_SAR_DGE_30_20110207T170647_20140806T170856_ADS_000000_UpVL_2e88a714",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              11.0,
+              45.0
+            ],
+            [
+              12.0,
+              45.0
+            ],
+            [
+              12.0,
+              46.0
+            ],
+            [
+              11.0,
+              46.0
+            ],
+            [
+              11.0,
+              45.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-09T10:24:41.519395Z",
+      "TileKey": "N45E011"
+    },
+    {
+      "Id": "8f21bf02-9094-4c6e-a653-00a8edf27ee1",
+      "Name": "DEM1_SAR_DGE_30_20110512T165921_20140402T170018_ADS_000000_N111_25b87de5.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/05/12/DEM1_SAR_DGE_30_20110512T165921_20140402T170018_ADS_000000_N111_25b87de5",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              12.0,
+              45.0
+            ],
+            [
+              13.0,
+              45.0
+            ],
+            [
+              13.0,
+              46.0
+            ],
+            [
+              12.0,
+              46.0
+            ],
+            [
+              12.0,
+              45.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-08T20:32:02.543831Z",
+      "TileKey": "N45E012"
+    },
+    {
+      "Id": "25eca94b-6705-4915-87b2-2889eff65f29",
+      "Name": "DEM1_SAR_DGE_30_20110213T165903_20140909T165150_ADS_000000_oT3r_6e645ffb.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/02/13/DEM1_SAR_DGE_30_20110213T165903_20140909T165150_ADS_000000_oT3r_6e645ffb",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              13.0,
+              45.0
+            ],
+            [
+              14.0,
+              45.0
+            ],
+            [
+              14.0,
+              46.0
+            ],
+            [
+              13.0,
+              46.0
+            ],
+            [
+              13.0,
+              45.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-09T09:20:17.429764Z",
+      "TileKey": "N45E013"
+    },
+    {
+      "Id": "579f475e-8a5e-4b0a-889d-ae5b6236a8ad",
+      "Name": "DEM1_SAR_DGE_30_20110517T170701_20140817T170857_ADS_000000_bma2_4bfdb5ea.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/05/17/DEM1_SAR_DGE_30_20110517T170701_20140817T170857_ADS_000000_bma2_4bfdb5ea",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              10.0,
+              46.0
+            ],
+            [
+              11.0,
+              46.0
+            ],
+            [
+              11.0,
+              47.0
+            ],
+            [
+              10.0,
+              47.0
+            ],
+            [
+              10.0,
+              46.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-08T16:39:46.873875Z",
+      "TileKey": "N46E010"
+    },
+    {
+      "Id": "b4ef4c22-e586-43db-8ae3-df1ecccf2e9b",
+      "Name": "DEM1_SAR_DGE_30_20110517T170701_20140806T170856_ADS_000000_VZSK_15840464.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/05/17/DEM1_SAR_DGE_30_20110517T170701_20140806T170856_ADS_000000_VZSK_15840464",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              11.0,
+              46.0
+            ],
+            [
+              12.0,
+              46.0
+            ],
+            [
+              12.0,
+              47.0
+            ],
+            [
+              11.0,
+              47.0
+            ],
+            [
+              11.0,
+              46.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-08T16:39:55.679573Z",
+      "TileKey": "N46E011"
+    },
+    {
+      "Id": "28895cf8-1ee1-46db-a400-a02ca8fbef11",
+      "Name": "DEM1_SAR_DGE_30_20110512T165921_20140903T170023_ADS_000000_pcYD_24cdace9.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/05/12/DEM1_SAR_DGE_30_20110512T165921_20140903T170023_ADS_000000_pcYD_24cdace9",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              12.0,
+              46.0
+            ],
+            [
+              13.0,
+              46.0
+            ],
+            [
+              13.0,
+              47.0
+            ],
+            [
+              12.0,
+              47.0
+            ],
+            [
+              12.0,
+              46.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-09T03:38:32.511457Z",
+      "TileKey": "N46E012"
+    },
+    {
+      "Id": "6193f07d-1eb0-4d2d-a44e-36c23182d887",
+      "Name": "DEM1_SAR_DGE_30_20110213T165903_20140909T165150_ADS_000000_3psX_869769c6.DEM",
+      "S3Path": "/eodata/CCM/COP-DEM_GLO-30-DGED/SAR_DGE_30_A4AD/2011/02/13/DEM1_SAR_DGE_30_20110213T165903_20140909T165150_ADS_000000_3psX_869769c6",
+      "GeoFootprint": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              13.0,
+              46.0
+            ],
+            [
+              14.0,
+              46.0
+            ],
+            [
+              14.0,
+              47.0
+            ],
+            [
+              13.0,
+              47.0
+            ],
+            [
+              13.0,
+              46.0
+            ]
+          ]
+        ]
+      },
+      "PublicationDate": "2024-08-08T23:52:47.760335Z",
+      "TileKey": "N46E013"
+    }
+  ]
+}
