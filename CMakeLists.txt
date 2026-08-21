@@ -27,6 +27,7 @@ add_library(efis_core
     src/providers/mavlink_adapter.cpp
     src/io/byte_source.cpp
     src/bench/sensor_bench.cpp
+    src/instruments/dial.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
@@ -169,6 +170,14 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_safety_tests tests/safety_tests.cpp)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)
     add_test(NAME efis_safety_tests COMMAND efis_safety_tests)
+
+    # La geometria degli strumenti analogici ha un eseguibile proprio: verifica
+    # come un valore viene mostrato, non quanto vale. Una lancetta assente e una
+    # ferma su zero contengono la stessa quantita' di inchiostro e due
+    # informazioni opposte, e questa e' la categoria che se ne accorge.
+    add_executable(efis_instrument_tests tests/instrument_tests.cpp)
+    target_link_libraries(efis_instrument_tests PRIVATE efis_core)
+    add_test(NAME efis_instrument_tests COMMAND efis_instrument_tests)
 
     # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
     # sorgente fornisce una grandezza, non quanto vale. Un guasto qui non sposta
