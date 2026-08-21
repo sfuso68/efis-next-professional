@@ -213,17 +213,27 @@ Non è bloccante: il RPi5 compila l'intero progetto ed è il target reale.
 ### 6.3 Esecuzione dei binari bloccata su Windows — VINCOLO PERMANENTE
 
 Smart App Control è in enforcement
-(`HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy\VerifiedAndReputablePolicyState = 1`)
-e blocca l'esecuzione degli eseguibili non firmati creati durante la sessione.
+(`HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy\VerifiedAndReputablePolicyState = 1`).
 `ctest` fallisce con `BAD_COMMAND` / "Process not started" e l'esecuzione diretta
 con "Un criterio di controllo dell'applicazione ha bloccato il file".
+
+Osservato ripetutamente nel corso della giornata, il comportamento è più preciso
+di quanto sembrasse alla prima occorrenza: il blocco colpisce l'eseguibile creato
+a un **percorso nuovo**, mentre una ricompilazione che sovrascrive un file già
+esistente viene eseguita senza problemi. Il primo caso si è presentato subito
+dopo aver cancellato `build/dev`; le build incrementali successive hanno eseguito
+i test regolarmente.
 
 Non è una regressione del codice e **non è stato modificato**: è un criterio di
 sicurezza di sistema.
 
-Conseguenza operativa, da considerare permanente: su Windows si compila il core
-C++, ma **la validazione di build e test va eseguita sul Raspberry Pi 5**, che è
-anche il target reale. Il RPi5 è raggiungibile via SSH a chiave senza password.
+Conseguenze operative:
+
+- non cancellare la directory di build su Windows, perché la ricostruzione da
+  zero produce binari che il criterio blocca;
+- **la validazione di riferimento di build e test va comunque eseguita sul
+  Raspberry Pi 5**, che è il target reale, ha il compilatore più severo e non ha
+  questo vincolo. È raggiungibile via SSH a chiave senza password.
 
 ---
 
