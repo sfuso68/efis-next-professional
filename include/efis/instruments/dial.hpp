@@ -87,7 +87,17 @@ enum class NeedleKind : std::uint8_t {
     // La gerarchia non e' estetica. Su un altimetro a tre lancette la lettura
     // errata di mille piedi e' l'incidente classico, e nasce dal confondere due
     // lancette simili: sono deliberatamente diverse per lunghezza e spessore.
-    tertiary
+    tertiary,
+
+    // Indice fisso: non indica un valore misurato ma il punto del quadrante
+    // rispetto a cui si legge. Sul girodirezionale e' la linea di fede a ore
+    // dodici, che resta ferma mentre la rosa gira.
+    reference,
+
+    // Indice di un valore scelto dal pilota: la prua selezionata, una velocita'
+    // di riferimento. Va distinto dagli altri perche' non e' una misura e non
+    // deve sparire quando la misura manca.
+    bug
 };
 
 struct Needle final {
@@ -262,5 +272,33 @@ struct AltimeterReading final {
 
 [[nodiscard]] Dial describe_altimeter(const AltimeterReading& reading,
                                       const Sizing& sizing);
+
+// --- Girodirezionale ---------------------------------------------------------
+//
+// Qui non ruota la lancetta, ruota la rosa: la prua corrente si legge sotto la
+// linea di fede fissa a ore dodici, e la graduazione scorre sotto di essa. E' la
+// ragione per cui non passa da describe(), dove sono le tacche a stare ferme.
+//
+// Quando la prua manca la rosa non viene disegnata affatto. Una rosa ferma
+// sarebbe la rappresentazione esatta di un girodirezionale guasto, e verrebbe
+// letta come una prua: e' il guasto che si vuole rendere impossibile da
+// scambiare per una misura, non da riprodurre fedelmente.
+struct HeadingReading final {
+    Reading heading;
+
+    // Prua selezionata. Non e' una misura, ma la sua posizione sul quadrante e'
+    // definita rispetto alla rosa: senza prua corrente non c'e' un posto dove
+    // metterla, e sottrarre una prua che non esiste darebbe un angolo privo di
+    // significato. Cio' che il pilota ha scelto non e' perduto, semplicemente
+    // questo strumento non puo' piu' mostrarlo.
+    Reading bug;
+};
+
+[[nodiscard]] Dial describe_heading(const HeadingReading& reading,
+                                    const Sizing& sizing);
+
+// Riporta un angolo nell'intervallo [0, 360). Le prue si avvolgono: 370 gradi
+// sono 10, non un valore fuori scala da limitare.
+[[nodiscard]] double normalise_heading(double heading_deg) noexcept;
 
 }  // namespace efis::instruments

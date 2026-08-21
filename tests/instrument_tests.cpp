@@ -509,5 +509,101 @@ int main() {
             "a plausible negative altitude must still be indicated");
 
 
+    // --- Girodirezionale ------------------------------------------------------
+    //
+    // Qui non ruota la lancetta, ruota la rosa: la prua si legge sotto la linea
+    // di fede fissa a ore dodici. Sbagliare il verso della rotazione produce uno
+    // strumento che si legge benissimo e indica la prua specchiata.
+    require(close_to(normalise_heading(370.0), 10.0),
+            "headings wrap: three hundred seventy degrees is ten");
+    require(close_to(normalise_heading(-10.0), 350.0),
+            "a negative heading must wrap forwards, not stay negative");
+    require(close_to(normalise_heading(360.0), 0.0), "a full turn is north");
+
+    const Sizing card_size{480.0};
+    auto label_angle = [](const Dial& dial, const std::string& text) {
+        for (const Label& label : dial.labels) {
+            if (label.text == text) return label.angle_deg;
+        }
+        return -1.0;
+    };
+
+    // Con prua nord la rosa e' ferma: N sotto la linea di fede, E a destra.
+    const Dial north = describe_heading({valid(0.0), {}}, card_size);
+    require(close_to(label_angle(north, "N"), 0.0),
+            "heading north puts north under the lubber line");
+    require(close_to(label_angle(north, "E"), 90.0),
+            "east must sit to the right when heading north");
+    require(close_to(label_angle(north, "W"), 270.0),
+            "west must sit to the left when heading north");
+
+    // Virando a est la rosa gira in senso opposto: E finisce sotto la linea di
+    // fede e N si sposta a sinistra. E' il verso che distingue una bussola da
+    // uno strumento specchiato.
+    const Dial east = describe_heading({valid(90.0), {}}, card_size);
+    require(close_to(label_angle(east, "E"), 0.0),
+            "heading east puts east under the lubber line");
+    require(close_to(label_angle(east, "N"), 270.0),
+            "north must move to the left as the aircraft turns right");
+    require(close_to(label_angle(east, "S"), 90.0),
+            "south must move to the right as the aircraft turns right");
+
+    // La linea di fede appartiene al quadrante, non alla misura.
+    auto has_kind = [](const Dial& dial, NeedleKind kind) {
+        for (const Needle& needle : dial.needles) {
+            if (needle.kind == kind) return true;
+        }
+        return false;
+    };
+    require(has_kind(north, NeedleKind::reference),
+            "the card carries a fixed lubber line");
+
+    // Prua assente: nessuna rosa. Una rosa ferma sarebbe la riproduzione fedele
+    // di un girodirezionale guasto, ed e' proprio il guasto che non deve poter
+    // essere scambiato per una misura.
+    const Dial lost = describe_heading({{0.0, efis::Validity::unavailable, false}, {}},
+                                       card_size);
+    require(lost.labels.empty() && lost.ticks.empty(),
+            "a failed heading must not leave a card that reads as north");
+    require(lost.annunciation == Annunciation::failed,
+            "a failed heading must say so");
+    require(has_kind(lost, NeedleKind::reference),
+            "the lubber line stays: it shows where the heading would be read");
+
+    // La prua selezionata non e' una misura e non sparisce con essa.
+    const Dial with_bug = describe_heading({valid(0.0), valid(45.0)}, card_size);
+    require(has_kind(with_bug, NeedleKind::bug), "a selected heading must be shown");
+    for (const Needle& needle : with_bug.needles) {
+        if (needle.kind != NeedleKind::bug) continue;
+        require(close_to(needle.angle_deg, 45.0),
+                "the bug sits at the selected heading relative to the card");
+    }
+
+    // Senza prua l indice non puo essere collocato, e non e una limitazione:
+    // la sua posizione e definita rispetto alla rosa, e sottrarre una prua che
+    // non esiste darebbe un angolo che non significa nulla. Cio che il pilota ha
+    // scelto non e perduto, semplicemente non ha piu un posto su questo
+    // quadrante.
+    const Dial bug_only = describe_heading({{0.0, efis::Validity::unavailable, false},
+                                            valid(45.0)}, card_size);
+    require(!has_kind(bug_only, NeedleKind::bug),
+            "without a card the bug has no meaningful place to sit");
+
+    // La rosa si dirada come i quadranti a scala: a 240 px sopravvivono meno
+    // scritte, ma i punti cardinali restano.
+    const Dial small_card = describe_heading({valid(0.0), {}}, Sizing{240.0});
+    require(small_card.labels.size() <= north.labels.size(),
+            "a smaller card must not carry more figures");
+    require(!small_card.labels.empty() && !small_card.ticks.empty(),
+            "even the smallest card keeps a usable graduation");
+
+    // La graduazione copre il giro senza ripetere lo zero: una tacca a 360
+    // cadrebbe sopra quella a 0.
+    for (const Label& label : north.labels) {
+        require(label.angle_deg >= 0.0 && label.angle_deg < 360.0,
+                "every figure must sit within one turn");
+    }
+
+
     std::cout << "All EFIS instrument tests passed\n";
 }

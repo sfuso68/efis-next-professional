@@ -148,16 +148,21 @@ std::string render_svg(const Dial& dial, const DialStyle& style) {
     // di spessore e' cio' che la rende difficile.
     for (const Needle& needle : dial.needles) {
         double width = size * 0.016;
+        const char* colour = primary;
         switch (needle.kind) {
             case NeedleKind::primary: width = size * 0.014; break;
             case NeedleKind::secondary: width = size * 0.026; break;
             case NeedleKind::tertiary: width = size * 0.034; break;
+            // Indice fisso e indice del pilota: gialli, e distinti dalle
+            // lancette perche' non sono misure.
+            case NeedleKind::reference: width = size * 0.012; colour = amber; break;
+            case NeedleKind::bug: width = size * 0.020; colour = cyan; break;
         }
         const Point tip = polar(needle.angle_deg, radius * needle.length);
         const Point tail = polar(needle.angle_deg + 180.0, radius * needle.tail);
         svg << "<line x1='" << number(centre + tail.x) << "' y1='" << number(centre + tail.y)
             << "' x2='" << number(centre + tip.x) << "' y2='" << number(centre + tip.y)
-            << "' stroke='" << primary << "' stroke-width='" << number(width)
+            << "' stroke='" << colour << "' stroke-width='" << number(width)
             << "' stroke-linecap='round'/>";
     }
     svg << "<circle cx='" << centre << "' cy='" << centre << "' r='" << number(size * 0.022)

@@ -138,5 +138,23 @@ int main(int argc, char** argv) {
                              Sizing{480.0}),
           DialStyle{"ALT", "FT", 480.0});
 
+    // Girodirezionale con la prua del simulatore e la prua selezionata.
+    const auto course = from(find_signal(flight, SignalId::selected_course));
+    write(directory, "12-girodirezionale-480",
+          describe_heading({from(find_signal(flight, SignalId::heading)), course},
+                           Sizing{480.0}),
+          DialStyle{"HDG", "DEG", 480.0});
+
+    write(directory, "13-girodirezionale-240",
+          describe_heading({from(find_signal(flight, SignalId::heading)), course},
+                           Sizing{240.0}),
+          DialStyle{"HDG", "DEG", 240.0});
+
+    // Giroscopio perduto: nessuna rosa, resta la linea di fede e cio' che il
+    // pilota aveva selezionato.
+    write(directory, "14-girodirezionale-guasto-480",
+          describe_heading({{0.0, Validity::unavailable, false}, course}, Sizing{480.0}),
+          DialStyle{"HDG", "DEG", 480.0});
+
     return 0;
 }

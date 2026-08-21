@@ -23,6 +23,27 @@ constexpr double band_outer = 1.00;
 constexpr double needle_length = 0.82;
 constexpr double needle_tail = 0.12;
 
+// Lunghezza della circonferenza alla dimensione data. Serve a decidere se due
+// tacche restano distinguibili, come per i quadranti a scala.
+double pi_arc_length(double diameter_px) {
+    return pi * diameter_px;
+}
+
+// Le scritte della rosa sono i punti cardinali e le decine di gradi: e' la
+// convenzione di ogni bussola, e scrivere 090 al posto di E la renderebbe
+// piu' lenta da leggere proprio nei momenti in cui serve una lettura rapida.
+std::string cardinal_text(double bearing_deg) {
+    const int rounded = static_cast<int>(bearing_deg + 0.5) % 360;
+    switch (rounded) {
+        case 0: return "N";
+        case 90: return "E";
+        case 180: return "S";
+        case 270: return "W";
+        default: break;
+    }
+    return std::to_string(rounded / 10);
+}
+
 std::string format(double value, int decimals) {
     std::ostringstream out;
     out << std::fixed << std::setprecision(std::max(0, decimals)) << value;
@@ -235,6 +256,67 @@ Dial describe_altimeter(const AltimeterReading& reading, const Sizing& sizing) {
                                   NeedleKind::secondary});
     dial.needles.push_back(Needle{angle_for(hundreds, altitude), 0.84, 0.14,
                                   NeedleKind::primary});
+    return dial;
+}
+
+double normalise_heading(double heading_deg) noexcept {
+    double value = std::fmod(heading_deg, 360.0);
+    if (value < 0.0) value += 360.0;
+    return value;
+}
+
+Dial describe_heading(const HeadingReading& reading, const Sizing& sizing) {
+    Dial dial;
+    dial.simulated = reading.heading.simulated;
+
+    // La linea di fede e' fissa e appartiene al quadrante, non alla misura:
+    // resta anche quando la prua manca, perche' indica dove si leggerebbe.
+    dial.needles.push_back(Needle{0.0, 1.02, 0.0, NeedleKind::reference});
+
+    if (!is_usable(reading.heading.validity)) {
+        // Nessuna rosa. Disegnarla ferma sarebbe la riproduzione fedele di un
+        // girodirezionale guasto, che e' esattamente il guasto da non imitare:
+        // una rosa ferma si legge come una prua.
+        dial.annunciation = reading.heading.validity == Validity::stale
+            ? Annunciation::stale
+            : Annunciation::failed;
+        return dial;
+    }
+
+    const double heading = normalise_heading(reading.heading.value);
+
+    // Tacche ogni cinque gradi, lunghe ogni dieci, scritte ogni trenta. E' la
+    // graduazione di ogni bussola: le scritte sono i punti cardinali e le
+    // decine di gradi.
+    const double tick_step =
+        thinning(pi_arc_length(sizing.diameter_px) * (5.0 / 360.0),
+                 sizing.minimum_tick_spacing_px) * 5.0;
+
+    for (double bearing = 0.0; bearing < 360.0; bearing += tick_step) {
+        const double angle = normalise_heading(bearing - heading);
+        const bool major = std::fmod(bearing, 10.0) < 1e-6;
+        dial.ticks.push_back(Tick{angle,
+                                  major ? major_tick_inner : minor_tick_inner,
+                                  tick_outer,
+                                  major ? TickKind::major : TickKind::minor});
+    }
+
+    const double label_step =
+        thinning(pi_arc_length(sizing.diameter_px) * (30.0 / 360.0),
+                 sizing.minimum_label_spacing_px) * 30.0;
+
+    for (double bearing = 0.0; bearing < 360.0; bearing += label_step) {
+        const double angle = normalise_heading(bearing - heading);
+        dial.labels.push_back(Label{angle, label_radius, label_height * 1.1,
+                                    cardinal_text(bearing)});
+    }
+
+    if (is_usable(reading.bug.validity)) {
+        dial.needles.push_back(
+            Needle{normalise_heading(reading.bug.value - heading), 1.0, 0.0,
+                   NeedleKind::bug});
+    }
+
     return dial;
 }
 
