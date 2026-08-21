@@ -42,6 +42,16 @@ I nomi dei pacchetti vanno confermati sulla macchina: l'unica prova che i moduli
 ci sono è che `cmake` configuri senza emettere l'avviso `efis-ems-qt NON verra'
 costruito`. Quell'avviso elenca ciò che manca — leggerlo, non aggirarlo.
 
+Un altro avviso invece è atteso e va ignorato. Il Qt di Debian ne emette una
+dozzina della forma *«The qml plugin 'qtquick2plugin' is a dependency of
+`efis-ems-qt`, but the link target it defines does not exist in the current
+scope. The plugin will not be linked»*. Riguarda il collegamento statico dei
+plugin, che su un Qt a librerie condivise non serve: i plugin QML vengono
+caricati a runtime. Verificato sul RPi5 il 21 agosto 2026, dove lo stesso avviso
+compare identico anche per `efis-pfd-qt`, undici volte per ciascuno dei due, e
+dove entrambi i programmi caricano il QML e girano. La prova che è innocuo è che
+il binario parta, non che l'avviso sparisca.
+
 ## Sorgenti e build
 
 Il progetto va in una cartella propria, `~/efis-next`, che non è quella
