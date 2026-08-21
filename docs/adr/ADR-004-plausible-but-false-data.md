@@ -93,28 +93,44 @@ che dipende dal guasto già noto.
 ## Conseguenze
 
 Il nucleo acquisisce due sorveglianze che guardano il contenuto e non il flusso.
-Restano da compiere tre passi perché diventino protezione reale e non soltanto
-codice disponibile:
+Perché diventassero protezione reale, e non soltanto codice disponibile,
+mancavano tre passi. Due sono stati compiuti; uno resta, ed è quello che non si
+chiude scrivendo codice.
 
-1. **Taratura per segnale.** Le soglie di stasi e le tolleranze di confronto
-   vanno stabilite per ogni grandezza, con il criterio dichiarato, e verificate
-   su registrazioni reali. Finora è dimostrato il meccanismo, non la taratura.
-2. **Collegamento allo stato di volo.** Il monitor va alimentato da chi compone
-   `FlightSnapshot`, e l'esito deve raggiungere il motore di allarme e il
-   display. Oggi i due meccanismi esistono e sono provati in isolamento.
-3. **Confronti concreti da attivare.** I candidati sono la velocità verticale
-   barometrica contro quella satellitare, e la velocità indicata contro quella al
-   suolo con tolleranza ampia, sufficiente a intercettare il guasto grossolano e
-   non la deriva sottile. Il confronto fra quota barometrica e quota satellitare
-   in valore assoluto non è utilizzabile, perché le due differiscono per
-   regolazione barometrica e separazione del geoide: va confrontata la loro
-   variazione, non il loro valore.
+1. **Taratura per segnale. Aperta.** Le soglie di stasi e le tolleranze di
+   confronto sono scelte con criterio fisico e documentate una per una in
+   `FlightModelPolicy`, ma **non sono validate su registrazioni di volo vere**.
+   Servono a far comparire un guasto grossolano, non a misurare quanto un
+   sensore stia derivando. Restano marcate `DEVELOPMENT` finché non esistono
+   voli registrati su cui verificarle: nessuna quantità di prove sintetiche può
+   sostituirli, perché il punto è proprio sapere quanto quelle grandezze si
+   muovono davvero in volo.
+2. **Collegamento allo stato di volo. Fatto.** `FlightModel` esegue stasi e
+   confronto incrociato su ogni normalizzazione, e `ingest::MavlinkPipeline`
+   compone la catena dai byte del Pixhawk allo stato protetto. Un cancello sulla
+   velocità al suolo tiene sospesa la sorveglianza mentre l'aeromobile è fermo,
+   e si apre durante la corsa di decollo.
+3. **Confronti concreti. Fatti, entrambi.** Velocità indicata contro velocità al
+   suolo, con tolleranza ampia perché il vento le separa. Velocità verticale
+   barometrica contro satellitare, con tolleranza più stretta perché lì il vento
+   non c'entra. Il confronto fra quota barometrica e quota satellitare in valore
+   assoluto resta inutilizzabile, perché le due differiscono per regolazione
+   barometrica e separazione del geoide: si confrontano le variazioni, non i
+   valori.
 
-Resta inoltre inutilizzata l'autodiagnosi dell'autopilota: `EKF_STATUS_REPORT` e
-`VIBRATION` sono nella tabella dei messaggi e vengono decodificati, ma l'adapter
-non li traduce in campioni. Sono varianze di innovazione e livelli di vibrazione
-già calcolati da ArduPilot, cioè il confronto incrociato più economico
-disponibile, e oggi vengono buttati.
+L'autodiagnosi dell'autopilota è ora usata. `EKF_STATUS_REPORT` e `VIBRATION`
+vengono tradotti: sui bit di stato si decide, perché sono un giudizio che
+l'autopilota esprime esplicitamente, mentre le varianze vengono registrate e non
+decidono nulla, non avendo il protocollo una soglia dichiarata oltre la quale
+sono cattive.
+
+Una cosa che questo lavoro ha fatto emergere e che vale più della funzione che
+l'ha rivelata: nella registrazione reale del banco il Pixhawk dichiara
+`EKF_UNINITIALIZED` con tutti i bit di salute spenti, e fino ad allora quel
+messaggio veniva ignorato e l'assetto mostrato come pienamente valido. Il primo
+effetto pratico di questi controlli non è stato scoprire un guasto nuovo: è
+stato smettere di presentare come certo un dato che l'autopilota dichiarava
+incerto da sempre.
 
 ## Alternative considerate
 
