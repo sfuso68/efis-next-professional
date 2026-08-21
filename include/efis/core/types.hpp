@@ -75,6 +75,11 @@ enum class SignalId : std::uint16_t {
     indicated_airspeed = 200,
     pressure_altitude,
     vertical_speed,
+    // Cio' di cui il sensore aria e' realmente portatore, oltre alla velocita'
+    // che se ne ricava: la pressione differenziale misurata e la temperatura
+    // dell'elemento, che serve a compensarla.
+    differential_pressure,
+    air_data_temperature,
 
     // Posizione
     latitude = 300,
@@ -134,7 +139,10 @@ enum class Unit : std::uint8_t {
     gallon,
     gallon_per_hour,
     volt,
-    ampere
+    ampere,
+    // Aggiunta in coda: gli identificativi gia' presenti nelle registrazioni non
+    // devono spostarsi.
+    hectopascal
 };
 
 [[nodiscard]] constexpr const char* unit_symbol(Unit unit) noexcept {
@@ -155,6 +163,7 @@ enum class Unit : std::uint8_t {
         case Unit::gallon_per_hour: return "gph";
         case Unit::volt: return "V";
         case Unit::ampere: return "A";
+        case Unit::hectopascal: return "hPa";
     }
     return "?";
 }
@@ -171,6 +180,8 @@ enum class Unit : std::uint8_t {
         case SignalId::indicated_airspeed: return "indicated_airspeed";
         case SignalId::pressure_altitude: return "pressure_altitude";
         case SignalId::vertical_speed: return "vertical_speed";
+        case SignalId::differential_pressure: return "differential_pressure";
+        case SignalId::air_data_temperature: return "air_data_temperature";
         case SignalId::latitude: return "latitude";
         case SignalId::longitude: return "longitude";
         case SignalId::ground_speed: return "ground_speed";

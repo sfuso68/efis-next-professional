@@ -2,6 +2,7 @@
 #include "efis/core/source_arbitrator.hpp"
 #include "efis/core/node_health.hpp"
 #include "efis/providers/mavlink_parser.hpp"
+#include "efis/providers/mavlink_adapter.hpp"
 #include "efis/providers/mavlink_parser.hpp"
 #include "mavlink_reference_frames.hpp"
 #include "efis/providers/simulation_provider.hpp"
@@ -780,6 +781,122 @@ int main() {
     require(efis::mavlink::read_text(*definition_of(first_of.at(253)), first_of.at(253), "text") ==
                 "PreArm: Hardware safety switch",
             "the recorded pre-arm warning must decode as text");
+
+    // --- Adapter MAVLink: dai frame ai campioni ------------------------------
+    //
+    // L'adapter e' alimentato con la stessa registrazione reale, byte per byte,
+    // come se arrivasse dalla seriale. Cio' che si verifica qui non e' la
+    // decodifica, gia' provata sopra, ma le regole di validita': senza di esse
+    // un valore verrebbe mostrato per il solo fatto di essere arrivato.
+    efis::MavlinkAdapter adapter{{.stale_after = 1000ms, .lost_after = 3000ms}};
+    const auto arrival = epoch + 1s;
+    for (std::size_t offset = 0; offset < capture.size(); offset += 512) {
+        const std::size_t count = std::min<std::size_t>(512, capture.size() - offset);
+        adapter.consume(
+            std::span<const std::uint8_t>(
+                reinterpret_cast<const std::uint8_t*>(capture.data()) + offset, count),
+            arrival);
+    }
+
+    require(adapter.statistics().frames_applied > 500,
+            "the adapter must translate the messages it covers");
+    require(adapter.parser_statistics().crc_errors == 0,
+            "the adapter must not introduce decoding errors of its own");
+
+    // Assetto: il valore ingegneristico e' in gradi perche' e' cosi' che si
+    // mostra, il grezzo resta in radianti come il sensore lo emette. Conservare
+    // entrambi permette di rifare la conversione senza ripetere la prova.
+    const auto& attitude_sample = adapter.snapshot().attitude.roll_deg;
+    require(attitude_sample.origin.unit == efis::Unit::degree,
+            "attitude must be published in degrees");
+    require(std::abs(attitude_sample.raw) < 3.15,
+            "the raw value must keep the radians the sensor emitted");
+    require(close_to(attitude_sample.value, attitude_sample.raw * 57.295779513),
+            "the engineering value must be the same angle expressed in degrees");
+    require(attitude_sample.raw != attitude_sample.value,
+            "a converted value must not be confused with the raw measurement");
+    require(attitude_sample.source == efis::SourceId::pixhawk_primary,
+            "data from the flight controller must declare its source");
+    require(!attitude_sample.is_simulated(),
+            "real data must never be marked as simulated");
+    require(attitude_sample.origin.node != efis::node_undeclared,
+            "a sample must declare which node produced it");
+
+    // Posizione senza fix tridimensionale. Il paragrafo 13 dell'handoff impone
+    // di ignorare le coordinate ricevute in questa condizione: non basta che
+    // siano arrivate.
+    const auto& latitude = adapter.snapshot().position.latitude_deg;
+    require(latitude.origin.signal == efis::SignalId::latitude,
+            "the position sample must be published");
+    require(latitude.validity == efis::Validity::unavailable,
+            "without a three dimensional fix a position is not a position");
+    require(!latitude.usable(),
+            "no consumer may use a position received without a fix");
+    require(adapter.snapshot().position.ground_speed_kt.validity ==
+                efis::Validity::unavailable,
+            "ground speed derived from the satellite receiver falls with it");
+
+    // Il tempo UTC non e' affidabile e resta dichiarato assente, non datato al
+    // 1970.
+    require(!attitude_sample.has_utc(),
+            "UTC must stay unavailable while the autopilot declares no time source");
+
+    // Il sensore aria. Il controllo di volo lo dichiara presente ma non sano,
+    // coerentemente con ARSPD_USE a zero: dal solo bit non si distingue "non
+    // usato" da "guasto", quindi la velocita' che ne deriva non e' presentabile.
+    const auto& air = adapter.air_data_sensor();
+    require(air.declared_present, "the differential pressure sensor is present");
+    require(!air.declared_healthy,
+            "the recorded state has the sensor declared unhealthy");
+    require(air.computed_airspeed_kt.validity == efis::Validity::unavailable,
+            "an airspeed derived from a sensor declared unhealthy is not valid");
+    require(adapter.snapshot().air_data.indicated_airspeed_kt.validity ==
+                efis::Validity::unavailable,
+            "the same rule must reach the flight snapshot the display reads");
+
+    // La grandezza misurata resta invece valida, ed e' il punto: al banco serve
+    // la pressione, non la velocita' che il controllo di volo ne ricava.
+    require(air.differential_pressure_hpa.validity == efis::Validity::valid,
+            "the measured differential pressure stays usable at the bench");
+    require(air.differential_pressure_hpa.origin.unit == efis::Unit::hectopascal,
+            "the differential pressure must declare its unit");
+    require(air.differential_pressure_hpa.raw == air.differential_pressure_hpa.value,
+            "the pressure needs no conversion, so raw and value must coincide");
+    require(std::abs(air.differential_pressure_hpa.value) < 5.0,
+            "with the aircraft at rest the differential pressure must stay near zero");
+    require(close_to(air.element_temperature_c.value,
+                     air.element_temperature_c.raw / 100.0),
+            "the temperature must be published in celsius, the wire carries hundredths");
+    require(air.element_temperature_c.value > 20.0 &&
+                air.element_temperature_c.value < 60.0,
+            "the recorded element temperature must stay in a plausible bench range");
+    require(air.element_temperature_c.origin.unit == efis::Unit::celsius,
+            "the temperature must declare its unit");
+
+    // Salute dei nodi. Il Pixhawk si presenta come sistema e componente: due
+    // componenti dello stesso sistema sono due sorgenti distinte.
+    const auto autopilot = efis::MavlinkAdapter::node_of(1, 1);
+    require(adapter.health().status(autopilot).has_value(),
+            "the autopilot must be tracked as a node");
+    require(adapter.health().status(autopilot)->state == efis::NodeState::online,
+            "a node that has just been heard must be online");
+
+    // Il contatore di sequenza MAVLink e' a otto bit e si azzera ogni 256
+    // messaggi. Interpretarlo alla lettera farebbe apparire una regressione a
+    // ogni giro, cioe' un guasto inesistente ogni due secondi e mezzo.
+    require(adapter.statistics().sequence_wraps > 5,
+            "the capture must actually exercise the eight bit sequence wrap");
+    require(adapter.health().status(autopilot)->regressions == 0,
+            "a wrapping sequence counter must not be read as a fault");
+
+    // Il silenzio deve produrre un evento anche senza dati in arrivo.
+    adapter.update(arrival + 5s);
+    require(!adapter.node_events().empty(),
+            "prolonged silence must produce a node state change");
+    require(adapter.node_events().back().current == efis::NodeState::lost,
+            "a node silent beyond the timeout must be declared lost");
+    require(adapter.last_status_text() != "",
+            "the pre-arm warning from the flight controller must be retained");
 
     std::cout << "All EFIS core tests passed\n";
 }

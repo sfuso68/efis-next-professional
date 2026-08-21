@@ -20,6 +20,7 @@ add_library(efis_core
     src/providers/simulation_provider.cpp
     src/providers/engine_simulation_provider.cpp
     src/providers/mavlink_parser.cpp
+    src/providers/mavlink_adapter.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
