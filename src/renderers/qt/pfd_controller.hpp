@@ -44,6 +44,8 @@ class PfdController final : public QObject {
     Q_PROPERTY(QString simulationRole READ simulationRole NOTIFY snapshotChanged)
     Q_PROPERTY(QString attitudeSource READ attitudeSource NOTIFY snapshotChanged)
     Q_PROPERTY(bool showingSimulatedData READ showingSimulatedData NOTIFY snapshotChanged)
+    Q_PROPERTY(QString dataSourceState READ dataSourceState NOTIFY snapshotChanged)
+    Q_PROPERTY(QString sensorNodeState READ sensorNodeState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong blackBoxRecords READ blackBoxRecords NOTIFY snapshotChanged)
@@ -128,6 +130,8 @@ public:
     [[nodiscard]] QString simulationRole() const;
     [[nodiscard]] QString attitudeSource() const;
     [[nodiscard]] bool showingSimulatedData() const;
+    [[nodiscard]] QString dataSourceState() const;
+    [[nodiscard]] QString sensorNodeState() const;
     Q_INVOKABLE void cycleSimulationRole();
     [[nodiscard]] qulonglong sequence() const;
     [[nodiscard]] QString blackBoxState() const;

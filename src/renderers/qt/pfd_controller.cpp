@@ -30,7 +30,17 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
     // le grandezze che non forniscono. Il ruolo predefinito e' il ripiego, non
     // la precedenza: il dato reale, quando c'e', vince.
     router_.set_simulation(simulation_);
-    router_.set_simulation_role(efis::SimulationRole::fallback);
+
+    // Il ruolo iniziale e' configurabile dall'ambiente, cosi' il banco puo'
+    // partire senza dato simulato e vedere cosa il quadro dichiara quando non
+    // ha sorgenti: e' la prova che le celle di stato sono calcolate e non
+    // scritte a mano. Il valore predefinito resta il ripiego.
+    const QString role = qEnvironmentVariable("EFIS_SIMULATION_ROLE").toUpper();
+    router_.set_simulation_role(
+        role == QStringLiteral("DISABLED") ? efis::SimulationRole::disabled
+        : role == QStringLiteral("PRIMARY") ? efis::SimulationRole::primary
+                                            : efis::SimulationRole::fallback);
+    qInfo().noquote() << "event=simulation_role role=" << simulationRole();
     loadAircraftProfile();
     loadCatalogIndex();
     loadNavigationIndex();
@@ -662,6 +672,42 @@ bool PfdController::showingSimulatedData() const {
            snapshot_.air_data.indicated_airspeed_kt.is_simulated() ||
            snapshot_.air_data.pressure_altitude_ft.is_simulated() ||
            snapshot_.position.latitude_deg.is_simulated();
+}
+
+// Stato del dato mostrato, nel vocabolario obbligatorio della specifica
+// PFD_FOCUS_1024: LIVE, SIM, DEGRADED, STALE, FAIL, NOT INSTALLED, UNVERIFIED.
+//
+// Era una stringa fissa "SIM" scritta nel QML. Una dichiarazione che non puo'
+// cambiare non e' una dichiarazione: avrebbe continuato a dire SIM con i dati
+// del Pixhawk sotto gli occhi, ed e' il valore decorativo che la specifica
+// vieta al posto di un dato assente.
+QString PfdController::dataSourceState() const {
+    // Nessuna grandezza primaria utilizzabile. Il paragrafo 19 dell'handoff non
+    // ammette che questo stato passi inosservato.
+    if (!snapshot_.attitude.roll_deg.usable() &&
+        !snapshot_.air_data.indicated_airspeed_kt.usable() &&
+        !snapshot_.air_data.pressure_altitude_ft.usable()) {
+        return QStringLiteral("FAIL");
+    }
+    if (!showingSimulatedData()) return QStringLiteral("LIVE");
+
+    // La simulazione che ha la precedenza su sensori reali funzionanti e' una
+    // condizione voluta ma non ordinaria, e va distinta dal semplice ripiego:
+    // chi guarda deve sapere che il dato vero c'e' e non lo sta vedendo.
+    return router_.simulation_role() == efis::SimulationRole::primary
+        ? QStringLiteral("SIM FORCED")
+        : QStringLiteral("SIM");
+}
+
+// Stato del nodo sensori reale. Anche questo era fisso a "NOT INSTALLED".
+// Oggi il testo coincide, perche' sul nodo display non e' registrata alcuna
+// sorgente reale, ma ora e' una conseguenza dello stato e non una didascalia:
+// cambiera' da solo quando il collegamento verso il nodo di ingestion esistera'.
+QString PfdController::sensorNodeState() const {
+    if (router_.source_count() == 0) return QStringLiteral("NOT INSTALLED");
+    return attitudeSource() == QStringLiteral("PIXHAWK")
+        ? QStringLiteral("LIVE")
+        : QStringLiteral("READY FOR DATA");
 }
 
 void PfdController::cycleSimulationRole() {

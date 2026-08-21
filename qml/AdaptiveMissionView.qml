@@ -4,7 +4,7 @@ Item {
     id: root
     required property var controller
     property real uiScale: Math.min(width/1024, height/600)
-    CommandRail { id: rail; anchors { left: parent.left; right: parent.right; top: parent.top } height: 54*root.uiScale; uiScale: root.uiScale; viewName: "MISSION VIEW"; healthLevel: controller.healthLevel; alertText: controller.annunciation; alertSeverity: controller.annunciationSeverity; flightDirectorActive: controller.flightDirectorActive; selectedAltitude: controller.selectedAltitude; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
+    CommandRail { id: rail; anchors { left: parent.left; right: parent.right; top: parent.top } height: 54*root.uiScale; uiScale: root.uiScale; viewName: "MISSION VIEW"; healthLevel: controller.healthLevel; alertText: controller.annunciation; alertSeverity: controller.annunciationSeverity; flightDirectorActive: controller.flightDirectorActive; selectedAltitude: controller.selectedAltitude; dataSourceState: controller.dataSourceState; sensorNodeState: controller.sensorNodeState; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
     Rectangle {
         id: miniPfd; anchors { left: parent.left; top: rail.bottom; bottom: dock.top } width: 270*root.uiScale
         color: "#0A151F"; border.color: "#314654"; clip: true

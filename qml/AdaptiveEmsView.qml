@@ -10,7 +10,7 @@ Item {
     CommandRail { id: rail; anchors { left: parent.left; right: parent.right; top: parent.top } height: 54*root.uiScale; uiScale: root.uiScale
         viewName: "EMS • ENGINE SYSTEMS"; healthLevel: controller.engineHealth
         alertText: controller.engineFaultMode === "NONE" ? "ENGINE NORMAL" : controller.engineFaultMode; alertSeverity: controller.engineHealth
-        flightDirectorActive: false; selectedAltitude: 0; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
+        flightDirectorActive: false; selectedAltitude: 0; dataSourceState: controller.dataSourceState; sensorNodeState: controller.sensorNodeState; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
     Item { id: content; anchors { left: parent.left; right: parent.right; top: rail.bottom; bottom: footer.top; margins: 7*root.uiScale } }
 
     Rectangle { id: gaugesPanel; anchors { left: content.left; right: alerts.left; top: content.top; rightMargin: 7*root.uiScale }
