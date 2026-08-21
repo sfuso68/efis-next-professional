@@ -25,6 +25,7 @@ add_library(efis_core
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
     src/io/byte_source.cpp
+    src/bench/sensor_bench.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
@@ -151,6 +152,15 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_core_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_core_tests COMMAND efis_core_tests)
+
+    # Eseguibile separato: il banco prova si alimenta dalla registrazione reale
+    # dell'hardware, e tenerlo distinto dai test del core rende evidente quale
+    # dei due stia fallendo.
+    add_executable(efis_bench_tests tests/bench_tests.cpp)
+    target_link_libraries(efis_bench_tests PRIVATE efis_core)
+    target_compile_definitions(efis_bench_tests PRIVATE
+        EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
+    add_test(NAME efis_bench_tests COMMAND efis_bench_tests)
 
     # Le protezioni contro il dato plausibile ma falso hanno un eseguibile
     # proprio: verificano una categoria diversa dal calcolo, e tenerle separate

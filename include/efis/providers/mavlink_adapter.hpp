@@ -87,6 +87,14 @@ public:
 
     // Ultimo avviso ricevuto dal controllo di volo, per esempio un motivo di
     // mancato pre-arm.
+    // Stato del satellitare. Non e' il criterio di validita', che resta nella
+    // validita' dei campioni: e' cio' che permette di dire perche' una posizione
+    // non e' utilizzabile, invece di mostrarla soltanto spenta.
+    [[nodiscard]] std::int64_t gnss_fix_type() const noexcept { return gnss_fix_type_; }
+    [[nodiscard]] std::int64_t gnss_satellites() const noexcept {
+        return gnss_satellites_;
+    }
+
     [[nodiscard]] const std::string& last_status_text() const noexcept {
         return last_status_text_;
     }
@@ -128,6 +136,7 @@ private:
     // decidere la validita' di campioni che arrivano in messaggi diversi da
     // quelli che portano lo stato.
     std::int64_t gnss_fix_type_{};
+    std::int64_t gnss_satellites_{};
     bool differential_pressure_healthy_{};
     UtcMicros utc_{utc_unavailable};
 };

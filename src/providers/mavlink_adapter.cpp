@@ -153,7 +153,14 @@ void MavlinkAdapter::apply(const mavlink::Frame& frame, MonoTime now) {
             const auto fix = mavlink::read_integer(definition, frame, "fix_type");
             const auto latitude = mavlink::read_integer(definition, frame, "lat");
             const auto longitude = mavlink::read_integer(definition, frame, "lon");
+            const auto satellites =
+                mavlink::read_integer(definition, frame, "satellites_visible");
             if (fix) gnss_fix_type_ = *fix;
+            // Il numero di satelliti non decide nulla, e non deve: la validita'
+            // dipende dal tipo di fix. Serve pero' a dire perche' un fix manca,
+            // che e' cio' che distingue un'antenna schermata da un ricevitore
+            // guasto.
+            if (satellites) gnss_satellites_ = *satellites;
 
             // Senza fix tridimensionale le coordinate ricevute non sono una
             // posizione: il paragrafo 13 dell'handoff impone di ignorarle. Il
