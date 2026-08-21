@@ -246,42 +246,63 @@ dell'handoff, **non è stato eseguito**.
 
 ---
 
-## 8. Stato del backbone dati P1
+## 8. Backbone dati P1 — stato di avanzamento
 
-Il paragrafo 21 dell'handoff indica il backbone dati come primo lavoro da
-svolgere. La verifica conferma che si tratta di lavoro interamente nuovo.
+All'inizio della giornata il backbone dati era lavoro interamente nuovo: la
+ricerca di `mavlink`, `socketcan`, `heartbeat` ed `esp32` in `src/`, `include/` e
+`tests/` non trovava alcuna implementazione, e l'unico riferimento era il valore
+`SourceId::pixhawk_primary` dichiarato e mai usato. Il core era una pipeline di
+sola simulazione.
 
-Ricerca di `mavlink`, `socketcan`, `heartbeat` ed `esp32` in `src/`, `include/` e
-`tests/`: **nessuna implementazione**. L'unico riferimento è il valore
-`SourceId::pixhawk_primary` in `include/efis/core/types.hpp`, dichiarato e mai
-usato. Il core è oggi una pipeline di sola simulazione. L'unico codice MAVLink
-esistente sono i quattro script Python di audit in `tools/hardware/`.
+Sono stati completati i primi quattro passi. Quello che segue e' lo stato
+verificato, non pianificato.
 
-### 8.1 Distanza dal modello dati richiesto
+### 8.1 Elenco del paragrafo 20 dell'handoff
 
-`include/efis/core/sample.hpp` definisce 7 campi: `value`, `source`,
-`sampled_at`, `received_at`, `quality`, `validity`, `sequence`.
+| # | Voce | Stato | Dove |
+|---|---|---|---|
+| 1 | Formalizzare Display/Sensor Data Protocol V2 | parziale | `docs/protocols/DISPLAY_DATA_PROTOCOL_V2.md` resta un draft: envelope e regole sono definiti, la serializzazione sul filo attende una ADR dedicata |
+| 2 | Adapter MAVLink in sola lettura | fatto | `da02d98`, `85bad4e` |
+| 3 | Snapshot normalizzato verso il core | fatto | `MavlinkAdapter::snapshot()` |
+| 4 | Heartbeat, stale e perdita nodo | fatto | `9ca517d` |
+| 5 | Blackbox recorder con segmenti e replay | da fare | `SegmentedRecorder` esiste e ha i suoi test, ma nulla lo collega all'adapter |
+| 6 | GNSS, assetto, baro e airspeed al banco prova UI | da fare | nessun riferimento all'adapter in `src/renderers/` o `qml/` |
 
-Il paragrafo 17.2 dell'handoff ne richiede 14. Mancano: identificativo del
-segnale, identificativo del nodo, canale, valore grezzo, unità di misura, flag di
-simulazione, revisione di calibrazione e timestamp UTC.
+### 8.2 Elenco del paragrafo 6 dell'handoff, lavoro core EMS
 
-### 8.2 Fondamenta già utilizzabili
+| # | Voce | Stato | Nota |
+|---|---|---|---|
+| 1 | Schema unico del campione sensore | fatto | 14 campi, `7c8c329` |
+| 2 | Heartbeat e stato dei nodi | fatto | `NodeHealthMonitor` |
+| 3 | Timeout, dato stale, perdita nodo | fatto | con prova di mutazione |
+| 4 | Adapter ESP32-S3 seriale o CAN | da fare | |
+| 5 | Adapter SocketCAN su Raspberry | da fare | le interfacce `can_a`, `can_b`, `vcan0` esistono gia' sul nodo black box |
+| 6 | Provider reali collegati al banco prova | da fare | |
+| 7 | Priorita' e failover primario-secondario | parziale | `SourceArbitrator` e' implementato e coperto dai test, ma l'adapter non lo usa ancora: zero riferimenti in `mavlink_adapter.cpp` |
+| 8 | Registrazione di telemetria, guasti e cambi sorgente | da fare | dipende dalla voce 5 del paragrafo precedente |
 
-`SourceArbitrator` in `include/efis/core/source_arbitrator.hpp` implementa già
-selezione, failover e reversione con tempo di permanenza configurabile, ed emette
-un evento a ogni cambio sorgente. È la base su cui innestare il modello di salute
-dei nodi, senza riscritture.
+### 8.3 Modello dati: colmato
 
-`docs/protocols/DISPLAY_DATA_PROTOCOL_V2.md` esiste come draft implementabile con
-envelope, regole di rifiuto e gestione dei duplicati già definite. La
-serializzazione wire è esplicitamente rimandata a una ADR separata.
+`Sample<T>` portava 7 campi contro i 14 richiesti dal paragrafo 17.2. Ora li
+porta tutti: identificativo del segnale, nodo, canale, valore grezzo, unita',
+marcatore di simulazione, revisione di calibrazione e tempo UTC, quest'ultimo
+con un valore esplicito per "non affidabile".
 
-### 8.3 Copertura di test
+Nel farlo e' emerso un difetto reale. `Validity` ammette un solo stato per volta,
+quindi un campione simulato che invecchiava diventava `stale` e perdeva ogni
+traccia di essere simulato: il PFD mostrava STALE, indistinguibile da un dato
+reale scaduto, contro il paragrafo 19. Il marcatore vive ora in
+`SampleOrigin::simulated` e sopravvive a qualsiasi transizione.
 
-Un solo eseguibile di test, un solo test registrato in `ctest`. Insufficiente
-rispetto alla Definition of Done del paragrafo 21. Va ampliata contestualmente al
-lavoro su P1, non dopo.
+### 8.4 Copertura di test
+
+Da 1 a **212 asserzioni**, sempre in un solo eseguibile registrato in `ctest`.
+Comprendono i frame di riferimento prodotti da pymavlink, una registrazione
+reale di ArduPlane 4.7.0 e una prova di mutazione sulla proprieta' di sicurezza
+del monitor dei nodi.
+
+Resta valida l'osservazione che un solo test registrato non basta: andranno
+separati per sottosistema quando il numero crescera' ancora.
 
 ---
 
@@ -299,26 +320,39 @@ lavoro su P1, non dopo.
 
 ## 10. Punto esatto di ripartenza
 
-Invariato rispetto al `CHECKPOINT-2026-08-18.md` e coerente con il paragrafo 21.6
-dell'handoff: **modello dati e adapter MAVLink in sola lettura**, prima di
-qualsiasi intervento su UI e terreno.
+I passi da 1 a 4 del paragrafo 21.6 sono chiusi. Il punto di ripartenza si
+sposta ai due che restano, entrambi di collegamento e nessuno dei quali richiede
+di toccare il Pixhawk.
 
-Ordine previsto:
+1. Collegare l'adapter al `SegmentedRecorder`, cosi' che telemetria, transizioni
+   di stato dei nodi e cambi sorgente finiscano nella black box con segmenti e
+   replay deterministico.
+2. Portare i dati monitor-only al banco prova gia' esistente nel Setup Center,
+   dove il pilota possa vederli senza che entrino in alcuna funzione di volo.
+3. Far usare all'adapter il `SourceArbitrator`, che oggi e' implementato e
+   testato ma non collegato: e' il presupposto del failover fra sensore primario
+   e secondario.
 
-1. Estendere il campione sensore ai 14 campi del paragrafo 17.2, mantenendo
-   `Sample<T>` compatibile con il codice esistente.
-2. Definire heartbeat e stato dei nodi.
-3. Implementare timeout, dato stale e perdita nodo, con test deterministici.
-4. Adapter MAVLink in sola lettura, senza alcuna scrittura di parametri.
-5. Collegare i dati reali in modalità monitor-only al core e alla black box.
-6. Solo dopo, stabilizzare UI e terreno.
+Poi, in ordine, gli adapter ESP32-S3 e SocketCAN, che aprono P4, e solo dopo la
+chiusura del PFD, che e' P2.
 
-### Da fare prima, non bloccanti
+### Aperto e non bloccante
 
-- Installare Qt Quick 3D su Windows (sezione 6.2).
-- Eseguire l'audit in sola lettura di server, black box e ground station
-  (sezione 7).
-- Ampliare la copertura di test contestualmente a P1 (sezione 8.3).
+- **Qt Quick 3D su Windows** (sezione 6.2). Richiede il MaintenanceTool e quindi
+  l'utente. Il Raspberry Pi 5 compila l'intero progetto, percio' il lavoro
+  prosegue comunque.
+- **Audit in sola lettura** di server, black box e ground station (sezione 7).
+  Solo il PFD e' stato verificato.
+- **Serializzazione wire** del Display Data Protocol V2, che attende una ADR: i
+  numeri 003 e 004 sono liberi.
+
+### Da non perdere di vista
+
+Il `get_throttled` a `0x0` non chiude il punto dell'alimentazione: il registro si
+azzera a ogni riavvio e la prova termica prolungata del paragrafo 8.4 non e'
+stata eseguita. `ARSPD_USE` resta `0` e la scala del paragrafo 25 non e' stata
+risalita di un gradino: tutto quanto fatto oggi resta osservazione in sola
+lettura.
 
 ---
 
