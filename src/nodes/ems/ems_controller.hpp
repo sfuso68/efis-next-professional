@@ -33,6 +33,8 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantList egtValues READ egtValues NOTIFY snapshotChanged)
     Q_PROPERTY(int engineHealth READ engineHealth NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineFaultMode READ engineFaultMode NOTIFY snapshotChanged)
+    Q_PROPERTY(QString dataSourceState READ dataSourceState CONSTANT)
+    Q_PROPERTY(QString sensorNodeState READ sensorNodeState CONSTANT)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong blackBoxRecords READ blackBoxRecords NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
@@ -54,6 +56,13 @@ public:
     [[nodiscard]] QVariantList egtValues() const;
     [[nodiscard]] int engineHealth() const;
     [[nodiscard]] QString engineFaultMode() const;
+    // Finche' questo processo usa EngineSimulationProvider deve dichiararlo
+    // alla barra di stato. Una proprieta' assente diventa `undefined` in QML e
+    // lascia il pilota senza indicazione sull'origine dei numeri mostrati.
+    [[nodiscard]] QString dataSourceState() const { return QStringLiteral("SIM"); }
+    [[nodiscard]] QString sensorNodeState() const {
+        return QStringLiteral("SIMULATED");
+    }
     [[nodiscard]] QString blackBoxState() const { return black_box_state_; }
     [[nodiscard]] qulonglong blackBoxRecords() const { return black_box_records_; }
     [[nodiscard]] qulonglong sequence() const {
