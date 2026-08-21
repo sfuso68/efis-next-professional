@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(EFIS_BUILD_TESTS "Build EFIS Next tests" ON)
 option(EFIS_BUILD_QT_RENDERER "Build the Qt Quick PFD when Qt is available" ON)
+option(EFIS_REQUIRE_QT_RENDERER "Fail configuration if the Qt Quick PFD cannot be built" OFF)
 
 add_library(efis_core
     src/core/alert_engine.cpp
@@ -41,7 +42,8 @@ add_executable(efis-render-pfd src/apps/render_pfd_main.cpp)
 target_link_libraries(efis-render-pfd PRIVATE efis_reference_renderer)
 
 if(EFIS_BUILD_QT_RENDERER)
-    find_package(Qt6 6.8 QUIET COMPONENTS Core Gui Qml Quick Quick3D QuickControls2 Concurrent Network)
+    set(EFIS_QT_COMPONENTS Core Gui Qml Quick Quick3D QuickControls2 Concurrent Network)
+    find_package(Qt6 6.8 QUIET COMPONENTS ${EFIS_QT_COMPONENTS})
     if(Qt6_FOUND)
         qt_standard_project_setup(REQUIRES 6.8)
         qt_add_executable(efis-pfd-qt
@@ -99,7 +101,34 @@ if(EFIS_BUILD_QT_RENDERER)
         target_link_libraries(efis-pfd-qt PRIVATE
             efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Quick3D Qt6::QuickControls2 Qt6::Concurrent Qt6::Network)
     else()
-        message(STATUS "Qt 6 not found: efis-pfd-qt will not be built")
+        # Un fallimento silenzioso qui e' inaccettabile: senza questo target non
+        # esiste alcuna interfaccia di volo, e una configurazione riuscita darebbe
+        # l'impressione contraria. Si dichiara sempre quale componente manca.
+        set(EFIS_QT_MISSING_COMPONENTS "")
+        foreach(efis_qt_component IN LISTS EFIS_QT_COMPONENTS)
+            find_package(Qt6${efis_qt_component} 6.8 QUIET)
+            if(NOT Qt6${efis_qt_component}_FOUND)
+                list(APPEND EFIS_QT_MISSING_COMPONENTS "Qt6${efis_qt_component}")
+            endif()
+        endforeach()
+
+        if(EFIS_QT_MISSING_COMPONENTS)
+            set(EFIS_QT_REASON "componenti mancanti nell'installazione Qt: ${EFIS_QT_MISSING_COMPONENTS}")
+        else()
+            set(EFIS_QT_REASON "Qt 6.8 o superiore non trovato; indicare l'installazione con -DCMAKE_PREFIX_PATH")
+        endif()
+
+        set(EFIS_QT_MESSAGE
+            "efis-pfd-qt NON verra' costruito: ${EFIS_QT_REASON}. "
+            "Gli eseguibili gia' presenti in build/ restano quelli di una configurazione precedente "
+            "e non riflettono le modifiche a src/renderers/qt o a qml/. "
+            "Installare i componenti mancanti (su Windows con il MaintenanceTool di Qt) "
+            "oppure configurare con -DEFIS_BUILD_QT_RENDERER=OFF per una build del solo core.")
+
+        if(EFIS_REQUIRE_QT_RENDERER)
+            message(FATAL_ERROR ${EFIS_QT_MESSAGE})
+        endif()
+        message(WARNING ${EFIS_QT_MESSAGE})
     endif()
 endif()
 
