@@ -31,6 +31,7 @@ add_library(efis_core
     src/core/flight_dynamics.cpp
     src/core/signal_access.cpp
     src/instruments/dial.cpp
+    src/instruments/svg_dial_renderer.cpp
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
@@ -53,6 +54,11 @@ target_link_libraries(efis_reference_renderer PUBLIC efis_core)
 
 add_executable(efis-render-pfd src/apps/render_pfd_main.cpp)
 target_link_libraries(efis-render-pfd PRIVATE efis_reference_renderer)
+
+# Produce quadranti in SVG per poterli guardare mentre si scrivono, e in
+# seguito per confrontarli con le immagini di riferimento.
+add_executable(efis-render-dials src/apps/render_dials_main.cpp)
+target_link_libraries(efis-render-dials PRIVATE efis_core)
 
 if(EFIS_BUILD_QT_RENDERER)
     set(EFIS_QT_COMPONENTS Core Gui Qml Quick Quick3D QuickControls2 Concurrent Network)
