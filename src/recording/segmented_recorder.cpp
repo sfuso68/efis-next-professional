@@ -1,6 +1,6 @@
 #include "efis/recording/segmented_recorder.hpp"
 
-#include "efis/recording/snapshot_recorder.hpp"
+#include "efis/recording/flight_record.hpp"
 
 #include <chrono>
 #include <stdexcept>
@@ -45,7 +45,7 @@ void SegmentedRecorder::open_segment() {
          std::to_string(segment_index_++) + ".partial");
     stream_.open(partial_path_, std::ios::binary | std::ios::trunc);
     if (!stream_) throw std::runtime_error("unable to open recorder segment");
-    SnapshotRecorder::write_header(stream_);
+    FlightRecordWriter::write_header(stream_);
     stream_.flush();
     records_in_segment_ = 0;
     records_since_flush_ = 0;
@@ -53,7 +53,7 @@ void SegmentedRecorder::open_segment() {
 
 void SegmentedRecorder::append(const FlightSnapshot& snapshot) {
     if (!stream_.is_open()) open_segment();
-    SnapshotRecorder::write_snapshot(stream_, snapshot);
+    FlightRecordWriter::write_snapshot(stream_, snapshot);
     ++records_in_segment_;
     ++records_since_flush_;
     if (records_since_flush_ >= settings_.flush_every_records) {

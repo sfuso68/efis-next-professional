@@ -10,6 +10,7 @@
 #include "efis/recording/snapshot_recorder.hpp"
 #include "efis/recording/segmented_recorder.hpp"
 #include "efis/recording/recorder_status.hpp"
+#include "efis/recording/flight_record.hpp"
 #include "efis/display/display_model.hpp"
 #include "efis/display/svg_pfd_renderer.hpp"
 
@@ -37,6 +38,24 @@ void require(bool condition, const char* message) {
     }
 }
 
+}  // namespace
+
+namespace efis {
+struct RecordedSampleLookup final {
+    bool present{};
+    Sample<double> sample{};
+};
+}  // namespace efis
+
+namespace {
+efis::RecordedSampleLookup find_recorded(
+    const std::vector<efis::recording::RecordedSample>& samples,
+    efis::SignalId signal) {
+    for (const auto& entry : samples) {
+        if (entry.sample.origin.signal == signal) return {true, entry.sample};
+    }
+    return {};
+}
 }  // namespace
 
 int main() {
@@ -897,6 +916,162 @@ int main() {
             "a node silent beyond the timeout must be declared lost");
     require(adapter.last_status_text() != "",
             "the pre-arm warning from the flight controller must be retained");
+
+    // --- Registro di volo V2: andata e ritorno -------------------------------
+    //
+    // Il paragrafo 17.3 dell'handoff chiede replay deterministico. Il formato V1
+    // non aveva un lettore, quindi la domanda non si poteva nemmeno porre: cio'
+    // che veniva scritto non veniva mai riletto, e nessuno poteva accorgersi che
+    // registrava tre segnali su venti e nessuna provenienza.
+    efis::FlightSnapshot recorded_input = efis::SimulationProvider{11}.sample(
+        epoch + 3s, 3s);
+    // Provenienza completa su un campione, come la produrrebbe un nodo reale.
+    auto& ias_sample = recorded_input.air_data.indicated_airspeed_kt;
+    ias_sample.origin.node = 4097;
+    ias_sample.origin.channel = 7;
+    ias_sample.origin.calibration_revision = 42;
+    ias_sample.utc = 1755739800123456ULL;
+    ias_sample.quality = efis::Quality::nominal;
+    ias_sample.raw = 17.181411743164062;
+
+    std::ostringstream written;
+    efis::recording::FlightRecordWriter::write_header(written);
+    efis::recording::FlightRecordWriter::write_snapshot(written, recorded_input);
+    efis::recording::FlightRecordWriter::write_node_event(
+        written, {4097, efis::NodeState::online, efis::NodeState::stale, epoch + 4s});
+    efis::recording::FlightRecordWriter::write_source_change(
+        written, {efis::SourceId::simulation, efis::SourceId::pixhawk_primary,
+                  efis::SourceChangeReason::failover, epoch + 5s});
+
+    std::istringstream to_read{written.str()};
+    const auto replayed = efis::recording::read_flight_record(to_read);
+    require(replayed.schema == 2, "the record must declare its schema");
+    require(replayed.malformed_rows == 0, "a record just written must be readable");
+    require(replayed.samples.size() == 16,
+            "every signal of the snapshot must be recorded, not only three");
+    require(replayed.node_events.size() == 1, "node events must survive the round trip");
+    require(replayed.source_changes.size() == 1,
+            "source changes must survive the round trip");
+
+    const efis::RecordedSampleLookup found = find_recorded(
+        replayed.samples, efis::SignalId::indicated_airspeed);
+    require(found.present, "the recorded airspeed must be found by its signal");
+    const auto& back = found.sample;
+    require(back.origin.signal == efis::SignalId::indicated_airspeed,
+            "the signal identity must survive");
+    require(back.origin.node == 4097, "the producing node must survive");
+    require(back.origin.channel == 7, "the channel must survive");
+    require(back.origin.unit == efis::Unit::knot, "the unit must survive");
+    require(back.origin.calibration_revision == 42,
+            "the calibration revision must survive: without it a recording cannot "
+            "be compared with another taken under a different tuning");
+    require(back.origin.simulated, "the simulation marker must survive");
+    require(back.utc == 1755739800123456ULL,
+            "a 64 bit UTC timestamp must survive without loss");
+    require(back.quality == efis::Quality::nominal, "the quality must survive");
+    require(back.validity == efis::Validity::simulated, "the validity must survive");
+    require(back.sequence == recorded_input.sequence ||
+                back.sequence == ias_sample.sequence,
+            "the sequence counter must survive");
+
+    // Precisione. V1 scriveva con la formattazione predefinita di ostream, sei
+    // cifre significative: ogni valore registrato differiva da quello misurato
+    // senza che nulla lo dichiarasse.
+    require(back.raw == 17.181411743164062,
+            "the raw value must be recorded without losing a single digit");
+    require(back.value == ias_sample.value,
+            "the engineering value must be recorded without losing a single digit");
+
+    // Un valore che la formattazione a sei cifre avrebbe certamente rovinato.
+    efis::Sample<double> precise{};
+    precise.value = 0.1234567890123456;
+    precise.raw = 123456.789012345;
+    precise.origin.signal = efis::SignalId::differential_pressure;
+    precise.origin.unit = efis::Unit::hectopascal;
+    precise.validity = efis::Validity::valid;
+    std::ostringstream precise_out;
+    efis::recording::FlightRecordWriter::write_header(precise_out);
+    efis::recording::FlightRecordWriter::write_sample(precise_out, precise, epoch + 1s);
+    std::istringstream precise_in{precise_out.str()};
+    const auto precise_back = efis::recording::read_flight_record(precise_in);
+    require(precise_back.samples.size() == 1, "the sample must be readable");
+    require(precise_back.samples.front().sample.value == precise.value,
+            "a value needing seventeen digits must come back exactly");
+    require(precise_back.samples.front().sample.raw == precise.raw,
+            "the raw value must come back exactly as well");
+
+    // Registrazione interrotta a meta' riga: e' il caso della perdita di
+    // alimentazione, e va contato, non nascosto.
+    const std::string truncated = written.str().substr(0, written.str().size() - 12);
+    std::istringstream truncated_in{truncated};
+    const auto partial = efis::recording::read_flight_record(truncated_in);
+    require(partial.malformed_rows >= 1,
+            "an interrupted row must be counted as unreadable");
+    require(!partial.samples.empty(),
+            "what was written before the interruption must still be recovered");
+
+    // Riga di un tipo sconosciuto: non e' un errore, e' una versione successiva.
+    std::istringstream forward_in{
+        std::string{"EFIS_RECORD_V2\nschema,2\nfuture_row,1,2,3\n"}};
+    const auto forward = efis::recording::read_flight_record(forward_in);
+    require(forward.unknown_rows == 1, "an unknown row type must be counted apart");
+    require(forward.malformed_rows == 0, "an unknown row type is not a corrupt row");
+
+    // Schema piu' recente di quello supportato: non si interpreta.
+    std::istringstream newer_in{std::string{"EFIS_RECORD_V2\nschema,99\n"}};
+    const auto newer = efis::recording::read_flight_record(newer_in);
+    require(newer.schema_too_new,
+            "a newer schema must be refused, not interpreted with today's meanings");
+    require(newer.samples.empty(), "nothing must be read from a refused record");
+
+    // Intestazione sbagliata: non e' un registro di volo.
+    std::istringstream alien_in{std::string{"QUALCOS_ALTRO\n1,2,3\n"}};
+    require(efis::recording::read_flight_record(alien_in).samples.empty(),
+            "a file that is not a flight record must yield nothing");
+
+    // --- Dal segmento su disco al replay -------------------------------------
+    //
+    // Le prove precedenti verificano il formato in memoria. Questa chiude il
+    // cerchio richiesto dal paragrafo P1.5: il registratore a segmenti scrive un
+    // file vero, e quel file si rilegge. Finche' il registratore usava il
+    // formato V1 questo non era possibile, perche' un lettore non esisteva.
+    const auto replay_directory = std::filesystem::temp_directory_path() /
+        ("efis-replay-test-" + std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count()));
+    {
+        efis::recording::SegmentedRecorder segmented{
+            replay_directory, {.records_per_segment = 4, .flush_every_records = 1}};
+        efis::SimulationProvider replay_source{5};
+        for (int tick = 1; tick <= 4; ++tick) {
+            segmented.append(replay_source.sample(epoch + std::chrono::seconds{tick},
+                                                  std::chrono::seconds{tick}));
+        }
+        segmented.close();
+    }
+
+    std::vector<std::filesystem::path> segments;
+    for (const auto& entry : std::filesystem::directory_iterator{replay_directory}) {
+        if (entry.path().extension() == ".csv") segments.push_back(entry.path());
+    }
+    require(segments.size() == 1, "the recorder must have closed one segment");
+
+    std::ifstream segment_file{segments.front(), std::ios::binary};
+    const auto from_disk = efis::recording::read_flight_record(segment_file);
+    require(from_disk.schema == 2, "a segment on disk must declare its schema");
+    require(from_disk.malformed_rows == 0,
+            "a segment closed cleanly must contain no unreadable row");
+    require(from_disk.samples.size() == 64,
+            "four snapshots of sixteen signals must come back as sixty-four samples");
+
+    const auto disk_airspeed = find_recorded(from_disk.samples,
+                                             efis::SignalId::indicated_airspeed);
+    require(disk_airspeed.present,
+            "the airspeed must be identifiable by its signal after a disk round trip");
+    require(disk_airspeed.sample.origin.unit == efis::Unit::knot,
+            "the unit must survive the disk round trip");
+    require(disk_airspeed.sample.is_simulated(),
+            "a recording made from simulated data must still say so on replay");
+    std::filesystem::remove_all(replay_directory);
 
     std::cout << "All EFIS core tests passed\n";
 }
