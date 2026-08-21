@@ -46,9 +46,11 @@ Gli altri due servizi dell'impianto vecchio, `efis-web.service` (monitor web di
 sola lettura sulla porta 8080, che legge il bus `can1`) e `efis-plan.service`,
 **non toccano il pannello** e possono restare attivi accanto al nodo motore.
 
-Decisione presa il 21 agosto 2026: il nodo EMS prende il display. `efis.service`
-viene disabilitato all'avvio, `efis-ems.service` abilitato al suo posto. L'EFIS
-vecchio resta installato e riavviabile a mano, dopo aver fermato il nodo motore.
+Decisione presa il 21 agosto 2026: **il nodo EMS prende il display e l'EFIS
+vecchio diventa secondario.** `efis.service` viene disabilitato all'avvio,
+`efis-ems.service` abilitato al suo posto. Secondario non vuol dire rimosso:
+l'EFIS vecchio resta installato, immodificato e riavviabile a mano dopo aver
+fermato il nodo motore, e il ritorno è una riga sola.
 
 L'unità **non** dichiara `Conflicts=efis.service`: la mutua esclusione resta a
 carico di chi la ricorda, ed è stata una scelta esplicita. Chi cambiasse idea
