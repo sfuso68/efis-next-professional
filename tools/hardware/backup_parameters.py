@@ -31,6 +31,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import struct
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,6 +42,33 @@ from pymavlink import mavutil
 def version_string(value: int) -> str:
     return (f"{(value >> 24) & 0xFF}.{(value >> 16) & 0xFF}."
             f"{(value >> 8) & 0xFF}.{value & 0xFF}")
+
+
+def format_value(value: float) -> str:
+    """Scrive il valore nella forma piu' corta che si rilegge identica.
+
+    MAVLink trasporta ogni parametro come float a 32 bit, anche quelli che
+    ArduPilot dichiara interi. Scriverne nove cifre significative produce
+    stringhe come 0.100000001 al posto di 0.1: il valore e' lo stesso, ma il
+    confronto con una copia prodotta da MAVProxy segnala una differenza che non
+    esiste.
+
+    Non e' un problema estetico. La prima copia fatta con questo strumento
+    differiva dal backup di fabbrica in settanta parametri, di cui quaranta
+    erano soltanto questo. Un elenco di differenze in cui piu' della meta' e'
+    rumore non viene letto con attenzione, ed e' esattamente l'elenco che
+    dovrebbe far notare la riga che conta.
+
+    Si cerca quindi la rappresentazione piu' breve che, riletta, produce di
+    nuovo lo stesso float a 32 bit: nessuna cifra viene persa e nessuna viene
+    inventata.
+    """
+    single = struct.unpack("<f", struct.pack("<f", value))[0]
+    for digits in range(1, 10):
+        text = f"{single:.{digits}g}"
+        if struct.unpack("<f", struct.pack("<f", float(text)))[0] == single:
+            return text
+    return f"{single:.9g}"
 
 
 def decode_name(raw) -> str:
@@ -133,7 +161,7 @@ def main() -> int:
         present = set(indices.values())
         missing = [i for i in range(declared) if i not in present]
 
-    body = "".join(f"{name:<16} {values[name]:.9g}\n" for name in sorted(values))
+    body = "".join(f"{name:<16} {format_value(values[name])}\n" for name in sorted(values))
     digest = hashlib.sha256(body.encode("ascii")).hexdigest()
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")

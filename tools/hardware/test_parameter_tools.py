@@ -217,6 +217,32 @@ def main() -> int:
                   "una copia completa non viene marcata parziale")
         check(completed.returncode == 0, "la copia completa non e' un errore")
 
+    print("\n12. I valori si scrivono nella forma piu' corta che si rilegge identica")
+    sys.path.insert(0, str(HERE))
+    from backup_parameters import format_value  # noqa: E402
+
+    import struct as _struct
+
+    def same_float32(text: str, value: float) -> bool:
+        pack = lambda x: _struct.unpack("<f", _struct.pack("<f", float(x)))[0]
+        return pack(text) == pack(value)
+
+    check(format_value(0.1) == "0.1",
+          "0.1 resta 0.1 e non diventa 0.100000001")
+    check(format_value(0.0005) == "0.0005", "i valori piccoli restano leggibili")
+    check(format_value(-1.0) == "-1", "gli interi non prendono decimali")
+    # L'offset del sensore aria misurato sul banco. Nove cifre significative ne
+    # scriverebbero 17.1814117; ne bastano otto per rileggere lo stesso float a
+    # 32 bit, e la forma piu' corta e' quella che va scritta.
+    offset = 17.181411743164062
+    check(format_value(offset) == "17.181412",
+          "conserva tutte le cifre che servono, e nessuna in piu'")
+    check(len(format_value(offset)) < len(f"{offset:.9g}"),
+          "e resta piu' corta delle nove cifre significative")
+    check(all(same_float32(format_value(v), v) for v in
+              (0.1, 0.0005, -1.0, 17.181411743164062, 100659.703125, 1e-5, 32003.0)),
+          "ogni valore riletto produce lo stesso float a 32 bit")
+
     passed = sum(1 for ok, _ in results if ok)
     total = len(results)
     print(f"\n{'=' * 60}\n{passed}/{total} verifiche superate")
