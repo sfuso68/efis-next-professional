@@ -55,7 +55,23 @@ DEFAULT_PARAMETERS = {
 
 
 def parameter_id(name: str) -> bytes:
+    """Forma richiesta in trasmissione: pymavlink vuole byte per un char[16]."""
     return name.encode("ascii")[:16]
+
+
+def decode_name(raw) -> str:
+    """Forma restituita in ricezione, che non e' la stessa.
+
+    pymavlink pretende `bytes` quando si trasmette un campo di caratteri e
+    restituisce `str` quando lo si riceve. E' l'asimmetria che aveva reso
+    inutilizzabile la versione precedente di set_mavlink_parameter.py con il
+    TypeError riportato al paragrafo 16 dell'handoff, e in cui questo banco e'
+    caduto dal lato opposto costruendo `bytes` da una stringa. Attraversare il
+    confine in un solo punto evita di ripeterla una terza volta.
+    """
+    if isinstance(raw, (bytes, bytearray)):
+        return bytes(raw).rstrip(b"\x00").decode("ascii", "replace")
+    return str(raw).rstrip("\x00")
 
 
 class ParameterStub:
@@ -66,8 +82,10 @@ class ParameterStub:
         self.reads_dropped = 0
         self.order = list(self.parameters)
 
-    def send_value(self, name):
+    def send_value(self, name, override=None):
         value, kind = self.parameters[name]
+        if override is not None:
+            value = override
         self.link.mav.param_value_send(
             parameter_id(name), float(value), kind,
             len(self.parameters), self.order.index(name))
@@ -75,7 +93,7 @@ class ParameterStub:
     def handle(self, message):
         kind = message.get_type()
         if kind == "PARAM_REQUEST_READ":
-            name = bytes(message.param_id).rstrip(b"\x00").decode("ascii")
+            name = decode_name(message.param_id)
             if name not in self.parameters:
                 return
             if self.reads_dropped < self.options.drop_reads:
@@ -86,21 +104,27 @@ class ParameterStub:
             for name in self.order:
                 self.send_value(name)
         elif kind == "PARAM_SET":
-            name = bytes(message.param_id).rstrip(b"\x00").decode("ascii")
+            name = decode_name(message.param_id)
             if name not in self.parameters:
                 return
             if self.options.refuse_writes:
                 return
-            previous, kind_code = self.parameters[name]
-            if not self.options.ignore_writes:
-                applied = float(message.param_value)
+            _, kind_code = self.parameters[name]
+            requested = float(message.param_value)
+            if self.options.ignore_writes:
+                # Il caso peggiore, e la ragione per cui l'eco non e' una
+                # verifica: l'autopilota conferma il valore chiesto e conserva
+                # quello vecchio. Uno strumento che si fermasse alla risposta
+                # immediata non se ne accorgerebbe mai.
+                echo = requested
+            else:
+                applied = requested
                 if self.options.clamp_writes is not None:
                     applied = min(applied, self.options.clamp_writes)
                 self.parameters[name] = (applied, kind_code)
-            else:
-                self.parameters[name] = (previous, kind_code)
+                echo = applied
             if not self.options.silent_writes:
-                self.send_value(name)
+                self.send_value(name, override=echo)
 
     def run(self):
         next_heartbeat = 0.0
