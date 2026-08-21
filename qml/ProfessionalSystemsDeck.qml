@@ -19,7 +19,10 @@ Rectangle {
                     {n:"RPM",v:controller.engineRpm,u:"RPM",min:0,max:3000,gs:800,ge:2600,d:0},
                     {n:"MAP",v:controller.manifoldPressure,u:"IN HG",min:10,max:35,gs:15,ge:29,d:1},
                     {n:"FLOW",v:controller.fuelFlow,u:"GPH",min:0,max:20,gs:4,ge:16,d:1},
-                    {n:"OIL T",v:controller.oilTemperature,u:"°F",min:80,max:260,gs:140,ge:220,d:0},
+                    // Stessa correzione di AdaptiveEmsView.qml, e per la stessa
+                    // ragione: il valore e' in °C. Qui pesa di piu', perche'
+                    // questo pannello sta sulla pagina di volo.
+                    {n:"OIL T",v:controller.oilTemperature,u:"°C",min:20,max:130,gs:60,ge:105,d:0},
                     {n:"OIL P",v:controller.oilPressure,u:"PSI",min:0,max:100,gs:50,ge:90,d:0}
                 ]; delegate: ProfessionalCircularGauge { required property var modelData; width: 106*deck.uiScale; height: parent.height;
                         uiScale: deck.uiScale*1.08; label: modelData.n; value: modelData.v; unit: modelData.u;

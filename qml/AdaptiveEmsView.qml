@@ -21,7 +21,16 @@ Item {
                 {n:"RPM",v:controller.engineRpm,u:"RPM",min:0,max:3000,gs:800,ge:2600,d:0},
                 {n:"MANIFOLD",v:controller.manifoldPressure,u:"IN HG",min:10,max:35,gs:15,ge:29,d:1},
                 {n:"FUEL FLOW",v:controller.fuelFlow,u:"GPH",min:0,max:20,gs:4,ge:16,d:1},
-                {n:"OIL TEMP",v:controller.oilTemperature,u:"°F",min:80,max:260,gs:140,ge:220,d:0},
+                // In °C: e' cio' che il valore e' sempre stato. oilTemperature
+                // espone EngineSnapshot::oil_temperature_c, il profilo aeromobile
+                // dichiara units.temperature "C" e il Setup Center gradua gia'
+                // OIL TEMP MAX in °C. La scala in °F metteva 94 gradi centigradi
+                // su un arco Fahrenheit: lancetta a fondo scala sinistro, cioe'
+                // motore gelido, con il motore a temperatura normale.
+                // I limiti sono la conversione di quelli che c'erano (80/140/220/260 °F)
+                // arrotondata, non limiti nuovi: quelli veri per il Rotax 912 ULS
+                // del profilo vanno presi dal manuale e messi nel profilo stesso.
+                {n:"OIL TEMP",v:controller.oilTemperature,u:"°C",min:20,max:130,gs:60,ge:105,d:0},
                 {n:"OIL PRESS",v:controller.oilPressure,u:"PSI",min:0,max:100,gs:50,ge:90,d:0}
             ]; delegate: Rectangle { required property var modelData; width: 144*root.uiScale; height: parent.height; radius: 4*root.uiScale; color: "#A9050D14"; border.color: "#354F5D"
                     ProfessionalCircularGauge { anchors { fill: parent; margins: 5*root.uiScale } uiScale: root.uiScale*1.35; label: modelData.n; value: modelData.v; unit: modelData.u
