@@ -27,6 +27,7 @@ add_library(efis_core
     src/providers/mavlink_adapter.cpp
     src/io/byte_source.cpp
     src/bench/sensor_bench.cpp
+    src/core/altimetry.cpp
     src/instruments/dial.cpp
 )
 target_include_directories(efis_core PUBLIC include)

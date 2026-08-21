@@ -1,4 +1,5 @@
 #include "efis/core/flight_model.hpp"
+#include "efis/core/altimetry.hpp"
 #include "efis/core/alert_engine.hpp"
 
 #include <array>
@@ -19,6 +20,62 @@ void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
     if (sample.validity == Validity::stale) {
         ++health.stale_fields;
     }
+}
+
+// Applica la regolazione barometrica e ricava la quota indicata.
+//
+// La quota indicata e' derivata, non misurata: eredita provenienza e validita'
+// dalla quota di pressione da cui viene. Costruirne una valida a partire da una
+// scaduta significherebbe presentare come fresco un dato vecchio.
+void apply_baro_setting(AirDataState& air) {
+    Sample<double>& setting = air.baro_setting_hpa;
+
+    // Finche' nessuno l'ha impostata, la regolazione e' la standard. E' la
+    // condizione di un altimetro appena acceso, non un dato mancante: la
+    // provenienza resta sconosciuta, e distingue la standard ereditata dalla
+    // standard scelta dal pilota.
+    if (setting.validity == Validity::unavailable) {
+        setting.value = standard_pressure_hpa;
+        setting.raw = standard_pressure_hpa;
+        setting.validity = Validity::valid;
+    }
+    setting.origin.signal = SignalId::baro_setting;
+    setting.origin.unit = Unit::hectopascal;
+
+    // Una regolazione fuori dall'intervallo di una finestra di Kollsman non e'
+    // una pressione: e' un errore di inserimento. Correggerla in silenzio lo
+    // nasconderebbe, applicarla produrrebbe una quota sbagliata di migliaia di
+    // piedi. Si dichiara fuori limite e non si applica.
+    if (setting.validity == Validity::valid && !is_plausible_setting(setting.value)) {
+        setting.validity = Validity::out_of_range;
+    }
+
+    const Sample<double>& pressure = air.pressure_altitude_ft;
+    Sample<double>& indicated = air.indicated_altitude_ft;
+
+    indicated.source = pressure.source;
+    indicated.sampled_at = pressure.sampled_at;
+    indicated.received_at = pressure.received_at;
+    indicated.sequence = pressure.sequence;
+    indicated.quality = pressure.quality;
+    indicated.origin = pressure.origin;
+    indicated.origin.signal = SignalId::indicated_altitude;
+    indicated.origin.unit = Unit::foot;
+    indicated.utc = pressure.utc;
+
+    if (!pressure.usable() || !setting.usable()) {
+        indicated.validity = Validity::unavailable;
+        indicated.value = 0.0;
+        indicated.raw = 0.0;
+        return;
+    }
+
+    indicated.validity = pressure.validity;
+    // Il valore grezzo della quota indicata e' la quota di pressione: e' cio' da
+    // cui viene, e conservarlo permette di ricalcolarla con un'altra
+    // regolazione rileggendo la registrazione.
+    indicated.raw = pressure.value;
+    indicated.value = indicated_altitude_ft(pressure.value, setting.value);
 }
 
 }  // namespace
@@ -79,6 +136,11 @@ FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
     age(input.navigation.cdi_deviation_dots, now, policy_.stale_after, input.health);
     age(input.navigation.glide_slope_dots, now, policy_.stale_after, input.health);
     age(input.navigation.to_flag, now, policy_.stale_after, input.health);
+
+    // Dopo l'invecchiamento e prima di ogni altra valutazione: la quota
+    // indicata deve nascere gia' con la validita' definitiva di quella di
+    // pressione.
+    apply_baro_setting(input.air_data);
 
     // Se l'aeromobile sia in moto si stabilisce adesso, prima di ogni altra
     // valutazione. Il confronto qui sotto puo' marcare la velocita' al suolo

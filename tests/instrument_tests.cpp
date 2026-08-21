@@ -7,6 +7,7 @@
 // opposte.
 
 #include "efis/instruments/dial.hpp"
+#include "efis/core/altimetry.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -231,6 +232,59 @@ int main() {
             "a scale with no span must declare itself failed");
     require(degenerate.needles.empty(),
             "a malformed scale must not show a needle either");
+
+    // --- Altimetria: regolazione barometrica e quota indicata ----------------
+    //
+    // Le due quote restano distinte per una ragione pratica: registrare solo la
+    // quota indicata renderebbe incomparabili due voli condotti con regolazioni
+    // diverse, e registrare solo quella di pressione toglierebbe la quota che il
+    // pilota stava effettivamente leggendo.
+    require(close_to(efis::indicated_altitude_ft(5000.0, efis::standard_pressure_hpa),
+                     5000.0),
+            "with the standard setting the indicated altitude is the pressure altitude");
+    require(efis::indicated_altitude_ft(5000.0, efis::standard_pressure_hpa) == 5000.0,
+            "the standard setting must return the value exactly, not approximately");
+
+    // Regolazione piu' alta della standard: l'altimetro indica di piu'. E' il
+    // verso giusto, e sbagliarlo darebbe un errore che cresce proprio quando la
+    // pressione si allontana dalla standard.
+    const double high = efis::indicated_altitude_ft(5000.0, 1030.0);
+    const double low = efis::indicated_altitude_ft(5000.0, 1000.0);
+    require(high > 5000.0, "a setting above standard must indicate a higher altitude");
+    require(low < 5000.0, "a setting below standard must indicate a lower altitude");
+
+    // Vicino al livello del mare la regola pratica dei ventisette piedi per
+    // ettopascal deve essere rispettata a meno di poco: se non lo fosse,
+    // sarebbe la formula a essere sbagliata, non la regola.
+    const double per_hpa = efis::indicated_altitude_ft(0.0, efis::standard_pressure_hpa + 1.0);
+    require(per_hpa > 26.0 && per_hpa < 29.0,
+            "near sea level one hectopascal must be worth about twenty seven feet");
+
+    // Andata e ritorno: la conversione inversa deve riportare al punto di
+    // partenza. E' cio' che garantisce che le due formule descrivano la stessa
+    // atmosfera.
+    const double pressure_at_8000 = efis::pressure_from_altitude_hpa(8000.0);
+    require(close_to(efis::altitude_from_pressure_ft(pressure_at_8000,
+                                                     efis::standard_pressure_hpa),
+                     8000.0, 1e-4),
+            "converting altitude to pressure and back must return the same altitude");
+    require(pressure_at_8000 < efis::standard_pressure_hpa,
+            "pressure must fall with altitude");
+
+    // Conversione fra le due unita' della finestra di Kollsman.
+    require(close_to(efis::inches_to_hectopascal(29.92), 1013.2, 0.1),
+            "29.92 inches of mercury is the standard setting in hectopascals");
+    require(close_to(efis::hectopascal_to_inches(efis::inches_to_hectopascal(30.12)), 30.12),
+            "the unit conversion must be reversible");
+
+    // Una regolazione implausibile non e' una pressione: e' un errore di
+    // inserimento.
+    require(!efis::is_plausible_setting(0.0), "zero is not an altimeter setting");
+    require(!efis::is_plausible_setting(2992.0),
+            "inches typed into a hectopascal field must be rejected, not applied");
+    require(efis::is_plausible_setting(1013.25), "the standard setting is plausible");
+    require(efis::is_plausible_setting(950.0), "a deep depression is still plausible");
+
 
     std::cout << "All EFIS instrument tests passed\n";
 }

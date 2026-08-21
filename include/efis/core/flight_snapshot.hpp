@@ -15,8 +15,23 @@ struct AttitudeState final {
 
 struct AirDataState final {
     Sample<double> indicated_airspeed_kt;
+
+    // Quota con la regolazione standard: quella che finisce nella black box e
+    // che si confronta fra voli diversi.
     Sample<double> pressure_altitude_ft;
+
     Sample<double> vertical_speed_fpm;
+
+    // Regolazione impostata dal pilota sull'altimetro, in ettopascal. Non e'
+    // una misura: la sua provenienza e' SourceId::pilot_setting, e finche' il
+    // pilota non la tocca vale la standard con provenienza sconosciuta. La
+    // distinzione permette di sapere, rileggendo un volo, se la regolazione era
+    // scelta o soltanto ereditata.
+    Sample<double> baro_setting_hpa;
+
+    // Quota che l'altimetro indica con quella regolazione. Coincide con la
+    // quota di pressione solo quando la regolazione e' quella standard.
+    Sample<double> indicated_altitude_ft;
 };
 
 struct PositionState final {

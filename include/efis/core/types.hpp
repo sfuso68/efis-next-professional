@@ -15,7 +15,13 @@ enum class SourceId : std::uint16_t {
     esp32_legacy,
     dlvr_legacy,
     nav_rf,
-    nav_synthetic
+    nav_synthetic,
+    // Valore inserito dal pilota, non misurato da alcun sensore. La
+    // provenienza va distinta perche' un dato inserito non invecchia come una
+    // misura e non ha qualita' del segnale, ma puo' essere sbagliato: la
+    // regolazione barometrica errata e' una causa classica di quota errata.
+    // Aggiunta in coda: gli identificativi gia' registrati non si spostano.
+    pilot_setting
 };
 
 enum class Quality : std::uint8_t { unknown, poor, nominal, high };
@@ -80,6 +86,11 @@ enum class SignalId : std::uint16_t {
     // dell'elemento, che serve a compensarla.
     differential_pressure,
     air_data_temperature,
+    // Regolazione impostata sull'altimetro, e quota che ne risulta. Restano due
+    // segnali distinti dalla quota di pressione: registrare solo quest'ultima
+    // renderebbe incomparabili due voli condotti con regolazioni diverse.
+    baro_setting,
+    indicated_altitude,
 
     // Posizione
     latitude = 300,
@@ -182,6 +193,8 @@ enum class Unit : std::uint8_t {
         case SignalId::vertical_speed: return "vertical_speed";
         case SignalId::differential_pressure: return "differential_pressure";
         case SignalId::air_data_temperature: return "air_data_temperature";
+        case SignalId::baro_setting: return "baro_setting";
+        case SignalId::indicated_altitude: return "indicated_altitude";
         case SignalId::latitude: return "latitude";
         case SignalId::longitude: return "longitude";
         case SignalId::ground_speed: return "ground_speed";
