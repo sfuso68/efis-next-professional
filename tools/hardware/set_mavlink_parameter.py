@@ -257,4 +257,10 @@ def main() -> int:
 
 if __name__ == "__main__":
     os.environ.setdefault("MAVLINK20", "1")
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except ParameterError as failure:
+        # Un errore di protocollo e' una condizione prevista, non un difetto
+        # dello strumento: va detto in una riga, non con una traccia di stack che
+        # nasconde il fatto che nulla e' stato scritto.
+        raise SystemExit(f"errore: {failure}")

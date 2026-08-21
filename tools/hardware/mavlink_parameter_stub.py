@@ -50,7 +50,7 @@ DEFAULT_PARAMETERS = {
     "ARMING_CHECK": (1.0, dialect.MAV_PARAM_TYPE_INT32),
     "BRD_SAFETY_DEFLT": (1.0, dialect.MAV_PARAM_TYPE_INT8),
     # Parametro senza alcun ruolo operativo, pensato per le prove di scrittura.
-    "SCRIPTING_HEAP_SIZE": (102400.0, dialect.MAV_PARAM_TYPE_INT32),
+    "SCR_HEAP_SIZE": (102400.0, dialect.MAV_PARAM_TYPE_INT32),
 }
 
 
