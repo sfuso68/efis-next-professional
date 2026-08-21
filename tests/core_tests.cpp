@@ -1,5 +1,6 @@
 #include "efis/core/flight_model.hpp"
 #include "efis/core/source_arbitrator.hpp"
+#include "efis/core/node_health.hpp"
 #include "efis/providers/simulation_provider.hpp"
 #include "efis/providers/engine_simulation_provider.hpp"
 #include "efis/recording/snapshot_recorder.hpp"
@@ -297,6 +298,95 @@ int main() {
             "unit symbols must stay stable for recorded data");
     require(efis::sample_schema_version == 2,
             "sample schema version must match Display Data Protocol V2");
+
+    // --- Salute dei nodi, paragrafi 6 e 17.1 dell'handoff --------------------
+    //
+    // Un nodo dichiarato e mai sentito non e' un nodo perduto. Confondere le due
+    // condizioni in una sola spia toglie al pilota l'informazione che serve:
+    // "mai sentito" indica cablaggio assente o nodo spento, "perso" indica un
+    // guasto sopravvenuto.
+    efis::NodeHealthMonitor monitor{{.stale_after = 1000ms, .lost_after = 3000ms}};
+    constexpr efis::NodeId engine_node = 21;
+    constexpr efis::NodeId absent_node = 99;
+    monitor.declare(engine_node);
+    monitor.declare(absent_node);
+    require(monitor.status(engine_node)->state == efis::NodeState::unknown,
+            "a declared node must start as unknown, never as online");
+    require(!monitor.all_online(),
+            "a node never heard from must prevent an all-online verdict");
+
+    require(monitor.update(epoch + 10s).empty(),
+            "a node never heard from must not be reported as lost");
+    require(monitor.status(absent_node)->state == efis::NodeState::unknown,
+            "silence cannot lose what was never present");
+
+    require(monitor.heartbeat(engine_node, epoch + 1s, 1) ==
+                efis::HeartbeatVerdict::accepted,
+            "the first heartbeat must be accepted");
+    require(monitor.status(engine_node)->state == efis::NodeState::online,
+            "a node that has just reported must be online");
+
+    // Un battito scartato non deve rinviare il timeout. Un nodo bloccato che
+    // ripete all'infinito lo stesso messaggio deve invecchiare come un nodo
+    // muto: e' il motivo per cui contare i battiti non basta e serve la
+    // sequenza.
+    require(monitor.heartbeat(engine_node, epoch + 2s, 1) ==
+                efis::HeartbeatVerdict::duplicate,
+            "a repeated sequence must be recognised as a duplicate");
+    require(monitor.heartbeat(engine_node, epoch + 2s, 0) ==
+                efis::HeartbeatVerdict::regressed,
+            "a sequence going backwards must be recognised as a regression");
+    require(!efis::accepts_data(efis::HeartbeatVerdict::duplicate),
+            "duplicated frames must not be used as data");
+    require(!efis::accepts_data(efis::HeartbeatVerdict::regressed),
+            "regressed frames must not be used as data");
+    require(monitor.status(engine_node)->last_accepted == epoch + 1s,
+            "a discarded heartbeat must not refresh the timeout");
+
+    const auto stale_changes = monitor.update(epoch + 2500ms);
+    require(stale_changes.size() == 1, "only the silent node must change state");
+    require(stale_changes.front().node == engine_node &&
+                stale_changes.front().previous == efis::NodeState::online &&
+                stale_changes.front().current == efis::NodeState::stale,
+            "a stuck node repeating its last frame must still go stale");
+    require(!efis::is_usable(efis::NodeState::stale),
+            "data from a stale node must not be treated as usable");
+
+    const auto lost_changes = monitor.update(epoch + 5s);
+    require(lost_changes.size() == 1 &&
+                lost_changes.front().current == efis::NodeState::lost,
+            "continued silence must escalate from stale to lost");
+    require(monitor.update(epoch + 6s).empty(),
+            "a state that has not changed must not emit a repeated event");
+
+    // Il ritorno di un nodo e' un evento quanto la sua perdita: la black box
+    // deve poter ricostruire l'intera sequenza.
+    require(monitor.heartbeat(engine_node, epoch + 7s, 2) ==
+                efis::HeartbeatVerdict::accepted,
+            "a returning node must be accepted again");
+    require(monitor.status(engine_node)->state == efis::NodeState::online,
+            "a returning node must come back online immediately");
+    require(monitor.update(epoch + 7s).empty(),
+            "the recovery is already recorded by the accepted heartbeat");
+
+    // I salti di sequenza misurano i messaggi persi, non gli episodi.
+    require(monitor.heartbeat(engine_node, epoch + 8s, 6) ==
+                efis::HeartbeatVerdict::accepted_after_gap,
+            "a sequence jump must be accepted but reported as a gap");
+    require(monitor.status(engine_node)->missed == 3,
+            "the gap must count the messages actually missing");
+    require(efis::accepts_data(efis::HeartbeatVerdict::accepted_after_gap),
+            "data after a gap is still usable, the loss is only recorded");
+
+    // Un nodo che si presenta senza essere stato dichiarato va comunque
+    // seguito: e' un'anomalia da mostrare, non da sopprimere.
+    efis::NodeHealthMonitor discovery{};
+    require(discovery.heartbeat(77, epoch + 1s, 1) == efis::HeartbeatVerdict::accepted,
+            "an undeclared node appearing on the bus must be tracked");
+    require(discovery.status(77).has_value(),
+            "an undeclared node must become visible, not be ignored");
+    require(std::string{efis::node_state_name(efis::NodeState::lost)} == "LOST",
+            "node state names must stay stable for recorded data");
 
     std::cout << "All EFIS core tests passed\n";
 }

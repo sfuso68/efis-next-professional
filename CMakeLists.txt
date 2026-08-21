@@ -12,6 +12,7 @@ option(EFIS_REQUIRE_QT_RENDERER "Fail configuration if the Qt Quick PFD cannot b
 add_library(efis_core
     src/core/alert_engine.cpp
     src/core/flight_model.cpp
+    src/core/node_health.cpp
     src/recording/snapshot_recorder.cpp
     src/recording/segmented_recorder.cpp
     src/recording/recorder_status.cpp
