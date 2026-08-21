@@ -8,8 +8,14 @@
 #include "efis/core/cross_check.hpp"
 #include "efis/core/stasis_monitor.hpp"
 #include "efis/core/flight_model.hpp"
+#include "efis/providers/mavlink_adapter.hpp"
 
 #include <chrono>
+#include <cmath>
+#include <vector>
+#include <span>
+#include <cstring>
+#include <array>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -582,6 +588,247 @@ int main() {
     require(std::string{efis::signal_name(efis::SignalId::gnss_vertical_speed)} ==
                 "gnss_vertical_speed",
             "the new signal name must stay stable for recorded data");
+
+
+    // --- Autodiagnosi dell'autopilota -----------------------------------------
+    //
+    // ArduPilot confronta gia' fra loro le proprie sorgenti e pubblica il
+    // risultato. E' il confronto incrociato piu' economico che abbiamo, e finora
+    // veniva decodificato e buttato.
+
+    // Costruttore di frame MAVLink 2. Il checksum e' quello che impone il
+    // protocollo, non uno scelto qui: se il CRC_EXTRA della tabella fosse
+    // sbagliato questi frame verrebbero rifiutati e la prova fallirebbe.
+    auto crc_of = [](std::vector<std::uint8_t> body, std::uint8_t extra) {
+        std::uint16_t crc = 0xFFFF;
+        body.push_back(extra);
+        for (std::uint8_t byte : body) {
+            auto tmp = static_cast<std::uint8_t>(byte ^ static_cast<std::uint8_t>(crc & 0xFF));
+            tmp = static_cast<std::uint8_t>(tmp ^ static_cast<std::uint8_t>(tmp << 4));
+            crc = static_cast<std::uint16_t>((crc >> 8) ^ (static_cast<std::uint16_t>(tmp) << 8) ^
+                                             (static_cast<std::uint16_t>(tmp) << 3) ^
+                                             (static_cast<std::uint16_t>(tmp) >> 4));
+        }
+        return crc;
+    };
+    auto frame_of = [&crc_of](std::uint32_t id, const std::vector<std::uint8_t>& payload) {
+        const auto* definition = efis::mavlink::find_message(id);
+        require(definition != nullptr, "the message must be in the generated table");
+        std::vector<std::uint8_t> body{
+            static_cast<std::uint8_t>(payload.size()), 0, 0, 1, 1, 1,
+            static_cast<std::uint8_t>(id & 0xFF),
+            static_cast<std::uint8_t>((id >> 8) & 0xFF),
+            static_cast<std::uint8_t>((id >> 16) & 0xFF)};
+        body.insert(body.end(), payload.begin(), payload.end());
+        const std::uint16_t crc = crc_of(body, definition->crc_extra);
+        std::vector<std::uint8_t> frame{0xFD};
+        frame.insert(frame.end(), body.begin(), body.end());
+        frame.push_back(static_cast<std::uint8_t>(crc & 0xFF));
+        frame.push_back(static_cast<std::uint8_t>(crc >> 8));
+        return frame;
+    };
+    auto little_endian_u32 = [](std::uint32_t value) {
+        return std::vector<std::uint8_t>{
+            static_cast<std::uint8_t>(value & 0xFF),
+            static_cast<std::uint8_t>((value >> 8) & 0xFF),
+            static_cast<std::uint8_t>((value >> 16) & 0xFF),
+            static_cast<std::uint8_t>((value >> 24) & 0xFF)};
+    };
+
+    // EKF_STATUS_REPORT sul filo: cinque float di varianza, poi i flag a 16 bit,
+    // poi la varianza sulla velocita' vera dell'aria, che e' un campo di
+    // estensione. Un trasmettitore che non la conosce si ferma prima, e in quel
+    // caso il valore e' assente, non nullo.
+    auto ekf_frame = [&](std::uint16_t flags, float airspeed_variance,
+                         bool with_extension = true) {
+        auto append_float = [&](std::vector<std::uint8_t>& into, float value) {
+            std::uint32_t bits{};
+            std::memcpy(&bits, &value, sizeof(bits));
+            const auto encoded = little_endian_u32(bits);
+            into.insert(into.end(), encoded.begin(), encoded.end());
+        };
+        std::vector<std::uint8_t> payload;
+        for (const float value : {0.2F, 0.3F, 0.1F, 0.05F, 0.02F}) {
+            append_float(payload, value);
+        }
+        payload.push_back(static_cast<std::uint8_t>(flags & 0xFF));
+        payload.push_back(static_cast<std::uint8_t>((flags >> 8) & 0xFF));
+        if (with_extension) append_float(payload, airspeed_variance);
+        return frame_of(193, payload);
+    };
+
+    constexpr std::uint16_t ekf_attitude = 1;
+    constexpr std::uint16_t ekf_velocity_horizontal = 2;
+    constexpr std::uint16_t ekf_velocity_vertical = 4;
+    constexpr std::uint16_t ekf_position_horizontal = 16;
+    constexpr std::uint16_t ekf_constant_position = 128;
+    constexpr std::uint16_t ekf_uninitialised = 1024;
+    constexpr std::uint16_t ekf_healthy = ekf_attitude | ekf_velocity_horizontal |
+                                          ekf_velocity_vertical | ekf_position_horizontal;
+
+    // Filtro sano: i bit vengono letti e nulla viene degradato.
+    {
+        efis::MavlinkAdapter adapter;
+        const auto healthy = ekf_frame(ekf_healthy, 0.4F);
+        adapter.consume(std::span<const std::uint8_t>{healthy.data(), healthy.size()}, epoch);
+        const auto& estimator = adapter.estimator();
+        require(estimator.reported, "the autopilot self report must be recorded");
+        require(estimator.attitude_healthy, "a set attitude bit means a healthy estimate");
+        require(estimator.vertical_velocity_healthy,
+                "a set vertical velocity bit means a healthy estimate");
+        require(!estimator.uninitialised, "a healthy filter is not uninitialised");
+        require(!estimator.dead_reckoning, "a healthy filter is not dead reckoning");
+        require(std::abs(estimator.airspeed_variance - 0.4) < 1e-5,
+                "the airspeed variance is the autopilot judgement on the air sensor");
+        require(std::abs(estimator.velocity_variance - 0.2) < 1e-5,
+                "the recorded variances must decode from their own offsets");
+    }
+
+    // Trasmettitore che non conosce il campo di estensione: la varianza sulla
+    // velocita' dell'aria resta quella di prima invece di essere azzerata. Un
+    // campo non trasmesso e' assente, e sovrascriverlo con zero significherebbe
+    // dichiarare che l'autopilota giudica perfetto un sensore su cui non si e'
+    // pronunciato.
+    {
+        efis::MavlinkAdapter adapter;
+        const auto complete = ekf_frame(ekf_healthy, 0.7F);
+        adapter.consume(std::span<const std::uint8_t>{complete.data(), complete.size()},
+                        epoch);
+        require(std::abs(adapter.estimator().airspeed_variance - 0.7) < 1e-5,
+                "the extension must decode when transmitted");
+
+        const auto truncated = ekf_frame(ekf_healthy, 0.0F, false);
+        adapter.consume(std::span<const std::uint8_t>{truncated.data(), truncated.size()},
+                        epoch + 1s);
+        require(std::abs(adapter.estimator().airspeed_variance - 0.7) < 1e-5,
+                "an untransmitted extension must not overwrite what was known");
+    }
+
+    // Un adapter che non ha mai ricevuto il rapporto non e' sano: non si sa.
+    {
+        efis::MavlinkAdapter silent;
+        require(!silent.estimator().reported,
+                "never having heard is not the same as being healthy");
+    }
+
+    // Assetto dichiarato non sano: il valore resta mostrato e viene marcato
+    // degradato. Toglierlo al pilota nel momento in cui gli serve sarebbe peggio
+    // che mostrarglielo dichiarando che non e' affidabile.
+    {
+        efis::MavlinkAdapter adapter;
+        const auto attitude = frame_of(30, std::vector<std::uint8_t>(28, 0));
+        adapter.consume(std::span<const std::uint8_t>{attitude.data(), attitude.size()}, epoch);
+        require(adapter.snapshot().attitude.roll_deg.validity == efis::Validity::valid,
+                "without a report the attitude keeps the validity it had");
+
+        const auto degraded = ekf_frame(
+            static_cast<std::uint16_t>(ekf_healthy & ~ekf_attitude), 0.4F);
+        adapter.consume(std::span<const std::uint8_t>{degraded.data(), degraded.size()},
+                        epoch + 1s);
+        require(adapter.snapshot().attitude.roll_deg.validity == efis::Validity::degraded,
+                "an attitude the autopilot calls unhealthy must be marked degraded");
+        require(adapter.snapshot().attitude.roll_deg.usable(),
+                "degraded is still shown: it is not the same as absent");
+    }
+
+    // Filtro non inizializzato: qui una stima non esiste affatto, e mostrarla
+    // sarebbe mostrare un numero senza contenuto.
+    {
+        efis::MavlinkAdapter adapter;
+        const auto attitude = frame_of(30, std::vector<std::uint8_t>(28, 0));
+        adapter.consume(std::span<const std::uint8_t>{attitude.data(), attitude.size()}, epoch);
+        const auto blank = ekf_frame(ekf_uninitialised, 0.0F);
+        adapter.consume(std::span<const std::uint8_t>{blank.data(), blank.size()}, epoch + 1s);
+        require(adapter.estimator().uninitialised, "the uninitialised bit must be read");
+        // Degradato e non assente. I bit descrivono lo stato dell'EKF, non quello
+        // del messaggio di assetto, che ArduPilot pubblica comunque ricavandolo
+        // altrimenti: dedurne che l'assetto non esista sarebbe un'affermazione
+        // sugli interni dell'autopilota che qui non e' verificata.
+        require(adapter.snapshot().attitude.roll_deg.validity == efis::Validity::degraded,
+                "an uninitialised filter makes the attitude uncertain, not absent");
+        require(adapter.snapshot().attitude.roll_deg.usable(),
+                "an uncertain attitude is still shown to the pilot");
+    }
+
+    // Navigazione a stima: il fix resta dichiarato valido mentre la posizione
+    // non descrive piu' dove si trova l'aeromobile. Il bit e' l'unica notizia
+    // che lo rivela.
+    {
+        efis::MavlinkAdapter adapter;
+        std::vector<std::uint8_t> gps(30, 0);
+        // Offset presi dalla tabella generata, non indovinati: in GPS_RAW_INT
+        // l'ordine di filo mette i campi grandi per primi, e fix_type finisce
+        // in fondo alla parte base.
+        gps[28] = 3;   // fix_type tridimensionale
+        gps[29] = 12;  // satelliti visibili
+        const auto fix = frame_of(24, gps);
+        adapter.consume(std::span<const std::uint8_t>{fix.data(), fix.size()}, epoch);
+        require(adapter.snapshot().position.latitude_deg.validity == efis::Validity::valid,
+                "a three dimensional fix makes the position valid");
+
+        const auto reckoning = ekf_frame(
+            static_cast<std::uint16_t>(ekf_healthy | ekf_constant_position), 0.4F);
+        adapter.consume(std::span<const std::uint8_t>{reckoning.data(), reckoning.size()},
+                        epoch + 1s);
+        require(adapter.estimator().dead_reckoning, "the constant position bit must be read");
+        require(adapter.snapshot().position.latitude_deg.validity ==
+                    efis::Validity::degraded,
+                "a position held by dead reckoning must not stay plainly valid");
+    }
+
+    // Vibrazioni: conta la crescita dei contatori di saturazione, non il fatto
+    // che in passato l'aeromobile abbia vibrato.
+    {
+        efis::MavlinkAdapter adapter;
+        auto vibration_frame = [&](std::uint32_t clipping) {
+            std::vector<std::uint8_t> payload(8, 0);  // time_usec
+            for (int axis = 0; axis < 3; ++axis) {
+                const float value = 12.5F;
+                std::uint32_t bits{};
+                std::memcpy(&bits, &value, sizeof(bits));
+                const auto encoded = little_endian_u32(bits);
+                payload.insert(payload.end(), encoded.begin(), encoded.end());
+            }
+            for (int counter = 0; counter < 3; ++counter) {
+                const auto encoded = little_endian_u32(clipping);
+                payload.insert(payload.end(), encoded.begin(), encoded.end());
+            }
+            return frame_of(241, payload);
+        };
+
+        const auto first = vibration_frame(4);
+        adapter.consume(std::span<const std::uint8_t>{first.data(), first.size()}, epoch);
+        require(adapter.vibration().reported, "the vibration report must be recorded");
+        require(!adapter.vibration().clipping_increasing,
+                "the first report establishes the baseline, it is not growth");
+        require(std::abs(adapter.vibration().z_axis - 12.5) < 1e-5,
+                "the vibration level must decode");
+
+        const auto same = vibration_frame(4);
+        adapter.consume(std::span<const std::uint8_t>{same.data(), same.size()}, epoch + 1s);
+        require(!adapter.vibration().clipping_increasing,
+                "a counter that stays put is past saturation, not present saturation");
+
+        const auto grown = vibration_frame(9);
+        adapter.consume(std::span<const std::uint8_t>{grown.data(), grown.size()}, epoch + 2s);
+        require(adapter.vibration().clipping_increasing,
+                "a growing counter means the accelerometer is saturating now");
+        require(adapter.vibration().clipping_0 == 9, "the counter value must be kept");
+    }
+
+    // Un campo degradato viene contato nella salute e detto negli allarmi: un
+    // valore che si vede e non si sa quanto valga e' peggio di uno che si vede
+    // sapendo che e' incerto.
+    {
+        efis::FlightModel model{};
+        auto snapshot = cruising(epoch, 95.0, 5500.0, 2.0, 100.0);
+        snapshot.attitude.roll_deg.validity = efis::Validity::degraded;
+        const auto normalised = model.normalize(snapshot, epoch);
+        require(normalised.health.degraded_fields == 1,
+                "a degraded field must be counted in the system health");
+        require(has_alert(normalised, "DATA_DEGRADED"),
+                "a degraded field must reach the alert list");
+    }
 
     std::cout << "All EFIS safety tests passed\n";
 }

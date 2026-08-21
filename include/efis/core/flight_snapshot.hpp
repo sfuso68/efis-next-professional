@@ -73,6 +73,12 @@ struct SystemHealth final {
     // Campi marcati in disaccordo dal confronto fra catene indipendenti.
     std::uint32_t disagreeing_fields{};
 
+    // Campi che l'autopilota, o un'altra sorgente, dichiara di qualita' ridotta.
+    // Continuano a essere mostrati: degradato non e' assente, ed e' proprio la
+    // distinzione che permette di non togliere al pilota un valore che potrebbe
+    // essergli ancora utile.
+    std::uint32_t degraded_fields{};
+
     // Grandezza ferma da segnalare per prima. Una spia che dice soltanto "un
     // dato e' fermo" costringe il pilota a cercare quale, nel momento in cui ha
     // meno tempo per farlo.

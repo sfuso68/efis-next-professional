@@ -31,6 +31,9 @@ void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
     if (sample.validity == Validity::stale) {
         ++health.stale_fields;
     }
+    if (sample.validity == Validity::degraded) {
+        ++health.degraded_fields;
+    }
 }
 
 }  // namespace
