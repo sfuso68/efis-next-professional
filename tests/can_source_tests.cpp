@@ -11,6 +11,9 @@
 #include "efis/providers/esp32_can_adapter.hpp"
 
 #include <chrono>
+#include <fstream>
+#include <filesystem>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -147,6 +150,69 @@ int main() {
 
         std::vector<efis::can::Frame> buffer(4);
         require(source.read(buffer) == 0, "a closed source reads nothing");
+    }
+
+    // --- Una registrazione vera, presa da vcan0 -------------------------------
+    //
+    // Le prove qui sopra usano righe scritte nel test: dimostrano che il parser
+    // fa quello che ci aspettiamo. Questa usa una registrazione acquisita da un
+    // vcan0 vero il 21 agosto 2026, e dimostra una cosa diversa: che il parser
+    // regge cio' che candump produce davvero, con i suoi tempi, la sua
+    // spaziatura e le sue lunghezze variabili.
+    //
+    // Gli identificativi appartengono a ENGINE_CAN_V1, protocollo poi ritirato
+    // in favore di ESP32_CAN_V1. La registrazione resta valida lo stesso, perche'
+    // qui non si interpreta il significato dei frame ma il formato del testo: e'
+    // la ragione per cui e' stata tenuta invece di essere buttata con il resto
+    // di quello stack.
+    {
+        const std::filesystem::path recorded =
+            std::filesystem::path{EFIS_TEST_DATA_DIR} / "can" /
+            "engine-can-v1-vcan0-20260821.log";
+        require(std::filesystem::exists(recorded),
+                "the recovered vcan0 recording must be available to the tests");
+
+        std::ifstream file{recorded};
+        const auto parsed = efis::io::parse_candump(file);
+
+        require(parsed.frames.size() == 33,
+                "every line of the real recording must yield a frame");
+        require(parsed.malformed_lines == 0,
+                "a recording taken from candump must contain no unreadable line");
+        require(parsed.error_frames == 0 && parsed.remote_frames == 0,
+                "this recording carries only data frames");
+
+        // Lunghezze diverse nella stessa registrazione: e' il caso che una riga
+        // scritta a mano tende a non coprire, perche' si scrive sempre otto.
+        std::size_t shortest = 8;
+        std::size_t longest = 0;
+        for (const auto& frame : parsed.frames) {
+            shortest = std::min<std::size_t>(shortest, frame.length);
+            longest = std::max<std::size_t>(longest, frame.length);
+        }
+        require(shortest == 5 && longest == 8,
+                "the real recording must exercise payloads from five to eight bytes");
+
+        // Identificativi a tre cifre, letti in esadecimale: 0x601 e non 601.
+        std::size_t on_601 = 0;
+        for (const auto& frame : parsed.frames) {
+            if (frame.id == 0x601U) ++on_601;
+        }
+        require(on_601 == 20,
+                "the identifier must be read as hexadecimal, on real data too");
+
+        // La stessa registrazione riletta due volte deve dare gli stessi frame:
+        // senza questo il replay non e' un banco.
+        efis::io::RecordedCanSource source{parsed.frames};
+        std::vector<efis::can::Frame> first(64);
+        const auto read_first = source.read(first);
+        source.rewind();
+        std::vector<efis::can::Frame> second(64);
+        const auto read_second = source.read(second);
+        require(read_first == read_second && read_first == parsed.frames.size(),
+                "replaying the recording must deliver the same number of frames");
+        require(first[0].id == second[0].id && first[0].length == second[0].length,
+                "and the same frames, in the same order");
     }
 
     std::cout << "All EFIS CAN transport tests passed\n";
