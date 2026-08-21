@@ -28,6 +28,8 @@ add_library(efis_core
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
     src/providers/esp32_can_adapter.cpp
+    src/io/can_source.cpp
+    src/io/socketcan_source.cpp
     src/ingest/mavlink_pipeline.cpp
     src/ingest/recording_session.cpp
     src/io/byte_source.cpp
@@ -44,6 +46,9 @@ endif()
 
 add_executable(efis-core src/apps/efis_core_main.cpp)
 target_link_libraries(efis-core PRIVATE efis_core)
+
+add_executable(efis-can-monitor src/apps/efis_can_monitor_main.cpp)
+target_link_libraries(efis-can-monitor PRIVATE efis_core)
 
 add_executable(efis-recorder src/apps/efis_recorder_main.cpp)
 target_link_libraries(efis-recorder PRIVATE efis_core)
@@ -187,6 +192,10 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_esp32_tests tests/esp32_tests.cpp)
     target_link_libraries(efis_esp32_tests PRIVATE efis_core)
     add_test(NAME efis_esp32_tests COMMAND efis_esp32_tests)
+
+    add_executable(efis_can_source_tests tests/can_source_tests.cpp)
+    target_link_libraries(efis_can_source_tests PRIVATE efis_core)
+    add_test(NAME efis_can_source_tests COMMAND efis_can_source_tests)
 
     # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
     # sorgente fornisce una grandezza, non quanto vale. Un guasto qui non sposta
