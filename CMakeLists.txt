@@ -166,15 +166,16 @@ if(EFIS_BUILD_TESTS)
     # Le protezioni contro il dato plausibile ma falso hanno un eseguibile
     # proprio: verificano una categoria diversa dal calcolo, e tenerle separate
     # fa vedere subito quale delle due e' caduta.
-    # L'arbitrato ha un eseguibile proprio: verifica quale sorgente fornisce una
-    # grandezza, non quanto vale, ed e' una categoria di guasto diversa.
+    add_executable(efis_safety_tests tests/safety_tests.cpp)
+    target_link_libraries(efis_safety_tests PRIVATE efis_core)
+    add_test(NAME efis_safety_tests COMMAND efis_safety_tests)
+
+    # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
+    # sorgente fornisce una grandezza, non quanto vale. Un guasto qui non sposta
+    # un numero, cambia chi lo dice.
     add_executable(efis_arbitration_tests tests/arbitration_tests.cpp)
     target_link_libraries(efis_arbitration_tests PRIVATE efis_core)
     target_compile_definitions(efis_arbitration_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_arbitration_tests COMMAND efis_arbitration_tests)
-
-    add_executable(efis_safety_tests tests/safety_tests.cpp)
-    target_link_libraries(efis_safety_tests PRIVATE efis_core)
-    add_test(NAME efis_safety_tests COMMAND efis_safety_tests)
 endif()
