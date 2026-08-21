@@ -9,19 +9,28 @@ Item {
     Rectangle { anchors.fill: parent; color: theme.background }
     CommandRail { id: rail; anchors { left: parent.left; right: parent.right; top: parent.top } height: 54*root.uiScale; uiScale: root.uiScale
         viewName: "EMS • ENGINE SYSTEMS"; healthLevel: controller.engineHealth
-        alertText: controller.engineFaultMode === "NONE" ? "ENGINE NORMAL" : controller.engineFaultMode; alertSeverity: controller.engineHealth
-        flightDirectorActive: false; selectedAltitude: 0; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
+        alertText: controller.engineDataState === "FAIL" ? "NO ENGINE DATA" : controller.engineFaultMode === "NONE" ? "ENGINE NORMAL" : controller.engineFaultMode; alertSeverity: controller.engineHealth
+        flightDirectorActive: false; selectedAltitude: 0; dataSourceState: controller.dataSourceState; sensorNodeState: controller.sensorNodeState; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
     Item { id: content; anchors { left: parent.left; right: parent.right; top: rail.bottom; bottom: footer.top; margins: 7*root.uiScale } }
 
     Rectangle { id: gaugesPanel; anchors { left: content.left; right: alerts.left; top: content.top; rightMargin: 7*root.uiScale }
         height: 174*root.uiScale; radius: 4*root.uiScale; color: "#CA08131C"; border.color: theme.borderBright
-        Text { x: 10*root.uiScale; y: 6*root.uiScale; text: "PRIMARY ENGINE INSTRUMENTS • SIM"; color: theme.cyan; font.pixelSize: 8*root.uiScale; font.bold: true }
+        Text { x: 10*root.uiScale; y: 6*root.uiScale; text: "PRIMARY ENGINE INSTRUMENTS • " + controller.engineDataState; color: theme.cyan; font.pixelSize: 8*root.uiScale; font.bold: true }
         Row { anchors { fill: parent; margins: 8*root.uiScale; topMargin: 24*root.uiScale } spacing: 5*root.uiScale
             Repeater { model: [
                 {n:"RPM",v:controller.engineRpm,u:"RPM",min:0,max:3000,gs:800,ge:2600,d:0},
                 {n:"MANIFOLD",v:controller.manifoldPressure,u:"IN HG",min:10,max:35,gs:15,ge:29,d:1},
                 {n:"FUEL FLOW",v:controller.fuelFlow,u:"GPH",min:0,max:20,gs:4,ge:16,d:1},
-                {n:"OIL TEMP",v:controller.oilTemperature,u:"°F",min:80,max:260,gs:140,ge:220,d:0},
+                // In °C: e' cio' che il valore e' sempre stato. oilTemperature
+                // espone EngineSnapshot::oil_temperature_c, il profilo aeromobile
+                // dichiara units.temperature "C" e il Setup Center gradua gia'
+                // OIL TEMP MAX in °C. La scala in °F metteva 94 gradi centigradi
+                // su un arco Fahrenheit: lancetta a fondo scala sinistro, cioe'
+                // motore gelido, con il motore a temperatura normale.
+                // I limiti sono la conversione di quelli che c'erano (80/140/220/260 °F)
+                // arrotondata, non limiti nuovi: quelli veri per il Rotax 912 ULS
+                // del profilo vanno presi dal manuale e messi nel profilo stesso.
+                {n:"OIL TEMP",v:controller.oilTemperature,u:"°C",min:20,max:130,gs:60,ge:105,d:0},
                 {n:"OIL PRESS",v:controller.oilPressure,u:"PSI",min:0,max:100,gs:50,ge:90,d:0}
             ]; delegate: Rectangle { required property var modelData; width: 144*root.uiScale; height: parent.height; radius: 4*root.uiScale; color: "#A9050D14"; border.color: "#354F5D"
                     ProfessionalCircularGauge { anchors { fill: parent; margins: 5*root.uiScale } uiScale: root.uiScale*1.35; label: modelData.n; value: modelData.v; unit: modelData.u
@@ -34,7 +43,7 @@ Item {
         Text { x: 10*root.uiScale; y: 27*root.uiScale; text: controller.engineHealth === 0 ? "NORMAL" : controller.engineHealth === 1 ? "CAUTION" : "WARNING"; color: root.healthColor; font.pixelSize: 25*root.uiScale; font.bold: true }
         Rectangle { x: 10*root.uiScale; y: 61*root.uiScale; width: parent.width-20*root.uiScale; height: 1; color: theme.border }
         Text { x: 10*root.uiScale; y: 73*root.uiScale; text: "ACTIVE MESSAGE"; color: theme.secondary; font.pixelSize: 7*root.uiScale; font.bold: true }
-        Text { x: 10*root.uiScale; y: 91*root.uiScale; width: parent.width-20*root.uiScale; elide: Text.ElideRight; text: controller.engineFaultMode === "NONE" ? "NO ACTIVE ENGINE ALERTS" : controller.engineFaultMode; color: root.healthColor; font.pixelSize: 11*root.uiScale; font.bold: true }
+        Text { x: 10*root.uiScale; y: 91*root.uiScale; width: parent.width-20*root.uiScale; elide: Text.ElideRight; text: controller.engineDataState === "FAIL" ? "NO CHANNEL IS MEASURING" : controller.engineFaultMode === "NONE" ? "NO ACTIVE ENGINE ALERTS" : controller.engineFaultMode; color: root.healthColor; font.pixelSize: 11*root.uiScale; font.bold: true }
         Rectangle { x: 10*root.uiScale; y: 121*root.uiScale; width: parent.width-20*root.uiScale; height: 38*root.uiScale; color: "#9A0C1A24"; border.color: theme.borderBright
             Text { anchors.centerIn: parent; text: "SIMULATE NEXT FAULT"; color: theme.cyan; font.pixelSize: 8*root.uiScale; font.bold: true }
             MouseArea { anchors.fill: parent; onClicked: controller.cycleEngineFault() } }

@@ -12,6 +12,23 @@ Rectangle {
     property string blackBoxState: "OFFLINE"
     property real blackBoxRecords: 0
 
+    // Stato del dato e del nodo sensori. Erano scritti a mano nel modello qui
+    // sotto: adesso arrivano dallo stato reale, nel vocabolario obbligatorio
+    // della specifica PFD_FOCUS_1024.
+    property string dataSourceState: "FAIL"
+    property string sensorNodeState: "NOT INSTALLED"
+
+    // Rosso e ambra restano riservati agli allarmi, il magenta al flight
+    // director: qui si usano verde per lo stato normale, cyan per un modo
+    // scelto, grigio per cio' che non c'e'. Vedi EFIS_UI_DESIGN_SYSTEM.
+    function stateColor(state) {
+        if (state === "LIVE") return "#62D347";
+        if (state === "SIM" || state === "SIM FORCED") return "#19C3E6";
+        if (state === "STALE" || state === "DEGRADED") return "#E6A72E";
+        if (state === "FAIL" || state === "LOST") return "#FF4136";
+        return "#7F929E";
+    }
+
     color: "#08121B"; border.color: "#314654"; border.width: 1
     Row {
         anchors.fill: parent
@@ -24,8 +41,8 @@ Rectangle {
             model: [
                 { tag: "GUIDANCE", value: rail.flightDirectorActive ? "FD ACTIVE" : "FD OFF", color: rail.flightDirectorActive ? "#62D347" : "#E6A72E" },
                 { tag: "ALT SELECT", value: Math.round(rail.selectedAltitude) + " FT", color: "#19C3E6" },
-                { tag: "DATA SOURCE", value: "SIM", color: "#19C3E6" },
-                { tag: "PIXHAWK 6X", value: "NOT INSTALLED", color: "#7F929E" },
+                { tag: "DATA SOURCE", value: rail.dataSourceState, color: rail.stateColor(rail.dataSourceState) },
+                { tag: "PIXHAWK 6X", value: rail.sensorNodeState, color: rail.stateColor(rail.sensorNodeState) },
                 { tag: "BLACK BOX", value: rail.blackBoxState === "RECORDING" ? "REC " + Math.round(rail.blackBoxRecords) : rail.blackBoxState, color: rail.blackBoxState === "RECORDING" ? "#62D347" : rail.blackBoxState === "STOPPED" ? "#19C3E6" : "#E6A72E" }
             ]
             delegate: Item {

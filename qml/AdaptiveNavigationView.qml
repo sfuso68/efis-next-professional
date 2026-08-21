@@ -27,7 +27,7 @@ Rectangle {
     Theme { id: theme }
     color: theme.background
 
-    CommandRail { id: rail; anchors { left: parent.left; right: parent.right; top: parent.top } height: 54*root.uiScale; uiScale: root.uiScale; viewName: "NAV CONTROL CENTER"; healthLevel: controller.healthLevel; alertText: controller.annunciation; alertSeverity: controller.annunciationSeverity; flightDirectorActive: controller.flightDirectorActive; selectedAltitude: controller.selectedAltitude; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
+    CommandRail { id: rail; anchors { left: parent.left; right: parent.right; top: parent.top } height: 54*root.uiScale; uiScale: root.uiScale; viewName: "NAV CONTROL CENTER"; healthLevel: controller.healthLevel; alertText: controller.annunciation; alertSeverity: controller.annunciationSeverity; flightDirectorActive: controller.flightDirectorActive; selectedAltitude: controller.selectedAltitude; dataSourceState: controller.dataSourceState; sensorNodeState: controller.sensorNodeState; blackBoxState: controller.blackBoxState; blackBoxRecords: controller.blackBoxRecords }
 
     Rectangle { id: sources; anchors { left: parent.left; top: rail.bottom; bottom: parent.bottom; margins: 10*root.uiScale } width: 130*root.uiScale; color: "#09151E"; border.color: theme.borderBright; radius: 4*root.uiScale
         Text { x: 12*root.uiScale; y: 12*root.uiScale; text: "NAV SOURCE"; color: theme.secondary; font.pixelSize: 8*root.uiScale; font.bold: true }

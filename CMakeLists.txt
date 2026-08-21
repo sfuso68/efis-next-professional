@@ -15,6 +15,7 @@ add_library(efis_core
     src/core/node_health.cpp
     src/core/snapshot_arbitrator.cpp
     src/core/flight_source.cpp
+    src/core/engine_source.cpp
     src/core/stasis_monitor.cpp
     src/core/cross_check.cpp
     src/recording/flight_record.cpp
@@ -28,11 +29,12 @@ add_library(efis_core
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
     src/providers/esp32_can_adapter.cpp
+    src/io/can_source.cpp
+    src/providers/dronecan.cpp
+    src/io/socketcan_source.cpp
     src/ingest/mavlink_pipeline.cpp
     src/ingest/recording_session.cpp
     src/io/byte_source.cpp
-    src/io/can_source.cpp
-    src/providers/engine_can_adapter.cpp
     src/bench/sensor_bench.cpp
     src/core/altimetry.cpp
     src/core/flight_dynamics.cpp
@@ -52,6 +54,9 @@ endif()
 
 add_executable(efis-core src/apps/efis_core_main.cpp)
 target_link_libraries(efis-core PRIVATE efis_core)
+
+add_executable(efis-can-monitor src/apps/efis_can_monitor_main.cpp)
+target_link_libraries(efis-can-monitor PRIVATE efis_core)
 
 add_executable(efis-recorder src/apps/efis_recorder_main.cpp)
 target_link_libraries(efis-recorder PRIVATE efis_core)
@@ -209,13 +214,13 @@ if(EFIS_BUILD_TESTS)
     # Le protezioni contro il dato plausibile ma falso hanno un eseguibile
     # proprio: verificano una categoria diversa dal calcolo, e tenerle separate
     # fa vedere subito quale delle due e' caduta.
-    # Il bus motore ha un eseguibile proprio: verifica un protocollo, non una
-    # grandezza, e si prova senza hardware con una cattura candump.
-    add_executable(efis_engine_can_tests tests/engine_can_tests.cpp)
-    target_link_libraries(efis_engine_can_tests PRIVATE efis_core)
-    target_compile_definitions(efis_engine_can_tests PRIVATE
+    # DroneCAN ha un eseguibile proprio: verifica un protocollo e il suo
+    # riassemblaggio multi-frame, categoria diversa dal calcolo di una grandezza.
+    add_executable(efis_dronecan_tests tests/dronecan_tests.cpp)
+    target_link_libraries(efis_dronecan_tests PRIVATE efis_core)
+    target_compile_definitions(efis_dronecan_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
-    add_test(NAME efis_engine_can_tests COMMAND efis_engine_can_tests)
+    add_test(NAME efis_dronecan_tests COMMAND efis_dronecan_tests)
 
     add_executable(efis_safety_tests tests/safety_tests.cpp)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)
@@ -238,6 +243,12 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_instrument_tests tests/instrument_tests.cpp)
     target_link_libraries(efis_instrument_tests PRIVATE efis_core)
     add_test(NAME efis_instrument_tests COMMAND efis_instrument_tests)
+
+    add_executable(efis_can_source_tests tests/can_source_tests.cpp)
+    target_link_libraries(efis_can_source_tests PRIVATE efis_core)
+    target_compile_definitions(efis_can_source_tests PRIVATE
+        EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
+    add_test(NAME efis_can_source_tests COMMAND efis_can_source_tests)
 
     # L'arbitrato ha un eseguibile proprio per la stessa ragione: verifica quale
     # sorgente fornisce una grandezza, non quanto vale. Un guasto qui non sposta
@@ -269,6 +280,8 @@ if(EFIS_BUILD_EMS_NODE)
             src/nodes/ems/main.cpp
             src/nodes/ems/ems_controller.cpp
             src/nodes/ems/ems_controller.hpp
+            src/nodes/ems/capture_request.cpp
+            src/nodes/ems/capture_request.hpp
             src/renderers/qt/circular_gauge_item.cpp
             src/renderers/qt/circular_gauge_item.hpp
         )

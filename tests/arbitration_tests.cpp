@@ -5,11 +5,13 @@
 // smette di farlo. Tenerle separate fa vedere subito quale delle due e' caduta.
 
 #include "efis/core/flight_model.hpp"
+#include "efis/core/engine_source.hpp"
 #include "efis/core/flight_source.hpp"
 #include "efis/core/snapshot_arbitrator.hpp"
 #include "efis/io/byte_source.hpp"
 #include "efis/providers/mavlink_adapter.hpp"
 #include "efis/providers/simulation_provider.hpp"
+#include "efis/providers/engine_simulation_source.hpp"
 #include "efis/providers/simulation_source.hpp"
 
 #include <array>
@@ -71,6 +73,31 @@ public:
 private:
     double roll_;
     bool failed_{};
+};
+
+
+// Nodo sensori motore finto: misura giri e temperatura testa del primo
+// cilindro, come un modulo a cui siano stati collegati solo due canali.
+class PartialEngineNode final : public efis::EngineSource {
+public:
+    [[nodiscard]] efis::SourceId source() const noexcept override {
+        return efis::SourceId::esp32_legacy;
+    }
+    [[nodiscard]] efis::engine::EngineSnapshot poll(
+        efis::MonoTime now, std::chrono::milliseconds) override {
+        efis::engine::EngineSnapshot out{};
+        out.rpm = reading(2500.0, efis::SourceId::esp32_legacy, efis::SignalId::engine_rpm,
+                          rpm_valid_ ? efis::Validity::valid : efis::Validity::unavailable,
+                          now);
+        out.cht_c[0] = reading(191.0, efis::SourceId::esp32_legacy,
+                               efis::SignalId::cylinder_head_temperature_1,
+                               efis::Validity::valid, now);
+        return out;
+    }
+    void lose_rpm() noexcept { rpm_valid_ = false; }
+
+private:
+    bool rpm_valid_{true};
 };
 
 }  // namespace
@@ -374,6 +401,82 @@ int main() {
     require(before_fault.attitude.roll_deg.value == 3.25,
             "the real attitude must be in use before the fault");
     require(mixed.source_count() == 1, "one real source must be registered");
+
+    // --- Arbitrato del motore -------------------------------------------------
+    //
+    // Il motore ha diciotto grandezze su canali fisicamente distinti, quindi il
+    // guasto parziale qui e' la norma. Un nodo sensori con due soli canali
+    // collegati e' la condizione tipica del banco, non un caso limite.
+    auto node = std::make_shared<PartialEngineNode>();
+    auto engine_sim = std::make_shared<efis::EngineSimulationSource>(84);
+
+    efis::EngineSourceRouter engine_router{{.reversion_dwell = 2000ms}};
+    engine_router.add_source(node);
+    engine_router.set_simulation(engine_sim);
+
+    const auto engine_state = engine_router.poll(now, 1s);
+    require(engine_state.rpm.value == 2500.0,
+            "the real sensor node must win on the channel it actually measures");
+    require(!engine_state.rpm.is_simulated(),
+            "a measured rpm must not be reported as simulated");
+    require(engine_state.cht_c[0].value == 191.0,
+            "the first cylinder head must come from the node that measures it");
+    require(engine_state.cht_c[1].is_simulated(),
+            "a cylinder without a probe must be covered by the simulation");
+    require(engine_state.oil_pressure_psi.is_simulated(),
+            "an uncovered channel must fall back, not go blank");
+    require(engine_router.arbitrator().selected_for(efis::SignalId::engine_rpm) ==
+                efis::SourceId::esp32_legacy,
+            "the arbitrator must report which source serves the rpm");
+    require(engine_router.arbitrator().selected_for(efis::SignalId::oil_pressure) ==
+                efis::SourceId::simulation,
+            "and which source serves a channel nobody measures");
+
+    // Un canale che cade non trascina gli altri: e' il motivo per cui si arbitra
+    // per grandezza e non per sorgente.
+    node->lose_rpm();
+    const auto degraded = engine_router.poll(now + 100ms, 1100ms);
+    require(degraded.rpm.is_simulated(),
+            "losing the rpm channel must fall back on that channel");
+    require(degraded.cht_c[0].value == 191.0,
+            "the cylinder head that still measures must keep its real value");
+    require(!degraded.cht_c[0].is_simulated(),
+            "a channel that never failed must not become simulated");
+    require(engine_router.arbitrator().statistics().failovers >= 1,
+            "the failover must be counted for the black box");
+
+    // Con la simulazione disabilitata restano soltanto i canali realmente
+    // misurati. Il quadro motore non puo' piu' mostrare numeri dove non c'e'
+    // misura: era esattamente il difetto che si vedeva sul display.
+    engine_router.set_simulation_role(efis::SimulationRole::disabled);
+    const auto bare_engine = engine_router.poll(now + 3s, 4s);
+    require(bare_engine.cht_c[0].usable(),
+            "a measured cylinder head stays usable without the simulation");
+    require(!bare_engine.oil_pressure_psi.usable(),
+            "an unmeasured channel must not be usable when nothing simulates it");
+    require(!bare_engine.fuel_left_gal.usable(),
+            "fuel quantity nobody measures must not show a plausible number");
+
+    // E soprattutto: senza misure la salute non puo' dire "normale". E' il dato
+    // falso piu' pericoloso, perche' rassicura invece di allarmare.
+    efis::EngineSourceRouter silent{{.reversion_dwell = 2000ms}};
+    const auto nothing_at_all = silent.poll(now, 1s);
+    require(nothing_at_all.health == efis::engine::EngineHealth::warning,
+            "an engine with no data at all must not be reported as healthy");
+    require(!nothing_at_all.rpm.usable(),
+            "with no source registered no channel can be usable");
+
+    // Il guasto iniettato resta nella sorgente simulata e non altera i canali
+    // veri.
+    efis::EngineSourceRouter bench_engine{{.reversion_dwell = 2000ms}};
+    auto faulted_sim = std::make_shared<efis::EngineSimulationSource>(84);
+    bench_engine.set_simulation(faulted_sim);
+    faulted_sim->set_fault(efis::engine::EngineFault::low_oil_pressure);
+    const auto with_fault = bench_engine.poll(now, 1s);
+    require(with_fault.oil_pressure_psi.value == 22.0,
+            "the injected fault must reach the arbitrated engine state");
+    require(with_fault.injected_fault == efis::engine::EngineFault::low_oil_pressure,
+            "the arbitrated state must declare which fault was injected");
 
     std::cout << "All EFIS arbitration tests passed\n";
 }

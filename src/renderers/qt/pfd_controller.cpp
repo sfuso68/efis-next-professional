@@ -30,7 +30,18 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
     // le grandezze che non forniscono. Il ruolo predefinito e' il ripiego, non
     // la precedenza: il dato reale, quando c'e', vince.
     router_.set_simulation(simulation_);
-    router_.set_simulation_role(efis::SimulationRole::fallback);
+    engine_router_.set_simulation(engine_simulation_);
+
+    // Il ruolo iniziale e' configurabile dall'ambiente, cosi' il banco puo'
+    // partire senza dato simulato e vedere cosa il quadro dichiara quando non
+    // ha sorgenti: e' la prova che le celle di stato sono calcolate e non
+    // scritte a mano. Il valore predefinito resta il ripiego.
+    const QString role = qEnvironmentVariable("EFIS_SIMULATION_ROLE").toUpper();
+    const auto chosen =
+        role == QStringLiteral("DISABLED") ? efis::SimulationRole::disabled
+        : role == QStringLiteral("PRIMARY") ? efis::SimulationRole::primary
+                                            : efis::SimulationRole::fallback;
+    applySimulationRole(chosen);
     loadAircraftProfile();
     loadCatalogIndex();
     loadNavigationIndex();
@@ -664,19 +675,83 @@ bool PfdController::showingSimulatedData() const {
            snapshot_.position.latitude_deg.is_simulated();
 }
 
+// Stato del dato mostrato, nel vocabolario obbligatorio della specifica
+// PFD_FOCUS_1024: LIVE, SIM, DEGRADED, STALE, FAIL, NOT INSTALLED, UNVERIFIED.
+//
+// Era una stringa fissa "SIM" scritta nel QML. Una dichiarazione che non puo'
+// cambiare non e' una dichiarazione: avrebbe continuato a dire SIM con i dati
+// del Pixhawk sotto gli occhi, ed e' il valore decorativo che la specifica
+// vieta al posto di un dato assente.
+QString PfdController::dataSourceState() const {
+    // Nessuna grandezza primaria utilizzabile. Il paragrafo 19 dell'handoff non
+    // ammette che questo stato passi inosservato.
+    if (!snapshot_.attitude.roll_deg.usable() &&
+        !snapshot_.air_data.indicated_airspeed_kt.usable() &&
+        !snapshot_.air_data.pressure_altitude_ft.usable()) {
+        return QStringLiteral("FAIL");
+    }
+    if (!showingSimulatedData()) return QStringLiteral("LIVE");
+
+    // La simulazione che ha la precedenza su sensori reali funzionanti e' una
+    // condizione voluta ma non ordinaria, e va distinta dal semplice ripiego:
+    // chi guarda deve sapere che il dato vero c'e' e non lo sta vedendo.
+    return router_.simulation_role() == efis::SimulationRole::primary
+        ? QStringLiteral("SIM FORCED")
+        : QStringLiteral("SIM");
+}
+
+// Stato del nodo sensori reale. Anche questo era fisso a "NOT INSTALLED".
+// Oggi il testo coincide, perche' sul nodo display non e' registrata alcuna
+// sorgente reale, ma ora e' una conseguenza dello stato e non una didascalia:
+// cambiera' da solo quando il collegamento verso il nodo di ingestion esistera'.
+QString PfdController::sensorNodeState() const {
+    if (router_.source_count() == 0) return QStringLiteral("NOT INSTALLED");
+    return attitudeSource() == QStringLiteral("PIXHAWK")
+        ? QStringLiteral("LIVE")
+        : QStringLiteral("READY FOR DATA");
+}
+
+// Il ruolo vale per volo e motore insieme: e' una sola scelta dell'operatore, e
+// due catene che potessero divergere darebbero un quadro meta' simulato e meta'
+// no senza che nessuno l'abbia deciso.
+// Stato del quadro motore, nello stesso vocabolario della riga di comando.
+//
+// Serve perche' il banco motore ha diciotto canali su sorgenti diverse: dire
+// "SIM" a prescindere, come faceva l'etichetta scritta a mano, nasconde sia il
+// caso in cui i canali sono veri sia quello in cui non c'e' alcun dato.
+QString PfdController::engineDataState() const {
+    if (!engine_snapshot_.rpm.usable() &&
+        !engine_snapshot_.oil_pressure_psi.usable() &&
+        !engine_snapshot_.cht_c[0].usable()) {
+        return QStringLiteral("FAIL");
+    }
+    const bool simulated = engine_snapshot_.rpm.is_simulated() ||
+                           engine_snapshot_.oil_pressure_psi.is_simulated() ||
+                           engine_snapshot_.fuel_left_gal.is_simulated();
+    if (!simulated) return QStringLiteral("LIVE");
+    return engine_router_.simulation_role() == efis::SimulationRole::primary
+        ? QStringLiteral("SIM FORCED")
+        : QStringLiteral("SIM");
+}
+
+void PfdController::applySimulationRole(efis::SimulationRole role) {
+    router_.set_simulation_role(role);
+    engine_router_.set_simulation_role(role);
+    qInfo().noquote() << "event=simulation_role role=" << simulationRole();
+}
+
 void PfdController::cycleSimulationRole() {
     switch (router_.simulation_role()) {
         case efis::SimulationRole::fallback:
-            router_.set_simulation_role(efis::SimulationRole::primary);
+            applySimulationRole(efis::SimulationRole::primary);
             break;
         case efis::SimulationRole::primary:
-            router_.set_simulation_role(efis::SimulationRole::disabled);
+            applySimulationRole(efis::SimulationRole::disabled);
             break;
         case efis::SimulationRole::disabled:
-            router_.set_simulation_role(efis::SimulationRole::fallback);
+            applySimulationRole(efis::SimulationRole::fallback);
             break;
     }
-    qInfo().noquote() << "event=simulation_role role=" << simulationRole();
     emit snapshotChanged();
 }
 
@@ -706,7 +781,7 @@ QVariantList PfdController::egtValues() const {
 int PfdController::engineHealth() const { return static_cast<int>(engine_snapshot_.health); }
 QString PfdController::engineFaultMode() const {
     using efis::engine::EngineFault;
-    switch (engine_provider_.fault()) {
+    switch (engine_simulation_->fault()) {
         case EngineFault::none: return QStringLiteral("NONE");
         case EngineFault::low_oil_pressure: return QStringLiteral("LOW OIL PRESS");
         case EngineFault::high_cht: return QStringLiteral("HIGH CHT 3");
@@ -717,12 +792,12 @@ QString PfdController::engineFaultMode() const {
 }
 void PfdController::cycleEngineFault() {
     using efis::engine::EngineFault;
-    switch (engine_provider_.fault()) {
-        case EngineFault::none: engine_provider_.set_fault(EngineFault::low_oil_pressure); break;
-        case EngineFault::low_oil_pressure: engine_provider_.set_fault(EngineFault::high_cht); break;
-        case EngineFault::high_cht: engine_provider_.set_fault(EngineFault::alternator_failure); break;
-        case EngineFault::alternator_failure: engine_provider_.set_fault(EngineFault::low_fuel_pressure); break;
-        case EngineFault::low_fuel_pressure: engine_provider_.set_fault(EngineFault::none); break;
+    switch (engine_simulation_->fault()) {
+        case EngineFault::none: engine_simulation_->set_fault(EngineFault::low_oil_pressure); break;
+        case EngineFault::low_oil_pressure: engine_simulation_->set_fault(EngineFault::high_cht); break;
+        case EngineFault::high_cht: engine_simulation_->set_fault(EngineFault::alternator_failure); break;
+        case EngineFault::alternator_failure: engine_simulation_->set_fault(EngineFault::low_fuel_pressure); break;
+        case EngineFault::low_fuel_pressure: engine_simulation_->set_fault(EngineFault::none); break;
     }
     qInfo().noquote() << "event=engine_fault_injection mode=" << engineFaultMode();
 }
@@ -738,7 +813,7 @@ void PfdController::updateSnapshot() {
     // nulla.
     auto input = router_.poll(now, elapsed);
     snapshot_ = model_.normalize(std::move(input), now);
-    engine_snapshot_ = engine_provider_.sample(now, elapsed);
+    engine_snapshot_ = engine_router_.poll(now, elapsed);
     if (trend_initialized_) {
         const auto six_second_projection = (snapshot_.air_data.indicated_airspeed_kt.value -
                                             previous_airspeed_) * 300.0;

@@ -31,9 +31,29 @@ struct FlightModelPolicy final {
     // sorveglianza esiste per intercettare. In volo velocita' e quota non
     // restano mai costanti entro la risoluzione dello strumento per un tempo
     // simile.
+    // Il tempo resta DEVELOPMENT: quanto a lungo una quota sana possa restare
+    // immobile a cinquemila piedi si misura in volo, e voli registrati non ne
+    // esistono ancora. A terra ogni grandezza sta ferma per definizione.
     std::chrono::milliseconds air_data_suspect_after{15000};
-    double airspeed_resolution_kt{0.5};
-    double altitude_resolution_ft{1.0};
+
+    // Le risoluzioni invece sono misurate, sulla registrazione reale del banco
+    // (tests/data/mavlink, 10 Hz) con tools/tuning/measure_signal_noise.py.
+    //
+    // Devono stare sopra il rumore del sensore, e la ragione non e' di forma: un
+    // pitot o uno statico ostruito non congela l'elettronica. Il sensore
+    // continua a leggere la pressione intrappolata con il proprio rumore, e il
+    // valore continua a ballare anche quando non descrive piu' il mondo. Se la
+    // risoluzione sta dentro quel ballo, il ballo passa per movimento e il
+    // guasto non viene dichiarato mai.
+    //
+    // Rumore misurato al 99esimo percentile fra campioni consecutivi: velocita'
+    // 0,44 kt, quota 2,00 ft. I valori qui sotto lasciano poco piu' del doppio.
+    //
+    // Il valore precedente della quota, un piede, stava dentro il rumore: il
+    // 27,7% dei campioni a riposo lo superava, e con centocinquanta campioni
+    // richiesti per dichiarare la stasi il rilevatore non sarebbe scattato mai.
+    double airspeed_resolution_kt{1.0};
+    double altitude_resolution_ft{5.0};
 
     // L'assetto di un aeromobile in volo oscilla sempre. Un rollio o un
     // beccheggio perfettamente costanti per dieci secondi indicano un inerziale

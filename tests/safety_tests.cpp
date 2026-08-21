@@ -838,5 +838,76 @@ int main() {
                 "a degraded field must reach the alert list");
     }
 
+
+    // --- Taratura contro il rumore misurato -----------------------------------
+    //
+    // Una risoluzione che sta dentro il rumore del sensore rende il rilevatore
+    // di stasi inerte senza che nulla lo segnali: il rumore passa per movimento,
+    // il contatore si azzera di continuo e il guasto non viene dichiarato mai.
+    // E' successo davvero: la quota era tarata a un piede mentre il rumore
+    // misurato al 99esimo percentile e' due, e il 27,7% dei campioni a riposo la
+    // superava.
+    //
+    // Questi valori vengono dalla registrazione reale del banco, 10 Hz, misurati
+    // con tools/tuning/measure_signal_noise.py. Se la taratura verra' rifatta su
+    // voli veri, si aggiornano qui insieme alla politica, non si cancellano.
+    {
+        const efis::FlightModelPolicy tarata{};
+
+        struct Misura final {
+            const char* nome;
+            double rumore_p99;
+            double risoluzione;
+        };
+        const Misura misurate[] = {
+            {"roll", 0.0020, tarata.attitude_resolution_deg},
+            {"pitch", 0.0020, tarata.attitude_resolution_deg},
+            {"indicated_airspeed", 0.4422, tarata.airspeed_resolution_kt},
+            {"pressure_altitude", 2.0013, tarata.altitude_resolution_ft},
+        };
+
+        for (const auto& m : misurate) {
+            require(m.risoluzione > m.rumore_p99,
+                    "a resolution inside the sensor noise makes the watch inert");
+            require(m.risoluzione >= m.rumore_p99 * 2.0,
+                    "a resolution needs margin over the noise, not just to clear it");
+        }
+
+        // Il margine non deve nemmeno essere assurdo: una risoluzione enorme
+        // ignorerebbe movimenti veri e dichiarerebbe ferma una grandezza viva.
+        require(tarata.altitude_resolution_ft <= 20.0,
+                "an altitude resolution this coarse would call a live baro frozen");
+        require(tarata.airspeed_resolution_kt <= 5.0,
+                "an airspeed resolution this coarse would call a live pitot frozen");
+    }
+
+    // La stasi resta dichiarabile con le risoluzioni tarate: un sensore bloccato
+    // che continua a ballare entro il proprio rumore deve essere colto lo stesso.
+    // E' il caso del pitot ostruito, che non congela l'elettronica.
+    {
+        const efis::FlightModelPolicy tarata{};
+        efis::StasisMonitor rumoroso;
+        rumoroso.configure(efis::SignalId::pressure_altitude,
+                           {.suspect_after = tarata.air_data_suspect_after,
+                            .resolution = tarata.altitude_resolution_ft,
+                            .applicable = true});
+
+        // Serie che oscilla di circa due piedi attorno a un valore fermo: e'
+        // l'ampiezza del rumore misurata sul banco.
+        const double oscillazione[] = {0.0, 1.9, -0.7, 1.4, -1.8, 0.6, 2.0, -1.1};
+        efis::Motion esito = efis::Motion::unknown;
+        auto istante = epoch;
+        for (int giro = 0; giro < 4; ++giro) {
+            for (const double scarto : oscillazione) {
+                istante += 500ms;
+                esito = rumoroso.observe(
+                    reading(1500.0 + scarto, efis::SignalId::pressure_altitude, istante),
+                    istante);
+            }
+        }
+        require(esito == efis::Motion::suspect,
+                "a jammed sensor still dithering within its noise must be caught");
+    }
+
     std::cout << "All EFIS safety tests passed\n";
 }

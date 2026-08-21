@@ -6,6 +6,7 @@
 // si migliora qui compare nel PFD senza alcun travaso, perche' e' lo stesso file.
 
 #include "ems_controller.hpp"
+#include "capture_request.hpp"
 #include "circular_gauge_item.hpp"
 
 #include <QCursor>
@@ -30,7 +31,15 @@ int main(int argc, char* argv[]) {
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ems", &controller);
     engine.loadFromModule("EfisNextEms", "EmsMain");
-    if (engine.rootObjects().isEmpty()) return 1;
+    // Non 1, e non e' un capriccio. Su eglfs Qt installa un proprio gestore per
+    // il terminale virtuale che, ricevuto SIGTERM, fa uscire il programma con
+    // codice 1: ogni arresto voluto lascerebbe l'unita' in stato failed, e
+    // l'unita' dichiara infatti SuccessExitStatus=1 per non chiamare guasto un
+    // arresto. Se il fallimento del QML uscisse anch'esso con 1, quella riga lo
+    // nasconderebbe, e un nodo che non ha caricato la pagina si presenterebbe
+    // come fermato di proposito. Sono due fatti diversi e devono avere due
+    // codici diversi. Lo stesso vale per il 2 della cattura, piu' sotto.
+    if (engine.rootObjects().isEmpty()) return 3;
 
     qInfo().noquote() << "event=startup product=efis-next component=ems version=0.1.0"
                       << "qt=" << qVersion()
@@ -59,6 +68,52 @@ int main(int argc, char* argv[]) {
             *frames = 0;
         });
         metrics->start();
+    }
+
+    // Cattura interna.
+    //
+    // Sul RPi5 la prova valida per una modifica di layout e' la cattura dal
+    // display vero con grim. Il nodo EMS gira su eglfs, senza compositore, e
+    // grim li' non esiste: senza questa via la pagina motore si potrebbe
+    // verificare solo guardando il pannello, cioe' da nessuna sessione remota e
+    // in nessun registro. Con la piattaforma offscreen la cattura non richiede
+    // il display, quindi non lo toglie a chi lo sta usando.
+    //
+    // EFIS_CAPTURE_SIZE esiste perche' la geometria di riferimento della pagina
+    // e' 1024x600 ma il pannello di questo nodo e' 800x480: catturare alla
+    // dimensione sbagliata proverebbe un layout che nessuno vedra'.
+    const auto capturePath = qEnvironmentVariable("EFIS_CAPTURE");
+    if (!capturePath.isEmpty()) {
+        if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().front())) {
+            const auto size = qEnvironmentVariable("EFIS_CAPTURE_SIZE");
+            const auto parts = size.split(QLatin1Char('x'));
+            if (parts.size() == 2) {
+                bool okWidth = false, okHeight = false;
+                const int width = parts.at(0).toInt(&okWidth);
+                const int height = parts.at(1).toInt(&okHeight);
+                if (okWidth && okHeight && width > 0 && height > 0) {
+                    window->resize(width, height);
+                }
+            }
+            // L'attesa non e' cosmetica: la pagina va catturata quando il motore
+            // e' gia' avviato, altrimenti si fotografano gli zeri iniziali.
+            const int delay = qEnvironmentVariableIntValue("EFIS_CAPTURE_DELAY_MS") > 0
+                ? qEnvironmentVariableIntValue("EFIS_CAPTURE_DELAY_MS") : 3000;
+            QTimer::singleShot(delay, window, [window, capturePath] {
+                const bool saved = efis::ems::capture_window(window, capturePath);
+                qInfo().noquote() << "event=capture node=ems trigger=startup saved="
+                                  << saved << "path=" << capturePath;
+                QGuiApplication::exit(saved ? 0 : 2);
+            });
+        }
+    }
+
+    // Cattura su richiesta, a programma in marcia. Serve il caso opposto a
+    // quello sopra: non fotografare un avvio fatto apposta, ma cio' che il
+    // pannello sta mostrando adesso, senza fermare il servizio che lo mostra.
+    if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().front())) {
+        efis::ems::install_capture_signal(window,
+            qEnvironmentVariable("EFIS_CAPTURE_DIR", QStringLiteral("logs")));
     }
 
     if (qEnvironmentVariableIsSet("EFIS_KIOSK")) {

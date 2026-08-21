@@ -4,6 +4,7 @@ Rectangle {
     id: deck
     required property var controller
     property real uiScale: 1
+    property string engineDataState: "FAIL"
     Theme { id: theme }
     color: "#050D14"; border.color: theme.borderBright
 
@@ -13,13 +14,16 @@ Rectangle {
 
         Rectangle {
             width: 710*deck.uiScale; height: parent.height; color: "#D9071119"; border.color: theme.border; radius: 3*deck.uiScale
-            Text { x: 8*deck.uiScale; y: 5*deck.uiScale; text: "ENGINE • SIM"; color: theme.secondary; font.pixelSize: 7*deck.uiScale; font.bold: true }
+            Text { x: 8*deck.uiScale; y: 5*deck.uiScale; text: "ENGINE • " + deck.engineDataState; color: theme.secondary; font.pixelSize: 7*deck.uiScale; font.bold: true }
             Row { anchors { left: parent.left; right: temperatures.left; top: parent.top; bottom: parent.bottom; margins: 5*deck.uiScale; topMargin: 20*deck.uiScale } spacing: 3*deck.uiScale
                 Repeater { model: [
                     {n:"RPM",v:controller.engineRpm,u:"RPM",min:0,max:3000,gs:800,ge:2600,d:0},
                     {n:"MAP",v:controller.manifoldPressure,u:"IN HG",min:10,max:35,gs:15,ge:29,d:1},
                     {n:"FLOW",v:controller.fuelFlow,u:"GPH",min:0,max:20,gs:4,ge:16,d:1},
-                    {n:"OIL T",v:controller.oilTemperature,u:"°F",min:80,max:260,gs:140,ge:220,d:0},
+                    // Stessa correzione di AdaptiveEmsView.qml, e per la stessa
+                    // ragione: il valore e' in °C. Qui pesa di piu', perche'
+                    // questo pannello sta sulla pagina di volo.
+                    {n:"OIL T",v:controller.oilTemperature,u:"°C",min:20,max:130,gs:60,ge:105,d:0},
                     {n:"OIL P",v:controller.oilPressure,u:"PSI",min:0,max:100,gs:50,ge:90,d:0}
                 ]; delegate: ProfessionalCircularGauge { required property var modelData; width: 106*deck.uiScale; height: parent.height;
                         uiScale: deck.uiScale*1.08; label: modelData.n; value: modelData.v; unit: modelData.u;
@@ -52,7 +56,7 @@ Rectangle {
         Rectangle { width: 90*deck.uiScale; height: parent.height; color: "#D9071119"; border.color: theme.border; radius: 3*deck.uiScale
             Text { x: 8*deck.uiScale; y: 5*deck.uiScale; text: "FUEL"; color: theme.secondary; font.pixelSize: 7*deck.uiScale; font.bold: true }
             Text { anchors.centerIn: parent; y: -9*deck.uiScale; text: (controller.fuelLeft+controller.fuelRight).toFixed(1); color: theme.primary; font.pixelSize: 20*deck.uiScale; font.bold: true }
-            Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 9*deck.uiScale } text: "GAL USABLE • SIM"; color: theme.cyan; font.pixelSize: 7*deck.uiScale; font.bold: true }
+            Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 9*deck.uiScale } text: "GAL USABLE • " + deck.engineDataState; color: theme.cyan; font.pixelSize: 7*deck.uiScale; font.bold: true }
             Rectangle { x: 10*deck.uiScale; y: 28*deck.uiScale; width: 11*deck.uiScale; height: 54*deck.uiScale; color: "#162630"; Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: parent.height*.72; color: theme.green } }
             Rectangle { anchors { right: parent.right; rightMargin: 10*deck.uiScale } y: 28*deck.uiScale; width: 11*deck.uiScale; height: 54*deck.uiScale; color: "#162630"; Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: parent.height*.72; color: theme.green } }
         }

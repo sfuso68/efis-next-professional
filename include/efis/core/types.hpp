@@ -161,13 +161,17 @@ enum class Unit : std::uint8_t {
     gallon_per_hour,
     volt,
     ampere,
-    // Aggiunta in coda: gli identificativi gia' presenti nelle registrazioni non
+    // Aggiunte in coda: gli identificativi gia' presenti nelle registrazioni non
     // devono spostarsi.
     hectopascal,
     degree_per_second,
     // Accelerazione in multipli di quella di gravita', come la legge un
     // accelerometro e come la mostra la pallina.
-    gravity
+    gravity,
+    // Aggiunta arrivando dal ramo dei sensori, dove serve alla pressione
+    // differenziale del sensore aria. Messa dopo le due precedenti per non
+    // spostare identificativi gia' scritti nelle registrazioni di main.
+    pascal
 };
 
 [[nodiscard]] constexpr const char* unit_symbol(Unit unit) noexcept {
@@ -191,6 +195,7 @@ enum class Unit : std::uint8_t {
         case Unit::hectopascal: return "hPa";
         case Unit::degree_per_second: return "deg/s";
         case Unit::gravity: return "G";
+        case Unit::pascal: return "Pa";
     }
     return "?";
 }

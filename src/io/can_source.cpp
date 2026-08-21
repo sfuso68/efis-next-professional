@@ -1,99 +1,141 @@
 #include "efis/io/can_source.hpp"
 
-#include <charconv>
-#include <fstream>
+#include <algorithm>
+#include <istream>
+#include <string>
 
 namespace efis::io {
 namespace {
 
-std::optional<std::uint8_t> hex_nibble(char character) noexcept {
-    if (character >= '0' && character <= '9') {
-        return static_cast<std::uint8_t>(character - '0');
-    }
-    if (character >= 'a' && character <= 'f') {
-        return static_cast<std::uint8_t>(character - 'a' + 10);
-    }
-    if (character >= 'A' && character <= 'F') {
-        return static_cast<std::uint8_t>(character - 'A' + 10);
-    }
-    return std::nullopt;
+// Nel formato candump l'identificativo e' esadecimale: tre cifre per la forma a
+// 11 bit, otto per quella a 29. La lunghezza distingue le due, ed e' l'unico
+// modo di distinguerle, perche' il testo non porta un flag.
+constexpr std::size_t extended_id_digits = 8;
+
+[[nodiscard]] bool hex_value(char digit, std::uint8_t& out) noexcept {
+    if (digit >= '0' && digit <= '9') { out = static_cast<std::uint8_t>(digit - '0'); return true; }
+    if (digit >= 'a' && digit <= 'f') { out = static_cast<std::uint8_t>(digit - 'a' + 10); return true; }
+    if (digit >= 'A' && digit <= 'F') { out = static_cast<std::uint8_t>(digit - 'A' + 10); return true; }
+    return false;
 }
 
-std::optional<std::uint16_t> hex_value(std::string_view text) noexcept {
-    if (text.empty() || text.size() > 4) return std::nullopt;
-    std::uint16_t value = 0;
-    for (const char character : text) {
-        const auto nibble = hex_nibble(character);
-        if (!nibble.has_value()) return std::nullopt;
-        value = static_cast<std::uint16_t>((value << 4) | *nibble);
+[[nodiscard]] bool parse_hex(std::string_view text, std::uint32_t& out) noexcept {
+    if (text.empty() || text.size() > 8) return false;
+    std::uint32_t value = 0;
+    for (const char digit : text) {
+        std::uint8_t nibble = 0;
+        if (!hex_value(digit, nibble)) return false;
+        value = (value << 4) | nibble;
     }
-    return value;
+    out = value;
+    return true;
 }
 
 }  // namespace
 
-std::optional<CanFrame> parse_candump_line(std::string_view line) noexcept {
-    // Il timestamp fra parentesi e il nome dell'interfaccia precedono il frame.
-    // Nessuno dei due serve qui: il tempo di ricezione lo mette chi legge, e
-    // l'interfaccia l'ha gia' scelta chi ha aperto la sorgente.
-    const auto hash = line.find('#');
-    if (hash == std::string_view::npos) return std::nullopt;
+RecordedCanSource::RecordedCanSource(std::vector<can::Frame> frames)
+    : frames_(std::move(frames)) {}
 
-    // L'identificatore e' l'ultimo campo separato da spazio prima del cancelletto.
-    const auto before = line.substr(0, hash);
-    const auto space = before.find_last_of(" \t");
-    const auto id_text =
-        space == std::string_view::npos ? before : before.substr(space + 1);
-
-    const auto id = hex_value(id_text);
-    if (!id.has_value() || *id > 0x7FF) return std::nullopt;
-
-    auto payload = line.substr(hash + 1);
-    // Una riga puo' terminare con spazi o con il ritorno a capo di Windows.
-    while (!payload.empty() && (payload.back() == '\r' || payload.back() == '\n' ||
-                                payload.back() == ' ' || payload.back() == '\t')) {
-        payload.remove_suffix(1);
-    }
-    // I frame remoti e quelli a lunghezza flessibile non appartengono a
-    // Engine CAN V1: si scartano invece di interpretarli a meta'.
-    if (!payload.empty() && (payload.front() == 'R' || payload.front() == '#')) {
-        return std::nullopt;
-    }
-    if (payload.size() % 2 != 0 || payload.size() > 16) return std::nullopt;
-
-    CanFrame frame{};
-    frame.id = *id;
-    frame.length = static_cast<std::uint8_t>(payload.size() / 2);
-    for (std::size_t index = 0; index < frame.length; ++index) {
-        const auto high = hex_nibble(payload[index * 2]);
-        const auto low = hex_nibble(payload[index * 2 + 1]);
-        if (!high.has_value() || !low.has_value()) return std::nullopt;
-        frame.data[index] = static_cast<std::uint8_t>((*high << 4) | *low);
-    }
-    return frame;
-}
-
-RecordedCanSource::RecordedCanSource(const std::filesystem::path& path) {
-    std::ifstream file{path};
-    std::string line;
-    while (std::getline(file, line)) lines_.push_back(line);
-}
-
-RecordedCanSource::RecordedCanSource(std::vector<std::string> lines)
-    : lines_(std::move(lines)) {}
-
-std::optional<CanFrame> RecordedCanSource::next() {
-    while (position_ < lines_.size()) {
-        const auto& line = lines_[position_++];
-        if (line.empty()) continue;
-        if (auto frame = parse_candump_line(line)) return frame;
-        ++malformed_;
-    }
-    return std::nullopt;
+std::size_t RecordedCanSource::read(std::span<can::Frame> frames) {
+    const std::size_t available = frames_.size() - position_;
+    const std::size_t count = std::min(available, frames.size());
+    std::copy_n(frames_.begin() + static_cast<std::ptrdiff_t>(position_), count,
+                frames.begin());
+    position_ += count;
+    return count;
 }
 
 bool RecordedCanSource::exhausted() const noexcept {
-    return position_ >= lines_.size();
+    return position_ >= frames_.size();
+}
+
+CandumpLog parse_candump(std::istream& input) {
+    CandumpLog log{};
+    std::string line;
+
+    while (std::getline(input, line)) {
+        if (!line.empty() && line.back() == '\r') line.pop_back();
+        if (line.empty()) continue;
+
+        // (timestamp) interfaccia identificativo#dati
+        const std::size_t close = line.find(')');
+        const std::size_t hash = line.find('#');
+        if (line.front() != '(' || close == std::string::npos ||
+            hash == std::string::npos || hash < close) {
+            ++log.malformed_lines;
+            continue;
+        }
+
+        const std::size_t interface_start = line.find_first_not_of(' ', close + 1);
+        if (interface_start == std::string::npos) {
+            ++log.malformed_lines;
+            continue;
+        }
+        const std::size_t interface_end = line.find(' ', interface_start);
+        if (interface_end == std::string::npos || interface_end > hash) {
+            ++log.malformed_lines;
+            continue;
+        }
+
+        const std::size_t id_start = line.find_first_not_of(' ', interface_end);
+        if (id_start == std::string::npos || id_start >= hash) {
+            ++log.malformed_lines;
+            continue;
+        }
+        const std::string_view id_text{line.data() + id_start, hash - id_start};
+
+        // Richiesta remota: il payload non esiste, la lettera R sta al posto dei
+        // dati. Non porta misure.
+        const std::string_view payload_text{line.data() + hash + 1,
+                                            line.size() - hash - 1};
+        if (!payload_text.empty() && (payload_text.front() == 'R' ||
+                                      payload_text.front() == 'r')) {
+            ++log.remote_frames;
+            continue;
+        }
+
+        std::uint32_t id = 0;
+        if (!parse_hex(id_text, id)) {
+            ++log.malformed_lines;
+            continue;
+        }
+
+        // Frame di errore. candump li stampa con l'identificativo a otto cifre e
+        // il bit alto acceso: sono uno stato del bus, non una grandezza fisica.
+        if (id_text.size() >= extended_id_digits && (id & 0x20000000U) != 0) {
+            ++log.error_frames;
+            continue;
+        }
+
+        if (payload_text.size() % 2 != 0 || payload_text.size() > 16) {
+            ++log.malformed_lines;
+            continue;
+        }
+
+        can::Frame frame{};
+        frame.id = id;
+        frame.length = static_cast<std::uint8_t>(payload_text.size() / 2);
+
+        bool valid = true;
+        for (std::uint8_t index = 0; index < frame.length; ++index) {
+            std::uint8_t high = 0;
+            std::uint8_t low = 0;
+            if (!hex_value(payload_text[index * 2U], high) ||
+                !hex_value(payload_text[index * 2U + 1U], low)) {
+                valid = false;
+                break;
+            }
+            frame.data[index] = static_cast<std::uint8_t>((high << 4) | low);
+        }
+        if (!valid) {
+            ++log.malformed_lines;
+            continue;
+        }
+
+        log.frames.push_back(frame);
+    }
+
+    return log;
 }
 
 }  // namespace efis::io

@@ -26,8 +26,32 @@ WorkingDirectory=/home/pi/efis-next
 Environment=HOME=/home/pi
 Environment=QT_QPA_PLATFORM=eglfs
 ExecStart=/home/pi/efis-next/deploy/scripts/run-ems.sh
-Restart=on-failure
+# Restart=always, non on-failure, e la ragione e' stata scoperta rompendo il
+# nodo il 21 agosto 2026. Un SIGTERM arrivato da fuori — un pkill sbagliato, un
+# gestore di memoria, chiunque — e' indistinguibile da un arresto voluto, e con
+# on-failure sommato al SuccessExitStatus qui sotto il servizio si spegneva e
+# non tornava piu': pannello nero a tempo indeterminato, senza che nulla
+# risultasse guasto. Per un nodo il cui unico compito e' mostrare qualcosa,
+# quello e' il guasto peggiore, perche' non si annuncia.
+#
+# E' anche cio' che efis.service fa gia' su questa macchina, per lo stesso
+# motivo. Il prezzo e' che un binario davvero rotto viene riprovato all'
+# infinito ogni cinque secondi: preferibile a un pannello spento in silenzio, e
+# visibile nel journal.
+Restart=always
 RestartSec=5
+
+# Su eglfs Qt installa un gestore per il terminale virtuale che, ricevuto
+# SIGTERM, fa uscire il programma con codice 1. Senza questa riga ogni arresto
+# voluto lascerebbe l'unita' in stato failed, cioe' un arresto normale
+# somiglierebbe a un guasto. Non e' una particolarita' del nodo EMS: il 21
+# agosto 2026 il journal mostra che anche efis.service, l'EFIS vecchio, esce
+# con status=1/FAILURE ogni volta che viene fermato, sulla stessa piattaforma.
+#
+# Perche' la riga non nasconda un guasto vero, il programma non usa il codice 1
+# per nessun proprio fallimento: 3 e' la pagina QML non caricata, 2 la cattura
+# fallita, e restano entrambi guasti agli occhi di systemd.
+SuccessExitStatus=1
 TimeoutStopSec=5
 KillSignal=SIGTERM
 StandardOutput=journal

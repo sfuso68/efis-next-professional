@@ -73,11 +73,21 @@ di chi la ricorda: è una scelta, non una svista, e chi cambiasse idea trova in
 `docs/deployment/RPI4_EMS.md` la ragione per cui aggiungerla sarebbe
 difendibile.
 
+Il 21 agosto 2026 la decisione è stata portata fino in fondo: il RPi4 diventa
+stabilmente il nodo motore di EFIS Next, e **l'EFIS vecchio diventa
+secondario** — non rimosso, non modificato, ma non più il programma che il nodo
+avvia da solo.
+
 Conseguenza operativa per l'interfaccia: senza compositore non esiste `grim`,
 quindi la cattura dal display vero — che sul RPi5 è la sola verifica valida per
-una modifica di layout — su questo nodo non si può fare con gli strumenti
-esistenti. Finché non c'è una cattura interna al programma, la pagina motore si
-verifica guardando il pannello.
+una modifica di layout — con gli strumenti esistenti qui non si fa. Il nodo ha
+perciò una cattura propria (`EFIS_CAPTURE`), che risolve il problema per metà e
+va conosciuta per l'altra metà: con la piattaforma `offscreen` Qt carica il
+backend *software* dello scene graph, che non disegna i nodi di geometria
+personalizzati, e `CircularGaugeItem` è uno di quelli. Una cattura offscreen
+prova quindi il **layout** — ingombri, sovrapposizioni, adattamento alla
+risoluzione — e non prova gli **strumenti**, che vi compaiono senza quadrante.
+Per quelli serve `eglfs`, cioè il pannello.
 
 ## Limiti correnti
 
