@@ -26,14 +26,16 @@ copie del sorgente e l'intera catena build/test. Sono emersi tre problemi che
 l'handoff non riportava, tutti diagnosticati; due risolti, uno che richiede un
 intervento dell'utente.
 
-Il backbone dati P1, che a inizio giornata non esisteva, è poi stato costruito
-nel corso della stessa: campione con provenienza, salute dei nodi, parser e
-adapter MAVLink in sola lettura, registro di volo rileggibile e trasporto
-astratto. Restano da collegare fra loro pezzi che esistono già.
+Il backbone dati P1, che a inizio giornata non esisteva, è stato costruito e
+collegato nel corso della stessa. Oggi i byte del Pixhawk entrano, vengono
+interpretati, arbitrati, sorvegliati, normalizzati, registrati nella black box e
+mostrati al banco prova sul display reale. Nessun pezzo della catena è più un
+modulo corretto lasciato fuori dal percorso.
 
 Stato complessivo: **il banco di sviluppo è coerente e riproducibile**, e il
-backbone dati è passato da assente a percorribile dall'ingresso dei byte fino
-alla rilettura del registro.
+backbone dati è completo dall'ingresso dei byte fino alla pagina che li mostra.
+Il lavoro che segue non è più completamento di P1 ma apertura di P4, con gli
+adapter ESP32-S3 e SocketCAN.
 
 ---
 
@@ -167,17 +169,17 @@ servito da `efis-pfd.service`, lasciato attivo per tutta la durata.
 | Configurazione | riuscita, con `-DEFIS_REQUIRE_QT_RENDERER=ON` |
 | Target compilati | tutti, `efis-pfd-qt` compreso |
 | Diagnostica GCC | **zero** fra warning ed errori, con `-Wall -Wextra -Wpedantic -Wconversion` |
-| Test | `ctest` 2 / 2 superati |
-| Temperatura finale | 54.3 °C, nessun throttling |
+| Test | `ctest` 5 / 5 superati |
+| Temperatura finale | 60.4 °C, nessun throttling |
 
 Il backup `CMakeLists.txt.pre-claude-20260821` è stato creato prima della copia
 del file modificato.
 
 ### 5.2 Windows — ambiente secondario
 
-MSVC 19.51.36256.0 con Ninja, sia in Debug sia in Release: **2 / 2 test
-superati** in entrambe le configurazioni. Il target Qt non è costruibile, vedi
-sezione 6.2.
+MSVC 19.51.36256.0 con Ninja: **5 / 5 test superati**. Dal pomeriggio del 21
+agosto il target Qt è costruibile anche qui, perché Qt Quick 3D è stato
+installato: vedi sezione 6.2.
 
 ### 5.3 Un difetto visibile su una piattaforma sola
 
@@ -288,26 +290,33 @@ dell'handoff, **non è stato eseguito**.
 
 ---
 
-## 8. Backbone dati P1 — stato di avanzamento
+## 8. Backbone dati P1 — completato
 
 All'inizio della giornata il backbone dati era lavoro interamente nuovo: la
 ricerca di `mavlink`, `socketcan`, `heartbeat` ed `esp32` in `src/`, `include/` e
-`tests/` non trovava alcuna implementazione, e l'unico riferimento era il valore
-`SourceId::pixhawk_primary` dichiarato e mai usato. Il core era una pipeline di
-sola simulazione.
+`tests/` non trovava alcuna implementazione. Il core era una pipeline di sola
+simulazione.
 
-Quello che segue è lo stato verificato leggendo il codice, non pianificato.
+La catena oggi è questa, e ogni freccia è verificata da un test:
+
+```
+byte -> MavlinkAdapter -> SnapshotArbitrator -> FlightModel -> stato protetto
+                                                     |
+                                    +----------------+----------------+
+                                    |                                 |
+                        SegmentedRecorder (black box)        SensorBench (Setup Center)
+```
 
 ### 8.1 Elenco del paragrafo 20 dell'handoff
 
 | # | Voce | Stato | Dove |
 |---|---|---|---|
-| 1 | Formalizzare Display/Sensor Data Protocol V2 | parziale | Envelope e regole restano un draft. La direzione delle dipendenze e i confini di trasporto sono però ora decisi in `ADR-003` |
-| 2 | Adapter MAVLink in sola lettura | fatto | Parser e adapter, nessun percorso di trasmissione in nessuno dei due |
-| 3 | Snapshot normalizzato verso il core | fatto | `MavlinkAdapter::snapshot()` |
+| 1 | Formalizzare Display/Sensor Data Protocol V2 | parziale | Envelope e regole restano un draft. I confini di trasporto e le direzioni di dipendenza sono però decisi in `ADR-003`; manca la scelta della serializzazione sul filo |
+| 2 | Adapter MAVLink in sola lettura | fatto | Nessun percorso di trasmissione, in nessun punto della catena |
+| 3 | Snapshot normalizzato verso il core | fatto | `MavlinkPipeline::state()` |
 | 4 | Heartbeat, stale e perdita nodo | fatto | `NodeHealthMonitor`, con prova di mutazione |
-| 5 | Black box con segmenti e replay | quasi | Il registro di volo V2 si scrive e si rilegge, e `efis::io::ByteSource` rende il replay una sorgente di prima classe. Manca il collegamento vivo: `efis-recorder` registra ancora dal `SimulationProvider`, non dall'adapter |
-| 6 | Dati monitor-only al banco prova UI | da fare | Zero riferimenti all'adapter in `src/renderers/` e `qml/` |
+| 5 | Black box con segmenti e replay | fatto | `RecordingSession`. Il registro V2 si scrive e si rilegge, eventi compresi, e `efis-recorder --replay` registra dall'adapter invece che dal simulatore |
+| 6 | Dati monitor-only al banco prova UI | fatto | `SensorBench` più il pannello nel Setup Center, verificato con cattura dal display reale |
 
 ### 8.2 Elenco del paragrafo 6 dell'handoff, lavoro core EMS
 
@@ -316,66 +325,78 @@ Quello che segue è lo stato verificato leggendo il codice, non pianificato.
 | 1 | Schema unico del campione sensore | fatto | 14 campi |
 | 2 | Heartbeat e stato dei nodi | fatto | |
 | 3 | Timeout, dato stale, perdita nodo | fatto | Un battito scartato non rinvia il timeout |
-| 4 | Adapter ESP32-S3 seriale o CAN | da fare | |
+| 4 | Adapter ESP32-S3 seriale o CAN | da fare | È il prossimo passo, e apre P4 |
 | 5 | Adapter SocketCAN su Raspberry | da fare | Le interfacce `can_a`, `can_b`, `vcan0` esistono già sul nodo black box |
-| 6 | Provider reali al banco prova | da fare | |
-| 7 | Priorità e failover primario-secondario | parziale | `SourceArbitrator` implementato e testato, ma non collegato |
-| 8 | Registrare telemetria, guasti e cambi sorgente | parziale | Il formato li prevede e li rilegge; nessuno li scrive ancora dal vivo |
+| 6 | Provider reali al banco prova | fatto | Il banco è alimentato dalla registrazione reale del Pixhawk, non dal simulatore |
+| 7 | Priorità e failover primario-secondario | fatto | `SnapshotArbitrator`, arbitrato **per grandezza**: la posizione può venire dal Pixhawk mentre l'assetto resta simulato, che è lo scenario di guasto parziale |
+| 8 | Registrare telemetria, guasti e cambi sorgente | fatto | Eventi nodo e cambi sorgente finiscono nel registro e si rileggono |
 
-### 8.3 Tre moduli di sicurezza pronti ma non collegati
+### 8.3 Le protezioni sono ora sul percorso
 
-Oltre all'elenco dell'handoff sono stati implementati due controlli che coprono
-i modi in cui un dato può essere presente, plausibile e falso. `ADR-004` li
-motiva.
+Nella versione precedente di questo checkpoint la voce più importante era che
+tre controlli esistevano, erano testati e non erano collegati a niente. Non è
+più così, e la differenza è verificabile leggendo gli include:
 
-- `StasisMonitor` rileva il **valore fermo**: un nodo che trasmette
-  regolarmente, con sequenza crescente e checksum valido, portando un valore che
-  non cambia più perché il sensore dietro è morto. Nessuno dei controlli
-  precedenti lo vedeva, perché tutti guardano il flusso e non il contenuto.
-- `CrossCheck` confronta grandezze ottenute per vie indipendenti e finalmente
-  produce quel `Validity::disagree` che esisteva nel modello dati dal primo
-  giorno senza che niente lo generasse.
+| Controllo | Dove agisce | Che cosa intercetta |
+|---|---|---|
+| `SnapshotArbitrator` | `MavlinkPipeline` | La sorgente caduta, per singola grandezza |
+| `StasisMonitor` | `FlightModel` | Il valore fermo: un nodo che trasmette regolarmente portando un numero che non cambia più perché il sensore dietro è morto |
+| `CrossCheck` | `FlightModel` | Il sensore che sbaglia in modo coerente, contraddetto da una catena indipendente |
 
-Va però detto con chiarezza: insieme al `SourceArbitrator` sono **tre moduli
-implementati, testati e non ancora innestati nel percorso dei dati**. Zero
-riferimenti a tutti e tre in `mavlink_adapter.cpp`. Finché restano scollegati
-non proteggono nulla, e il rischio è che la loro esistenza venga scambiata per
-copertura.
+Le prove non verificano che i tre moduli funzionino, cosa che fanno già i loro
+test: verificano che siano **raggiunti partendo dai byte**. La differenza è
+sostanziale, e per un certo tempo la seconda non era vera.
 
-### 8.4 Modello dati: colmato
+### 8.4 Due difetti trovati collegando, non scrivendo
+
+Meritano di restare scritti perché nessuno dei due si sarebbe visto senza far
+passare dati veri lungo la catena intera.
+
+**Il marcatore di simulazione si perdeva invecchiando.** `Validity` ammette un
+solo stato per volta, quindi un campione simulato che scadeva diventava `stale` e
+diventava indistinguibile da un dato reale scaduto. Il marcatore vive ora in
+`SampleOrigin::simulated` e sopravvive a ogni transizione.
+
+**L'arbitro cancellava la provenienza.** Quando nessuna sorgente era utilizzabile
+e non ne era mai stata scelta una, restituiva un campione vuoto. Sulla
+registrazione reale il sensore differenziale è dichiarato non sano, come è giusto
+con `ARSPD_USE` a zero: l'adapter traduceva correttamente la velocità con
+segnale, unità e valore, e dopo l'arbitrato diventava segnale sconosciuto, nessuna
+unità, valore zero. Il registro perdeva l'identità della grandezza proprio nel
+caso in cui serve saperla, e non è un caso limite: è lo stato normale di questo
+banco.
+
+### 8.5 Modello dati: colmato
 
 `Sample<T>` portava 7 campi contro i 14 richiesti dal paragrafo 17.2. Ora li
 porta tutti: identificativo del segnale, nodo, canale, valore grezzo, unità,
-marcatore di simulazione, revisione di calibrazione e tempo UTC, quest'ultimo
-con un valore esplicito per "non affidabile".
+marcatore di simulazione, revisione di calibrazione e tempo UTC, quest'ultimo con
+un valore esplicito per "non affidabile".
 
-Nel farlo è emerso un difetto reale. `Validity` ammette un solo stato per volta,
-quindi un campione simulato che invecchiava diventava `stale` e perdeva ogni
-traccia di essere simulato: il PFD mostrava STALE, indistinguibile da un dato
-reale scaduto, contro il paragrafo 19. Il marcatore vive ora in
-`SampleOrigin::simulated` e sopravvive a qualsiasi transizione.
-
-### 8.5 Decisioni architetturali registrate
+### 8.6 Decisioni architetturali registrate
 
 I due numeri liberi nella numerazione delle ADR sono stati usati:
 
-- `ADR-003` fissa che l'ingestion dei bus avviene su un solo nodo, la black box,
-  e che i display ricevono stato normalizzato e mai frame grezzi. Dichiara le
-  direzioni di dipendenza ammesse, verificabili leggendo gli include.
-- `ADR-004` motiva i due controlli della sezione 8.3.
+- `ADR-003` fissa che l'ingestion dei bus avviene su un solo nodo, la black box, e
+  che i display ricevono stato normalizzato e mai frame grezzi. Dichiara le
+  direzioni di dipendenza ammesse, verificabili leggendo gli include. È la ragione
+  per cui l'arbitrato non sta dentro l'adapter.
+- `ADR-004` motiva la sorveglianza del valore fermo e il confronto incrociato.
 
-### 8.6 Copertura di test
+### 8.7 Copertura di test
 
-Da 1 asserzione a **292**, distribuite su due eseguibili registrati in `ctest`:
+Da 1 asserzione a **481**, distribuite su cinque eseguibili registrati in `ctest`:
 
 | Eseguibile | Asserzioni | Copre |
 |---|---:|---|
 | `efis_core_tests` | 264 | Campione, salute nodi, parser e adapter MAVLink, registro di volo, replay, display |
-| `efis_safety_tests` | 28 | Valore fermo e confronto incrociato |
+| `efis_safety_tests` | 92 | Valore fermo e confronto incrociato |
+| `efis_arbitration_tests` | 56 | Arbitrato per grandezza, failover e reversione |
+| `efis_ingest_tests` | 36 | Che le protezioni siano raggiunte dai byte, e la registrazione verso la black box |
+| `efis_bench_tests` | 33 | Il banco prova alimentato dalla registrazione reale |
 
-Comprendono frame di riferimento prodotti da pymavlink, una registrazione reale
-di ArduPlane 4.7.0 e una prova di mutazione sulla proprietà di sicurezza del
-monitor dei nodi.
+Comprendono frame di riferimento prodotti da pymavlink, la registrazione reale di
+ArduPlane 4.7.0 e prove di mutazione sulle proprietà di sicurezza.
 
 ---
 
@@ -393,30 +414,33 @@ monitor dei nodi.
 
 ## 10. Punto esatto di ripartenza
 
-Il backbone esiste ed è percorribile dai byte in ingresso fino alla rilettura del
-registro. Quello che manca non è più costruzione: è **collegamento**. Tre pezzi
-esistono, sono testati e non toccano il percorso dei dati.
+P1 è chiuso. I tre collegamenti che mancavano sono stati fatti e verificati: le
+protezioni sul percorso dei dati, la registrazione dall'adapter verso la black
+box, il banco prova alimentato da dati reali e catturato dal display vero.
 
-1. Innestare `SourceArbitrator`, `StasisMonitor` e `CrossCheck` nell'adapter. È
-   il passo che trasforma tre moduli corretti in tre protezioni attive, e finché
-   non è fatto la copertura è apparente.
-2. Portare `efis-recorder` a registrare dall'adapter invece che dal
-   `SimulationProvider`, chiudendo il percorso vivo verso la black box.
-3. Portare i dati monitor-only al banco prova già esistente nel Setup Center,
-   dove il pilota possa vederli senza che entrino in alcuna funzione di volo.
+Il lavoro che segue apre **P4**, e il primo passo non richiede ancora di toccare
+il Pixhawk:
 
-Poi, in ordine: gli adapter ESP32-S3 e SocketCAN, che aprono P4, e solo dopo la
-chiusura del PFD, che è P2.
+1. Adapter ESP32-S3, seriale o CAN. La catena è già predisposta a riceverlo:
+   `SnapshotContribution` porta l'identità della sorgente e l'arbitrato è per
+   grandezza, quindi una seconda sorgente si innesta senza riscrivere nulla.
+2. Adapter SocketCAN sul Raspberry. Le interfacce `can_a`, `can_b` e `vcan0`
+   esistono già sul nodo black box, e `vcan0` permette di provarlo senza
+   hardware.
+3. Mappa dei canali reale e limiti verificati sul manuale motore.
+
+Poi P2, la chiusura del PFD, che a differenza di P4 richiede catture dal display
+a ogni passo.
 
 ### Aperto e non bloccante
 
-- **Qt Quick 3D su Windows** (sezione 6.2). Richiede il MaintenanceTool e quindi
-  l'utente. Il Raspberry Pi 5 compila l'intero progetto, perciò il lavoro
-  prosegue comunque.
 - **Audit in sola lettura** di server, black box e ground station (sezione 7).
-  Solo il PFD è stato verificato.
-- **Serializzazione wire** del Display Data Protocol V2, ancora da decidere.
-  `ADR-003` ha fissato i confini, non il formato sul filo.
+  Solo il PFD è stato verificato a fondo.
+- **Serializzazione wire** del Display Data Protocol V2. `ADR-003` ha fissato i
+  confini, non il formato sul filo.
+- **Prestazioni del Setup Center**: con il pannello del banco aperto sopra il
+  resto, il log riportava 9,4 fps. Non è il regime del PFD e non è stato
+  indagato.
 
 ### Da non perdere di vista
 
@@ -424,9 +448,11 @@ Il `get_throttled` a `0x0` non chiude il punto dell'alimentazione: il registro s
 azzera a ogni riavvio e la prova termica prolungata del paragrafo 8.4 non è stata
 eseguita.
 
-`ARSPD_USE` resta `0` e nessun parametro del Pixhawk è stato scritto. La scala
-del paragrafo 25 non è stata risalita di un gradino: tutto il lavoro di questa
-giornata resta osservazione in sola lettura.
+`ARSPD_USE` resta `0` e nessun parametro del Pixhawk è stato letto o scritto in
+nessun momento della giornata. La scala del paragrafo 25 non è stata risalita di
+un gradino: tutto quanto fatto resta osservazione in sola lettura, ed è la
+ragione per cui il banco prova dichiara in verde di non alimentare il controllo
+di volo.
 
 ---
 
