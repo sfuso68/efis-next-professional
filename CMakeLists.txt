@@ -227,6 +227,8 @@ if(EFIS_BUILD_EMS_NODE)
             src/nodes/ems/main.cpp
             src/nodes/ems/ems_controller.cpp
             src/nodes/ems/ems_controller.hpp
+            src/nodes/ems/capture_request.cpp
+            src/nodes/ems/capture_request.hpp
             src/renderers/qt/circular_gauge_item.cpp
             src/renderers/qt/circular_gauge_item.hpp
         )
