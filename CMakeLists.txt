@@ -73,6 +73,8 @@ if(EFIS_BUILD_QT_RENDERER)
             src/renderers/qt/connectivity_service.hpp
             src/renderers/qt/weather_service.cpp
             src/renderers/qt/weather_service.hpp
+            src/renderers/qt/sensor_bench_controller.cpp
+            src/renderers/qt/sensor_bench_controller.hpp
         )
         qt_add_qml_module(efis-pfd-qt
             URI EfisNext
@@ -82,6 +84,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/DataTape.qml
                 qml/Hsi.qml
                 qml/MaintenanceOverlay.qml
+                qml/SensorBenchPanel.qml
                 qml/FlightModeAnnunciator.qml
                 qml/SystemStatusStrip.qml
                 qml/HeadingTape.qml
