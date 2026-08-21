@@ -25,6 +25,12 @@
 using namespace std::chrono_literals;
 
 PfdController::PfdController(QObject* parent) : QObject(parent) {
+    // La simulazione resta registrata sempre: senza sensori collegati e' cio'
+    // che permette di continuare a sviluppare, e con i sensori collegati copre
+    // le grandezze che non forniscono. Il ruolo predefinito e' il ripiego, non
+    // la precedenza: il dato reale, quando c'e', vince.
+    router_.set_simulation(simulation_);
+    router_.set_simulation_role(efis::SimulationRole::fallback);
     loadAircraftProfile();
     loadCatalogIndex();
     loadNavigationIndex();
@@ -627,21 +633,55 @@ bool PfdController::navigationValid() const {
            snapshot_.attitude.heading_deg.usable();
 }
 QString PfdController::faultMode() const {
-    switch (fault_mode_) {
-        case FaultMode::none: return QStringLiteral("NONE");
-        case FaultMode::airspeed: return QStringLiteral("AIRSPEED");
-        case FaultMode::altitude: return QStringLiteral("ALTITUDE");
-        case FaultMode::navigation: return QStringLiteral("NAVIGATION");
+    return QString::fromLatin1(efis::injected_fault_name(simulation_->fault()));
+}
+
+QString PfdController::simulationRole() const {
+    return QString::fromLatin1(efis::simulation_role_name(router_.simulation_role()));
+}
+
+QString PfdController::attitudeSource() const {
+    switch (router_.arbitrator().selected_for(efis::SignalId::roll)) {
+        case efis::SourceId::simulation: return QStringLiteral("SIM");
+        case efis::SourceId::pixhawk_primary: return QStringLiteral("PIXHAWK");
+        case efis::SourceId::esp32_legacy: return QStringLiteral("ESP32");
+        case efis::SourceId::dlvr_legacy: return QStringLiteral("DLVR");
+        case efis::SourceId::nav_rf: return QStringLiteral("NAV RF");
+        case efis::SourceId::nav_synthetic: return QStringLiteral("NAV SYN");
+        case efis::SourceId::unknown: break;
     }
     return QStringLiteral("NONE");
 }
-void PfdController::cycleFault() {
-    switch (fault_mode_) {
-        case FaultMode::none: fault_mode_ = FaultMode::airspeed; break;
-        case FaultMode::airspeed: fault_mode_ = FaultMode::altitude; break;
-        case FaultMode::altitude: fault_mode_ = FaultMode::navigation; break;
-        case FaultMode::navigation: fault_mode_ = FaultMode::none; break;
+
+// Vero quando almeno una grandezza mostrata sul PFD non viene dal mondo reale.
+// Il quadro deve poterlo dichiarare anche in un punto solo, oltre alle etichette
+// dei singoli campi: il paragrafo 19 dell'handoff non ammette che un dato
+// simulato possa passare per reale.
+bool PfdController::showingSimulatedData() const {
+    return snapshot_.attitude.roll_deg.is_simulated() ||
+           snapshot_.air_data.indicated_airspeed_kt.is_simulated() ||
+           snapshot_.air_data.pressure_altitude_ft.is_simulated() ||
+           snapshot_.position.latitude_deg.is_simulated();
+}
+
+void PfdController::cycleSimulationRole() {
+    switch (router_.simulation_role()) {
+        case efis::SimulationRole::fallback:
+            router_.set_simulation_role(efis::SimulationRole::primary);
+            break;
+        case efis::SimulationRole::primary:
+            router_.set_simulation_role(efis::SimulationRole::disabled);
+            break;
+        case efis::SimulationRole::disabled:
+            router_.set_simulation_role(efis::SimulationRole::fallback);
+            break;
     }
+    qInfo().noquote() << "event=simulation_role role=" << simulationRole();
+    emit snapshotChanged();
+}
+
+void PfdController::cycleFault() {
+    simulation_->cycle_fault();
     qInfo().noquote() << "event=fault_injection mode=" << faultMode();
 }
 qulonglong PfdController::sequence() const { return snapshot_.sequence; }
@@ -690,19 +730,13 @@ void PfdController::cycleEngineFault() {
 void PfdController::updateSnapshot() {
     const auto now = efis::MonoClock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - started_at_);
-    auto input = provider_.sample(now, elapsed);
-    switch (fault_mode_) {
-        case FaultMode::none: break;
-        case FaultMode::airspeed:
-            input.air_data.indicated_airspeed_kt.validity = efis::Validity::unavailable;
-            break;
-        case FaultMode::altitude:
-            input.air_data.pressure_altitude_ft.validity = efis::Validity::unavailable;
-            break;
-        case FaultMode::navigation:
-            input.navigation.cdi_deviation_dots.validity = efis::Validity::unavailable;
-            break;
-    }
+    // Il display non sceglie piu' la sorgente: consuma cio' che il router
+    // arbitra. Oggi e' registrata la sola simulazione, perche' su un nodo
+    // display non deve arrivare alcun frame di bus: lo stato normalizzato viene
+    // dal nodo di ingestion, come stabilito dalla ADR-003. Quando quel
+    // collegamento esistera' sara' una sorgente in piu', e qui non cambiera'
+    // nulla.
+    auto input = router_.poll(now, elapsed);
     snapshot_ = model_.normalize(std::move(input), now);
     engine_snapshot_ = engine_provider_.sample(now, elapsed);
     if (trend_initialized_) {

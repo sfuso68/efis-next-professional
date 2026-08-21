@@ -1,8 +1,11 @@
 #pragma once
 
 #include "efis/core/flight_model.hpp"
-#include "efis/providers/simulation_provider.hpp"
+#include "efis/core/flight_source.hpp"
+#include "efis/providers/simulation_source.hpp"
 #include "efis/providers/engine_simulation_provider.hpp"
+
+#include <memory>
 
 #include <QObject>
 #include <QTimer>
@@ -38,6 +41,9 @@ class PfdController final : public QObject {
     Q_PROPERTY(bool altitudeValid READ altitudeValid NOTIFY snapshotChanged)
     Q_PROPERTY(bool navigationValid READ navigationValid NOTIFY snapshotChanged)
     Q_PROPERTY(QString faultMode READ faultMode NOTIFY snapshotChanged)
+    Q_PROPERTY(QString simulationRole READ simulationRole NOTIFY snapshotChanged)
+    Q_PROPERTY(QString attitudeSource READ attitudeSource NOTIFY snapshotChanged)
+    Q_PROPERTY(bool showingSimulatedData READ showingSimulatedData NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong blackBoxRecords READ blackBoxRecords NOTIFY snapshotChanged)
@@ -119,6 +125,10 @@ public:
     [[nodiscard]] bool navigationValid() const;
     [[nodiscard]] QString faultMode() const;
     Q_INVOKABLE void cycleFault();
+    [[nodiscard]] QString simulationRole() const;
+    [[nodiscard]] QString attitudeSource() const;
+    [[nodiscard]] bool showingSimulatedData() const;
+    Q_INVOKABLE void cycleSimulationRole();
     [[nodiscard]] qulonglong sequence() const;
     [[nodiscard]] QString blackBoxState() const;
     [[nodiscard]] qulonglong blackBoxRecords() const;
@@ -208,15 +218,18 @@ private:
     [[nodiscard]] QString stagingProfilePath() const;
     [[nodiscard]] QString backupDirectoryPath() const;
     void appendSetupAudit(const QString& action, const QString& result, const QString& detail) const;
-    efis::SimulationProvider provider_{42};
+    // Il display non conosce piu' una sorgente concreta: consuma cio' che il
+    // router arbitra. Aggiungere il collegamento verso il nodo di ingestion
+    // significhera' registrare una sorgente in piu', non toccare questa classe.
+    std::shared_ptr<efis::SimulationSource> simulation_{
+        std::make_shared<efis::SimulationSource>(42)};
+    efis::FlightSourceRouter router_{};
     efis::EngineSimulationProvider engine_provider_{84};
     efis::FlightModel model_{};
     efis::MonoTime started_at_{efis::MonoClock::now()};
     efis::FlightSnapshot snapshot_{};
     efis::engine::EngineSnapshot engine_snapshot_{};
     QTimer timer_;
-    enum class FaultMode { none, airspeed, altitude, navigation };
-    FaultMode fault_mode_{FaultMode::none};
     double previous_airspeed_{};
     double airspeed_trend_{};
     bool trend_initialized_{};

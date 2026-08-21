@@ -79,6 +79,17 @@ public:
     // servita da nessuno.
     [[nodiscard]] SourceId selected_for(SignalId signal) const noexcept;
 
+    // Azzera la selezione di tutte le grandezze, senza toccare le statistiche.
+    //
+    // Serve quando la priorita' delle sorgenti cambia per decisione
+    // dell'operatore. Il tempo di permanenza esiste per non inseguire una
+    // sorgente che oscilla, non per rallentare una riconfigurazione voluta:
+    // senza questo, chi cambia configurazione non vedrebbe accadere nulla per
+    // qualche secondo e la crederebbe non applicata. Le selezioni successive
+    // ripartono da capo e vengono annunciate come iniziali, cosi' la black box
+    // registra che la scelta e' ricominciata.
+    void reset() noexcept;
+
 private:
     ArbitrationPolicy policy_;
     std::vector<SourceArbitrator<double>> numeric_;

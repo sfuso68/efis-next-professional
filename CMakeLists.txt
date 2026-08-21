@@ -14,6 +14,7 @@ add_library(efis_core
     src/core/flight_model.cpp
     src/core/node_health.cpp
     src/core/snapshot_arbitrator.cpp
+    src/core/flight_source.cpp
     src/core/stasis_monitor.cpp
     src/core/cross_check.cpp
     src/recording/flight_record.cpp
@@ -22,6 +23,7 @@ add_library(efis_core
     src/recording/recorder_status.cpp
     src/display/display_model.cpp
     src/providers/simulation_provider.cpp
+    src/providers/simulation_source.cpp
     src/providers/engine_simulation_provider.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp

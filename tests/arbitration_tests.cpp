@@ -5,10 +5,12 @@
 // smette di farlo. Tenerle separate fa vedere subito quale delle due e' caduta.
 
 #include "efis/core/flight_model.hpp"
+#include "efis/core/flight_source.hpp"
 #include "efis/core/snapshot_arbitrator.hpp"
 #include "efis/io/byte_source.hpp"
 #include "efis/providers/mavlink_adapter.hpp"
 #include "efis/providers/simulation_provider.hpp"
+#include "efis/providers/simulation_source.hpp"
 
 #include <array>
 #include <chrono>
@@ -16,6 +18,8 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <string>
+#include <memory>
 #include <vector>
 
 namespace {
@@ -42,6 +46,32 @@ efis::Sample<double> reading(double value, efis::SourceId source,
     sample.origin.unit = efis::Unit::degree;
     return sample;
 }
+
+
+// Sorgente finta che pubblica soltanto l'assetto, come farebbe un controllo di
+// volo che non ha ancora il fix satellitare.
+class AttitudeOnlySource final : public efis::FlightSource {
+public:
+    explicit AttitudeOnlySource(double roll) : roll_(roll) {}
+    [[nodiscard]] efis::SourceId source() const noexcept override {
+        return efis::SourceId::pixhawk_primary;
+    }
+    [[nodiscard]] efis::FlightSnapshot poll(efis::MonoTime now,
+                                            std::chrono::milliseconds) override {
+        efis::FlightSnapshot snapshot{};
+        snapshot.attitude.roll_deg =
+            reading(roll_, efis::SourceId::pixhawk_primary, efis::SignalId::roll,
+                    efis::Validity::valid, now);
+        return snapshot;
+    }
+    void set_roll(double roll) noexcept { roll_ = roll; }
+    void fail() noexcept { roll_ = 0.0; failed_ = true; }
+    [[nodiscard]] bool failed() const noexcept { return failed_; }
+
+private:
+    double roll_;
+    bool failed_{};
+};
 
 }  // namespace
 
@@ -242,6 +272,103 @@ int main() {
     require(!labelling.events().empty(), "the initial selection produced an event");
     labelling.clear_events();
     require(labelling.events().empty(), "collected events must be released");
+
+    // --- Il ruolo della simulazione, ADR-003 ---------------------------------
+    //
+    // La simulazione non e' un residuo da togliere quando arriveranno i sensori
+    // veri: e' cio' che permette di lavorare al banco quando i sensori non ci
+    // sono, sono in parte collegati o si stanno tarando. Deve pero' essere una
+    // scelta dichiarata, non un comportamento implicito.
+    auto real = std::make_shared<AttitudeOnlySource>(7.5);
+    auto sim = std::make_shared<efis::SimulationSource>(42);
+
+    efis::FlightSourceRouter router{{.reversion_dwell = 2000ms}};
+    router.add_source(real);
+    router.set_simulation(sim);
+    require(router.simulation_role() == efis::SimulationRole::fallback,
+            "the default role must be fallback, never precedence over real data");
+
+    // Ripiego: il dato reale vince dove c'e', la simulazione copre il resto.
+    const auto covered = router.poll(now, 1s);
+    require(covered.attitude.roll_deg.value == 7.5,
+            "with the simulation in fallback the real attitude must win");
+    require(!covered.attitude.roll_deg.is_simulated(),
+            "a real attitude must not be reported as simulated");
+    require(covered.position.latitude_deg.is_simulated(),
+            "what the real source does not publish must be covered by the simulation");
+    require(covered.position.latitude_deg.usable(),
+            "the covered position must be usable at the bench");
+
+    // Precedenza: serve a riprodurre uno scenario deterministico avendo comunque
+    // i sensori collegati. Il dato reale continua ad arrivare, ma non e' quello
+    // mostrato, e ogni campione lo dichiara.
+    router.set_simulation_role(efis::SimulationRole::primary);
+    const auto forced = router.poll(now + 20ms, 1020ms);
+    require(forced.attitude.roll_deg.is_simulated(),
+            "with the simulation as primary even the attitude must be simulated");
+    require(forced.attitude.roll_deg.value != 7.5,
+            "the simulated attitude must replace the real one, not echo it");
+
+    // Disabilitata: cio' che i sensori non forniscono resta indisponibile. E'
+    // l'unica configurazione onesta per una prova che debba dire qualcosa sul
+    // comportamento reale.
+    router.set_simulation_role(efis::SimulationRole::disabled);
+    const auto bare = router.poll(now + 3s, 4s);
+    require(bare.attitude.roll_deg.value == 7.5,
+            "with the simulation disabled the real attitude must be shown");
+    require(!bare.position.latitude_deg.usable(),
+            "with the simulation disabled an absent position must stay absent");
+    require(!bare.position.latitude_deg.is_simulated(),
+            "nothing simulated may reach the snapshot when the role is disabled");
+
+    // Lo scenario simulato avanza anche mentre e' disabilitato. Riattivandolo
+    // non riparte da dove era stato spento: un salto, al banco, si scambia per
+    // un guasto.
+    const auto while_disabled = router.simulated_contribution();
+    require(while_disabled.attitude.roll_deg.origin.signal == efis::SignalId::roll,
+            "the simulation must keep being polled while disabled");
+    router.set_simulation_role(efis::SimulationRole::fallback);
+    const auto resumed = router.poll(now + 3s + 20ms, 4020ms);
+    require(resumed.position.latitude_deg.is_simulated(),
+            "re-enabling the simulation must cover the missing position again");
+
+    // Guasto iniettato sul dato simulato. Rende la grandezza indisponibile, non
+    // la porta a zero: uno zero e' un valore, e un valore si mostra.
+    efis::FlightSourceRouter bench{{.reversion_dwell = 2000ms}};
+    auto only_sim = std::make_shared<efis::SimulationSource>(42);
+    bench.set_simulation(only_sim);
+    const auto healthy = bench.poll(now, 1s);
+    require(healthy.air_data.indicated_airspeed_kt.usable(),
+            "without an injected fault the simulated airspeed must be usable");
+
+    only_sim->set_fault(efis::InjectedFault::airspeed);
+    const auto broken = bench.poll(now + 20ms, 1020ms);
+    require(!broken.air_data.indicated_airspeed_kt.usable(),
+            "an injected fault must make the quantity unavailable");
+    require(broken.air_data.indicated_airspeed_kt.value != 0.0 ||
+                broken.air_data.indicated_airspeed_kt.validity ==
+                    efis::Validity::unavailable,
+            "an unavailable quantity must not be presented as a plausible zero");
+
+    require(std::string{efis::injected_fault_name(efis::InjectedFault::airspeed)} ==
+                "AIRSPEED",
+            "fault names must stay stable, they end up in the logs");
+    require(std::string{efis::simulation_role_name(efis::SimulationRole::primary)} ==
+                "PRIMARY",
+            "role names must stay stable, they end up in the logs");
+
+    // Un guasto sul simulato viene coperto dal dato reale, se c'e'. E' il caso
+    // che rende utile l'iniezione: si prova la degradazione senza scollegare
+    // nulla e senza restare al buio.
+    efis::FlightSourceRouter mixed{{.reversion_dwell = 2000ms}};
+    auto attitude_source = std::make_shared<AttitudeOnlySource>(3.25);
+    auto covering_sim = std::make_shared<efis::SimulationSource>(42);
+    mixed.add_source(attitude_source);
+    mixed.set_simulation(covering_sim);
+    const auto before_fault = mixed.poll(now, 1s);
+    require(before_fault.attitude.roll_deg.value == 3.25,
+            "the real attitude must be in use before the fault");
+    require(mixed.source_count() == 1, "one real source must be registered");
 
     std::cout << "All EFIS arbitration tests passed\n";
 }

@@ -157,6 +157,11 @@ FlightSnapshot SnapshotArbitrator::combine(
     return out;
 }
 
+void SnapshotArbitrator::reset() noexcept {
+    for (auto& arbitrator : numeric_) arbitrator = SourceArbitrator<double>{policy_};
+    for (auto& arbitrator : discrete_) arbitrator = SourceArbitrator<bool>{policy_};
+}
+
 SourceId SnapshotArbitrator::selected_for(SignalId signal) const noexcept {
     for (std::size_t field = 0; field < numeric_count; ++field) {
         if (numeric_fields[field].signal == signal) {
