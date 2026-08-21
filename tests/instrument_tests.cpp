@@ -7,6 +7,7 @@
 // opposte.
 
 #include "efis/instruments/dial.hpp"
+#include "efis/instruments/horizon.hpp"
 #include "efis/core/altimetry.hpp"
 #include "efis/core/flight_dynamics.hpp"
 #include "efis/providers/simulation_provider.hpp"
@@ -603,6 +604,156 @@ int main() {
         require(label.angle_deg >= 0.0 && label.angle_deg < 360.0,
                 "every figure must sit within one turn");
     }
+
+
+    // --- Orizzonte artificiale ------------------------------------------------
+    //
+    // Il quadro ruota in senso opposto al rollio e trasla col beccheggio: e' il
+    // mondo a inclinarsi, non l aeroplano. Invertire uno dei due versi produce
+    // uno strumento che si legge benissimo e mostra l assetto specchiato.
+    const Sizing horizon_size{480.0};
+
+    const Horizon level = describe_attitude({valid(0.0), valid(0.0)}, horizon_size);
+    require(level.has_attitude, "a valid attitude must be shown");
+    require(close_to(level.rotation_deg, 0.0), "wings level means no rotation");
+    require(close_to(level.translation, 0.0), "level flight means no translation");
+
+    // Rollio a destra: il quadro ruota a sinistra della stessa quantita.
+    const Horizon banked = describe_attitude({valid(30.0), valid(0.0)}, horizon_size);
+    require(close_to(banked.rotation_deg, -30.0),
+            "a right bank must rotate the world to the left");
+    require(close_to(banked.bank_pointer_deg, 30.0),
+            "the bank pointer follows the aircraft, not the world");
+
+    // A cabrare l orizzonte scende, quindi il quadro trasla verso il basso.
+    const Horizon climbing = describe_attitude({valid(0.0), valid(10.0)}, horizon_size);
+    require(climbing.translation > 0.0,
+            "pitching up must move the horizon down the instrument");
+    const Horizon diving = describe_attitude({valid(0.0), valid(-10.0)}, horizon_size);
+    require(diving.translation < 0.0,
+            "pitching down must move the horizon up the instrument");
+    require(close_to(climbing.translation, -diving.translation),
+            "equal pitch up and down must move the horizon equally");
+
+    // Il rollio si avvolge invece di uscire di scala: oltre i centottanta gradi
+    // l aeroplano e rovescio, non fuori limite.
+    const Horizon inverted = describe_attitude({valid(200.0), valid(0.0)}, horizon_size);
+    require(inverted.has_attitude, "an inverted aircraft still has an attitude");
+    require(close_to(inverted.rotation_deg, 160.0),
+            "roll must wrap to the shorter way round");
+
+    // La scala di beccheggio ha un gradino ogni cinque gradi, lungo ogni dieci,
+    // e l orizzonte non e un gradino.
+    require(!level.ladder.empty(), "the pitch ladder must be drawn");
+    for (const Rung& rung : level.ladder) {
+        require(std::abs(rung.pitch_deg) > 1e-9,
+                "the horizon itself is not a rung of the ladder");
+    }
+    std::size_t labelled = 0;
+    for (const Rung& rung : level.ladder) {
+        if (!rung.text.empty()) ++labelled;
+    }
+    require(labelled > 0, "the ten degree rungs must carry their figure");
+    require(labelled < level.ladder.size(),
+            "the five degree rungs must stay unlabelled, or the ladder is unreadable");
+
+    // La scala si dirada con la dimensione, come le tacche dei quadranti: su un
+    // display circolare piccolo i gradini ogni cinque gradi si toccherebbero.
+    const Horizon small_horizon = describe_attitude({valid(0.0), valid(0.0)},
+                                                    Sizing{240.0});
+    require(small_horizon.ladder.size() <= level.ladder.size(),
+            "a smaller horizon must not carry a denser ladder");
+    require(!small_horizon.ladder.empty(),
+            "even the smallest horizon keeps a usable ladder");
+    require(small_horizon.has_attitude,
+            "thinning the ladder must not remove the attitude");
+
+    // Assetto assente: nessun quadro. Un orizzonte fermo e la riproduzione
+    // fedele di un indicatore guasto, e si legge come volo livellato e ali
+    // orizzontali.
+    const Horizon dead = describe_attitude(
+        {{0.0, efis::Validity::unavailable, false}, valid(0.0)}, horizon_size);
+    require(!dead.has_attitude,
+            "a failed attitude must not leave a level horizon on the glass");
+    require(dead.ladder.empty(), "no attitude means no ladder either");
+    require(dead.annunciation == Annunciation::failed, "a failed attitude must say so");
+    require(!dead.bank_scale.empty(),
+            "the bank scale belongs to the bezel and stays");
+
+    // Rollio e beccheggio vengono dalla stessa piattaforma: basta che uno manchi.
+    const Horizon half_dead = describe_attitude(
+        {valid(0.0), {0.0, efis::Validity::unavailable, false}}, horizon_size);
+    require(!half_dead.has_attitude,
+            "attitude needs both angles: half of it is not an attitude");
+
+    // Beccheggio impossibile: nessun aeromobile supera la verticale, e disegnarlo
+    // farebbe uscire il quadro dallo strumento senza che nulla lo dichiari.
+    const Horizon absurd_pitch = describe_attitude({valid(0.0), valid(120.0)},
+                                                   horizon_size);
+    require(!absurd_pitch.has_attitude, "a pitch beyond vertical must not be drawn");
+    require(absurd_pitch.annunciation == Annunciation::out_of_range,
+            "a pitch beyond vertical must be declared out of range");
+
+    // --- Virosbandometro ------------------------------------------------------
+    //
+    // Due grandezze indipendenti, ed e la loro indipendenza a renderlo utile:
+    // una virata puo essere giusta e scoordinata, o coordinata e sbagliata.
+    const TurnCoordinator straight = describe_turn({valid(0.0), valid(0.0)}, horizon_size);
+    require(straight.has_turn && straight.has_ball,
+            "both quantities present means both are shown");
+    require(close_to(straight.aircraft_bank_deg, 0.0),
+            "no turn means the aircraft symbol stays level");
+    require(close_to(straight.ball_offset, 0.0),
+            "a coordinated turn keeps the ball centred");
+
+    // Virata a destra: la sagoma si inclina a destra, in proporzione al rateo.
+    const TurnCoordinator right = describe_turn({valid(3.0), valid(0.0)}, horizon_size);
+    require(right.aircraft_bank_deg > 0.0, "turning right must bank the symbol right");
+    const TurnCoordinator left = describe_turn({valid(-3.0), valid(0.0)}, horizon_size);
+    require(close_to(left.aircraft_bank_deg, -right.aircraft_bank_deg),
+            "the indication must be symmetric");
+    const TurnCoordinator faster = describe_turn({valid(6.0), valid(0.0)}, horizon_size);
+    require(faster.aircraft_bank_deg > right.aircraft_bank_deg,
+            "a faster turn must bank the symbol further");
+
+    // La virata standard e il riferimento per cui il quadrante esiste: alla
+    // tacca ci si arriva esattamente a tre gradi al secondo.
+    require(straight.standard_marks.size() == 2,
+            "there is a standard rate mark on each side");
+    require(close_to(right.aircraft_bank_deg, straight.standard_marks[1].angle_deg),
+            "three degrees per second must put the symbol on the standard mark");
+
+    // Oltre il limite del quadrante la sagoma resta al limite: farla ruotare
+    // oltre la verticale renderebbe illeggibile proprio la virata piu violenta.
+    const TurnCoordinator violent = describe_turn({valid(30.0), valid(0.0)}, horizon_size);
+    require(close_to(violent.aircraft_bank_deg, faster.aircraft_bank_deg),
+            "beyond the scale the symbol stops, it does not keep rotating");
+
+    // La pallina esce verso l esterno della virata quando si scivola.
+    const TurnCoordinator slipping = describe_turn({valid(3.0), valid(0.1)}, horizon_size);
+    require(slipping.ball_offset > 0.0, "lateral acceleration must move the ball");
+    const TurnCoordinator hard_slip = describe_turn({valid(3.0), valid(5.0)}, horizon_size);
+    require(close_to(hard_slip.ball_offset, 1.0),
+            "the ball stops at the end of the tube, it does not leave it");
+
+    // Le due grandezze si guastano separatamente, e lo strumento conserva meta
+    // della propria utilita: dichiararlo guasto per intero la butterebbe via.
+    const TurnCoordinator no_gyro = describe_turn(
+        {{0.0, efis::Validity::unavailable, false}, valid(0.0)}, horizon_size);
+    require(!no_gyro.has_turn, "a lost turn rate removes the aircraft symbol");
+    require(no_gyro.has_ball, "the ball does not depend on the gyro");
+    require(no_gyro.annunciation == Annunciation::none,
+            "half an instrument is still half useful, and must not be declared dead");
+
+    const TurnCoordinator nothing = describe_turn(
+        {{0.0, efis::Validity::unavailable, false},
+         {0.0, efis::Validity::unavailable, false}}, horizon_size);
+    require(!nothing.has_turn && !nothing.has_ball,
+            "with neither quantity nothing is indicated");
+    require(nothing.annunciation == Annunciation::failed,
+            "only when both are gone is the instrument declared failed");
+    require(!nothing.standard_marks.empty(),
+            "the standard rate marks belong to the dial and stay");
 
 
     std::cout << "All EFIS instrument tests passed\n";

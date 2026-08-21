@@ -9,6 +9,7 @@
 
 #include "efis/core/signal_access.hpp"
 #include "efis/instruments/dial.hpp"
+#include "efis/instruments/horizon.hpp"
 #include "efis/instruments/svg_dial_renderer.hpp"
 #include "efis/providers/engine_simulation_provider.hpp"
 #include "efis/providers/simulation_provider.hpp"
@@ -25,11 +26,14 @@ namespace {
 using namespace efis;
 using namespace efis::instruments;
 
+// Modello sul tipo di strumento: quadrante, orizzonte e virosbandometro hanno
+// geometrie diverse e lo stesso modo di finire su un file.
+template <class Instrument>
 void write(const std::filesystem::path& directory, const std::string& name,
-           const Dial& dial, const DialStyle& style) {
+           const Instrument& instrument, const DialStyle& style) {
     const auto path = directory / (name + ".svg");
     std::ofstream out{path};
-    out << render_svg(dial, style);
+    out << render_svg(instrument, style);
     std::cout << "  " << path.filename().string() << "\n";
 }
 
@@ -155,6 +159,38 @@ int main(int argc, char** argv) {
     write(directory, "14-girodirezionale-guasto-480",
           describe_heading({{0.0, Validity::unavailable, false}, course}, Sizing{480.0}),
           DialStyle{"HDG", "DEG", 480.0});
+
+    // Orizzonte artificiale con l'assetto del simulatore.
+    const AttitudeReading attitude{from(find_signal(flight, SignalId::roll)),
+                                   from(find_signal(flight, SignalId::pitch))};
+    write(directory, "15-orizzonte-480", describe_attitude(attitude, Sizing{480.0}),
+          DialStyle{"ATT", "", 480.0});
+
+    // Un rollio piu' marcato, per vedere il quadro inclinato.
+    write(directory, "16-orizzonte-virata-480",
+          describe_attitude({{25.0, Validity::simulated, true},
+                             {6.0, Validity::simulated, true}}, Sizing{480.0}),
+          DialStyle{"ATT", "", 480.0});
+
+    // Piattaforma perduta: nessun quadro. Un orizzonte fermo si leggerebbe come
+    // volo livellato, che e' la lettura errata piu' pericolosa di tutte.
+    write(directory, "17-orizzonte-guasto-480",
+          describe_attitude({{0.0, Validity::unavailable, false},
+                             {0.0, Validity::unavailable, false}}, Sizing{480.0}),
+          DialStyle{"ATT", "", 480.0});
+
+    // Virosbandometro col rateo e la scivolata del simulatore.
+    const TurnReading turn{from(find_signal(flight, SignalId::turn_rate)),
+                           from(find_signal(flight, SignalId::lateral_acceleration))};
+    write(directory, "18-virosbandometro-480", describe_turn(turn, Sizing{480.0}),
+          DialStyle{"T/C", "", 480.0});
+
+    // Virata standard a destra, scoordinata: la sagoma sulla tacca, la pallina
+    // fuori centro.
+    write(directory, "19-virosbandometro-scivolata-480",
+          describe_turn({{3.0, Validity::simulated, true},
+                         {0.09, Validity::simulated, true}}, Sizing{480.0}),
+          DialStyle{"T/C", "", 480.0});
 
     return 0;
 }

@@ -31,6 +31,7 @@ add_library(efis_core
     src/core/flight_dynamics.cpp
     src/core/signal_access.cpp
     src/instruments/dial.cpp
+    src/instruments/horizon.cpp
     src/instruments/svg_dial_renderer.cpp
 )
 target_include_directories(efis_core PUBLIC include)

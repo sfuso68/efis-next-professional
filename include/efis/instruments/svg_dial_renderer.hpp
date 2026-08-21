@@ -1,6 +1,7 @@
 #pragma once
 
 #include "efis/instruments/dial.hpp"
+#include "efis/instruments/horizon.hpp"
 
 #include <string>
 
@@ -32,5 +33,10 @@ struct DialStyle final {
 };
 
 [[nodiscard]] std::string render_svg(const Dial& dial, const DialStyle& style);
+
+[[nodiscard]] std::string render_svg(const Horizon& horizon, const DialStyle& style);
+
+[[nodiscard]] std::string render_svg(const TurnCoordinator& coordinator,
+                                     const DialStyle& style);
 
 }  // namespace efis::instruments

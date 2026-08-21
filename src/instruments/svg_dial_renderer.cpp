@@ -18,6 +18,8 @@ constexpr const char* cyan = "#00C8F0";
 constexpr const char* green = "#58D330";
 constexpr const char* amber = "#FFB000";
 constexpr const char* warning = "#FF3B30";
+constexpr const char* sky = "#087AC1";
+constexpr const char* earth = "#795126";
 
 const char* band_colour(Band band) noexcept {
     switch (band) {
@@ -57,6 +59,46 @@ std::string annulus(double centre, double radius, double start_deg, double end_d
          << number(centre + inner_start.x) << " " << number(centre + inner_start.y)
          << " Z";
     return path.str();
+}
+
+// Dicitura di stato e marcatura di simulazione: identiche su ogni strumento,
+// perche' significano la stessa cosa ovunque compaiano.
+std::string annunciation_markup(Annunciation annunciation, bool simulated, double size,
+                                double centre, double radius) {
+    std::ostringstream svg;
+    svg << std::fixed << std::setprecision(2);
+    if (annunciation != Annunciation::none) {
+        const char* colour = annunciation == Annunciation::failed ? warning : amber;
+        svg << "<text x='" << centre << "' y='" << number(centre + radius * 0.72)
+            << "' text-anchor='middle' font-family='DejaVu Sans, sans-serif' font-size='"
+            << number(radius * 0.15) << "' font-weight='700' fill='" << colour << "'>"
+            << annunciation_text(annunciation) << "</text>";
+    }
+    if (simulated) {
+        const double inset = size * 0.02;
+        svg << "<rect x='" << number(inset) << "' y='" << number(inset) << "' width='"
+            << number(size - 2 * inset) << "' height='" << number(size - 2 * inset)
+            << "' fill='none' stroke='" << amber << "' stroke-width='"
+            << number(size * 0.012) << "' rx='" << number(size * 0.02) << "'/>";
+        svg << "<text x='" << centre << "' y='" << number(size - inset * 2.2)
+            << "' text-anchor='middle' font-family='DejaVu Sans, sans-serif' font-size='"
+            << number(radius * 0.12) << "' font-weight='700' fill='" << amber
+            << "'>SIMULAZIONE</text>";
+    }
+    return svg.str();
+}
+
+std::string title_markup(const DialStyle& style, double size, double centre, double radius) {
+    static_cast<void>(size);
+    std::ostringstream svg;
+    svg << std::fixed << std::setprecision(2);
+    if (!style.title.empty()) {
+        svg << "<text x='" << centre << "' y='" << number(centre - radius * 0.62)
+            << "' text-anchor='middle' font-family='DejaVu Sans, sans-serif' font-size='"
+            << number(radius * 0.13) << "' font-weight='700' fill='" << cyan << "'>"
+            << style.title << "</text>";
+    }
+    return svg.str();
 }
 
 }  // namespace
@@ -194,6 +236,168 @@ std::string render_svg(const Dial& dial, const DialStyle& style) {
             << "'>SIMULAZIONE</text>";
     }
 
+    svg << "</svg>";
+    return svg.str();
+}
+
+std::string render_svg(const Horizon& horizon, const DialStyle& style) {
+    const double size = style.size_px;
+    const double centre = size / 2.0;
+    const double radius = size * 0.42;
+
+    std::ostringstream svg;
+    svg << std::fixed << std::setprecision(2);
+    svg << "<svg xmlns='http://www.w3.org/2000/svg' width='" << size << "' height='"
+        << size << "' viewBox='0 0 " << size << " " << size << "'>";
+    svg << "<rect width='" << size << "' height='" << size << "' fill='" << background
+        << "'/>";
+    svg << "<defs><clipPath id='face'><circle cx='" << centre << "' cy='" << centre
+        << "' r='" << number(radius) << "'/></clipPath></defs>";
+
+    if (horizon.has_attitude) {
+        const double shift = radius * horizon.translation;
+        // Il quadro ruota e trasla insieme, ritagliato dal vetro dello
+        // strumento. Cielo e terra sono generosamente piu' grandi del vetro:
+        // devono coprirlo a qualunque assetto.
+        svg << "<g clip-path='url(#face)'><g transform='rotate("
+            << number(horizon.rotation_deg) << " " << centre << " " << centre
+            << ") translate(0 " << number(shift) << ")'>";
+        svg << "<rect x='" << number(centre - radius * 3.0) << "' y='"
+            << number(centre - radius * 3.0) << "' width='" << number(radius * 6.0)
+            << "' height='" << number(radius * 3.0) << "' fill='" << sky << "'/>";
+        svg << "<rect x='" << number(centre - radius * 3.0) << "' y='" << number(centre)
+            << "' width='" << number(radius * 6.0) << "' height='" << number(radius * 3.0)
+            << "' fill='" << earth << "'/>";
+        svg << "<line x1='" << number(centre - radius * 3.0) << "' y1='" << number(centre)
+            << "' x2='" << number(centre + radius * 3.0) << "' y2='" << number(centre)
+            << "' stroke='" << primary << "' stroke-width='" << number(size * 0.008)
+            << "'/>";
+
+        for (const Rung& rung : horizon.ladder) {
+            const double y = centre - radius * rung.offset;
+            const double half = radius * rung.half_width;
+            svg << "<line x1='" << number(centre - half) << "' y1='" << number(y)
+                << "' x2='" << number(centre + half) << "' y2='" << number(y)
+                << "' stroke='" << primary << "' stroke-width='" << number(size * 0.005)
+                << "'/>";
+            if (!rung.text.empty()) {
+                const double text_height = radius * 0.09;
+                for (const double side : {-1.0, 1.0}) {
+                    svg << "<text x='" << number(centre + side * (half + text_height))
+                        << "' y='" << number(y + text_height * 0.36)
+                        << "' text-anchor='middle' font-family='DejaVu Sans, sans-serif'"
+                        << " font-size='" << number(text_height) << "' fill='" << primary
+                        << "'>" << rung.text << "</text>";
+                }
+            }
+        }
+        svg << "</g></g>";
+    }
+
+    // Ghiera e scala di inclinazione: fisse, perche' e' rispetto a loro che si
+    // legge il rollio.
+    svg << "<circle cx='" << centre << "' cy='" << centre << "' r='" << number(radius)
+        << "' fill='none' stroke='" << bezel << "' stroke-width='" << number(size * 0.010)
+        << "'/>";
+    for (const Tick& tick : horizon.bank_scale) {
+        const Point from = polar(tick.angle_deg, radius * tick.inner_radius);
+        const Point to = polar(tick.angle_deg, radius * tick.outer_radius);
+        svg << "<line x1='" << number(centre + from.x) << "' y1='" << number(centre + from.y)
+            << "' x2='" << number(centre + to.x) << "' y2='" << number(centre + to.y)
+            << "' stroke='" << primary << "' stroke-width='"
+            << number(size * (tick.kind == TickKind::major ? 0.009 : 0.005))
+            << "'/>";
+    }
+
+    if (horizon.has_attitude) {
+        const Point pointer = polar(horizon.bank_pointer_deg, radius * 0.80);
+        svg << "<circle cx='" << number(centre + pointer.x) << "' cy='"
+            << number(centre + pointer.y) << "' r='" << number(size * 0.018)
+            << "' fill='" << amber << "'/>";
+    }
+
+    // Sagoma dell'aeromobile, fissa al centro: e' il riferimento immobile
+    // rispetto a cui il mondo si inclina.
+    const double wing = radius * 0.38;
+    svg << "<line x1='" << number(centre - wing) << "' y1='" << number(centre)
+        << "' x2='" << number(centre - wing * 0.25) << "' y2='" << number(centre)
+        << "' stroke='" << amber << "' stroke-width='" << number(size * 0.014) << "'/>";
+    svg << "<line x1='" << number(centre + wing * 0.25) << "' y1='" << number(centre)
+        << "' x2='" << number(centre + wing) << "' y2='" << number(centre)
+        << "' stroke='" << amber << "' stroke-width='" << number(size * 0.014) << "'/>";
+    svg << "<circle cx='" << centre << "' cy='" << centre << "' r='" << number(size * 0.012)
+        << "' fill='" << amber << "'/>";
+
+    svg << annunciation_markup(horizon.annunciation, horizon.simulated, size, centre, radius);
+    svg << title_markup(style, size, centre, radius);
+    svg << "</svg>";
+    return svg.str();
+}
+
+std::string render_svg(const TurnCoordinator& coordinator, const DialStyle& style) {
+    const double size = style.size_px;
+    const double centre = size / 2.0;
+    const double radius = size * 0.42;
+
+    std::ostringstream svg;
+    svg << std::fixed << std::setprecision(2);
+    svg << "<svg xmlns='http://www.w3.org/2000/svg' width='" << size << "' height='"
+        << size << "' viewBox='0 0 " << size << " " << size << "'>";
+    svg << "<rect width='" << size << "' height='" << size << "' fill='" << background
+        << "'/>";
+    svg << "<circle cx='" << centre << "' cy='" << centre << "' r='" << number(radius * 1.06)
+        << "' fill='" << face << "' stroke='" << bezel << "' stroke-width='"
+        << number(size * 0.006) << "'/>";
+
+    // Tacche della virata standard: il riferimento per cui il quadrante esiste.
+    for (const Tick& tick : coordinator.standard_marks) {
+        const Point from = polar(tick.angle_deg - 90.0, radius * tick.inner_radius);
+        const Point to = polar(tick.angle_deg - 90.0, radius * tick.outer_radius);
+        svg << "<line x1='" << number(centre + from.x) << "' y1='" << number(centre + from.y)
+            << "' x2='" << number(centre + to.x) << "' y2='" << number(centre + to.y)
+            << "' stroke='" << primary << "' stroke-width='" << number(size * 0.010)
+            << "'/>";
+    }
+
+    if (coordinator.has_turn) {
+        const double wing = radius * 0.62;
+        svg << "<g transform='rotate(" << number(coordinator.aircraft_bank_deg) << " "
+            << centre << " " << number(centre - radius * 0.18) << ")'>";
+        const double y = centre - radius * 0.18;
+        svg << "<line x1='" << number(centre - wing) << "' y1='" << number(y) << "' x2='"
+            << number(centre + wing) << "' y2='" << number(y) << "' stroke='" << primary
+            << "' stroke-width='" << number(size * 0.020) << "' stroke-linecap='round'/>";
+        svg << "<line x1='" << centre << "' y1='" << number(y - radius * 0.16) << "' x2='"
+            << centre << "' y2='" << number(y + radius * 0.10) << "' stroke='" << primary
+            << "' stroke-width='" << number(size * 0.016) << "' stroke-linecap='round'/>";
+        svg << "</g>";
+    }
+
+    // Il tubo della pallina, con la pallina dentro. E' una grandezza diversa da
+    // quella della sagoma, e occupa percio' una parte distinta del quadrante.
+    const double tube_y = centre + radius * 0.55;
+    const double tube_half = radius * 0.42;
+    svg << "<rect x='" << number(centre - tube_half) << "' y='"
+        << number(tube_y - radius * 0.11) << "' width='" << number(tube_half * 2.0)
+        << "' height='" << number(radius * 0.22) << "' rx='" << number(radius * 0.11)
+        << "' fill='" << background << "' stroke='" << bezel << "' stroke-width='"
+        << number(size * 0.005) << "'/>";
+    for (const double side : {-1.0, 1.0}) {
+        const double x = centre + side * radius * 0.11;
+        svg << "<line x1='" << number(x) << "' y1='" << number(tube_y - radius * 0.11)
+            << "' x2='" << number(x) << "' y2='" << number(tube_y + radius * 0.11)
+            << "' stroke='" << bezel << "' stroke-width='" << number(size * 0.005) << "'/>";
+    }
+    if (coordinator.has_ball) {
+        svg << "<circle cx='"
+            << number(centre + coordinator.ball_offset * (tube_half - radius * 0.10))
+            << "' cy='" << number(tube_y) << "' r='" << number(radius * 0.09) << "' fill='"
+            << primary << "'/>";
+    }
+
+    svg << annunciation_markup(coordinator.annunciation, coordinator.simulated, size,
+                               centre, radius);
+    svg << title_markup(style, size, centre, radius);
     svg << "</svg>";
     return svg.str();
 }
