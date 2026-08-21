@@ -126,10 +126,41 @@ grep render_health ~/efis-next/logs/ems.log | tail -5
 Il nodo aggiorna il motore a 20 Hz e non ha terreno da disegnare: `fps` molto
 sotto 20 è un risultato da indagare, non da accettare.
 
-Su `eglfs` non esiste un compositore, quindi **`grim` e gli altri strumenti di
-cattura Wayland non funzionano** su questo nodo: la verifica dell'interfaccia
-qui si fa guardando il pannello, o aggiungendo una cattura interna al
-programma. È la differenza pratica più fastidiosa rispetto al RPi5.
+## Cattura della pagina
+
+Su `eglfs` non esiste un compositore, quindi `grim` e gli altri strumenti di
+cattura Wayland non funzionano su questo nodo. Il nodo EMS ha perciò una
+cattura propria, comandata da tre variabili d'ambiente:
+
+```sh
+EFIS_CAPTURE=/tmp/ems.png EFIS_CAPTURE_SIZE=800x480 ./build/dev/efis-ems-qt
+```
+
+`EFIS_CAPTURE_SIZE` esiste perché la geometria di riferimento della pagina è
+1024×600 mentre il pannello di questo nodo è 800×480: catturare alla dimensione
+sbagliata proverebbe un layout che nessuno vedrà. `EFIS_CAPTURE_DELAY_MS`
+(predefinito 3000) attende che il motore sia avviato, altrimenti si fotografano
+gli zeri iniziali. Il programma esce da solo dopo aver salvato.
+
+**Con `-platform offscreen` la cattura non è fedele**, e va saputo prima di
+trarne conclusioni. La piattaforma offscreen non ha contesto GL, quindi Qt
+carica il backend *software* dello scene graph — verificabile con `QSG_INFO=1`,
+che stampa `Loading backend software`. Quel backend **non disegna i nodi di
+geometria personalizzati**, e i quadranti circolari sono esattamente questo:
+`CircularGaugeItem` è un `QQuickItem` con `updatePaintNode`. In una cattura
+offscreen le cinque caselle degli strumenti primari appaiono quindi **senza
+quadrante e senza lancetta**, con i soli testi.
+
+Il che rende la cattura offscreen utile per una cosa sola, ma davvero utile per
+quella: **verificare il layout** — ingombri, sovrapposizioni, testi tagliati,
+adattamento alla risoluzione — senza togliere il display a nessuno e senza root.
+
+Per una cattura fedele serve `eglfs`, cioè il pannello, cioè che il nodo EMS lo
+possieda:
+
+```sh
+EFIS_CAPTURE=/tmp/ems-reale.png QT_QPA_PLATFORM=eglfs ./build/dev/efis-ems-qt
+```
 
 ## Servizio
 
