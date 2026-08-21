@@ -112,7 +112,7 @@ std::string SvgPfdRenderer::render(const PfdView& v, RenderSize size) const {
           << "<text x='" << (x+tape_w/2) << "' y='" << (cy+13) << "' text-anchor='middle' font-size='"
           << (compact ? 30 : 38) << "' font-weight='800' fill='" << field_color(f) << "'>"
           << (is_usable(f.validity) ? number(f.value) : "---") << "</text>";
-        if (const char* flag = validity_label(f.validity); flag[0] != '\0')
+        if (const char* flag = field_label(f); flag[0] != '\0')
             s << "<text x='" << (x+tape_w/2) << "' y='" << (y+th-12)
               << "' text-anchor='middle' font-size='14' fill='" << field_color(f) << "'>" << flag << "</text>";
     };

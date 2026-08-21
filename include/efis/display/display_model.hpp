@@ -14,6 +14,12 @@ struct DisplayField final {
     double value{};
     Validity validity{Validity::unavailable};
     SourceId source{SourceId::unknown};
+
+    // Vero se il valore non descrive il mondo reale. E' un campo separato da
+    // `validity` perche' un campione simulato che invecchia diventa `stale` e
+    // perderebbe altrimenti ogni traccia di essere simulato, presentandosi come
+    // un dato reale scaduto. Il paragrafo 19 dell'handoff lo vieta.
+    bool simulated{};
 };
 
 struct PfdView final {
@@ -38,5 +44,10 @@ struct PfdView final {
 [[nodiscard]] PfdView make_pfd_view(const FlightSnapshot& snapshot,
                                     DisplayProfile profile);
 [[nodiscard]] const char* validity_label(Validity validity) noexcept;
+
+// Etichetta da mostrare accanto al valore. A differenza di validity_label tiene
+// conto anche del marcatore di simulazione, che deve restare visibile in ogni
+// stato di validita'.
+[[nodiscard]] const char* field_label(const DisplayField& field) noexcept;
 
 }  // namespace efis::display

@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 namespace {
 
@@ -209,6 +210,93 @@ int main() {
     require(recorder_status.segment == "flight-test.partial",
             "recorder heartbeat must preserve active segment");
     std::filesystem::remove_all(test_directory);
+
+    // --- Provenienza del campione, paragrafo 17.2 dell'handoff ---------------
+    //
+    // Ogni campione deve dichiarare quale grandezza trasporta, in quale unita'
+    // e se e' simulato. Senza questi dati la black box registra numeri di cui
+    // non si potra' piu' ricostruire il significato.
+    const auto provenance = efis::SimulationProvider{7}.sample(epoch + 1s, 1s);
+    require(provenance.air_data.indicated_airspeed_kt.origin.signal ==
+                efis::SignalId::indicated_airspeed,
+            "sample must declare which signal it carries");
+    require(provenance.air_data.indicated_airspeed_kt.origin.unit == efis::Unit::knot,
+            "sample must declare the unit of its engineering value");
+    require(provenance.air_data.pressure_altitude_ft.origin.unit == efis::Unit::foot,
+            "altitude must be declared in feet, not reused from airspeed");
+    require(provenance.navigation.to_flag.origin.unit == efis::Unit::boolean,
+            "discrete signals must declare a boolean unit");
+    require(provenance.attitude.roll_deg.origin.simulated,
+            "simulated data must carry an explicit simulation marker");
+    require(provenance.attitude.roll_deg.raw == provenance.attitude.roll_deg.value,
+            "simulation applies no conversion, so raw must equal the value");
+    require(!provenance.attitude.roll_deg.has_utc(),
+            "UTC must stay unavailable while no trusted time source exists");
+    require(provenance.attitude.roll_deg.origin.node == efis::node_undeclared,
+            "an unassigned node must read as undeclared, not as node zero");
+
+    // Identificativi distinti per cilindri distinti: un CHT registrato sul
+    // cilindro sbagliato e' peggio di un CHT mancante.
+    const auto cylinders = efis::EngineSimulationProvider{7}.sample(epoch + 1s, 1s);
+    require(cylinders.cht_c[0].origin.signal ==
+                efis::SignalId::cylinder_head_temperature_1,
+            "first cylinder head temperature must map to its own signal");
+    require(cylinders.cht_c[3].origin.signal ==
+                efis::SignalId::cylinder_head_temperature_4,
+            "fourth cylinder head temperature must map to its own signal");
+    require(cylinders.egt_c[2].origin.signal ==
+                efis::SignalId::exhaust_gas_temperature_3,
+            "exhaust gas temperatures must not collide with head temperatures");
+    require(cylinders.cht_c[0].origin.unit == efis::Unit::celsius,
+            "cylinder temperatures must declare degrees celsius");
+
+    // Un guasto iniettato altera la grandezza misurata, quindi deve alterare
+    // anche il valore grezzo: un raw nominale con un value anomalo descrive una
+    // conversione sbagliata, che e' un guasto diverso da quello simulato.
+    efis::EngineSimulationProvider faulted{7};
+    faulted.set_fault(efis::engine::EngineFault::low_oil_pressure);
+    const auto with_fault = faulted.sample(epoch + 1s, 1s);
+    require(with_fault.oil_pressure_psi.value == 22.0,
+            "injected fault must reach the engineering value");
+    require(with_fault.oil_pressure_psi.raw == 22.0,
+            "injected fault must reach the raw value as well");
+
+    // --- Il marcatore di simulazione sopravvive all'invecchiamento -----------
+    //
+    // Prima di questa regola un campione simulato che scadeva diventava
+    // semplicemente STALE, indistinguibile da un dato reale scaduto. Il
+    // paragrafo 19 vieta che un valore simulato possa presentarsi come reale.
+    efis::FlightModel ageing_model{200ms};
+    auto ageing_input = efis::SimulationProvider{7}.sample(epoch + 1s, 1s);
+    const auto aged = ageing_model.normalize(ageing_input, epoch + 5s);
+    require(aged.air_data.indicated_airspeed_kt.validity == efis::Validity::stale,
+            "an old sample must be marked stale");
+    require(aged.air_data.indicated_airspeed_kt.is_simulated(),
+            "a stale simulated sample must still be recognisable as simulated");
+
+    const auto aged_view = efis::display::make_pfd_view(
+        aged, efis::display::DisplayProfile::professional);
+    require(aged_view.airspeed_kt.simulated,
+            "the display must carry the simulation marker through staleness");
+    require(std::string{efis::display::field_label(aged_view.airspeed_kt)} == "SIM STALE",
+            "a stale simulated field must declare both conditions");
+    const efis::display::DisplayField real_stale{120.0, efis::Validity::stale,
+                                                 efis::SourceId::pixhawk_primary, false};
+    require(std::string{efis::display::field_label(real_stale)} == "STALE",
+            "a real stale field must not be labelled as simulated");
+    const auto aged_svg = efis::display::SvgPfdRenderer{}.render(aged_view, {1024, 600});
+    require(aged_svg.find("SIM STALE") != std::string::npos,
+            "the rendered PFD must show that the value is both simulated and stale");
+
+    // Nomi e simboli sono le intestazioni della black box: se cambiano, le
+    // registrazioni precedenti diventano illeggibili.
+    require(std::string{efis::signal_name(efis::SignalId::oil_temperature)} ==
+                "oil_temperature",
+            "signal names must stay stable for recorded data");
+    require(std::string{efis::unit_symbol(efis::Unit::foot_per_minute)} == "fpm",
+            "unit symbols must stay stable for recorded data");
+    require(efis::sample_schema_version == 2,
+            "sample schema version must match Display Data Protocol V2");
 
     std::cout << "All EFIS core tests passed\n";
 }

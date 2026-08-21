@@ -4,7 +4,7 @@ namespace efis::display {
 namespace {
 
 DisplayField field(const Sample<double>& sample) {
-    return {sample.value, sample.validity, sample.source};
+    return {sample.value, sample.validity, sample.source, sample.is_simulated()};
 }
 
 }  // namespace
@@ -40,6 +40,22 @@ const char* validity_label(Validity validity) noexcept {
         case Validity::disagree: return "DISAGREE";
     }
     return "FAIL";
+}
+
+const char* field_label(const DisplayField& field) noexcept {
+    if (!field.simulated) return validity_label(field.validity);
+    // Un valore simulato resta dichiarato tale anche quando e' scaduto o
+    // indisponibile: lo stato si aggiunge al marcatore, non lo sostituisce.
+    switch (field.validity) {
+        case Validity::valid:
+        case Validity::simulated: return "SIM";
+        case Validity::degraded: return "SIM DEG";
+        case Validity::stale: return "SIM STALE";
+        case Validity::unavailable: return "SIM FAIL";
+        case Validity::out_of_range: return "SIM RANGE";
+        case Validity::disagree: return "SIM DISAGREE";
+    }
+    return "SIM FAIL";
 }
 
 }  // namespace efis::display
