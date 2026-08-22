@@ -67,7 +67,7 @@ Rectangle {
             Rectangle { y:150*setup.uiScale; width:790*setup.uiScale; height:92*setup.uiScale; color:setup.panel; border.color:setup.line
                 Text { x:16*setup.uiScale; y:14*setup.uiScale; text:"ENGINE STATE"; color:setup.cyan; font.pixelSize:9*setup.uiScale; font.bold:true }
                 Text { x:16*setup.uiScale; y:43*setup.uiScale; text:controller.engineRunning?"RUNNING":"STOPPED"; color:controller.engineRunning?setup.green:"#AAB6BC"; font.pixelSize:20*setup.uiScale; font.bold:true }
-                Text { x:225*setup.uiScale; y:18*setup.uiScale; text:"RUN THRESHOLD  500 RPM\nTACH REFERENCE  5000 RPM\nPersistence: TEST MODE"; color:setup.amber; font.pixelSize:9*setup.uiScale; lineHeight:1.35 }
+                Text { x:225*setup.uiScale; y:12*setup.uiScale; text:"RUN THRESHOLD  500 RPM\nTACH REFERENCE  5000 RPM\n"+(controller.runtimeAuthority||"PFD • DISPLAY MIRROR")+"\nSTORE  "+(controller.runtimePersistenceState||"WAITING FOR EMS NODE")+"  REV "+String(controller.runtimeRevision||0); color:setup.amber; font.pixelSize:8*setup.uiScale; lineHeight:1.25 }
             }
         }
         Rectangle { visible:setup.section===2; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale; color:setup.panel; border.color:setup.line

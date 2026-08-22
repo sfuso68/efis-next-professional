@@ -3,6 +3,7 @@
 #include "efis/recording/recorder_status.hpp"
 
 #include <QDebug>
+#include <QCoreApplication>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -25,6 +26,22 @@ constexpr std::uint64_t kRecorderStaleMs = 3000;
 
 EmsController::EmsController(QObject* parent) : QObject(parent) {
     loadAircraftProfile();
+    runtime_store_ = std::make_unique<efis::engine::RuntimeStore>(
+        qEnvironmentVariable("EFIS_ENGINE_RUNTIME_STATE", "state/engine-runtime.state").toStdString());
+    try {
+        if (const auto saved = runtime_store_->load(); saved && saved->profile_id == profile_id_.toStdString()) {
+            runtime_tracker_ = efis::engine::RuntimeTracker{{500.0, 5000.0}, saved->totals};
+            runtime_revision_ = static_cast<qulonglong>(saved->revision);
+            runtime_persistence_state_ = QStringLiteral("RECOVERED");
+        } else {
+            runtime_persistence_state_ = QStringLiteral("NEW RECORD");
+        }
+    } catch (const std::exception& error) {
+        runtime_persistence_state_ = QStringLiteral("INTEGRITY FAULT");
+        qWarning().noquote() << "event=engine_runtime_rejected reason=" << error.what();
+    }
+    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+            this, &EmsController::persistRuntime);
     recorder_status_path_ = qEnvironmentVariable("EFIS_RECORDER_STATUS",
                                                  "run/recorder.status");
     timer_.setTimerType(Qt::PreciseTimer);
@@ -43,6 +60,7 @@ void EmsController::loadAircraftProfile() {
         return;
     }
     const auto document = QJsonDocument::fromJson(file.readAll());
+    profile_id_ = document.object().value("profile_id").toString(QStringLiteral("unconfigured"));
     const auto engine = document.object().value("engine").toObject();
     engine_profile_name_ = engine.value("manufacturer").toString() +
         QStringLiteral(" ") + engine.value("model").toString();
@@ -68,6 +86,21 @@ void EmsController::loadAircraftProfile() {
     const auto electrical = systems.value("electrical").toObject();
     for (const auto item : electrical.value("loads").toArray())
         electrical_loads_ << item.toObject().toVariantMap();
+}
+
+void EmsController::persistRuntime() {
+    if (!runtime_store_ || runtime_persistence_state_ == QStringLiteral("INTEGRITY FAULT")) return;
+    try {
+        const auto wall_ms = static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count());
+        ++runtime_revision_;
+        runtime_store_->save({profile_id_.toStdString(), engine_serial_number_.toStdString(),
+                              runtime_tracker_.totals(), static_cast<std::uint64_t>(runtime_revision_), wall_ms});
+        runtime_persistence_state_ = QStringLiteral("SAVED");
+    } catch (const std::exception& error) {
+        runtime_persistence_state_ = QStringLiteral("WRITE FAULT");
+        qWarning().noquote() << "event=engine_runtime_save_failed reason=" << error.what();
+    }
 }
 
 QString EmsController::gearState() const {
@@ -164,6 +197,10 @@ void EmsController::updateSnapshot() {
         runtime_tracker_.update(engine_snapshot_.rpm.value, seconds, false);
     }
     last_runtime_update_ = now;
+    if (last_runtime_save_ == efis::MonoTime{} || now - last_runtime_save_ >= 10s) {
+        last_runtime_save_ = now;
+        persistRuntime();
+    }
     updateRecorderStatus(now);
     emit snapshotChanged();
 }

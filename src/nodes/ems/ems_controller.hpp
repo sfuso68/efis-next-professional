@@ -10,6 +10,7 @@
 
 #include "efis/providers/engine_simulation_provider.hpp"
 #include "efis/core/engine_runtime.hpp"
+#include "efis/core/engine_runtime_store.hpp"
 
 #include <QObject>
 #include <QString>
@@ -17,6 +18,7 @@
 #include <QVariantList>
 
 #include <chrono>
+#include <memory>
 
 class EmsController : public QObject {
     Q_OBJECT
@@ -59,6 +61,9 @@ class EmsController : public QObject {
     Q_PROPERTY(bool engineRunning READ engineRunning NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration CONSTANT)
     Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
+    Q_PROPERTY(QString runtimePersistenceState READ runtimePersistenceState NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong runtimeRevision READ runtimeRevision NOTIFY snapshotChanged)
+    Q_PROPERTY(QString runtimeAuthority READ runtimeAuthority CONSTANT)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -109,6 +114,9 @@ public:
     [[nodiscard]] bool engineRunning() const { return runtime_tracker_.engine_running(); }
     [[nodiscard]] QVariantList engineSensorConfiguration() const { return engine_sensor_configuration_; }
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
+    [[nodiscard]] QString runtimePersistenceState() const { return runtime_persistence_state_; }
+    [[nodiscard]] qulonglong runtimeRevision() const { return runtime_revision_; }
+    [[nodiscard]] QString runtimeAuthority() const { return QStringLiteral("EMS NODE • AUTHORITATIVE"); }
 
     Q_INVOKABLE void cycleEngineFault();
 
@@ -119,6 +127,7 @@ private:
     void updateSnapshot();
     void updateRecorderStatus(efis::MonoTime now);
     void loadAircraftProfile();
+    void persistRuntime();
 
     QTimer timer_;
     efis::EngineSimulationProvider engine_provider_{84};
@@ -143,4 +152,9 @@ private:
     QVariantList electrical_loads_;
     efis::engine::RuntimeTracker runtime_tracker_{};
     efis::MonoTime last_runtime_update_{};
+    efis::MonoTime last_runtime_save_{};
+    std::unique_ptr<efis::engine::RuntimeStore> runtime_store_;
+    QString profile_id_{QStringLiteral("unconfigured")};
+    QString runtime_persistence_state_{QStringLiteral("INITIALIZING")};
+    qulonglong runtime_revision_{};
 };
