@@ -75,6 +75,16 @@ class PfdController final : public QObject {
     Q_PROPERTY(bool engineRunning READ engineRunning NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration CONSTANT)
     Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
+    Q_PROPERTY(bool landingGearInstalled READ landingGearInstalled CONSTANT)
+    Q_PROPERTY(bool retractableGear READ retractableGear CONSTANT)
+    Q_PROPERTY(bool gearNoseLocked READ gearNoseLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(bool gearLeftLocked READ gearLeftLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(bool gearRightLocked READ gearRightLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(QString gearState READ gearState NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flapsInstalled READ flapsInstalled CONSTANT)
+    Q_PROPERTY(QVariantList flapDetents READ flapDetents CONSTANT)
+    Q_PROPERTY(double flapAngle READ flapAngle NOTIFY snapshotChanged)
+    Q_PROPERTY(double flapCommandedAngle READ flapCommandedAngle NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantMap aircraftSpeedProfile READ aircraftSpeedProfile CONSTANT)
     Q_PROPERTY(QString aircraftProfileName READ aircraftProfileName CONSTANT)
     Q_PROPERTY(QString aircraftProfileState READ aircraftProfileState CONSTANT)
@@ -172,6 +182,16 @@ public:
     [[nodiscard]] bool engineRunning() const { return runtime_tracker_.engine_running(); }
     [[nodiscard]] QVariantList engineSensorConfiguration() const { return engine_sensor_configuration_; }
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
+    [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
+    [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
+    [[nodiscard]] bool gearNoseLocked() const { return true; }
+    [[nodiscard]] bool gearLeftLocked() const { return true; }
+    [[nodiscard]] bool gearRightLocked() const { return true; }
+    [[nodiscard]] QString gearState() const { return landing_gear_installed_ ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("NOT INSTALLED"); }
+    [[nodiscard]] bool flapsInstalled() const { return flaps_installed_; }
+    [[nodiscard]] QVariantList flapDetents() const { return flap_detents_; }
+    [[nodiscard]] double flapAngle() const { return 15.0; }
+    [[nodiscard]] double flapCommandedAngle() const { return 15.0; }
     Q_INVOKABLE void cycleEngineFault();
     [[nodiscard]] QVariantMap aircraftSpeedProfile() const { return aircraft_speed_profile_; }
     [[nodiscard]] QString aircraftProfileName() const { return aircraft_profile_name_; }
@@ -278,6 +298,10 @@ private:
     QString engine_serial_number_{QStringLiteral("TO BE ENTERED")};
     QVariantList engine_sensor_configuration_;
     QVariantList electrical_loads_;
+    bool landing_gear_installed_{};
+    bool retractable_gear_{};
+    bool flaps_installed_{};
+    QVariantList flap_detents_;
     QVariantMap staged_aircraft_profile_;
     QString staging_status_{QStringLiteral("NO_SELECTION")};
     QString setup_message_{QStringLiteral("Select an aircraft from the catalog")};

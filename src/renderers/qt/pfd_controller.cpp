@@ -594,6 +594,14 @@ void PfdController::loadAircraftProfile() {
         electrical_loads_.clear();
         for (const auto item : root.value("systems").toObject().value("electrical").toObject().value("loads").toArray())
             electrical_loads_ << item.toObject().toVariantMap();
+        const auto systems = root.value("systems").toObject();
+        const auto gear = systems.value("landing_gear").toObject();
+        landing_gear_installed_ = gear.value("installed").toBool(false);
+        retractable_gear_ = gear.value("retractable").toBool(false);
+        const auto flaps = systems.value("flaps").toObject();
+        flaps_installed_ = flaps.value("installed").toBool(false);
+        flap_detents_.clear();
+        for (const auto detent : flaps.value("detents_deg").toArray()) flap_detents_ << detent.toDouble();
         const auto speeds = root.value("speeds_kt").toObject();
         if (speeds.isEmpty()) continue;
         const QMap<QString,QString> mapping{{"VSO","vso"},{"VS1","vs1"},{"VFE","vfe"},
