@@ -28,6 +28,7 @@ add_library(efis_core
     src/providers/simulation_provider.cpp
     src/providers/simulation_source.cpp
     src/providers/engine_simulation_provider.cpp
+    src/simulation/system_simulator.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
     src/providers/esp32_can_adapter.cpp
@@ -64,6 +65,9 @@ target_link_libraries(efis-can-monitor PRIVATE efis_core)
 
 add_executable(efis-recorder src/apps/efis_recorder_main.cpp)
 target_link_libraries(efis-recorder PRIVATE efis_core)
+
+add_executable(efis-simulator src/apps/efis_simulator_main.cpp)
+target_link_libraries(efis-simulator PRIVATE efis_core)
 
 add_library(efis_reference_renderer src/display/svg_pfd_renderer.cpp)
 target_include_directories(efis_reference_renderer PUBLIC include)
@@ -266,6 +270,10 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_arbitration_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_arbitration_tests COMMAND efis_arbitration_tests)
+
+    add_executable(efis_system_simulator_tests tests/system_simulator_tests.cpp)
+    target_link_libraries(efis_system_simulator_tests PRIVATE efis_core)
+    add_test(NAME efis_system_simulator_tests COMMAND efis_system_simulator_tests)
 endif()
 
 # --- Nodo EMS ---------------------------------------------------------------
