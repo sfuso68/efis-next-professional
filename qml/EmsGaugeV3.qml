@@ -76,13 +76,13 @@ Item {
                 ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*(outer-len),cy+Math.sin(a)*(outer-len)); ctx.lineTo(cx+Math.cos(a)*outer,cy+Math.sin(a)*outer); ctx.stroke()
                 if (isMajor) {
                     ctx.fillStyle="#EEF4F6"
-                    ctx.font="600 "+Math.max(8,Math.round(r*.105))+"px 'Segoe UI'"
+                    ctx.font="600 "+Math.max(8,Math.round(r*.105))+"px sans-serif"
                     const textRadius=r*.625
                     ctx.fillText(Number(v).toFixed(0),cx+Math.cos(a)*textRadius,cy+Math.sin(a)*textRadius)
                 }
             }
 
-            ctx.fillStyle="#DCE6EA"; ctx.font="600 "+Math.max(10,Math.round(r*.12))+"px 'Segoe UI'"
+            ctx.fillStyle="#DCE6EA"; ctx.font="600 "+Math.max(10,Math.round(r*.12))+"px sans-serif"
             ctx.fillText(gauge.label,cx,cy-r*.16)
 
             let glass=ctx.createLinearGradient(cx,cy-r*.83,cx,cy+r*.12)
@@ -116,7 +116,7 @@ Item {
         Rectangle { anchors.centerIn: parent; width: parent.width*.20; height: width; radius: width/2; color: "#79868B" }
     }
     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: dominant ? 20*uiScale : 14*uiScale }
-        text: Number(gauge.value).toFixed(gauge.decimals); color: "#F5F8F9"; font.family: "Segoe UI"; font.pixelSize: (dominant?45:31)*gauge.uiScale; font.bold: true }
+        text: Number(gauge.value).toFixed(gauge.decimals); color: "#F5F8F9"; font.pixelSize: (dominant?45:31)*gauge.uiScale; font.bold: true }
     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 4*uiScale }
-        text: gauge.unit; color: "#D2DCE0"; font.family: "Segoe UI"; font.pixelSize: (dominant?12:10)*gauge.uiScale; font.bold: true }
+        text: gauge.unit; color: "#D2DCE0"; font.pixelSize: (dominant?12:10)*gauge.uiScale; font.bold: true }
 }

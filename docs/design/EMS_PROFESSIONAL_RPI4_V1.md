@@ -247,3 +247,16 @@ quattro azioni contestuali. Le catture verificate sono:
 
 - `assets/ems-v3-implemented-1024x600.png`;
 - `assets/ems-v3-implemented-800x480.png`.
+
+### Verifica Linux ARM64 V3.2
+
+La revisione V3.2 e' stata compilata ed eseguita sul banco Debian ARM64 con
+Qt 6.8.2. Le facce Canvas usano una famiglia generica portabile e la cattura
+non produce avvisi di font. Sono state verificate entrambe le geometrie target:
+
+- `assets/ems-v3-2-linux-1024x600.png`;
+- `assets/ems-v3-2-linux-800x480.png`.
+
+La V3.2 aggiunge icone vettoriali indipendenti dal sistema, sagoma carrello,
+scale numeriche CHT/EGT e pannelli touch per Lean Assist, Fuel Computer, Trend
+e Checklist.
