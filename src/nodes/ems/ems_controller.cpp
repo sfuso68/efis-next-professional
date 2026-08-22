@@ -96,7 +96,9 @@ void EmsController::persistRuntime() {
         ++runtime_revision_;
         runtime_store_->save({profile_id_.toStdString(), engine_serial_number_.toStdString(),
                               runtime_tracker_.totals(), static_cast<std::uint64_t>(runtime_revision_), wall_ms});
-        runtime_persistence_state_ = QStringLiteral("SAVED");
+        runtime_persistence_state_ = engine_snapshot_.rpm.is_simulated()
+            ? QStringLiteral("SAVED • SIM RPM EXCLUDED")
+            : QStringLiteral("SAVED");
     } catch (const std::exception& error) {
         runtime_persistence_state_ = QStringLiteral("WRITE FAULT");
         qWarning().noquote() << "event=engine_runtime_save_failed reason=" << error.what();
@@ -194,7 +196,9 @@ void EmsController::updateSnapshot() {
     engine_snapshot_ = engine_provider_.sample(now, elapsed);
     if (last_runtime_update_ != efis::MonoTime{}) {
         const auto seconds = std::chrono::duration<double>(now - last_runtime_update_).count();
-        runtime_tracker_.update(engine_snapshot_.rpm.value, seconds, false);
+        const double accountable_rpm = engine_snapshot_.rpm.is_simulated()
+            ? 0.0 : engine_snapshot_.rpm.value;
+        runtime_tracker_.update(accountable_rpm, seconds, false);
     }
     last_runtime_update_ = now;
     if (last_runtime_save_ == efis::MonoTime{} || now - last_runtime_save_ >= 10s) {
