@@ -84,6 +84,14 @@ Item {
 
             ctx.fillStyle="#DCE6EA"; ctx.font="600 "+Math.max(10,Math.round(r*.12))+"px 'Segoe UI'"
             ctx.fillText(gauge.label,cx,cy-r*.16)
+
+            let glass=ctx.createLinearGradient(cx,cy-r*.83,cx,cy+r*.12)
+            glass.addColorStop(0,"rgba(205,235,248,0.16)")
+            glass.addColorStop(.36,"rgba(86,143,169,0.045)")
+            glass.addColorStop(1,"rgba(0,0,0,0)")
+            ctx.fillStyle=glass; ctx.beginPath(); ctx.arc(cx,cy,r*.80,Math.PI*1.12,Math.PI*1.88); ctx.quadraticCurveTo(cx,cy+r*.10,cx-r*.75,cy-r*.20); ctx.fill()
+            ctx.strokeStyle="rgba(225,242,249,0.36)"; ctx.lineWidth=Math.max(1,r*.008)
+            ctx.beginPath(); ctx.arc(cx,cy,r*.94,Math.PI*1.16,Math.PI*1.84); ctx.stroke()
         }
     }
 
@@ -92,6 +100,7 @@ Item {
         x: gauge.cx; y: gauge.cy
         rotation: -130 + gauge.fraction*260
         Behavior on rotation { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
+        Rectangle { x: 1*gauge.uiScale; y: -gauge.radius*.67; width: 4*gauge.uiScale; height: gauge.radius*.72; radius: 2*gauge.uiScale; color: "#80000000" }
         Rectangle { x: -2*gauge.uiScale; y: -gauge.radius*.69; width: 4*gauge.uiScale; height: gauge.radius*.72; radius: 2*gauge.uiScale
             gradient: Gradient { orientation: Gradient.Horizontal
                 GradientStop { position: 0; color: "#8B969B" }

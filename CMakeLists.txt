@@ -132,6 +132,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/ProfessionalSystemsDeck.qml
                 qml/ProfessionalCircularGauge.qml
                 qml/EmsGaugeV3.qml
+                qml/EmsVectorIcon.qml
                 qml/AdaptiveCanvasView.qml
             RESOURCES
                 qml/shaders/terrain_taws.frag
@@ -298,6 +299,7 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/CommandRail.qml
                 qml/ProfessionalCircularGauge.qml
                 qml/EmsGaugeV3.qml
+                qml/EmsVectorIcon.qml
                 qml/Theme.qml
         )
         target_include_directories(efis-ems-qt PRIVATE

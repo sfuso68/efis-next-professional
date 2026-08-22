@@ -10,6 +10,7 @@ Item {
     readonly property color panel: "#B006121B"
     readonly property color line: "#55646C"
     readonly property color health: controller.engineHealth >= 2 ? "#FF3933" : controller.engineHealth === 1 ? amber : green
+    property string selectedPanel: ""
 
     Rectangle { anchors.fill: parent
         gradient: Gradient { orientation: Gradient.Horizontal
@@ -35,11 +36,11 @@ Item {
     Rectangle { id: nav; anchors { left: parent.left; top: header.bottom; bottom: actions.top }
         width: 96*root.uiScale; color: "#B00A151D"; border.color: root.line; radius: 5*root.uiScale
         Column { anchors.fill: parent
-            Repeater { model: [{i:"⚙",n:"ENGINE"},{i:"▥",n:"INDICATIONS"},{i:"⌁",n:"ELECTRICAL"},{i:"▣",n:"FUEL"},{i:"⚙",n:"SYSTEM"},{i:"☑",n:"MAINT"}]
+            Repeater { model: [{k:"engine",n:"ENGINE"},{k:"indications",n:"INDICATIONS"},{k:"electrical",n:"ELECTRICAL"},{k:"fuel",n:"FUEL"},{k:"system",n:"SYSTEM"},{k:"checklist",n:"MAINT"}]
                 delegate: Rectangle { required property var modelData; width: nav.width; height: nav.height/6; color: modelData.n === "ENGINE" ? "#172832" : "transparent"; border.color: "#35454D"
                     Rectangle { visible: modelData.n === "ENGINE"; width: 4*root.uiScale; height: parent.height; color: root.cyan }
-                    Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 10*root.uiScale }
-        text: modelData.i; color: modelData.n === "ENGINE" ? root.cyan : "#89969C"; font.pixelSize: 22*root.uiScale }
+                    EmsVectorIcon { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 9*root.uiScale }
+         width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: modelData.n === "ENGINE" ? root.cyan : "#89969C" }
                     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 8*root.uiScale }
         text: modelData.n; color: modelData.n === "ENGINE" ? root.cyan : "#A7B0B5"; font.pixelSize: 8*root.uiScale } } }
         } }
@@ -72,7 +73,7 @@ Item {
         Item { visible: controller.landingGearInstalled; x: 5*root.uiScale; y: 83*root.uiScale; width: parent.width/2-10*root.uiScale; height: parent.height-85*root.uiScale
             Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top }
         text: "GEAR"; color: root.cyan; font.pixelSize: 10*root.uiScale }
-            Text { anchors.centerIn: parent; text: "✈"; rotation: 90; color: "#E5EAEC"; font.pixelSize: 32*root.uiScale }
+            EmsVectorIcon { anchors.centerIn: parent; width: 47*root.uiScale; height: 40*root.uiScale; kind: "airplane"; strokeColor: "#E5EAEC" }
             Row { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 20*root.uiScale }
         spacing: 18*root.uiScale
                 Repeater { model: ["NOSE","LEFT","RIGHT"]; delegate: Column { required property string modelData; spacing: 2
@@ -111,6 +112,7 @@ Item {
                                 Rectangle { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
         height: Math.max(2,(modelData.v-modelData.lo)/(modelData.hi-modelData.lo)*(parent.height-4)); color: modelData.c } }
                             Repeater { model: 5; delegate: Rectangle { required property int index; x: 11*root.uiScale; y: index*(parent.height-15*root.uiScale)/4; width: 6*root.uiScale; height: 1; color: "#D1D9DC" } }
+                            Repeater { model: 3; delegate: Text { required property int index; x: -8*root.uiScale; y: index*(parent.height-18*root.uiScale)/2-3*root.uiScale; width: 18*root.uiScale; horizontalAlignment: Text.AlignRight; text: Math.round(modelData.hi-index*(modelData.hi-modelData.lo)/2); color: "#C6D1D5"; font.pixelSize: 5*root.uiScale } }
                             Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom }
         text: Math.round(modelData.v); color: root.green; font.pixelSize: 8*root.uiScale; font.bold: true } } }
                 } } }
@@ -136,9 +138,31 @@ Item {
         } }
     Row { id: actions; anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 10*root.uiScale }
         height: 48*root.uiScale; spacing: 12*root.uiScale
-        Repeater { model: [{i:"◒",n:"LEAN"},{i:"▣",n:"FUEL"},{i:"⌁",n:"TREND"},{i:"☑",n:"CHECKLIST"}]
+        Repeater { model: [{k:"lean",n:"LEAN"},{k:"fuel",n:"FUEL"},{k:"trend",n:"TREND"},{k:"checklist",n:"CHECKLIST"}]
             delegate: Rectangle { required property var modelData; width: (parent.width-3*parent.spacing)/4; height: parent.height; radius: 5*root.uiScale; color: "#101D25"; border.color: root.line
-                Text { x: 58*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: modelData.i; color: modelData.n === "LEAN" ? root.green : root.cyan; font.pixelSize: 25*root.uiScale }
-                Text { anchors.centerIn: parent; text: modelData.n; color: "#F0F3F4"; font.pixelSize: 14*root.uiScale; font.bold: true } } }
+                EmsVectorIcon { x: 50*root.uiScale; anchors.verticalCenter: parent.verticalCenter; width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: modelData.n === "LEAN" ? root.green : root.cyan }
+                Text { anchors.centerIn: parent; text: modelData.n; color: "#F0F3F4"; font.pixelSize: 14*root.uiScale; font.bold: true }
+                MouseArea { anchors.fill: parent; onClicked: root.selectedPanel=modelData.n }
+            } }
+    }
+
+    Rectangle { anchors.fill: parent; visible: root.selectedPanel !== ""; z: 50; color: "#A0000508"
+        MouseArea { anchors.fill: parent; onClicked: root.selectedPanel="" }
+        Rectangle { anchors.centerIn: parent; width: 610*root.uiScale; height: 330*root.uiScale; radius: 8*root.uiScale; color: "#F0081720"; border.width: 2; border.color: root.cyan
+            MouseArea { anchors.fill: parent }
+            Text { x: 22*root.uiScale; y: 16*root.uiScale; text: root.selectedPanel; color: root.cyan; font.pixelSize: 21*root.uiScale; font.bold: true }
+            Text { anchors { right: parent.right; top: parent.top; margins: 17*root.uiScale }
+         text: "×"; color: "white"; font.pixelSize: 25*root.uiScale
+                MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.selectedPanel="" } }
+            Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
+            Text { x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
+                text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
+                      root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+(controller.fuelLeft+controller.fuelRight).toFixed(1)+" GAL\nFlusso: "+controller.fuelFlow.toFixed(1)+" GPH\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
+                      root.selectedPanel === "TREND" ? "ENGINE TREND\nRPM, pressioni, temperature e parametri elettrici saranno rappresentati su finestre selezionabili da 1, 5, 15 e 60 minuti." :
+                      "ENGINE CHECKLIST\n□ Parametri motore nel campo verde\n□ Carburante e autonomia verificati\n□ Alternatore e tensione verificati\n□ Carrello e flap configurati"
+                color: "#E8EEF0"; font.pixelSize: 15*root.uiScale; lineHeight: 1.5 }
+            Text { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 22*root.uiScale }
+         text: "TOUCH OUTSIDE TO CLOSE"; horizontalAlignment: Text.AlignHCenter; color: "#899BA3"; font.pixelSize: 8*root.uiScale; font.letterSpacing: 1.4 }
+        }
     }
 }
