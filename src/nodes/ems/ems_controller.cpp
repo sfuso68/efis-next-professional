@@ -3,6 +3,10 @@
 #include "efis/recording/recorder_status.hpp"
 
 #include <QDebug>
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 using namespace std::chrono_literals;
 
@@ -20,6 +24,7 @@ constexpr std::uint64_t kRecorderStaleMs = 3000;
 }
 
 EmsController::EmsController(QObject* parent) : QObject(parent) {
+    loadAircraftProfile();
     recorder_status_path_ = qEnvironmentVariable("EFIS_RECORDER_STATUS",
                                                  "run/recorder.status");
     timer_.setTimerType(Qt::PreciseTimer);
@@ -27,6 +32,31 @@ EmsController::EmsController(QObject* parent) : QObject(parent) {
     connect(&timer_, &QTimer::timeout, this, &EmsController::updateSnapshot);
     updateSnapshot();
     timer_.start();
+}
+
+void EmsController::loadAircraftProfile() {
+    const auto path = qEnvironmentVariable("EFIS_AIRCRAFT_PROFILE",
+                                           "config/active/aircraft-profile.json");
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning().noquote() << "event=aircraft_profile_unavailable path=" << path;
+        return;
+    }
+    const auto document = QJsonDocument::fromJson(file.readAll());
+    const auto systems = document.object().value("systems").toObject();
+    const auto gear = systems.value("landing_gear").toObject();
+    landing_gear_installed_ = gear.value("installed").toBool(false);
+    retractable_gear_ = gear.value("retractable").toBool(false);
+    const auto flaps = systems.value("flaps").toObject();
+    flaps_installed_ = flaps.value("installed").toBool(false);
+    for (const auto detent : flaps.value("detents_deg").toArray())
+        flap_detents_ << detent.toDouble();
+}
+
+QString EmsController::gearState() const {
+    if (!landing_gear_installed_) return QStringLiteral("NOT INSTALLED");
+    return gear_nose_locked_ && gear_left_locked_ && gear_right_locked_
+        ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("GEAR UNSAFE");
 }
 
 double EmsController::engineRpm() const { return engine_snapshot_.rpm.value; }

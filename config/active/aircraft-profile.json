@@ -20,6 +20,18 @@
     "cylinders": 4,
     "status": "INDICATIVE"
   },
+  "systems": {
+    "landing_gear": {
+      "installed": true,
+      "retractable": true,
+      "positions": 3
+    },
+    "flaps": {
+      "installed": true,
+      "position_sensor": true,
+      "detents_deg": [0, 10, 15, 20, 30]
+    }
+  },
   "speeds_kt": {
     "VSO": 39,
     "VS1": 45,
@@ -45,4 +57,3 @@
     "warning": "Simulation only. Replace with the current approved POH/AFM for the installed aircraft."
   }
 }
-

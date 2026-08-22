@@ -210,3 +210,25 @@ interfaccia, mantiene almeno 40 FPS, supera le prove di perdita delle sorgenti,
 registra ogni allarme e cambio sorgente, e presenta le cinque viste senza
 sovrapposizioni alle tre risoluzioni target.
 
+## 10. Stato implementazione grafica — 22 agosto 2026
+
+La fondazione visiva della Fase 1 e' ora implementata nella pagina QML condivisa
+dal nodo EMS dedicato e dal PFD:
+
+- cinque quadranti con tick minori, intermedi e maggiori e scala numerata;
+- RPM e manifold pressure dominanti, strumenti secondari ingranditi;
+- matrice CHT/EGT a quattro cilindri ampliata;
+- rail verticale contestuale;
+- pannello CAS/AIRFRAME configurato dal profilo aeromobile;
+- tre consensi indipendenti del carrello retrattile;
+- flap con detent, posizione misurata e posizione comandata;
+- impaginazione verificata a 1024x600 e 800x480.
+
+Le immagini di verifica sono:
+
+- `assets/ems-professional-implemented-1024x600.png`;
+- `assets/ems-professional-implemented-800x480.png`.
+
+Carrello e flap non sono obbligatori: in assenza delle rispettive sezioni nel
+profilo, i widget restano nascosti. I valori mostrati in questa fase provengono
+ancora dal simulatore e non costituiscono dati di volo.
