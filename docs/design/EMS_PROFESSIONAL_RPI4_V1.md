@@ -260,3 +260,13 @@ non produce avvisi di font. Sono state verificate entrambe le geometrie target:
 La V3.2 aggiunge icone vettoriali indipendenti dal sistema, sagoma carrello,
 scale numeriche CHT/EGT e pannelli touch per Lean Assist, Fuel Computer, Trend
 e Checklist.
+
+### Carrello e flap verticali
+
+Il pannello AIRFRAME e' stato verificato su Linux ARM64 con tre consensi
+carrello collocati nella posizione fisica di ruota anteriore, sinistra e destra.
+La scala flap e' verticale da 0 a 30 gradi: il diamante azzurro rappresenta la
+posizione effettiva e la linea bianca la posizione comandata.
+
+- `assets/ems-gear-flap-vertical-linux-1024x600.png`;
+- `assets/ems-gear-flap-vertical-linux-800x480.png`.

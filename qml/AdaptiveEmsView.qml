@@ -73,27 +73,40 @@ Item {
         Item { visible: controller.landingGearInstalled; x: 5*root.uiScale; y: 83*root.uiScale; width: parent.width/2-10*root.uiScale; height: parent.height-85*root.uiScale
             Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top }
         text: "GEAR"; color: root.cyan; font.pixelSize: 10*root.uiScale }
-            EmsVectorIcon { anchors.centerIn: parent; width: 47*root.uiScale; height: 40*root.uiScale; kind: "airplane"; strokeColor: "#E5EAEC" }
-            Row { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 20*root.uiScale }
-        spacing: 18*root.uiScale
-                Repeater { model: ["NOSE","LEFT","RIGHT"]; delegate: Column { required property string modelData; spacing: 2
-                    Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 15*root.uiScale; height: width; radius: width/2; color: "#092416"; border.width: 2; border.color: root.green }
-                    Text { text: modelData; color: "#E1E7EA"; font.pixelSize: 6*root.uiScale } } } }
+            EmsVectorIcon { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 14*root.uiScale }
+         width: 58*root.uiScale; height: Math.min(48*root.uiScale,parent.height*.54); kind: "airplane"; strokeColor: "#E5EAEC" }
+            Repeater { model: [
+                {n:"N",ok:controller.gearNoseLocked,x:.50,y:.37},
+                {n:"L",ok:controller.gearLeftLocked,x:.27,y:.66},
+                {n:"R",ok:controller.gearRightLocked,x:.73,y:.66}]
+                delegate: Item { required property var modelData; x: parent.width*modelData.x-8*root.uiScale; y: parent.height*modelData.y; width: 16*root.uiScale; height: 24*root.uiScale
+                    Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 14*root.uiScale; height: width; radius: width/2; color: modelData.ok ? "#0B2C16" : "#421316"; border.width: 2; border.color: modelData.ok ? root.green : "#FF3830"
+                        Rectangle { anchors.centerIn: parent; width: 5*root.uiScale; height: width; radius: width/2; color: modelData.ok ? root.green : "#FF3830" } }
+                    Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 15*root.uiScale }
+         text: modelData.n; color: "#DCE5E8"; font.pixelSize: 6*root.uiScale; font.bold: true }
+                } }
             Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 3*root.uiScale }
-        text: controller.gearState; color: root.green; font.pixelSize: 8*root.uiScale; font.bold: true }
+        text: controller.gearState; color: controller.gearState === "DOWN & LOCKED" ? root.green : "#FF3830"; font.pixelSize: 8*root.uiScale; font.bold: true }
         }
         Item { visible: controller.flapsInstalled; x: parent.width/2+6*root.uiScale; y: 83*root.uiScale; width: parent.width/2-12*root.uiScale; height: parent.height-85*root.uiScale
-            Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top }
+            Text { anchors { left: parent.left; top: parent.top }
         text: "FLAPS"; color: root.cyan; font.pixelSize: 10*root.uiScale }
-            Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 26*root.uiScale }
-        text: Math.round(controller.flapAngle)+"°"; color: "white"; font.pixelSize: 28*root.uiScale; font.bold: true }
-            Rectangle { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; bottomMargin: 25*root.uiScale }
-        height: 2; color: "#AAB7BD"
-                Rectangle { x: parent.width*controller.flapAngle/30-4*root.uiScale; y: -7*root.uiScale; width: 8*root.uiScale; height: 10*root.uiScale; color: root.cyan; rotation: 45 } }
-            Row { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; bottomMargin: 10*root.uiScale }
-                Repeater { model: controller.flapDetents; delegate: Text { required property real modelData; width: parent.width/5; text: modelData+"°"; color: "#E2E8EA"; horizontalAlignment: Text.AlignHCenter; font.pixelSize: 6*root.uiScale } } }
-            Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom }
-        text: "FLAPS "+Math.round(controller.flapAngle)+"°"; color: root.green; font.pixelSize: 8*root.uiScale } }
+            Text { anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 3*root.uiScale }
+         text: Math.round(controller.flapAngle)+"°"; color: "white"; font.pixelSize: 27*root.uiScale; font.bold: true }
+            Text { anchors { left: parent.left; bottom: parent.bottom; leftMargin: 3*root.uiScale }
+         text: "ACTUAL"; color: root.green; font.pixelSize: 6*root.uiScale; font.bold: true }
+            Rectangle { id: flapRail; x: parent.width*.59; y: 15*root.uiScale; width: 5*root.uiScale; height: parent.height-22*root.uiScale; radius: 2; color: "#344A54"
+                Rectangle { anchors { left: parent.left; right: parent.right; top: parent.top }
+         height: parent.height*Math.min(1,controller.flapAngle/30); radius: 2; color: root.cyan }
+                Rectangle { x: -5*root.uiScale; y: parent.height*Math.min(1,controller.flapAngle/30)-5*root.uiScale; width: 15*root.uiScale; height: 10*root.uiScale; rotation: 45; color: root.cyan; border.color: "white" }
+                Rectangle { x: -8*root.uiScale; y: parent.height*Math.min(1,controller.flapCommandedAngle/30)-1*root.uiScale; width: 21*root.uiScale; height: 2*root.uiScale; color: "white" }
+            }
+            Repeater { model: controller.flapDetents
+                delegate: Item { required property real modelData; x: flapRail.x+11*root.uiScale; y: flapRail.y+flapRail.height*modelData/30-5*root.uiScale; width: parent.width-flapRail.x; height: 11*root.uiScale
+                    Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 6*root.uiScale; height: 1; color: "#D7E0E3" }
+                    Text { x: 9*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: modelData+"°"; color: modelData === Math.round(controller.flapAngle) ? root.cyan : "#D7E0E3"; font.pixelSize: 6*root.uiScale; font.bold: modelData === Math.round(controller.flapAngle) }
+                } }
+        }
     }
 
     Rectangle { anchors { left: rightColumn.left; right: rightColumn.right; top: cas.bottom; bottom: rightColumn.bottom; topMargin: 7*root.uiScale }
