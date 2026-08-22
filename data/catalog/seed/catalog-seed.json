@@ -14,6 +14,19 @@
     {
       "manufacturer": "Rotax",
       "family": "912",
+      "model": "912 UL",
+      "variant": "",
+      "cylinders": 4,
+      "power_hp": 80,
+      "rpm_max": 5800,
+      "fuel_type": "MOGAS/AVGAS",
+      "status": "INDICATIVE",
+      "source": "legacy-indicative",
+      "limits": []
+    },
+    {
+      "manufacturer": "Rotax",
+      "family": "912",
       "model": "912 ULS",
       "variant": "",
       "cylinders": 4,
@@ -55,4 +68,3 @@
     }
   ]
 }
-

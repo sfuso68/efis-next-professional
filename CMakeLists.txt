@@ -16,6 +16,7 @@ add_library(efis_core
     src/core/snapshot_arbitrator.cpp
     src/core/flight_source.cpp
     src/core/engine_source.cpp
+    src/core/engine_runtime.cpp
     src/core/stasis_monitor.cpp
     src/core/cross_check.cpp
     src/recording/flight_record.cpp
@@ -324,4 +325,8 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_engine_tests tests/engine_tests.cpp)
     target_link_libraries(efis_engine_tests PRIVATE efis_core)
     add_test(NAME efis_engine_tests COMMAND efis_engine_tests)
+
+    add_executable(efis_engine_runtime_tests tests/engine_runtime_tests.cpp)
+    target_link_libraries(efis_engine_runtime_tests PRIVATE efis_core)
+    add_test(NAME efis_engine_runtime_tests COMMAND efis_engine_runtime_tests)
 endif()

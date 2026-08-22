@@ -8,6 +8,7 @@
 // dovranno restare distinguibili senza leggere il codice.
 
 #include "efis/providers/engine_simulation_provider.hpp"
+#include "efis/core/engine_runtime.hpp"
 
 #include <chrono>
 #include <cstdlib>
@@ -157,6 +158,23 @@ void the_same_elapsed_time_yields_the_same_engine() {
     }
 }
 
+void runtime_counters_keep_distinct_meanings() {
+    efis::engine::RuntimeTracker tracker{{500.0, 5000.0}, {10.0, 8.0, 7.0, 6.0}};
+    tracker.update(0.0, 3600.0, false);
+    require(!tracker.engine_running(), "master power alone must not count as engine time");
+    require(tracker.totals().master_hours == 11.0 && tracker.totals().engine_hours == 8.0,
+            "master and engine hours must remain independent");
+
+    tracker.update(2500.0, 3600.0, true);
+    require(tracker.engine_running(), "rpm above the configured threshold must count as running");
+    require(tracker.totals().engine_hours == 9.0,
+            "one running hour must add one engine hour");
+    require(tracker.totals().tach_hours == 7.5,
+            "tach time must be weighted by the configured reference rpm");
+    require(tracker.totals().flight_hours == 7.0,
+            "airborne time must be tracked separately from engine time");
+}
+
 }  // namespace
 
 int main() {
@@ -165,6 +183,7 @@ int main() {
     cylinders_are_four_and_distinctly_identified();
     sequence_advances_once_per_sample();
     the_same_elapsed_time_yields_the_same_engine();
+    runtime_counters_keep_distinct_meanings();
     std::cout << "engine tests passed\n";
     return 0;
 }
