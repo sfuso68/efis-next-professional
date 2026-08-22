@@ -131,6 +131,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/TerrainTile3D.qml
                 qml/ProfessionalSystemsDeck.qml
                 qml/ProfessionalCircularGauge.qml
+                qml/EmsGaugeV3.qml
                 qml/AdaptiveCanvasView.qml
             RESOURCES
                 qml/shaders/terrain_taws.frag
@@ -296,6 +297,7 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/AdaptiveEmsView.qml
                 qml/CommandRail.qml
                 qml/ProfessionalCircularGauge.qml
+                qml/EmsGaugeV3.qml
                 qml/Theme.qml
         )
         target_include_directories(efis-ems-qt PRIVATE

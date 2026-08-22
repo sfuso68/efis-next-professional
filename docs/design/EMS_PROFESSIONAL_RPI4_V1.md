@@ -232,3 +232,18 @@ Le immagini di verifica sono:
 Carrello e flap non sono obbligatori: in assenza delle rispettive sezioni nel
 profilo, i widget restano nascosti. I valori mostrati in questa fase provengono
 ancora dal simulatore e non costituiscono dati di volo.
+
+## 11. Revisione visuale V3 — riferimento professionale
+
+La precedente fondazione e' stata sostituita da una composizione V3 progettata
+sul riferimento visuale approvato. Il nuovo `EmsGaugeV3` separa la faccia
+statica prerenderizzata dagli elementi dinamici e comprende fondo radiale,
+cornice multianello, bande operative, graduazioni multilivello, scala numerata,
+lancetta animata e mozzo stratificato.
+
+La pagina assegna priorita' visiva a RPM e MAP, mantiene tre strumenti secondari,
+affianca CAS/AIRFRAME e matrice CHT/EGT, e chiude con fuel/endurance/electrical e
+quattro azioni contestuali. Le catture verificate sono:
+
+- `assets/ems-v3-implemented-1024x600.png`;
+- `assets/ems-v3-implemented-800x480.png`.
