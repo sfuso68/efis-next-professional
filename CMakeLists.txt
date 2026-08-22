@@ -122,6 +122,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/AdaptiveFpvView.qml
                 qml/AdaptiveShell.qml
                 qml/AdaptiveEmsView.qml
+                qml/EmsSetupOverlay.qml
                 qml/Theme.qml
                 qml/GpuMapSurface.qml
                 qml/WeatherRadarOverlay.qml
@@ -301,6 +302,7 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/ProfessionalCircularGauge.qml
                 qml/EmsGaugeV3.qml
                 qml/EmsVectorIcon.qml
+                qml/EmsSetupOverlay.qml
                 qml/Theme.qml
         )
         target_include_directories(efis-ems-qt PRIVATE

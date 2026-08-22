@@ -11,6 +11,7 @@ Item {
     readonly property color line: "#55646C"
     readonly property color health: controller.engineHealth >= 2 ? "#FF3933" : controller.engineHealth === 1 ? amber : green
     property string selectedPanel: ""
+    property bool setupVisible: false
 
     Rectangle { anchors.fill: parent
         gradient: Gradient { orientation: Gradient.Horizontal
@@ -31,6 +32,9 @@ Item {
         Text { id: clock; anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 18*root.uiScale }
         text: Qt.formatTime(new Date(),"hh:mm:ss")+"   LOCAL     24 °C  OAT     1013 HPA  QNH"; color: "#E8ECEE"; font.pixelSize: 11*root.uiScale; font.bold: true }
         Timer { interval: 1000; running: true; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+"   LOCAL     24 °C  OAT     1013 HPA  QNH" }
+        Item { x:0; y:0; width:105*root.uiScale; height:parent.height
+            TapHandler { longPressThreshold:1.2; onLongPressed:root.setupVisible=true }
+        }
     }
 
     Rectangle { id: nav; anchors { left: parent.left; top: header.bottom; bottom: actions.top }
@@ -178,4 +182,6 @@ Item {
          text: "TOUCH OUTSIDE TO CLOSE"; horizontalAlignment: Text.AlignHCenter; color: "#899BA3"; font.pixelSize: 8*root.uiScale; font.letterSpacing: 1.4 }
         }
     }
+
+    EmsSetupOverlay { anchors.fill:parent; controller:root.controller; visible:root.setupVisible; onClosed:root.setupVisible=false }
 }

@@ -9,6 +9,7 @@
 // pubblica e' la stessa che la pagina EMS consuma dentro il PFD completo.
 
 #include "efis/providers/engine_simulation_provider.hpp"
+#include "efis/core/engine_runtime.hpp"
 
 #include <QObject>
 #include <QString>
@@ -49,6 +50,15 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantList flapDetents READ flapDetents CONSTANT)
     Q_PROPERTY(double flapAngle READ flapAngle NOTIFY snapshotChanged)
     Q_PROPERTY(double flapCommandedAngle READ flapCommandedAngle NOTIFY snapshotChanged)
+    Q_PROPERTY(QString engineProfileName READ engineProfileName CONSTANT)
+    Q_PROPERTY(QString engineSerialNumber READ engineSerialNumber CONSTANT)
+    Q_PROPERTY(double masterHours READ masterHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double engineHours READ engineHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double tachHours READ tachHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double flightHours READ flightHours NOTIFY snapshotChanged)
+    Q_PROPERTY(bool engineRunning READ engineRunning NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration CONSTANT)
+    Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -90,6 +100,15 @@ public:
     [[nodiscard]] QVariantList flapDetents() const { return flap_detents_; }
     [[nodiscard]] double flapAngle() const { return flap_angle_; }
     [[nodiscard]] double flapCommandedAngle() const { return flap_commanded_angle_; }
+    [[nodiscard]] QString engineProfileName() const { return engine_profile_name_; }
+    [[nodiscard]] QString engineSerialNumber() const { return engine_serial_number_; }
+    [[nodiscard]] double masterHours() const { return runtime_tracker_.totals().master_hours; }
+    [[nodiscard]] double engineHours() const { return runtime_tracker_.totals().engine_hours; }
+    [[nodiscard]] double tachHours() const { return runtime_tracker_.totals().tach_hours; }
+    [[nodiscard]] double flightHours() const { return runtime_tracker_.totals().flight_hours; }
+    [[nodiscard]] bool engineRunning() const { return runtime_tracker_.engine_running(); }
+    [[nodiscard]] QVariantList engineSensorConfiguration() const { return engine_sensor_configuration_; }
+    [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
 
     Q_INVOKABLE void cycleEngineFault();
 
@@ -118,4 +137,10 @@ private:
     QVariantList flap_detents_;
     double flap_angle_{15.0};
     double flap_commanded_angle_{15.0};
+    QString engine_profile_name_{QStringLiteral("UNCONFIGURED")};
+    QString engine_serial_number_{QStringLiteral("TO BE ENTERED")};
+    QVariantList engine_sensor_configuration_;
+    QVariantList electrical_loads_;
+    efis::engine::RuntimeTracker runtime_tracker_{};
+    efis::MonoTime last_runtime_update_{};
 };

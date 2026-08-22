@@ -43,6 +43,20 @@ void EmsController::loadAircraftProfile() {
         return;
     }
     const auto document = QJsonDocument::fromJson(file.readAll());
+    const auto engine = document.object().value("engine").toObject();
+    engine_profile_name_ = engine.value("manufacturer").toString() +
+        QStringLiteral(" ") + engine.value("model").toString();
+    engine_serial_number_ = engine.value("serial_number").toString(QStringLiteral("TO BE ENTERED"));
+    const auto runtime = engine.value("runtime_tracking").toObject();
+    runtime_tracker_ = efis::engine::RuntimeTracker{
+        {runtime.value("engine_run_threshold_rpm").toDouble(500.0),
+         runtime.value("tach_reference_rpm").toDouble(5000.0)},
+        {runtime.value("initial_master_hours").toDouble(),
+         runtime.value("initial_engine_hours").toDouble(),
+         runtime.value("initial_tach_hours").toDouble(),
+         runtime.value("initial_flight_hours").toDouble()}};
+    for (const auto item : engine.value("sensors").toArray())
+        engine_sensor_configuration_ << item.toObject().toVariantMap();
     const auto systems = document.object().value("systems").toObject();
     const auto gear = systems.value("landing_gear").toObject();
     landing_gear_installed_ = gear.value("installed").toBool(false);
@@ -51,6 +65,9 @@ void EmsController::loadAircraftProfile() {
     flaps_installed_ = flaps.value("installed").toBool(false);
     for (const auto detent : flaps.value("detents_deg").toArray())
         flap_detents_ << detent.toDouble();
+    const auto electrical = systems.value("electrical").toObject();
+    for (const auto item : electrical.value("loads").toArray())
+        electrical_loads_ << item.toObject().toVariantMap();
 }
 
 QString EmsController::gearState() const {
@@ -142,6 +159,11 @@ void EmsController::updateSnapshot() {
     const auto elapsed =
         std::chrono::duration_cast<std::chrono::milliseconds>(now - started_at_);
     engine_snapshot_ = engine_provider_.sample(now, elapsed);
+    if (last_runtime_update_ != efis::MonoTime{}) {
+        const auto seconds = std::chrono::duration<double>(now - last_runtime_update_).count();
+        runtime_tracker_.update(engine_snapshot_.rpm.value, seconds, false);
+    }
+    last_runtime_update_ = now;
     updateRecorderStatus(now);
     emit snapshotChanged();
 }

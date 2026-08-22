@@ -4,6 +4,7 @@
 #include "efis/core/flight_source.hpp"
 #include "efis/providers/simulation_source.hpp"
 #include "efis/core/engine_source.hpp"
+#include "efis/core/engine_runtime.hpp"
 #include "efis/providers/engine_simulation_source.hpp"
 
 #include <memory>
@@ -65,6 +66,15 @@ class PfdController final : public QObject {
     Q_PROPERTY(QVariantList egtValues READ egtValues NOTIFY snapshotChanged)
     Q_PROPERTY(int engineHealth READ engineHealth NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineFaultMode READ engineFaultMode NOTIFY snapshotChanged)
+    Q_PROPERTY(QString engineProfileName READ engineProfileName CONSTANT)
+    Q_PROPERTY(QString engineSerialNumber READ engineSerialNumber CONSTANT)
+    Q_PROPERTY(double masterHours READ masterHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double engineHours READ engineHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double tachHours READ tachHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double flightHours READ flightHours NOTIFY snapshotChanged)
+    Q_PROPERTY(bool engineRunning READ engineRunning NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration CONSTANT)
+    Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
     Q_PROPERTY(QVariantMap aircraftSpeedProfile READ aircraftSpeedProfile CONSTANT)
     Q_PROPERTY(QString aircraftProfileName READ aircraftProfileName CONSTANT)
     Q_PROPERTY(QString aircraftProfileState READ aircraftProfileState CONSTANT)
@@ -153,6 +163,15 @@ public:
     [[nodiscard]] QVariantList egtValues() const;
     [[nodiscard]] int engineHealth() const;
     [[nodiscard]] QString engineFaultMode() const;
+    [[nodiscard]] QString engineProfileName() const { return engine_profile_name_; }
+    [[nodiscard]] QString engineSerialNumber() const { return engine_serial_number_; }
+    [[nodiscard]] double masterHours() const { return runtime_tracker_.totals().master_hours; }
+    [[nodiscard]] double engineHours() const { return runtime_tracker_.totals().engine_hours; }
+    [[nodiscard]] double tachHours() const { return runtime_tracker_.totals().tach_hours; }
+    [[nodiscard]] double flightHours() const { return runtime_tracker_.totals().flight_hours; }
+    [[nodiscard]] bool engineRunning() const { return runtime_tracker_.engine_running(); }
+    [[nodiscard]] QVariantList engineSensorConfiguration() const { return engine_sensor_configuration_; }
+    [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
     Q_INVOKABLE void cycleEngineFault();
     [[nodiscard]] QVariantMap aircraftSpeedProfile() const { return aircraft_speed_profile_; }
     [[nodiscard]] QString aircraftProfileName() const { return aircraft_profile_name_; }
@@ -239,6 +258,8 @@ private:
     efis::MonoTime started_at_{efis::MonoClock::now()};
     efis::FlightSnapshot snapshot_{};
     efis::engine::EngineSnapshot engine_snapshot_{};
+    efis::engine::RuntimeTracker runtime_tracker_{};
+    efis::MonoTime last_runtime_update_{};
     QTimer timer_;
     double previous_airspeed_{};
     double airspeed_trend_{};
@@ -253,6 +274,10 @@ private:
     QString catalog_version_{QStringLiteral("UNAVAILABLE")};
     QVariantList aircraft_catalog_;
     QVariantList engine_catalog_;
+    QString engine_profile_name_{QStringLiteral("UNCONFIGURED")};
+    QString engine_serial_number_{QStringLiteral("TO BE ENTERED")};
+    QVariantList engine_sensor_configuration_;
+    QVariantList electrical_loads_;
     QVariantMap staged_aircraft_profile_;
     QString staging_status_{QStringLiteral("NO_SELECTION")};
     QString setup_message_{QStringLiteral("Select an aircraft from the catalog")};

@@ -13,7 +13,11 @@ ApplicationWindow {
     title: "EFIS NEXT Engine Monitoring"
     color: "#061018"
 
-    AdaptiveEmsView { anchors.fill: parent; controller: ems }
+    AdaptiveEmsView {
+        anchors.fill: parent
+        controller: ems
+        Component.onCompleted: setupVisible = Qt.application.arguments.indexOf("--setup-preview") >= 0
+    }
 
     Shortcut { sequence: "Ctrl+F"; onActivated: ems.cycleEngineFault() }
     Shortcut { sequence: "Esc"; onActivated: root.showNormal() }

@@ -578,6 +578,22 @@ void PfdController::loadAircraftProfile() {
         if (!document.isObject()) continue;
         const auto root = document.object();
         const auto aircraft = root.value("aircraft").toObject();
+        const auto engine = root.value("engine").toObject();
+        engine_profile_name_ = engine.value("manufacturer").toString() +
+            QStringLiteral(" ") + engine.value("model").toString();
+        engine_serial_number_ = engine.value("serial_number").toString(QStringLiteral("TO BE ENTERED"));
+        const auto runtime = engine.value("runtime_tracking").toObject();
+        runtime_tracker_ = efis::engine::RuntimeTracker{
+            {runtime.value("engine_run_threshold_rpm").toDouble(500.0),
+             runtime.value("tach_reference_rpm").toDouble(5000.0)},
+            {runtime.value("initial_master_hours").toDouble(), runtime.value("initial_engine_hours").toDouble(),
+             runtime.value("initial_tach_hours").toDouble(), runtime.value("initial_flight_hours").toDouble()}};
+        engine_sensor_configuration_.clear();
+        for (const auto item : engine.value("sensors").toArray())
+            engine_sensor_configuration_ << item.toObject().toVariantMap();
+        electrical_loads_.clear();
+        for (const auto item : root.value("systems").toObject().value("electrical").toObject().value("loads").toArray())
+            electrical_loads_ << item.toObject().toVariantMap();
         const auto speeds = root.value("speeds_kt").toObject();
         if (speeds.isEmpty()) continue;
         const QMap<QString,QString> mapping{{"VSO","vso"},{"VS1","vs1"},{"VFE","vfe"},
@@ -814,6 +830,13 @@ void PfdController::updateSnapshot() {
     auto input = router_.poll(now, elapsed);
     snapshot_ = model_.normalize(std::move(input), now);
     engine_snapshot_ = engine_router_.poll(now, elapsed);
+    if (last_runtime_update_ != efis::MonoTime{}) {
+        const auto seconds = std::chrono::duration<double>(now - last_runtime_update_).count();
+        const bool airborne = snapshot_.position.ground_speed_kt.usable() &&
+                              snapshot_.position.ground_speed_kt.value > 35.0;
+        runtime_tracker_.update(engine_snapshot_.rpm.value, seconds, airborne);
+    }
+    last_runtime_update_ = now;
     if (trend_initialized_) {
         const auto six_second_projection = (snapshot_.air_data.indicated_airspeed_kt.value -
                                             previous_airspeed_) * 300.0;
