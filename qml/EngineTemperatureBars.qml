@@ -7,6 +7,8 @@ Rectangle {
     property real uiScale: 1
     property bool compact: false
     property string temperatureUnit: "°C"
+    property real chtMaximumC: 240
+    property real egtMaximumC: 920
     function displayTemperature(celsius) { return temperatureUnit === "°F" ? celsius*9/5+32 : celsius }
     readonly property color cyan: "#28D9F4"
     readonly property color green: "#52DE36"
@@ -27,8 +29,8 @@ Rectangle {
                 Row { anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; topMargin:(root.compact?12:18)*root.uiScale } spacing:2*root.uiScale
                     Repeater {
                         model:[
-                            {n:"CHT",v:root.displayTemperature(Number(root.chtValues[index])),lo:root.displayTemperature(100),hi:root.displayTemperature(260),caution:root.displayTemperature(220),warning:root.displayTemperature(240)},
-                            {n:"EGT",v:root.displayTemperature(Number(root.egtValues[index])),lo:root.displayTemperature(400),hi:root.displayTemperature(950),caution:root.displayTemperature(850),warning:root.displayTemperature(920)}
+                            {n:"CHT",v:root.displayTemperature(Number(root.chtValues[index])),lo:root.displayTemperature(Math.min(100,root.chtMaximumC*.45)),hi:root.displayTemperature(root.chtMaximumC*1.08),caution:root.displayTemperature(root.chtMaximumC*.92),warning:root.displayTemperature(root.chtMaximumC)},
+                            {n:"EGT",v:root.displayTemperature(Number(root.egtValues[index])),lo:root.displayTemperature(Math.min(400,root.egtMaximumC*.45)),hi:root.displayTemperature(root.egtMaximumC*1.03),caution:root.displayTemperature(root.egtMaximumC*.92),warning:root.displayTemperature(root.egtMaximumC)}
                         ]
                         delegate:Item {
                             id:bar; required property var modelData

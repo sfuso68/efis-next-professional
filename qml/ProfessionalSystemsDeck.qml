@@ -5,6 +5,8 @@ Rectangle {
     required property var controller
     property real uiScale: 1
     property string engineDataState: "FAIL"
+    readonly property var engineLimits: controller.engineLimits||({})
+    function limit(name,fallback) { var value=Number(engineLimits[name]); return isFinite(value)&&value>0?value:fallback }
     readonly property string units: controller.unitSystem || "AVIATION"
     readonly property bool metricUnits: units === "METRIC"
     readonly property bool imperialUnits: units === "IMPERIAL"
@@ -26,14 +28,14 @@ Rectangle {
             Text { x: 8*deck.uiScale; y: 5*deck.uiScale; text: "ENGINE • " + deck.engineDataState; color: theme.secondary; font.pixelSize: 7*deck.uiScale; font.bold: true }
             Row { anchors { left: parent.left; right: temperatures.left; top: parent.top; bottom: parent.bottom; margins: 5*deck.uiScale; topMargin: 20*deck.uiScale } spacing: 3*deck.uiScale
                 Repeater { model: [
-                    {n:"RPM",v:controller.engineRpm,u:"RPM",min:0,max:3000,gs:800,ge:2600,d:0},
+                    {n:"RPM",v:controller.engineRpm,u:"RPM",min:0,max:deck.limit("rpm_max",3000),gs:deck.limit("rpm_max",3000)*.24,ge:deck.limit("rpm_max",3000)*.95,d:0},
                     {n:"MAP",v:deck.mapValue(controller.manifoldPressure),u:deck.metricUnits?"HPA":"IN HG",min:deck.metricUnits?340:10,max:deck.metricUnits?1185:35,gs:deck.metricUnits?508:15,ge:deck.metricUnits?982:29,d:deck.metricUnits?0:1},
                     {n:"FLOW",v:deck.flow(controller.fuelFlow),u:deck.metricUnits?"L/H":"GPH",min:0,max:deck.metricUnits?76:20,gs:deck.metricUnits?15:4,ge:deck.metricUnits?61:16,d:1},
                     // Stessa correzione di AdaptiveEmsView.qml, e per la stessa
                     // ragione: il valore e' in °C. Qui pesa di piu', perche'
                     // questo pannello sta sulla pagina di volo.
-                    {n:"OIL T",v:deck.temp(controller.oilTemperature),u:deck.tempUnit,min:deck.imperialUnits?68:20,max:deck.imperialUnits?266:130,gs:deck.imperialUnits?140:60,ge:deck.imperialUnits?221:105,d:0},
-                    {n:"OIL P",v:deck.pressure(controller.oilPressure),u:deck.metricUnits?"BAR":"PSI",min:0,max:deck.metricUnits?7:100,gs:deck.metricUnits?3.4:50,ge:deck.metricUnits?6.2:90,d:deck.metricUnits?1:0}
+                    {n:"OIL T",v:deck.temp(controller.oilTemperature),u:deck.tempUnit,min:deck.temp(20),max:deck.temp(deck.limit("oil_temperature_max_c",120)*1.1),gs:deck.temp(50),ge:deck.temp(deck.limit("oil_temperature_max_c",120)*.92),d:0},
+                    {n:"OIL P",v:deck.pressure(controller.oilPressure),u:deck.metricUnits?"BAR":"PSI",min:0,max:deck.pressure(deck.limit("oil_pressure_max_psi",100)),gs:deck.pressure(deck.limit("oil_pressure_min_psi",25)),ge:deck.pressure(deck.limit("oil_pressure_max_psi",100)*.85),d:deck.metricUnits?1:0}
                 ]; delegate: EmsGaugeV3 { required property var modelData; width: 108*deck.uiScale; height: parent.height;
                         uiScale: deck.uiScale*.64; label: modelData.n; value: modelData.v; unit: modelData.u;
                         compact:true;
@@ -41,7 +43,7 @@ Rectangle {
                         majorStep:(modelData.max-modelData.min)/5; minorStep:(modelData.max-modelData.min)/25
                 } }
             }
-            EngineTemperatureBars { id: temperatures; anchors { right:parent.right; top:parent.top; bottom:parent.bottom; margins:5*deck.uiScale; topMargin:20*deck.uiScale } width:150*deck.uiScale; uiScale:deck.uiScale; compact:true; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:deck.tempUnit }
+            EngineTemperatureBars { id: temperatures; anchors { right:parent.right; top:parent.top; bottom:parent.bottom; margins:5*deck.uiScale; topMargin:20*deck.uiScale } width:150*deck.uiScale; uiScale:deck.uiScale; compact:true; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:deck.tempUnit; chtMaximumC:deck.limit("cht_max_c",240); egtMaximumC:deck.limit("egt_max_c",920) }
         }
 
         Rectangle { id:fuelPanel; width:105*deck.uiScale; height:parent.height; color:"#D9071119"; border.color:theme.border; radius:3*deck.uiScale
