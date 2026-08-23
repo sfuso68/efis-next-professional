@@ -139,6 +139,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/ProfessionalSystemsDeck.qml
                 qml/ProfessionalCircularGauge.qml
                 qml/EmsGaugeV3.qml
+                qml/EngineTemperatureBars.qml
                 qml/EmsVectorIcon.qml
                 qml/AdaptiveCanvasView.qml
                 qml/SystemSimulatorOverlay.qml
@@ -311,6 +312,7 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/CommandRail.qml
                 qml/ProfessionalCircularGauge.qml
                 qml/EmsGaugeV3.qml
+                qml/EngineTemperatureBars.qml
                 qml/EmsVectorIcon.qml
                 qml/EmsSetupOverlay.qml
                 qml/Theme.qml

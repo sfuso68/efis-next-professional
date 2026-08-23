@@ -14,6 +14,7 @@ Item {
     property int decimals: 0
     property real uiScale: 1
     property bool dominant: false
+    property bool compact: false
     readonly property real span: Math.max(0.001, maximum-minimum)
     readonly property real fraction: Math.max(0, Math.min(1, (value-minimum)/span))
     readonly property real cx: width/2
@@ -42,9 +43,9 @@ Item {
             ctx.beginPath(); ctx.arc(cx,cy,r*.99,0,Math.PI*2); ctx.fill()
 
             const rings = [
-                [1.00, "#89949A", 1.7], [.977, "#202B31", 3.2],
-                [.947, "#6F787D", 1.2], [.922, "#0A1115", 2.0],
-                [.885, "#3C4A51", 1.0]
+                [1.00, "#AAB7BD", 1.9], [.977, "#34444C", 3.2],
+                [.947, "#93A0A6", 1.3], [.922, "#111D23", 2.0],
+                [.885, "#5D7079", 1.1]
             ]
             for (let i=0;i<rings.length;i++) {
                 ctx.strokeStyle=rings[i][1]; ctx.lineWidth=rings[i][2]*gauge.uiScale
@@ -71,7 +72,7 @@ Item {
                 const isMid=!isMajor && i%5===0
                 const a=angleFor(v), outer=r*.82
                 const len=isMajor?r*.12:isMid?r*.085:r*.052
-                ctx.strokeStyle=isMajor?"#F4F8F9":isMid?"#CBD7DB":"#91A4AD"
+                ctx.strokeStyle=isMajor?"#FFFFFF":isMid?"#E1EBEE":"#AFC0C7"
                 ctx.lineWidth=(isMajor?2.2:isMid?1.4:.75)*gauge.uiScale
                 ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*(outer-len),cy+Math.sin(a)*(outer-len)); ctx.lineTo(cx+Math.cos(a)*outer,cy+Math.sin(a)*outer); ctx.stroke()
                 if (isMajor) {
@@ -94,6 +95,15 @@ Item {
             ctx.beginPath(); ctx.arc(cx,cy,r*.94,Math.PI*1.16,Math.PI*1.84); ctx.stroke()
         }
     }
+
+    // Compact PFD deck fallback: these vector overlays remain crisp even when
+    // the Canvas is downscaled aggressively by the 1024x600 flight layout.
+    Rectangle { visible:gauge.compact; x:gauge.cx-gauge.radius; y:gauge.cy-gauge.radius; width:gauge.radius*2; height:width; radius:width/2; color:"transparent"; border.width:Math.max(1,1.4*gauge.uiScale); border.color:"#AAB7BD" }
+    Rectangle { visible:gauge.compact; x:gauge.cx-gauge.radius*.92; y:gauge.cy-gauge.radius*.92; width:gauge.radius*1.84; height:width; radius:width/2; color:"transparent"; border.width:Math.max(1,gauge.uiScale); border.color:"#4E626C" }
+    Text { visible:gauge.compact; anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*gauge.uiScale } text:gauge.label; color:"#DCE6EA"; font.pixelSize:9*gauge.uiScale; font.bold:true }
+    Text { visible:gauge.compact; x:gauge.cx-gauge.radius*.72; y:gauge.cy+gauge.radius*.34; text:Number(gauge.minimum).toFixed(0); color:"#EAF1F3"; font.pixelSize:7*gauge.uiScale; font.bold:true }
+    Text { visible:gauge.compact; anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:18*gauge.uiScale } text:Number((gauge.minimum+gauge.maximum)/2).toFixed(0); color:"#EAF1F3"; font.pixelSize:7*gauge.uiScale; font.bold:true }
+    Text { visible:gauge.compact; x:gauge.cx+gauge.radius*.54; y:gauge.cy+gauge.radius*.34; text:Number(gauge.maximum).toFixed(0); color:"#EAF1F3"; font.pixelSize:7*gauge.uiScale; font.bold:true }
 
     Item {
         id: needle

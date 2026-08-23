@@ -113,30 +113,7 @@ Item {
         }
     }
 
-    Rectangle { anchors { left: rightColumn.left; right: rightColumn.right; top: cas.bottom; bottom: rightColumn.bottom; topMargin: 7*root.uiScale }
-        color: root.panel; border.color: root.line; radius: 5*root.uiScale
-        Text { x: 10*root.uiScale; y: 5*root.uiScale; text: "CHT / EGT"; color: root.cyan; font.pixelSize: 9*root.uiScale; font.bold: true }
-        Row { anchors { fill: parent; topMargin: 24*root.uiScale; leftMargin: 31*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
-        spacing: 4*root.uiScale
-            Repeater { model: 4; delegate: Item { required property int index; width: (parent.width-3*parent.spacing)/4; height: parent.height
-                Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top }
-        text: "CYL "+(index+1); color: "#E5EAEC"; font.pixelSize: 7*root.uiScale }
-                Column { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 18*root.uiScale; bottom: parent.bottom }
-        spacing: 7*root.uiScale
-                    Repeater { model: [{n:"CHT",v:Number(controller.chtValues[index]),lo:100,hi:500,c:root.green},{n:"EGT",v:Number(controller.egtValues[index]),lo:300,hi:900,c:root.green}]
-                        delegate: Item { required property var modelData; width: 54*root.uiScale; height: (parent.height-parent.spacing)/2
-                            Rectangle { x: 18*root.uiScale; width: 11*root.uiScale; height: parent.height-14*root.uiScale; color: "#27343A"; border.color: "#65737A"
-                                Rectangle { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
-        height: Math.max(2,(modelData.v-modelData.lo)/(modelData.hi-modelData.lo)*(parent.height-4)); color: modelData.c } }
-                            Repeater { model: 5; delegate: Rectangle { required property int index; x: 11*root.uiScale; y: index*(parent.height-15*root.uiScale)/4; width: 6*root.uiScale; height: 1; color: "#D1D9DC" } }
-                            Repeater { model: 3; delegate: Text { required property int index; x: -8*root.uiScale; y: index*(parent.height-18*root.uiScale)/2-3*root.uiScale; width: 18*root.uiScale; horizontalAlignment: Text.AlignRight; text: Math.round(modelData.hi-index*(modelData.hi-modelData.lo)/2); color: "#C6D1D5"; font.pixelSize: 5*root.uiScale } }
-                            Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom }
-        text: Math.round(modelData.v); color: root.green; font.pixelSize: 8*root.uiScale; font.bold: true } } }
-                } } }
-        }
-        Text { x: 5*root.uiScale; y: parent.height*.32; text: "CHT\n°C"; color: root.cyan; font.pixelSize: 7*root.uiScale; horizontalAlignment: Text.AlignHCenter }
-        Text { x: 5*root.uiScale; y: parent.height*.70; text: "EGT\n°C"; color: root.cyan; font.pixelSize: 7*root.uiScale; horizontalAlignment: Text.AlignHCenter }
-    }
+    EngineTemperatureBars { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:false; chtValues:controller.chtValues; egtValues:controller.egtValues }
 
     Rectangle { id: summary; anchors { left: nav.right; right: parent.right; bottom: actions.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
         height: 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale
