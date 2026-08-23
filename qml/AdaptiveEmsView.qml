@@ -18,6 +18,26 @@ Item {
     property var busTrend: []
     property bool checklistFuelConfirmed: false
     property bool checklistAirframeConfirmed: false
+    property bool leanActive: false
+    property var leanPeakValues: []
+    property var leanPeakDetected: []
+    property int leanFirstCylinder: -1
+    function resetLean() {
+        var values=controller.egtValues||[]; var peaks=[]; var detected=[]
+        for(var i=0;i<values.length;i++){peaks.push(Number(values[i]));detected.push(false)}
+        leanPeakValues=peaks; leanPeakDetected=detected; leanFirstCylinder=-1
+    }
+    function startLean() { resetLean(); leanActive=true }
+    function updateLean() {
+        if(!leanActive)return
+        var values=controller.egtValues||[]; var peaks=leanPeakValues.slice(0); var detected=leanPeakDetected.slice(0)
+        for(var i=0;i<values.length;i++){
+            var value=Number(values[i]); if(i>=peaks.length){peaks.push(value);detected.push(false)}
+            if(!detected[i] && value>peaks[i])peaks[i]=value
+            if(!detected[i] && peaks[i]-value>=8){detected[i]=true;if(leanFirstCylinder<0)leanFirstCylinder=i}
+        }
+        leanPeakValues=peaks; leanPeakDetected=detected
+    }
     readonly property bool checklistEngineOk: controller.engineRpm < 400 || (controller.oilPressure >= 25 && controller.oilTemperature >= 50 && controller.oilTemperature <= 110)
     readonly property bool checklistFuelOk: checklistFuelConfirmed && (controller.fuelLeft + controller.fuelRight) >= 8
     readonly property bool checklistElectricalOk: controller.busVoltage >= 13.2 && controller.busVoltage <= 14.8 && controller.alternatorCurrent >= 0
@@ -42,6 +62,7 @@ Item {
             root.oilTrend=root.appendTrend(root.oilTrend,Number(controller.oilPressure||0)/100)
             var maximum=0; var values=controller.chtValues||[]; for(var i=0;i<values.length;i++)maximum=Math.max(maximum,Number(values[i])); root.chtTrend=root.appendTrend(root.chtTrend,maximum/250)
             root.busTrend=root.appendTrend(root.busTrend,Number(controller.busVoltage||0)/16)
+            root.updateLean()
             trendCanvas.requestPaint()
         } }
 
@@ -199,7 +220,7 @@ Item {
          text: "×"; color: "white"; font.pixelSize: 25*root.uiScale
                 MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.selectedPanel="" } }
             Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
-            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
+            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST" && root.selectedPanel !== "LEAN"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
                 text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
                       root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+"\nFlusso: "+root.flow(controller.fuelFlow).toFixed(1)+" "+root.flowUnit+"\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
                       root.selectedPanel === "TREND" ? "ENGINE TREND\nRPM, pressioni, temperature e parametri elettrici saranno rappresentati su finestre selezionabili da 1, 5, 15 e 60 minuti." :
@@ -265,6 +286,35 @@ Item {
                 Rectangle { anchors { right:parent.right; bottom:parent.bottom } width:92*root.uiScale; height:22*root.uiScale; radius:3*root.uiScale; color:"#14242C"; border.color:root.line
                     Text { anchors.centerIn:parent; text:"RESET CHECKS"; color:"#D9E3E6"; font.pixelSize:7*root.uiScale; font.bold:true }
                     TapHandler { onTapped:{root.checklistFuelConfirmed=false;root.checklistAirframeConfirmed=false} }
+                }
+            }
+            Item { visible:root.selectedPanel === "LEAN"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
+                Text { text:"LEAN ASSIST • EGT PEAK MONITOR"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
+                Rectangle { anchors { right:parent.right; top:parent.top } width:112*root.uiScale; height:25*root.uiScale; radius:4*root.uiScale; color:root.leanActive?"#123D20":"#18252C"; border.color:root.leanActive?root.green:root.line
+                    Text { anchors.centerIn:parent; text:root.leanActive?"● CAPTURING":"STANDBY"; color:root.leanActive?root.green:"#A8B5BA"; font.pixelSize:8*root.uiScale; font.bold:true }
+                }
+                Row { x:0; y:38*root.uiScale; width:parent.width; height:132*root.uiScale; spacing:7*root.uiScale
+                    Repeater { model:controller.egtValues||[]
+                        delegate:Rectangle { required property int index; required property real modelData; width:(parent.width-(Math.max(1,(controller.egtValues||[]).length)-1)*parent.spacing)/Math.max(1,(controller.egtValues||[]).length); height:parent.height; radius:4*root.uiScale; color:root.leanFirstCylinder===index?"#3A2D08":"#0A1820"; border.width:root.leanFirstCylinder===index?2:1; border.color:root.leanPeakDetected[index]?root.amber:root.line
+                            Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:7*root.uiScale } text:"CYL "+(index+1); color:root.leanFirstCylinder===index?root.amber:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
+                            Text { anchors.centerIn:parent; anchors.verticalCenterOffset:-8*root.uiScale; text:Math.round(root.temp(modelData)); color:"white"; font.pixelSize:19*root.uiScale; font.bold:true }
+                            Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.verticalCenter; topMargin:13*root.uiScale } text:root.tempUnit+"  EGT"; color:"#91A2A9"; font.pixelSize:7*root.uiScale }
+                            Rectangle { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; margins:7*root.uiScale } height:24*root.uiScale; radius:3*root.uiScale; color:root.leanPeakDetected[index]?"#3A2D08":"#12232B"
+                                Text { anchors.centerIn:parent; text:root.leanPeakDetected[index]?(Math.round(root.temp(modelData)-root.temp(root.leanPeakValues[index]))+"° FROM PEAK"):(root.leanActive?"SEEKING PEAK":"—"); color:root.leanPeakDetected[index]?root.amber:"#A9B8BE"; font.pixelSize:6*root.uiScale; font.bold:true }
+                            }
+                        }
+                    }
+                }
+                Text { x:0; y:178*root.uiScale; text:root.leanFirstCylinder>=0?"FIRST TO PEAK: CYLINDER "+(root.leanFirstCylinder+1):root.leanActive?"Slowly lean mixture • monitoring EGT rise":"Stabilize cruise power, then press START"; color:root.leanFirstCylinder>=0?root.amber:"#B8C5CA"; font.pixelSize:8*root.uiScale; font.bold:true }
+                Row { anchors { right:parent.right; bottom:parent.bottom } spacing:8*root.uiScale
+                    Rectangle { width:90*root.uiScale; height:24*root.uiScale; radius:3*root.uiScale; color:"#14242C"; border.color:root.line
+                        Text { anchors.centerIn:parent; text:"RESET"; color:"#D9E3E6"; font.pixelSize:7*root.uiScale; font.bold:true }
+                        TapHandler { onTapped:{root.leanActive=false;root.resetLean()} }
+                    }
+                    Rectangle { width:112*root.uiScale; height:24*root.uiScale; radius:3*root.uiScale; color:root.leanActive?"#4A1917":"#0D5821"; border.color:root.leanActive?"#FF514A":root.green
+                        Text { anchors.centerIn:parent; text:root.leanActive?"STOP CAPTURE":"START LEAN FIND"; color:"white"; font.pixelSize:7*root.uiScale; font.bold:true }
+                        TapHandler { onTapped:{if(root.leanActive)root.leanActive=false;else root.startLean()} }
+                    }
                 }
             }
             Text { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 22*root.uiScale }
