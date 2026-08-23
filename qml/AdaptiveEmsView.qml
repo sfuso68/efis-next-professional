@@ -12,6 +12,11 @@ Item {
     readonly property color health: controller.engineHealth >= 2 ? "#FF3933" : controller.engineHealth === 1 ? amber : green
     property string selectedPanel: ""
     property bool setupVisible: false
+    property var rpmTrend: []
+    property var oilTrend: []
+    property var chtTrend: []
+    property var busTrend: []
+    function appendTrend(series,value) { var copy=series.slice(0); copy.push(value); if(copy.length>120)copy.shift(); return copy }
     readonly property string units: controller.unitSystem || "AVIATION"
     readonly property bool metricUnits: units === "METRIC"
     readonly property bool imperialUnits: units === "IMPERIAL"
@@ -25,6 +30,13 @@ Item {
     readonly property string fuelUnit: metricUnits ? "L" : "GAL"
     readonly property string flowUnit: metricUnits ? "L/H" : "GPH"
     readonly property string mapUnit: metricUnits ? "HPA" : "IN HG"
+    Timer { interval:1000; running:true; repeat:true; onTriggered:{
+            root.rpmTrend=root.appendTrend(root.rpmTrend,Number(controller.engineRpm||0)/3000)
+            root.oilTrend=root.appendTrend(root.oilTrend,Number(controller.oilPressure||0)/100)
+            var maximum=0; var values=controller.chtValues||[]; for(var i=0;i<values.length;i++)maximum=Math.max(maximum,Number(values[i])); root.chtTrend=root.appendTrend(root.chtTrend,maximum/250)
+            root.busTrend=root.appendTrend(root.busTrend,Number(controller.busVoltage||0)/16)
+            trendCanvas.requestPaint()
+        } }
 
     Rectangle { anchors.fill: parent
         gradient: Gradient { orientation: Gradient.Horizontal
@@ -180,7 +192,7 @@ Item {
          text: "×"; color: "white"; font.pixelSize: 25*root.uiScale
                 MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.selectedPanel="" } }
             Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
-            Text { visible:root.selectedPanel !== "SYSTEM"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
+            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
                 text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
                       root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+"\nFlusso: "+root.flow(controller.fuelFlow).toFixed(1)+" "+root.flowUnit+"\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
                       root.selectedPanel === "TREND" ? "ENGINE TREND\nRPM, pressioni, temperature e parametri elettrici saranno rappresentati su finestre selezionabili da 1, 5, 15 e 60 minuti." :
@@ -204,6 +216,22 @@ Item {
                     }
                 }
                 Text { y:182*root.uiScale; width:parent.width; wrapMode:Text.WordWrap; text:"Display conversion only: recorded sensor data and certified limits remain stored in canonical units."; color:"#83959D"; font.pixelSize:8*root.uiScale }
+            }
+            Item { visible:root.selectedPanel === "TREND"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
+                Text { text:"ENGINE TREND • 120 SECOND MOVING WINDOW"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
+                Row { x:310*root.uiScale; spacing:14*root.uiScale
+                    Repeater { model:[{n:"RPM",c:"#28D9F4"},{n:"OIL P",c:"#52DE36"},{n:"CHT MAX",c:"#FFC72B"},{n:"BUS",c:"#D36BFF"}]
+                        delegate:Row { required property var modelData; spacing:4*root.uiScale; Rectangle { width:12*root.uiScale; height:3*root.uiScale; anchors.verticalCenter:parent.verticalCenter; color:modelData.c } Text { text:modelData.n; color:"#DCE5E8"; font.pixelSize:7*root.uiScale } }
+                    }
+                }
+                Rectangle { x:0; y:28*root.uiScale; width:parent.width; height:166*root.uiScale; color:"#07141C"; border.color:root.line
+                    Repeater { model:5; delegate:Rectangle { required property int index; x:0; y:index*parent.height/4; width:parent.width; height:1; color:"#263944" } }
+                    Canvas { id:trendCanvas; anchors.fill:parent
+                        function drawSeries(ctx,series,color){if(series.length<2)return;ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2*root.uiScale;for(var i=0;i<series.length;i++){var x=i*(width/(119));var y=height-Math.max(0,Math.min(1,series[i]))*height;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.stroke()}
+                        onPaint:{var ctx=getContext("2d");ctx.clearRect(0,0,width,height);drawSeries(ctx,root.rpmTrend,"#28D9F4");drawSeries(ctx,root.oilTrend,"#52DE36");drawSeries(ctx,root.chtTrend,"#FFC72B");drawSeries(ctx,root.busTrend,"#D36BFF")}
+                    }
+                }
+                Text { y:201*root.uiScale; text:"NOW  RPM "+Math.round(controller.engineRpm)+"  •  OIL "+Number(controller.oilPressure).toFixed(1)+" PSI  •  BUS "+Number(controller.busVoltage).toFixed(1)+" V"; color:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
             }
             Text { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 22*root.uiScale }
          text: "TOUCH OUTSIDE TO CLOSE"; horizontalAlignment: Text.AlignHCenter; color: "#899BA3"; font.pixelSize: 8*root.uiScale; font.letterSpacing: 1.4 }
