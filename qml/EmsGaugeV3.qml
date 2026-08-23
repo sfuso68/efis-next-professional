@@ -20,6 +20,8 @@ Item {
     readonly property real cx: width/2
     readonly property real cy: height*0.51
     readonly property real radius: Math.min(width*0.47, height*0.45)
+    onCompactChanged: face.requestPaint()
+    Timer { interval:120; running:true; repeat:false; onTriggered:face.requestPaint() }
 
     Canvas {
         id: face
@@ -93,6 +95,27 @@ Item {
             ctx.fillStyle=glass; ctx.beginPath(); ctx.arc(cx,cy,r*.80,Math.PI*1.12,Math.PI*1.88); ctx.quadraticCurveTo(cx,cy+r*.10,cx-r*.75,cy-r*.20); ctx.fill()
             ctx.strokeStyle="rgba(225,242,249,0.36)"; ctx.lineWidth=Math.max(1,r*.008)
             ctx.beginPath(); ctx.arc(cx,cy,r*.94,Math.PI*1.16,Math.PI*1.84); ctx.stroke()
+        }
+    }
+
+    Repeater {
+        visible:gauge.compact; model:31
+        delegate:Item {
+            required property int index
+            x:gauge.cx; y:gauge.cy; width:0; height:0
+            rotation:-130+index*(260/30)
+            readonly property real sampleValue:gauge.minimum+(gauge.span*index/30)
+            readonly property color bandColor:sampleValue<gauge.greenStart?"#D93A2E":sampleValue<=gauge.greenEnd?"#4BCD37":sampleValue<=gauge.greenEnd+gauge.span*.10?"#FFD31A":"#EE3224"
+            Rectangle { x:-Math.max(1.8,gauge.radius*.04); y:-gauge.radius*.88; width:Math.max(3.6,gauge.radius*.08); height:gauge.radius*.075; color:parent.bandColor }
+        }
+    }
+    Repeater {
+        visible:gauge.compact; model:11
+        delegate:Item {
+            required property int index
+            x:gauge.cx; y:gauge.cy; width:0; height:0
+            rotation:-130+index*(260/10)
+            Rectangle { x:-Math.max(.7,gauge.radius*.012); y:-gauge.radius*.80; width:Math.max(1.4,gauge.radius*.024); height:gauge.radius*(index%2===0?.12:.07); color:index%2===0?"#FFFFFF":"#C9D6DB" }
         }
     }
 
