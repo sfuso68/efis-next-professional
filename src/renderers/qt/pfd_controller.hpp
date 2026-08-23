@@ -6,6 +6,7 @@
 #include "efis/core/engine_source.hpp"
 #include "efis/core/engine_runtime.hpp"
 #include "efis/providers/engine_simulation_source.hpp"
+#include "efis/simulation/system_simulator.hpp"
 
 #include <memory>
 
@@ -117,6 +118,13 @@ class PfdController final : public QObject {
     Q_PROPERTY(int imageryTileCount READ imageryTileCount NOTIFY imageryChanged)
     Q_PROPERTY(int imageryCoverageGaps READ imageryCoverageGaps NOTIFY imageryChanged)
     Q_PROPERTY(QString imageryAtlasSource READ imageryAtlasSource NOTIFY imageryChanged)
+    Q_PROPERTY(bool systemSimulationActive READ systemSimulationActive NOTIFY simulationChanged)
+    Q_PROPERTY(bool systemSimulationRunning READ systemSimulationRunning NOTIFY simulationChanged)
+    Q_PROPERTY(QString systemSimulationScenario READ systemSimulationScenario NOTIFY simulationChanged)
+    Q_PROPERTY(QString systemSimulationPhase READ systemSimulationPhase NOTIFY simulationChanged)
+    Q_PROPERTY(double systemSimulationProgress READ systemSimulationProgress NOTIFY simulationChanged)
+    Q_PROPERTY(double systemSimulationSpeed READ systemSimulationSpeed NOTIFY simulationChanged)
+    Q_PROPERTY(QString systemSimulationLastEvent READ systemSimulationLastEvent NOTIFY simulationChanged)
 
 public:
     explicit PfdController(QObject* parent = nullptr);
@@ -184,14 +192,14 @@ public:
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
     [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
     [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
-    [[nodiscard]] bool gearNoseLocked() const { return true; }
-    [[nodiscard]] bool gearLeftLocked() const { return true; }
-    [[nodiscard]] bool gearRightLocked() const { return true; }
-    [[nodiscard]] QString gearState() const { return landing_gear_installed_ ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("NOT INSTALLED"); }
+    [[nodiscard]] bool gearNoseLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_nose_locked : true; }
+    [[nodiscard]] bool gearLeftLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_left_locked : true; }
+    [[nodiscard]] bool gearRightLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_right_locked : true; }
+    [[nodiscard]] QString gearState() const { return !landing_gear_installed_ ? QStringLiteral("NOT INSTALLED") : (gearNoseLocked() && gearLeftLocked() && gearRightLocked() ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("UP / TRANSIT")); }
     [[nodiscard]] bool flapsInstalled() const { return flaps_installed_; }
     [[nodiscard]] QVariantList flapDetents() const { return flap_detents_; }
-    [[nodiscard]] double flapAngle() const { return 15.0; }
-    [[nodiscard]] double flapCommandedAngle() const { return 15.0; }
+    [[nodiscard]] double flapAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_angle_deg : 15.0; }
+    [[nodiscard]] double flapCommandedAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_command_deg : 15.0; }
     Q_INVOKABLE void cycleEngineFault();
     [[nodiscard]] QVariantMap aircraftSpeedProfile() const { return aircraft_speed_profile_; }
     [[nodiscard]] QString aircraftProfileName() const { return aircraft_profile_name_; }
@@ -243,12 +251,25 @@ public:
     [[nodiscard]] int imageryTileCount() const { return imagery_tile_count_; }
     [[nodiscard]] int imageryCoverageGaps() const { return imagery_coverage_gaps_; }
     [[nodiscard]] QString imageryAtlasSource() const { return imagery_atlas_source_; }
+    [[nodiscard]] bool systemSimulationActive() const { return system_simulation_active_; }
+    [[nodiscard]] bool systemSimulationRunning() const { return system_simulation_active_ && system_simulation_running_; }
+    [[nodiscard]] QString systemSimulationScenario() const;
+    [[nodiscard]] QString systemSimulationPhase() const;
+    [[nodiscard]] double systemSimulationProgress() const { return system_frame_.progress; }
+    [[nodiscard]] double systemSimulationSpeed() const { return system_simulation_speed_; }
+    [[nodiscard]] QString systemSimulationLastEvent() const { return system_simulation_last_event_; }
+    Q_INVOKABLE bool startSystemSimulation(const QString& scenario);
+    Q_INVOKABLE void toggleSystemSimulation();
+    Q_INVOKABLE void stopSystemSimulation();
+    Q_INVOKABLE void seekSystemSimulation(double progress);
+    Q_INVOKABLE void setSystemSimulationSpeed(double speed);
 
 signals:
     void snapshotChanged();
     void setupChanged();
     void navigationSetupChanged();
     void imageryChanged();
+    void simulationChanged();
 
 private slots:
     void updateSnapshot();
@@ -334,4 +355,12 @@ private:
     int imagery_tile_count_{};
     int imagery_coverage_gaps_{};
     QString imagery_atlas_source_;
+    efis::simulation::SystemSimulator system_simulator_{};
+    efis::simulation::SimulationFrame system_frame_{};
+    bool system_simulation_active_{};
+    bool system_simulation_running_{};
+    double system_simulation_speed_{1.0};
+    double system_simulation_elapsed_ms_{};
+    efis::MonoTime system_simulation_last_tick_{};
+    QString system_simulation_last_event_{QStringLiteral("READY")};
 };

@@ -141,6 +141,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/EmsGaugeV3.qml
                 qml/EmsVectorIcon.qml
                 qml/AdaptiveCanvasView.qml
+                qml/SystemSimulatorOverlay.qml
             RESOURCES
                 qml/shaders/terrain_taws.frag
         )

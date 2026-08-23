@@ -805,7 +805,9 @@ QVariantList PfdController::egtValues() const {
 int PfdController::engineHealth() const { return static_cast<int>(engine_snapshot_.health); }
 QString PfdController::engineFaultMode() const {
     using efis::engine::EngineFault;
-    switch (engine_simulation_->fault()) {
+    const auto fault = system_simulation_active_
+        ? system_frame_.engine.injected_fault : engine_simulation_->fault();
+    switch (fault) {
         case EngineFault::none: return QStringLiteral("NONE");
         case EngineFault::low_oil_pressure: return QStringLiteral("LOW OIL PRESS");
         case EngineFault::high_cht: return QStringLiteral("HIGH CHT 3");
@@ -826,6 +828,68 @@ void PfdController::cycleEngineFault() {
     qInfo().noquote() << "event=engine_fault_injection mode=" << engineFaultMode();
 }
 
+QString PfdController::systemSimulationScenario() const {
+    return QString::fromLatin1(efis::simulation::scenario_name(system_simulator_.scenario()));
+}
+
+QString PfdController::systemSimulationPhase() const {
+    return QString::fromLatin1(efis::simulation::phase_name(system_frame_.phase));
+}
+
+bool PfdController::startSystemSimulation(const QString& scenario) {
+    try {
+        system_simulator_.reset(efis::simulation::parse_scenario(
+            scenario.toStdString()));
+    } catch (const std::exception&) {
+        return false;
+    }
+    system_simulation_active_ = true;
+    system_simulation_running_ = true;
+    system_simulation_elapsed_ms_ = 0.0;
+    system_simulation_last_tick_ = efis::MonoClock::now();
+    system_simulation_last_event_ = QStringLiteral("SCENARIO STARTED");
+    qInfo().noquote() << "event=system_simulation_start scenario=" << scenario;
+    emit simulationChanged();
+    return true;
+}
+
+void PfdController::toggleSystemSimulation() {
+    if (!system_simulation_active_) {
+        startSystemSimulation(QStringLiteral("full-flight"));
+        return;
+    }
+    system_simulation_running_ = !system_simulation_running_;
+    system_simulation_last_tick_ = efis::MonoClock::now();
+    system_simulation_last_event_ = system_simulation_running_
+        ? QStringLiteral("RESUMED") : QStringLiteral("PAUSED");
+    emit simulationChanged();
+}
+
+void PfdController::stopSystemSimulation() {
+    system_simulation_active_ = false;
+    system_simulation_running_ = false;
+    system_simulation_elapsed_ms_ = 0.0;
+    system_simulation_last_event_ = QStringLiteral("STOPPED");
+    qInfo().noquote() << "event=system_simulation_stop";
+    emit simulationChanged();
+}
+
+void PfdController::seekSystemSimulation(double progress) {
+    if (!system_simulation_active_) return;
+    const double bounded = std::clamp(progress, 0.0, 1.0);
+    system_simulation_elapsed_ms_ = bounded *
+        static_cast<double>(system_simulator_.duration().count());
+    system_simulation_last_tick_ = efis::MonoClock::now();
+    system_simulation_last_event_ = QStringLiteral("TIMELINE SEEK");
+    emit simulationChanged();
+}
+
+void PfdController::setSystemSimulationSpeed(double speed) {
+    system_simulation_speed_ = std::clamp(speed, 0.25, 20.0);
+    system_simulation_last_event_ = QStringLiteral("SPEED CHANGED");
+    emit simulationChanged();
+}
+
 void PfdController::updateSnapshot() {
     const auto now = efis::MonoClock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - started_at_);
@@ -835,14 +899,37 @@ void PfdController::updateSnapshot() {
     // dal nodo di ingestion, come stabilito dalla ADR-003. Quando quel
     // collegamento esistera' sara' una sorgente in piu', e qui non cambiera'
     // nulla.
-    auto input = router_.poll(now, elapsed);
-    snapshot_ = model_.normalize(std::move(input), now);
-    engine_snapshot_ = engine_router_.poll(now, elapsed);
+    if (system_simulation_active_) {
+        if (system_simulation_last_tick_ == efis::MonoTime{})
+            system_simulation_last_tick_ = now;
+        if (system_simulation_running_) {
+            const auto delta = std::chrono::duration<double, std::milli>(
+                now - system_simulation_last_tick_).count();
+            system_simulation_elapsed_ms_ += delta * system_simulation_speed_;
+        }
+        system_simulation_last_tick_ = now;
+        const auto duration_ms = static_cast<double>(system_simulator_.duration().count());
+        system_simulation_elapsed_ms_ = std::clamp(system_simulation_elapsed_ms_, 0.0, duration_ms);
+        system_frame_ = system_simulator_.sample(
+            now, std::chrono::milliseconds{static_cast<long long>(system_simulation_elapsed_ms_)});
+        snapshot_ = model_.normalize(system_frame_.flight, now);
+        engine_snapshot_ = system_frame_.engine;
+        if (!system_frame_.events.empty())
+            system_simulation_last_event_ = QString::fromStdString(system_frame_.events.back());
+        if (system_frame_.complete) system_simulation_running_ = false;
+        emit simulationChanged();
+    } else {
+        auto input = router_.poll(now, elapsed);
+        snapshot_ = model_.normalize(std::move(input), now);
+        engine_snapshot_ = engine_router_.poll(now, elapsed);
+    }
     if (last_runtime_update_ != efis::MonoTime{}) {
         const auto seconds = std::chrono::duration<double>(now - last_runtime_update_).count();
         const bool airborne = snapshot_.position.ground_speed_kt.usable() &&
                               snapshot_.position.ground_speed_kt.value > 35.0;
-        runtime_tracker_.update(engine_snapshot_.rpm.value, seconds, airborne);
+        const double accountable_rpm = engine_snapshot_.rpm.is_simulated()
+            ? 0.0 : engine_snapshot_.rpm.value;
+        runtime_tracker_.update(accountable_rpm, seconds, airborne && !showingSimulatedData());
     }
     last_runtime_update_ = now;
     if (trend_initialized_) {

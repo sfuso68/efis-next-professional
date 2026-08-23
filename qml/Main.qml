@@ -9,7 +9,8 @@ ApplicationWindow {
     title: "EFIS NEXT Adaptive Mission Deck"
     color: "#061018"
     property bool maintenanceVisible: Qt.application.arguments.indexOf("--setup-preview") >= 0 || Qt.application.arguments.indexOf("--setup-aircraft-preview") >= 0 || Qt.application.arguments.indexOf("--setup-catalog-preview") >= 0 || Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0 || Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0 || Qt.application.arguments.indexOf("--setup-airport-preview") >= 0 || Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0 || Qt.application.arguments.indexOf("--setup-bench-preview") >= 0
-    Component.onCompleted: { if (Qt.application.arguments.indexOf("--setup-bench-preview") >= 0) bench.startReplay(bench.defaultSource); if (Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0) pfd.stageAircraft(1); if (Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.stageEngine(1); if (Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.startEngineSensorTest("RPM",true) }
+    property bool simulatorVisible: Qt.application.arguments.indexOf("--simulator-preview") >= 0
+    Component.onCompleted: { if (Qt.application.arguments.indexOf("--setup-bench-preview") >= 0) bench.startReplay(bench.defaultSource); if (Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0) pfd.stageAircraft(1); if (Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.stageEngine(1); if (Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.startEngineSensorTest("RPM",true); if (Qt.application.arguments.indexOf("--simulator-preview") >= 0) pfd.startSystemSimulation("full-flight") }
 
     AdaptiveShell { id: adaptiveShell; anchors.fill: parent; controller: pfd; initialPage: startupPage }
     Shortcut { sequence: "Ctrl+1"; onActivated: adaptiveShell.currentPage = "PFD" }
@@ -17,6 +18,7 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+3"; onActivated: adaptiveShell.currentPage = "FPV" }
     Shortcut { sequence: "Ctrl+4"; onActivated: adaptiveShell.currentPage = "EMS" }
     Shortcut { sequence: "Ctrl+5"; onActivated: adaptiveShell.currentPage = "NAV" }
+    Shortcut { sequence: "Ctrl+6"; onActivated: root.simulatorVisible = !root.simulatorVisible }
 
     MouseArea {
         anchors { left: parent.left; top: parent.top }
@@ -39,5 +41,9 @@ ApplicationWindow {
         airportNearestOnly: Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0
         controller: pfd; uiScale: Math.min(root.width/1024, root.height/600)
         onCloseRequested: root.maintenanceVisible = false
+    }
+    SystemSimulatorOverlay {
+        anchors.fill:parent; visible:root.simulatorVisible; controller:pfd
+        onCloseRequested:root.simulatorVisible=false
     }
 }
