@@ -16,6 +16,13 @@ Item {
     property var oilTrend: []
     property var chtTrend: []
     property var busTrend: []
+    property bool checklistFuelConfirmed: false
+    property bool checklistAirframeConfirmed: false
+    readonly property bool checklistEngineOk: controller.engineRpm < 400 || (controller.oilPressure >= 25 && controller.oilTemperature >= 50 && controller.oilTemperature <= 110)
+    readonly property bool checklistFuelOk: checklistFuelConfirmed && (controller.fuelLeft + controller.fuelRight) >= 8
+    readonly property bool checklistElectricalOk: controller.busVoltage >= 13.2 && controller.busVoltage <= 14.8 && controller.alternatorCurrent >= 0
+    readonly property bool checklistAirframeOk: checklistAirframeConfirmed && (!controller.landingGearInstalled || controller.gearState === "DOWN & LOCKED")
+    readonly property bool checklistComplete: checklistEngineOk && checklistFuelOk && checklistElectricalOk && checklistAirframeOk
     function appendTrend(series,value) { var copy=series.slice(0); copy.push(value); if(copy.length>120)copy.shift(); return copy }
     readonly property string units: controller.unitSystem || "AVIATION"
     readonly property bool metricUnits: units === "METRIC"
@@ -192,7 +199,7 @@ Item {
          text: "×"; color: "white"; font.pixelSize: 25*root.uiScale
                 MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.selectedPanel="" } }
             Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
-            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
+            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
                 text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
                       root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+"\nFlusso: "+root.flow(controller.fuelFlow).toFixed(1)+" "+root.flowUnit+"\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
                       root.selectedPanel === "TREND" ? "ENGINE TREND\nRPM, pressioni, temperature e parametri elettrici saranno rappresentati su finestre selezionabili da 1, 5, 15 e 60 minuti." :
@@ -232,6 +239,33 @@ Item {
                     }
                 }
                 Text { y:201*root.uiScale; text:"NOW  RPM "+Math.round(controller.engineRpm)+"  •  OIL "+Number(controller.oilPressure).toFixed(1)+" PSI  •  BUS "+Number(controller.busVoltage).toFixed(1)+" V"; color:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
+            }
+            Item { visible:root.selectedPanel === "CHECKLIST"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
+                Text { text:"ENGINE / BEFORE TAKE-OFF"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
+                Rectangle { anchors { right:parent.right; top:parent.top } width:150*root.uiScale; height:25*root.uiScale; radius:4*root.uiScale; color:root.checklistComplete?"#123D20":"#392C0B"; border.color:root.checklistComplete?root.green:root.amber
+                    Text { anchors.centerIn:parent; text:root.checklistComplete?"✓ CHECKLIST COMPLETE":"CHECKLIST OPEN"; color:root.checklistComplete?root.green:root.amber; font.pixelSize:8*root.uiScale; font.bold:true }
+                }
+                Column { y:34*root.uiScale; width:parent.width; spacing:5*root.uiScale
+                    Repeater { model:[
+                        {title:"ENGINE PARAMETERS",detail:"Oil pressure / temperature within operating range",ok:root.checklistEngineOk,manual:false},
+                        {title:"FUEL QUANTITY",detail:root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+" aboard • touch to confirm",ok:root.checklistFuelOk,manual:true,key:"fuel"},
+                        {title:"ELECTRICAL SYSTEM",detail:Number(controller.busVoltage).toFixed(1)+" V • alternator "+Number(controller.alternatorCurrent).toFixed(0)+" A",ok:root.checklistElectricalOk,manual:false},
+                        {title:"GEAR / FLAPS / AIRFRAME",detail:"Configuration visually verified • touch to confirm",ok:root.checklistAirframeOk,manual:true,key:"airframe"}]
+                        delegate:Rectangle { required property var modelData; width:parent.width; height:38*root.uiScale; radius:4*root.uiScale; color:modelData.ok?"#0C2918":"#17232A"; border.color:modelData.ok?root.green:(modelData.manual?root.amber:root.line)
+                            Rectangle { x:9*root.uiScale; anchors.verticalCenter:parent.verticalCenter; width:20*root.uiScale; height:width; radius:width/2; color:modelData.ok?root.green:"transparent"; border.width:2; border.color:modelData.ok?root.green:(modelData.manual?root.amber:"#788890")
+                                Text { anchors.centerIn:parent; text:modelData.ok?"✓":"!"; color:modelData.ok?"#041008":(modelData.manual?root.amber:"#AAB6BB"); font.pixelSize:11*root.uiScale; font.bold:true }
+                            }
+                            Text { x:39*root.uiScale; y:6*root.uiScale; text:modelData.title; color:modelData.ok?root.green:"white"; font.pixelSize:9*root.uiScale; font.bold:true }
+                            Text { x:39*root.uiScale; y:21*root.uiScale; text:modelData.detail; color:"#AFC0C7"; font.pixelSize:7*root.uiScale }
+                            Text { anchors { right:parent.right; verticalCenter:parent.verticalCenter; rightMargin:12*root.uiScale } text:modelData.manual?"TOUCH":"AUTO"; color:modelData.manual?root.cyan:"#7E9098"; font.pixelSize:7*root.uiScale; font.bold:true }
+                            TapHandler { enabled:modelData.manual; onTapped:{if(modelData.key==="fuel")root.checklistFuelConfirmed=!root.checklistFuelConfirmed;else root.checklistAirframeConfirmed=!root.checklistAirframeConfirmed} }
+                        }
+                    }
+                }
+                Rectangle { anchors { right:parent.right; bottom:parent.bottom } width:92*root.uiScale; height:22*root.uiScale; radius:3*root.uiScale; color:"#14242C"; border.color:root.line
+                    Text { anchors.centerIn:parent; text:"RESET CHECKS"; color:"#D9E3E6"; font.pixelSize:7*root.uiScale; font.bold:true }
+                    TapHandler { onTapped:{root.checklistFuelConfirmed=false;root.checklistAirframeConfirmed=false} }
+                }
             }
             Text { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 22*root.uiScale }
          text: "TOUCH OUTSIDE TO CLOSE"; horizontalAlignment: Text.AlignHCenter; color: "#899BA3"; font.pixelSize: 8*root.uiScale; font.letterSpacing: 1.4 }
