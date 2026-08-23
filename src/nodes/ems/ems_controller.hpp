@@ -84,6 +84,8 @@ class EmsController : public QObject {
     Q_PROPERTY(QString unitSystem READ unitSystem NOTIFY unitsChanged)
     Q_PROPERTY(double fuelUsedGallons READ fuelUsedGallons NOTIFY fuelComputerChanged)
     Q_PROPERTY(double fuelReserveGallons READ fuelReserveGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(double fuelOnBoardGallons READ fuelOnBoardGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(double fuelRemainingGallons READ fuelRemainingGallons NOTIFY fuelComputerChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -156,6 +158,8 @@ public:
     [[nodiscard]] QString unitSystem() const { return unit_system_; }
     [[nodiscard]] double fuelUsedGallons() const { return engine_snapshot_.fuel_flow_gph.is_simulated() ? simulated_fuel_used_gallons_ : fuel_used_gallons_; }
     [[nodiscard]] double fuelReserveGallons() const { return fuel_reserve_gallons_; }
+    [[nodiscard]] double fuelOnBoardGallons() const { return fuel_on_board_gallons_; }
+    [[nodiscard]] double fuelRemainingGallons() const { return qMax(0.0, fuel_on_board_gallons_ - fuelUsedGallons()); }
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
@@ -170,6 +174,7 @@ public:
     Q_INVOKABLE void cycleMaintenanceInterval(int index);
     Q_INVOKABLE bool completeMaintenanceTask(int index);
     Q_INVOKABLE bool setFuelReserveGallons(double gallons);
+    Q_INVOKABLE bool setFuelOnBoardGallons(double gallons);
     Q_INVOKABLE void resetFuelUsed();
 
 signals:
@@ -239,6 +244,8 @@ private:
     double fuel_used_gallons_{};
     double simulated_fuel_used_gallons_{};
     double fuel_reserve_gallons_{5.0};
+    double fuel_on_board_gallons_{};
+    bool fuel_on_board_initialized_{};
     efis::MonoTime last_fuel_update_{};
     efis::MonoTime last_fuel_save_{};
     efis::MonoTime last_fuel_notify_{};

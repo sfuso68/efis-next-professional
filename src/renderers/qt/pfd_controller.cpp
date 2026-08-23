@@ -94,6 +94,8 @@ void PfdController::loadFuelComputer() {
                        QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
     fuel_used_gallons_ = qMax(0.0, settings.value(QStringLiteral("real/used_gallons"), 0.0).toDouble());
     fuel_reserve_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/reserve_gallons"), 5.0).toDouble(), 100.0);
+    fuel_on_board_initialized_ = settings.contains(QStringLiteral("pilot/on_board_gallons"));
+    fuel_on_board_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/on_board_gallons"), 0.0).toDouble(), 100.0);
 }
 
 void PfdController::persistFuelComputer() {
@@ -101,12 +103,22 @@ void PfdController::persistFuelComputer() {
                        QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
     settings.setValue(QStringLiteral("real/used_gallons"), fuel_used_gallons_);
     settings.setValue(QStringLiteral("pilot/reserve_gallons"), fuel_reserve_gallons_);
+    settings.setValue(QStringLiteral("pilot/on_board_gallons"), fuel_on_board_gallons_);
     settings.sync();
 }
 
 bool PfdController::setFuelReserveGallons(double gallons) {
     if (!std::isfinite(gallons)) return false;
     fuel_reserve_gallons_ = qBound(0.0, gallons, 100.0);
+    persistFuelComputer(); emit fuelComputerChanged(); return true;
+}
+
+bool PfdController::setFuelOnBoardGallons(double gallons) {
+    if (!std::isfinite(gallons)) return false;
+    fuel_on_board_gallons_ = qBound(0.0, gallons, 100.0);
+    fuel_on_board_initialized_ = true;
+    fuel_used_gallons_ = 0.0;
+    simulated_fuel_used_gallons_ = 0.0;
     persistFuelComputer(); emit fuelComputerChanged(); return true;
 }
 
@@ -1130,6 +1142,11 @@ void PfdController::updateSnapshot() {
         runtime_tracker_.update(accountable_rpm, seconds, airborne && !showingSimulatedData());
     }
     last_runtime_update_ = now;
+    if (!fuel_on_board_initialized_) {
+        fuel_on_board_gallons_ = qMax(0.0, engine_snapshot_.fuel_left_gal.value + engine_snapshot_.fuel_right_gal.value);
+        fuel_on_board_initialized_ = true;
+        persistFuelComputer(); emit fuelComputerChanged();
+    }
     if (last_fuel_update_ != efis::MonoTime{}) {
         const auto seconds = std::chrono::duration<double>(now - last_fuel_update_).count();
         if (engine_snapshot_.rpm.value > 400.0 && engine_snapshot_.fuel_flow_gph.value > 0.0) {
