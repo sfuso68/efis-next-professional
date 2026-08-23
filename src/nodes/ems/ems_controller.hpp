@@ -59,7 +59,9 @@ class EmsController : public QObject {
     Q_PROPERTY(double tachHours READ tachHours NOTIFY snapshotChanged)
     Q_PROPERTY(double flightHours READ flightHours NOTIFY snapshotChanged)
     Q_PROPERTY(bool engineRunning READ engineRunning NOTIFY snapshotChanged)
-    Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration CONSTANT)
+    Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration NOTIFY sensorConfigurationChanged)
+    Q_PROPERTY(int calibrationRevision READ calibrationRevision NOTIFY sensorConfigurationChanged)
+    Q_PROPERTY(bool sensorCalibrationReady READ sensorCalibrationReady NOTIFY sensorConfigurationChanged)
     Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
     Q_PROPERTY(QString runtimePersistenceState READ runtimePersistenceState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong runtimeRevision READ runtimeRevision NOTIFY snapshotChanged)
@@ -114,6 +116,8 @@ public:
     [[nodiscard]] double flightHours() const { return runtime_tracker_.totals().flight_hours; }
     [[nodiscard]] bool engineRunning() const { return runtime_tracker_.engine_running(); }
     [[nodiscard]] QVariantList engineSensorConfiguration() const { return engine_sensor_configuration_; }
+    [[nodiscard]] int calibrationRevision() const { return calibration_revision_; }
+    [[nodiscard]] bool sensorCalibrationReady() const;
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
     [[nodiscard]] QString runtimePersistenceState() const { return runtime_persistence_state_; }
     [[nodiscard]] qulonglong runtimeRevision() const { return runtime_revision_; }
@@ -122,10 +126,12 @@ public:
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
+    Q_INVOKABLE bool cycleSensorCalibration(int index);
 
 signals:
     void snapshotChanged();
     void unitsChanged();
+    void sensorConfigurationChanged();
 
 private:
     void updateSnapshot();
@@ -162,5 +168,6 @@ private:
     QString profile_id_{QStringLiteral("unconfigured")};
     QString runtime_persistence_state_{QStringLiteral("INITIALIZING")};
     qulonglong runtime_revision_{};
+    int calibration_revision_{};
     QString unit_system_{QStringLiteral("AVIATION")};
 };

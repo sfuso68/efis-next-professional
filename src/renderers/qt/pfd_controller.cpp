@@ -616,8 +616,17 @@ void PfdController::loadAircraftProfile() {
             {runtime.value("initial_master_hours").toDouble(), runtime.value("initial_engine_hours").toDouble(),
              runtime.value("initial_tach_hours").toDouble(), runtime.value("initial_flight_hours").toDouble()}};
         engine_sensor_configuration_.clear();
-        for (const auto item : engine.value("sensors").toArray())
-            engine_sensor_configuration_ << item.toObject().toVariantMap();
+        QSettings calibration{QSettings::IniFormat, QSettings::UserScope,
+                              QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-calibration")};
+        calibration_revision_ = calibration.value(QStringLiteral("revision"), 0).toInt();
+        for (const auto item : engine.value("sensors").toArray()) {
+            auto sensor = item.toObject().toVariantMap();
+            const auto signal = sensor.value(QStringLiteral("signal")).toString();
+            sensor.insert(QStringLiteral("calibration_state"),
+                          calibration.value(QStringLiteral("sensors/%1/state").arg(signal),
+                                            QStringLiteral("NOT CONFIGURED")).toString());
+            engine_sensor_configuration_ << sensor;
+        }
         electrical_loads_.clear();
         for (const auto item : root.value("systems").toObject().value("electrical").toObject().value("loads").toArray())
             electrical_loads_ << item.toObject().toVariantMap();
@@ -644,6 +653,36 @@ void PfdController::loadAircraftProfile() {
         return;
     }
     qWarning().noquote() << "event=aircraft_profile_fallback reason=no_valid_profile";
+}
+
+bool PfdController::sensorCalibrationReady() const {
+    for (const auto& item : engine_sensor_configuration_) {
+        const auto sensor = item.toMap();
+        if (sensor.value(QStringLiteral("required")).toBool() &&
+            sensor.value(QStringLiteral("calibration_state")).toString() != QStringLiteral("VERIFIED")) return false;
+    }
+    return !engine_sensor_configuration_.isEmpty();
+}
+
+bool PfdController::cycleSensorCalibration(int index) {
+    if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
+    auto sensor = engine_sensor_configuration_[index].toMap();
+    const auto current = sensor.value(QStringLiteral("calibration_state")).toString();
+    const auto next = current == QStringLiteral("NOT CONFIGURED") ? QStringLiteral("CONFIGURED")
+                    : current == QStringLiteral("CONFIGURED") ? QStringLiteral("VERIFIED")
+                                                              : QStringLiteral("NOT CONFIGURED");
+    sensor.insert(QStringLiteral("calibration_state"), next);
+    engine_sensor_configuration_[index] = sensor;
+    ++calibration_revision_;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-calibration")};
+    settings.setValue(QStringLiteral("sensors/%1/state").arg(sensor.value(QStringLiteral("signal")).toString()), next);
+    settings.setValue(QStringLiteral("revision"), calibration_revision_);
+    settings.sync();
+    emit sensorConfigurationChanged();
+    qInfo().noquote() << "event=ems_sensor_calibration signal=" << sensor.value("signal").toString()
+                      << "state=" << next << "revision=" << calibration_revision_;
+    return settings.status() == QSettings::NoError;
 }
 
 double PfdController::roll() const { return snapshot_.attitude.roll_deg.value; }

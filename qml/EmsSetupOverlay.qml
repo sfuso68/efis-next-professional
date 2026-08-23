@@ -71,12 +71,21 @@ Rectangle {
             }
         }
         Rectangle { visible:setup.section===2; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale; color:setup.panel; border.color:setup.line
-            ListView { anchors { fill:parent; margins:10*setup.uiScale } clip:true; spacing:3*setup.uiScale; model:setup.listOr("engineSensorConfiguration")
-                delegate:Rectangle { required property var modelData; required property int index; width:ListView.view.width; height:38*setup.uiScale; color:index%2?"#0B1922":"#10222C"
-                    Text { x:10*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:185*setup.uiScale; text:modelData.signal; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }
-                    Text { x:220*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"QTY  "+modelData.quantity; color:setup.cyan; font.pixelSize:9*setup.uiScale }
-                    Text { x:330*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:modelData.type; color:String(modelData.type).indexOf("TO_BE")===0?setup.amber:setup.green; font.pixelSize:9*setup.uiScale }
-                    Text { anchors { right:parent.right; rightMargin:12*setup.uiScale; verticalCenter:parent.verticalCenter } text:modelData.required?"REQUIRED":"OPTIONAL"; color:modelData.required?setup.green:"#AAB6BC"; font.pixelSize:8*setup.uiScale; font.bold:true }
+            Rectangle { anchors { left:parent.left; right:parent.right; top:parent.top } height:38*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"CALIBRATION WORKSHEET"; color:setup.cyan; font.pixelSize:9*setup.uiScale; font.bold:true }
+                Text { anchors.centerIn:parent; text:"REV "+String(controller.calibrationRevision||0); color:"#AAB6BC"; font.pixelSize:8*setup.uiScale }
+                Text { anchors { right:parent.right; rightMargin:12*setup.uiScale; verticalCenter:parent.verticalCenter } text:controller.sensorCalibrationReady?"✓ REQUIRED PROBES VERIFIED":"ACTION REQUIRED"; color:controller.sensorCalibrationReady?setup.green:setup.amber; font.pixelSize:9*setup.uiScale; font.bold:true }
+            }
+            ListView { anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; margins:10*setup.uiScale; topMargin:46*setup.uiScale } clip:true; spacing:3*setup.uiScale; model:setup.listOr("engineSensorConfiguration")
+                delegate:Rectangle { required property var modelData; required property int index; width:ListView.view.width; height:38*setup.uiScale; color:index%2?"#0B1922":"#10222C"; border.color:String(modelData.calibration_state)==="VERIFIED"?setup.green:"transparent"
+                    Text { x:10*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:150*setup.uiScale; text:String(modelData.signal).replace("_"," "); color:"white"; font.pixelSize:9*setup.uiScale; font.bold:true }
+                    Text { x:165*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"×"+modelData.quantity; color:setup.cyan; font.pixelSize:8*setup.uiScale }
+                    Text { x:205*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:220*setup.uiScale; elide:Text.ElideRight; text:modelData.type; color:String(modelData.type).indexOf("TO_BE")===0?setup.amber:setup.green; font.pixelSize:8*setup.uiScale }
+                    Text { x:440*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:modelData.required?"REQ":"OPT"; color:modelData.required?setup.green:"#AAB6BC"; font.pixelSize:7*setup.uiScale; font.bold:true }
+                    Rectangle { anchors { right:parent.right; rightMargin:8*setup.uiScale; verticalCenter:parent.verticalCenter } width:210*setup.uiScale; height:27*setup.uiScale; radius:3*setup.uiScale; color:"#142C37"; border.color:String(modelData.calibration_state)==="VERIFIED"?setup.green:setup.amber
+                        Text { anchors.centerIn:parent; text:String(modelData.calibration_state||"NOT CONFIGURED")+"  ›"; color:String(modelData.calibration_state)==="VERIFIED"?setup.green:setup.amber; font.pixelSize:8*setup.uiScale; font.bold:true }
+                        TapHandler { onTapped:controller.cycleSensorCalibration(index) }
+                    }
                 }
             }
         }

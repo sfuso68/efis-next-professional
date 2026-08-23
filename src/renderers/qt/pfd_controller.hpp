@@ -74,7 +74,9 @@ class PfdController final : public QObject {
     Q_PROPERTY(double tachHours READ tachHours NOTIFY snapshotChanged)
     Q_PROPERTY(double flightHours READ flightHours NOTIFY snapshotChanged)
     Q_PROPERTY(bool engineRunning READ engineRunning NOTIFY snapshotChanged)
-    Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration CONSTANT)
+    Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration NOTIFY sensorConfigurationChanged)
+    Q_PROPERTY(int calibrationRevision READ calibrationRevision NOTIFY sensorConfigurationChanged)
+    Q_PROPERTY(bool sensorCalibrationReady READ sensorCalibrationReady NOTIFY sensorConfigurationChanged)
     Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
     Q_PROPERTY(bool landingGearInstalled READ landingGearInstalled CONSTANT)
     Q_PROPERTY(bool retractableGear READ retractableGear CONSTANT)
@@ -190,6 +192,8 @@ public:
     [[nodiscard]] double flightHours() const { return runtime_tracker_.totals().flight_hours; }
     [[nodiscard]] bool engineRunning() const { return runtime_tracker_.engine_running(); }
     [[nodiscard]] QVariantList engineSensorConfiguration() const { return engine_sensor_configuration_; }
+    [[nodiscard]] int calibrationRevision() const { return calibration_revision_; }
+    [[nodiscard]] bool sensorCalibrationReady() const;
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
     [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
     [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
@@ -266,6 +270,7 @@ public:
     Q_INVOKABLE void setSystemSimulationSpeed(double speed);
     [[nodiscard]] QString unitSystem() const { return unit_system_; }
     Q_INVOKABLE bool setUnitSystem(const QString& system);
+    Q_INVOKABLE bool cycleSensorCalibration(int index);
 
 signals:
     void snapshotChanged();
@@ -274,6 +279,7 @@ signals:
     void imageryChanged();
     void simulationChanged();
     void unitsChanged();
+    void sensorConfigurationChanged();
 
 private slots:
     void updateSnapshot();
@@ -369,4 +375,5 @@ private:
     efis::MonoTime system_simulation_last_tick_{};
     QString system_simulation_last_event_{QStringLiteral("READY")};
     QString unit_system_{QStringLiteral("AVIATION")};
+    int calibration_revision_{};
 };
