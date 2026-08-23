@@ -86,6 +86,8 @@ class EmsController : public QObject {
     Q_PROPERTY(double fuelReserveGallons READ fuelReserveGallons NOTIFY fuelComputerChanged)
     Q_PROPERTY(double fuelOnBoardGallons READ fuelOnBoardGallons NOTIFY fuelComputerChanged)
     Q_PROPERTY(double fuelRemainingGallons READ fuelRemainingGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QVariantList fuelCalibrationLeft READ fuelCalibrationLeft NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QVariantList fuelCalibrationRight READ fuelCalibrationRight NOTIFY fuelComputerChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -160,6 +162,8 @@ public:
     [[nodiscard]] double fuelReserveGallons() const { return fuel_reserve_gallons_; }
     [[nodiscard]] double fuelOnBoardGallons() const { return fuel_on_board_gallons_; }
     [[nodiscard]] double fuelRemainingGallons() const { return qMax(0.0, fuel_on_board_gallons_ - fuelUsedGallons()); }
+    [[nodiscard]] QVariantList fuelCalibrationLeft() const { return fuel_calibration_left_; }
+    [[nodiscard]] QVariantList fuelCalibrationRight() const { return fuel_calibration_right_; }
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
@@ -175,6 +179,8 @@ public:
     Q_INVOKABLE bool completeMaintenanceTask(int index);
     Q_INVOKABLE bool setFuelReserveGallons(double gallons);
     Q_INVOKABLE bool setFuelOnBoardGallons(double gallons);
+    Q_INVOKABLE bool captureFuelCalibrationPoint(const QString& tank);
+    Q_INVOKABLE bool clearFuelCalibration(const QString& tank);
     Q_INVOKABLE void resetFuelUsed();
 
 signals:
@@ -246,6 +252,8 @@ private:
     double fuel_reserve_gallons_{5.0};
     double fuel_on_board_gallons_{};
     bool fuel_on_board_initialized_{};
+    QVariantList fuel_calibration_left_;
+    QVariantList fuel_calibration_right_;
     efis::MonoTime last_fuel_update_{};
     efis::MonoTime last_fuel_save_{};
     efis::MonoTime last_fuel_notify_{};

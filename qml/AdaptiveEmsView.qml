@@ -53,11 +53,15 @@ Item {
     readonly property real fuelEnduranceHours: fuelUsableGallons/Math.max(.1,controller.fuelFlow)
     readonly property real fuelReserveMinutes: fuelReserveGallons/Math.max(.1,controller.fuelFlow)*60
     readonly property real fuelImbalanceGallons: Math.abs(controller.fuelLeft-controller.fuelRight)
+    readonly property int fuelCalibrationLeftCount: (controller.fuelCalibrationLeft||[]).length
+    readonly property int fuelCalibrationRightCount: (controller.fuelCalibrationRight||[]).length
+    readonly property bool fuelCalibrationReady: fuelCalibrationLeftCount===5&&fuelCalibrationRightCount===5
+    readonly property real fuelDiscrepancyGallons: Math.abs(fuelMeasuredGallons-fuelTotalGallons)
     function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
     readonly property string casLevel: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
                                        maximumCht>chtMaximum || controller.oilTemperature>oilTemperatureMaximum ? "WARNING" :
-                                       fuelTotalGallons<=fuelReserveGallons*.5 ? "WARNING" :
+                                       fuelTotalGallons<=fuelReserveGallons*.5 || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
                                        controller.busVoltage<12.5 || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
                                        fuelImbalanceGallons>3 ? "ADVISORY" : "NORMAL"
     readonly property string casHeadline: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
@@ -65,6 +69,7 @@ Item {
                                           controller.oilTemperature>oilTemperatureMaximum ? "OIL TEMPERATURE HIGH" :
                                           controller.busVoltage<12.5 ? "BUS VOLTAGE LOW" :
                                           fuelTotalGallons<=fuelReserveGallons*.5 ? "FUEL QUANTITY CRITICAL" :
+                                          fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "FUEL QUANTITY DISAGREE" :
                                           fuelTotalGallons<=fuelReserveGallons ? "FINAL RESERVE" :
                                           fuelImbalanceGallons>3 ? "FUEL IMBALANCE" : "SYSTEM NORMAL"
     readonly property string casAction: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
@@ -72,6 +77,7 @@ Item {
                                         controller.oilTemperature>oilTemperatureMaximum ? "REDUCE POWER • MONITOR PRESSURE" :
                                         controller.busVoltage<12.5 ? "CHECK ALTERNATOR AND ELECTRICAL LOAD" :
                                         fuelTotalGallons<=fuelReserveGallons*.5 ? "LAND AS SOON AS POSSIBLE" :
+                                        fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "CHECK FOR LEAK OR SENSOR FAULT" :
                                         fuelTotalGallons<=fuelReserveGallons ? "VERIFY ENDURANCE AND DIVERT" :
                                         fuelImbalanceGallons>3 ? "SELECT FULLER TANK" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
     readonly property color casColor: casLevel==="WARNING" ? "#FF3933" : casLevel==="CAUTION" ? amber : casLevel==="ADVISORY" ? cyan : green
@@ -399,7 +405,7 @@ Item {
             }
             Item { visible:root.selectedPanel === "FUEL"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
                 Text { text:"FUEL COMPUTER"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
-                Text { anchors { right:parent.right; top:parent.top } text:root.fuelImbalanceGallons>3?"⚠ TANK IMBALANCE":"TANKS BALANCED"; color:root.fuelImbalanceGallons>3?root.amber:root.green; font.pixelSize:8*root.uiScale; font.bold:true }
+                Text { anchors { right:parent.right; top:parent.top } text:!root.fuelCalibrationReady?"CALIBRATION REQUIRED":root.fuelDiscrepancyGallons>3?"⚠ FUEL DISAGREE":root.fuelImbalanceGallons>3?"⚠ TANK IMBALANCE":"FUEL CROSS-CHECK NORMAL"; color:(!root.fuelCalibrationReady||root.fuelDiscrepancyGallons>3||root.fuelImbalanceGallons>3)?root.amber:root.green; font.pixelSize:8*root.uiScale; font.bold:true }
                 Row { x:0; y:35*root.uiScale; width:parent.width; height:86*root.uiScale; spacing:7*root.uiScale
                     Repeater { model:[
                         {h:"REMAINING",v:root.fuel(root.fuelTotalGallons).toFixed(1),u:root.fuelUnit,c:root.fuelTotalGallons<=root.fuelReserveGallons?root.amber:"white"},
@@ -418,8 +424,10 @@ Item {
                     Text { anchors { right:parent.right; top:parent.top; rightMargin:10*root.uiScale; topMargin:7*root.uiScale } text:"SET FOB "+root.fuel(root.fuelMeasuredGallons).toFixed(1); color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:controller.setFuelOnBoardGallons(root.fuelMeasuredGallons) } }
                     Repeater { model:[{n:"LEFT",v:controller.fuelLeft},{n:"RIGHT",v:controller.fuelRight}]
                         delegate:Item { required property var modelData; required property int index; x:12*root.uiScale; y:(index+1)*22*root.uiScale; width:parent.width-24*root.uiScale; height:14*root.uiScale
-                            Text { width:38*root.uiScale; text:modelData.n; color:"#DCE5E8"; font.pixelSize:7*root.uiScale }
-                            Rectangle { x:43*root.uiScale; width:parent.width-100*root.uiScale; height:8*root.uiScale; color:"#1A2A31"; border.color:"#53656D"
+                            readonly property int calibrationCount:index===0?root.fuelCalibrationLeftCount:root.fuelCalibrationRightCount
+                            Text { width:62*root.uiScale; text:parent.calibrationCount===5?modelData.n+" CAL OK":modelData.n+" "+(parent.calibrationCount*25)+"%"; color:parent.calibrationCount===5?root.green:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true
+                                TapHandler { onTapped:if(parent.parent.calibrationCount<5)controller.captureFuelCalibrationPoint(parent.parent.modelData.n); onLongPressed:controller.clearFuelCalibration(parent.parent.modelData.n) } }
+                            Rectangle { x:67*root.uiScale; width:parent.width-124*root.uiScale; height:8*root.uiScale; color:"#1A2A31"; border.color:"#53656D"
                                 Rectangle { anchors { left:parent.left; top:parent.top; bottom:parent.bottom; margins:1 } width:(parent.width-2)*Math.max(0,Math.min(1,modelData.v/20)); color:modelData.v<4?"#FF3933":modelData.v<7?root.amber:root.green }
                             }
                             Text { anchors.right:parent.right; text:root.fuel(modelData.v).toFixed(1)+" "+root.fuelUnit; color:"white"; font.pixelSize:7*root.uiScale; font.bold:true }

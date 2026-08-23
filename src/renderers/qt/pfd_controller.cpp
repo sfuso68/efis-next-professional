@@ -27,6 +27,19 @@
 
 using namespace std::chrono_literals;
 
+namespace {
+double calibratedFuel(double raw, const QVariantList& curve) {
+    if (curve.size() < 5) return qMax(0.0, raw);
+    std::vector<std::pair<double,double>> points;
+    for (const auto& entry : curve) { const auto p=entry.toMap(); points.emplace_back(p.value("raw").toDouble(),p.value("gallons").toDouble()); }
+    std::sort(points.begin(),points.end());
+    if (raw<=points.front().first) return qMax(0.0,points.front().second);
+    if (raw>=points.back().first) return qMax(0.0,points.back().second);
+    for (std::size_t i=1;i<points.size();++i) if(raw<=points[i].first){const auto& a=points[i-1];const auto& b=points[i];const double d=b.first-a.first;if(std::abs(d)<1e-9)return qMax(0.0,b.second);return qMax(0.0,a.second+(raw-a.first)*(b.second-a.second)/d);}
+    return qMax(0.0,raw);
+}
+}
+
 PfdController::PfdController(QObject* parent) : QObject(parent) {
     loadUnitSystem();
     // La simulazione resta registrata sempre: senza sensori collegati e' cio'
@@ -96,6 +109,8 @@ void PfdController::loadFuelComputer() {
     fuel_reserve_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/reserve_gallons"), 5.0).toDouble(), 100.0);
     fuel_on_board_initialized_ = settings.contains(QStringLiteral("pilot/on_board_gallons"));
     fuel_on_board_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/on_board_gallons"), 0.0).toDouble(), 100.0);
+    fuel_calibration_left_ = settings.value(QStringLiteral("calibration/left_points")).toList();
+    fuel_calibration_right_ = settings.value(QStringLiteral("calibration/right_points")).toList();
 }
 
 void PfdController::persistFuelComputer() {
@@ -104,6 +119,8 @@ void PfdController::persistFuelComputer() {
     settings.setValue(QStringLiteral("real/used_gallons"), fuel_used_gallons_);
     settings.setValue(QStringLiteral("pilot/reserve_gallons"), fuel_reserve_gallons_);
     settings.setValue(QStringLiteral("pilot/on_board_gallons"), fuel_on_board_gallons_);
+    settings.setValue(QStringLiteral("calibration/left_points"), fuel_calibration_left_);
+    settings.setValue(QStringLiteral("calibration/right_points"), fuel_calibration_right_);
     settings.sync();
 }
 
@@ -119,6 +136,22 @@ bool PfdController::setFuelOnBoardGallons(double gallons) {
     fuel_on_board_initialized_ = true;
     fuel_used_gallons_ = 0.0;
     simulated_fuel_used_gallons_ = 0.0;
+    persistFuelComputer(); emit fuelComputerChanged(); return true;
+}
+
+bool PfdController::captureFuelCalibrationPoint(const QString& tank) {
+    const bool left=tank.trimmed().toUpper()==QStringLiteral("LEFT");
+    const bool right=tank.trimmed().toUpper()==QStringLiteral("RIGHT"); if(!left&&!right)return false;
+    auto& curve=left?fuel_calibration_left_:fuel_calibration_right_; if(curve.size()>=5)return false;
+    const double raw=left?engine_snapshot_.fuel_left_gal.value:engine_snapshot_.fuel_right_gal.value;
+    if(!curve.isEmpty()&&std::abs(raw-curve.constLast().toMap().value(QStringLiteral("raw")).toDouble())<0.01)return false;
+    const double capacity=qMax(0.1,fuel_on_board_gallons_/2.0);
+    QVariantMap point; point.insert(QStringLiteral("percent"),curve.size()*25); point.insert(QStringLiteral("raw"),raw); point.insert(QStringLiteral("gallons"),capacity*curve.size()/4.0); curve.append(point);
+    persistFuelComputer(); emit fuelComputerChanged(); return true;
+}
+
+bool PfdController::clearFuelCalibration(const QString& tank) {
+    const auto normalized=tank.trimmed().toUpper(); if(normalized==QStringLiteral("LEFT"))fuel_calibration_left_.clear();else if(normalized==QStringLiteral("RIGHT"))fuel_calibration_right_.clear();else return false;
     persistFuelComputer(); emit fuelComputerChanged(); return true;
 }
 
@@ -1002,8 +1035,8 @@ double PfdController::oilPressure() const { return engine_snapshot_.oil_pressure
 double PfdController::oilTemperature() const { return engine_snapshot_.oil_temperature_c.value; }
 double PfdController::fuelPressure() const { return engine_snapshot_.fuel_pressure_psi.value; }
 double PfdController::fuelFlow() const { return engine_snapshot_.fuel_flow_gph.value; }
-double PfdController::fuelLeft() const { return engine_snapshot_.fuel_left_gal.value; }
-double PfdController::fuelRight() const { return engine_snapshot_.fuel_right_gal.value; }
+double PfdController::fuelLeft() const { return calibratedFuel(engine_snapshot_.fuel_left_gal.value,fuel_calibration_left_); }
+double PfdController::fuelRight() const { return calibratedFuel(engine_snapshot_.fuel_right_gal.value,fuel_calibration_right_); }
 double PfdController::busVoltage() const { return engine_snapshot_.bus_voltage_v.value; }
 double PfdController::alternatorCurrent() const { return engine_snapshot_.alternator_current_a.value; }
 QVariantList PfdController::chtValues() const {
@@ -1143,7 +1176,7 @@ void PfdController::updateSnapshot() {
     }
     last_runtime_update_ = now;
     if (!fuel_on_board_initialized_) {
-        fuel_on_board_gallons_ = qMax(0.0, engine_snapshot_.fuel_left_gal.value + engine_snapshot_.fuel_right_gal.value);
+        fuel_on_board_gallons_ = fuelLeft() + fuelRight();
         fuel_on_board_initialized_ = true;
         persistFuelComputer(); emit fuelComputerChanged();
     }
