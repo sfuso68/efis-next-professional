@@ -399,7 +399,7 @@ void EmsController::updateSnapshot() {
     }
     updateRecorderStatus(now);
     if(sensor_test_bench_){++sensor_test_ticks_;const double phase=double(sensor_test_ticks_)*0.06;double base=100;
-        if(sensor_test_signal_=="RPM")base=2450;else if(sensor_test_signal_=="OIL_PRESSURE")base=72;else if(sensor_test_signal_=="OIL_TEMPERATURE"||sensor_test_signal_=="COOLANT_TEMPERATURE")base=95;else if(sensor_test_signal_=="CHT")base=180;else if(sensor_test_signal_=="EGT")base=740;else if(sensor_test_signal_=="FUEL_PRESSURE")base=4.8;else if(sensor_test_signal_=="FUEL_FLOW")base=9.6;else if(sensor_test_signal_=="MANIFOLD_PRESSURE")base=24;
+        if(sensor_test_signal_=="RPM")base=5000;else if(sensor_test_signal_=="OIL_PRESSURE")base=58;else if(sensor_test_signal_=="OIL_TEMPERATURE"||sensor_test_signal_=="COOLANT_TEMPERATURE")base=96;else if(sensor_test_signal_=="CHT")base=105;else if(sensor_test_signal_=="EGT")base=780;else if(sensor_test_signal_=="FUEL_PRESSURE")base=4.6;else if(sensor_test_signal_=="FUEL_FLOW")base=4.8;else if(sensor_test_signal_=="MANIFOLD_PRESSURE")base=24.5;
         if(sensor_test_diagnostic_=="TIMEOUT"){sensor_test_rate_hz_=0;sensor_test_age_ms_+=50;sensor_test_status_=QStringLiteral("BENCH • TIMEOUT");}
         else {sensor_test_age_ms_=0;sensor_test_rate_hz_=20;
             if(sensor_test_diagnostic_=="OPEN CIRCUIT"){sensor_test_raw_=4095;sensor_test_status_=QStringLiteral("BENCH • OPEN CIRCUIT");}

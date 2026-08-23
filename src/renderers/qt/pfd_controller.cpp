@@ -1134,20 +1134,20 @@ void PfdController::updateSnapshot() {
         } else {
             const double phase = static_cast<double>(sensor_test_ticks_) * 0.04;
             double base = 1000.0;
-            if (sensor_test_signal_ == QStringLiteral("RPM")) base = 2450.0;
-            else if (sensor_test_signal_ == QStringLiteral("MAP")) base = 24.0;
-            else if (sensor_test_signal_ == QStringLiteral("OIL_PRESS")) base = 72.0;
-            else if (sensor_test_signal_ == QStringLiteral("OIL_PRESSURE")) base = 72.0;
-            else if (sensor_test_signal_ == QStringLiteral("OIL_TEMP")) base = 92.0;
-            else if (sensor_test_signal_ == QStringLiteral("OIL_TEMPERATURE") || sensor_test_signal_ == QStringLiteral("COOLANT_TEMPERATURE")) base = 92.0;
-            else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESS")) base = 4.8;
-            else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESSURE")) base = 4.8;
-            else if (sensor_test_signal_ == QStringLiteral("FUEL_FLOW")) base = 18.0;
+            if (sensor_test_signal_ == QStringLiteral("RPM")) base = 5000.0;
+            else if (sensor_test_signal_ == QStringLiteral("MAP")) base = 24.5;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_PRESS")) base = 58.0;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_PRESSURE")) base = 58.0;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_TEMP")) base = 96.0;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_TEMPERATURE") || sensor_test_signal_ == QStringLiteral("COOLANT_TEMPERATURE")) base = 96.0;
+            else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESS")) base = 4.6;
+            else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESSURE")) base = 4.6;
+            else if (sensor_test_signal_ == QStringLiteral("FUEL_FLOW")) base = 4.8;
             else if (sensor_test_signal_.startsWith(QStringLiteral("CHT_"))) base = 108.0;
-            else if (sensor_test_signal_ == QStringLiteral("CHT")) base = 180.0;
-            else if (sensor_test_signal_.startsWith(QStringLiteral("EGT_"))) base = 720.0;
-            else if (sensor_test_signal_ == QStringLiteral("EGT")) base = 720.0;
-            else if (sensor_test_signal_ == QStringLiteral("MANIFOLD_PRESSURE")) base = 24.0;
+            else if (sensor_test_signal_ == QStringLiteral("CHT")) base = 105.0;
+            else if (sensor_test_signal_.startsWith(QStringLiteral("EGT_"))) base = 780.0;
+            else if (sensor_test_signal_ == QStringLiteral("EGT")) base = 780.0;
+            else if (sensor_test_signal_ == QStringLiteral("MANIFOLD_PRESSURE")) base = 24.5;
             if(sensor_test_diagnostic_==QStringLiteral("OPEN CIRCUIT")){sensor_test_raw_=4095.0;sensor_test_status_=QStringLiteral("BENCH_OPEN_CIRCUIT");}
             else if(sensor_test_diagnostic_==QStringLiteral("SHORT CIRCUIT")){sensor_test_raw_=0.0;sensor_test_status_=QStringLiteral("BENCH_SHORT_CIRCUIT");}
             else if(sensor_test_diagnostic_==QStringLiteral("UNSTABLE")){sensor_test_raw_=base+std::sin(phase*11.0)*base*.28;sensor_test_status_=QStringLiteral("BENCH_UNSTABLE_SIGNAL");}

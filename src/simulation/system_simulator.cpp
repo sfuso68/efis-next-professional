@@ -166,13 +166,13 @@ void apply_engine_phase(engine::EngineSnapshot& engine, FlightPhase phase,
         case FlightPhase::engine_start:
             rpm = interpolate(seconds, 0.0, 1800.0, 15.0, 30.0);
             manifold = 15.0; fuel_flow = 2.0; break;
-        case FlightPhase::taxi: rpm = 1800.0; manifold = 16.0; fuel_flow = 3.2; break;
-        case FlightPhase::takeoff: rpm = 2780.0; manifold = 27.5; fuel_flow = 7.2; break;
-        case FlightPhase::climb: rpm = 2650.0; manifold = 26.0; fuel_flow = 6.4; break;
-        case FlightPhase::cruise: rpm = 2450.0; manifold = 24.1; fuel_flow = 5.2; break;
-        case FlightPhase::descent: rpm = 2200.0; manifold = 18.0; fuel_flow = 3.4; break;
-        case FlightPhase::approach: rpm = 2300.0; manifold = 20.0; fuel_flow = 4.0; break;
-        case FlightPhase::landing: rpm = 1900.0; manifold = 15.0; fuel_flow = 2.8; break;
+        case FlightPhase::taxi: rpm = 2000.0; manifold = 16.0; fuel_flow = 2.2; break;
+        case FlightPhase::takeoff: rpm = 5800.0; manifold = 27.5; fuel_flow = 6.8; break;
+        case FlightPhase::climb: rpm = 5500.0; manifold = 26.0; fuel_flow = 6.0; break;
+        case FlightPhase::cruise: rpm = 5000.0; manifold = 24.1; fuel_flow = 4.8; break;
+        case FlightPhase::descent: rpm = 4200.0; manifold = 18.0; fuel_flow = 3.1; break;
+        case FlightPhase::approach: rpm = 4500.0; manifold = 20.0; fuel_flow = 3.6; break;
+        case FlightPhase::landing: rpm = 3500.0; manifold = 15.0; fuel_flow = 2.5; break;
         case FlightPhase::shutdown:
             rpm = interpolate(seconds, 1800.0, 0.0, 580.0, 600.0);
             manifold = 12.0; fuel_flow = rpm > 100.0 ? 1.8 : 0.0; break;
