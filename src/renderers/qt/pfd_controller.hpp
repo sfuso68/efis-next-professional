@@ -148,6 +148,7 @@ class PfdController final : public QObject {
     Q_PROPERTY(QString centralBlackBoxState READ centralBlackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantList centralBlackBoxNodes READ centralBlackBoxNodes NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantList centralFuelEvents READ centralFuelEvents NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantMap centralBlackBoxMaintenance READ centralBlackBoxMaintenance NOTIFY snapshotChanged)
 
 public:
     explicit PfdController(QObject* parent = nullptr);
@@ -313,6 +314,7 @@ public:
     [[nodiscard]] QString centralBlackBoxState() const { return central_blackbox_state_; }
     [[nodiscard]] QVariantList centralBlackBoxNodes() const { return central_blackbox_nodes_; }
     [[nodiscard]] QVariantList centralFuelEvents() const { return central_fuel_events_; }
+    [[nodiscard]] QVariantMap centralBlackBoxMaintenance() const { return central_blackbox_maintenance_; }
     Q_INVOKABLE bool setUnitSystem(const QString& system);
     Q_INVOKABLE bool cycleSensorCalibration(int index);
     Q_INVOKABLE bool cycleSensorType(int index);
@@ -322,6 +324,7 @@ public:
     Q_INVOKABLE bool setFuelOnBoardGallons(double gallons);
     Q_INVOKABLE bool captureFuelCalibrationPoint(const QString& tank);
     Q_INVOKABLE bool clearFuelCalibration(const QString& tank);
+    Q_INVOKABLE bool requestCentralBlackBoxAction(const QString& action);
     Q_INVOKABLE void resetFuelUsed();
 
 signals:
@@ -463,6 +466,8 @@ private:
     QString central_blackbox_state_{QStringLiteral("OFFLINE")};
     QVariantList central_blackbox_nodes_;
     QVariantList central_fuel_events_;
+    QVariantMap central_blackbox_maintenance_;
+    QString central_blackbox_request_path_;
     efis::MonoTime last_central_blackbox_check_{};
     efis::MonoTime last_fuel_update_{};
     efis::MonoTime last_fuel_save_{};

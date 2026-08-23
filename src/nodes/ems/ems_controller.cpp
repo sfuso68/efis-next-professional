@@ -51,6 +51,7 @@ EmsController::EmsController(QObject* parent) : QObject(parent) {
     fuel_event_log_path_=qEnvironmentVariable("EFIS_BLACKBOX_FUEL_EVENTS","state/blackbox-fuel-events.jsonl");
     loadFuelEventHistory();
     central_blackbox_cache_path_=qEnvironmentVariable("EFIS_CENTRAL_BLACKBOX_CACHE",QDir::homePath()+QStringLiteral("/.local/state/efis/fuel-central-cache.json"));
+    central_blackbox_request_path_=qEnvironmentVariable("EFIS_CENTRAL_BLACKBOX_REQUEST",QDir::homePath()+QStringLiteral("/.local/state/efis/fuel-maintenance-request.jsonl"));
     runtime_store_ = std::make_unique<efis::engine::RuntimeStore>(
         qEnvironmentVariable("EFIS_ENGINE_RUNTIME_STATE", "state/engine-runtime.state").toStdString());
     try {
@@ -170,9 +171,15 @@ void EmsController::recordFuelEvent(const QString& state) {
 void EmsController::loadCentralBlackBoxCache() {
     QFileInfo info(central_blackbox_cache_path_); if(!info.exists()){central_blackbox_state_=QStringLiteral("OFFLINE");return;}
     const qint64 age=info.lastModified().msecsTo(QDateTime::currentDateTime()); QFile file(central_blackbox_cache_path_); if(!file.open(QIODevice::ReadOnly)){central_blackbox_state_=QStringLiteral("OFFLINE");return;}
-    const auto root=QJsonDocument::fromJson(file.readAll()).object(); central_blackbox_nodes_=root.value("health").toObject().value("nodes").toArray().toVariantList(); central_fuel_events_.clear();
+    const auto root=QJsonDocument::fromJson(file.readAll()).object(); central_blackbox_nodes_=root.value("health").toObject().value("nodes").toArray().toVariantList();central_blackbox_maintenance_=root.value("health").toObject().value("maintenance").toObject().toVariantMap(); central_fuel_events_.clear();
     for(const auto& item:root.value("events").toObject().value("events").toArray()){auto outer=item.toObject();auto event=outer.value("event").toObject().toVariantMap();event.insert("source",outer.value("source").toString());event.insert("received_utc",outer.value("received_utc").toString());central_fuel_events_.append(event);}
     central_blackbox_state_=age<=10000?QStringLiteral("ONLINE"):QStringLiteral("LINK LOST");
+}
+
+bool EmsController::requestCentralBlackBoxAction(const QString& action) {
+    const auto normalized=action.trimmed().toUpper();if(normalized!=QStringLiteral("CREATE_INCIDENT")&&normalized!=QStringLiteral("VERIFY_SIGNATURES")&&normalized!=QStringLiteral("EXPORT_USB"))return false;
+    QDir().mkpath(QFileInfo(central_blackbox_request_path_).absolutePath());QFile file(central_blackbox_request_path_);if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text))return false;
+    QJsonObject request{{"action",normalized},{"request_id",QString::number(QDateTime::currentMSecsSinceEpoch())}};file.write(QJsonDocument(request).toJson(QJsonDocument::Compact));file.write("\n");file.flush();return true;
 }
 
 void EmsController::updateFuelLeakMonitor(efis::MonoTime now) {

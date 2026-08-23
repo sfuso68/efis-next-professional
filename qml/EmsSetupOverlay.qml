@@ -198,7 +198,7 @@ Rectangle {
             Rectangle { x:14*setup.uiScale; y:48*setup.uiScale; width:parent.width-28*setup.uiScale; height:24*setup.uiScale; color:"#10232D"; border.color:setup.line
                 Text { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"SOURCE              UTC                    STATE                 L / R       FLOW    Δ GPH"; color:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
             }
-            ListView { x:14*setup.uiScale; y:74*setup.uiScale; width:parent.width-28*setup.uiScale; height:parent.height-90*setup.uiScale; clip:true; spacing:2*setup.uiScale; model:setup.listOr("centralFuelEvents").length?setup.listOr("centralFuelEvents"):setup.listOr("fuelEventHistory")
+            ListView { x:14*setup.uiScale; y:74*setup.uiScale; width:parent.width-28*setup.uiScale; height:parent.height-145*setup.uiScale; clip:true; spacing:2*setup.uiScale; model:setup.listOr("centralFuelEvents").length?setup.listOr("centralFuelEvents"):setup.listOr("fuelEventHistory")
                 delegate:Rectangle { required property var modelData; required property int index; width:ListView.view.width; height:27*setup.uiScale; color:index%2?"#0B1922":"#10222C"; border.color:String(modelData.state).indexOf("LEAK")>=0?setup.amber:"transparent"
                     Text { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:105*setup.uiScale; elide:Text.ElideRight; text:String(modelData.source||"LOCAL"); color:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
                     Text { x:118*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:145*setup.uiScale; text:String(modelData.utc||"").replace("T"," ").replace("Z",""); color:"#B8C5CA"; font.pixelSize:7*setup.uiScale }
@@ -209,6 +209,15 @@ Rectangle {
                 }
                 Text { visible:parent.count===0; anchors.centerIn:parent; text:"NO FUEL EVENTS RECORDED"; color:setup.green; font.pixelSize:9*setup.uiScale; font.bold:true }
             }
+            Row { anchors { left:parent.left; bottom:parent.bottom; margins:14*setup.uiScale } spacing:8*setup.uiScale
+                Repeater { model:[{label:"CREATE INCIDENT",action:"CREATE_INCIDENT"},{label:"VERIFY SIGNATURES",action:"VERIFY_SIGNATURES"},{label:"EXPORT USB",action:"EXPORT_USB"}]
+                    delegate:Rectangle { required property var modelData; width:145*setup.uiScale; height:34*setup.uiScale; radius:3*setup.uiScale; color:"#15303C"; border.color:modelData.action==="EXPORT_USB"?setup.amber:setup.cyan
+                        Text { anchors.centerIn:parent; text:modelData.label; color:modelData.action==="EXPORT_USB"?setup.amber:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
+                        TapHandler { enabled:String(controller.centralBlackBoxState)==="ONLINE"; onTapped:controller.requestCentralBlackBoxAction(modelData.action) }
+                    }
+                }
+            }
+            Text { anchors { right:parent.right; bottom:parent.bottom; rightMargin:19*setup.uiScale; bottomMargin:57*setup.uiScale } width:260*setup.uiScale; horizontalAlignment:Text.AlignRight; elide:Text.ElideRight; text:String((controller.centralBlackBoxMaintenance||{}).action||"READY")+" • "+String((controller.centralBlackBoxMaintenance||{}).state||"READY"); color:String((controller.centralBlackBoxMaintenance||{}).state)==="COMPLETE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
         }
     }
     Rectangle { id:footer; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:42*setup.uiScale; color:"#07131C"; border.color:setup.line
