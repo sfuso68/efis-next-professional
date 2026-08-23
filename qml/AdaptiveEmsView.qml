@@ -28,6 +28,25 @@ Item {
     readonly property real fuelUsableGallons: Math.max(0,fuelTotalGallons-fuelReserveGallons)
     readonly property real fuelEnduranceHours: fuelUsableGallons/Math.max(.1,controller.fuelFlow)
     readonly property real fuelImbalanceGallons: Math.abs(controller.fuelLeft-controller.fuelRight)
+    function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
+    readonly property real maximumCht: maximumValue(controller.chtValues||[])
+    readonly property string casLevel: controller.engineRpm>800 && controller.oilPressure<25 ? "WARNING" :
+                                       maximumCht>230 || controller.oilTemperature>120 ? "WARNING" :
+                                       controller.busVoltage<12.5 || fuelTotalGallons<6 ? "CAUTION" :
+                                       fuelImbalanceGallons>3 ? "ADVISORY" : "NORMAL"
+    readonly property string casHeadline: controller.engineRpm>800 && controller.oilPressure<25 ? "OIL PRESSURE LOW" :
+                                          maximumCht>230 ? "CHT HIGH" :
+                                          controller.oilTemperature>120 ? "OIL TEMPERATURE HIGH" :
+                                          controller.busVoltage<12.5 ? "BUS VOLTAGE LOW" :
+                                          fuelTotalGallons<6 ? "FUEL QUANTITY LOW" :
+                                          fuelImbalanceGallons>3 ? "FUEL IMBALANCE" : "SYSTEM NORMAL"
+    readonly property string casAction: controller.engineRpm>800 && controller.oilPressure<25 ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
+                                        maximumCht>230 ? "INCREASE COOLING • REDUCE POWER" :
+                                        controller.oilTemperature>120 ? "REDUCE POWER • MONITOR PRESSURE" :
+                                        controller.busVoltage<12.5 ? "CHECK ALTERNATOR AND ELECTRICAL LOAD" :
+                                        fuelTotalGallons<6 ? "VERIFY ENDURANCE AND DIVERT" :
+                                        fuelImbalanceGallons>3 ? "SELECT FULLER TANK" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
+    readonly property color casColor: casLevel==="WARNING" ? "#FF3933" : casLevel==="CAUTION" ? amber : casLevel==="ADVISORY" ? cyan : green
     function resetLean() {
         var values=controller.egtValues||[]; var peaks=[]; var detected=[]
         for(var i=0;i<values.length;i++){peaks.push(Number(values[i]));detected.push(false)}
@@ -131,8 +150,11 @@ Item {
         height: rightColumn.height*.42; color: root.panel; border.color: root.line; radius: 5*root.uiScale
         Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 5*root.uiScale }
         text: "CAS MESSAGES"; color: "#E7ECEE"; font.pixelSize: 10*root.uiScale }
-        Rectangle { x: 1; y: 25*root.uiScale; width: parent.width-2; height: 34*root.uiScale; color: "#07151D"; border.color: "#374851"
-            Text { anchors.centerIn: parent; text: "✓   SYSTEM NORMAL"; color: root.health; font.pixelSize: 14*root.uiScale; font.bold: true } }
+        Rectangle { id:casBanner; x: 1; y: 25*root.uiScale; width: parent.width-2; height: 34*root.uiScale; color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
+            SequentialAnimation on opacity { running:root.casLevel==="WARNING"; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
+            Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:(root.casLevel==="NORMAL"?"✓   ":"⚠   ")+root.casHeadline; color:root.casColor; font.pixelSize:11*root.uiScale; font.bold:true }
+            Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:root.casAction; color:"#D9E3E6"; font.pixelSize:5.5*root.uiScale; font.bold:root.casLevel!=="NORMAL" }
+        }
         Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 64*root.uiScale }
         text: "AIRFRAME  ·  CONFIGURED"; color: root.cyan; font.pixelSize: 9*root.uiScale; font.letterSpacing: 1.2 }
         Rectangle { x: parent.width/2; y: 82*root.uiScale; width: 1; height: parent.height-83*root.uiScale; color: root.line }
