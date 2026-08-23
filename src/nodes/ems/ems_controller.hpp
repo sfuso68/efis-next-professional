@@ -82,6 +82,8 @@ class EmsController : public QObject {
     Q_PROPERTY(qulonglong runtimeRevision READ runtimeRevision NOTIFY snapshotChanged)
     Q_PROPERTY(QString runtimeAuthority READ runtimeAuthority CONSTANT)
     Q_PROPERTY(QString unitSystem READ unitSystem NOTIFY unitsChanged)
+    Q_PROPERTY(double fuelUsedGallons READ fuelUsedGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(double fuelReserveGallons READ fuelReserveGallons NOTIFY fuelComputerChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -152,6 +154,8 @@ public:
     [[nodiscard]] qulonglong runtimeRevision() const { return runtime_revision_; }
     [[nodiscard]] QString runtimeAuthority() const { return QStringLiteral("EMS NODE • AUTHORITATIVE"); }
     [[nodiscard]] QString unitSystem() const { return unit_system_; }
+    [[nodiscard]] double fuelUsedGallons() const { return engine_snapshot_.fuel_flow_gph.is_simulated() ? simulated_fuel_used_gallons_ : fuel_used_gallons_; }
+    [[nodiscard]] double fuelReserveGallons() const { return fuel_reserve_gallons_; }
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
@@ -165,6 +169,8 @@ public:
     Q_INVOKABLE void cycleElectricalTestMode();
     Q_INVOKABLE void cycleMaintenanceInterval(int index);
     Q_INVOKABLE bool completeMaintenanceTask(int index);
+    Q_INVOKABLE bool setFuelReserveGallons(double gallons);
+    Q_INVOKABLE void resetFuelUsed();
 
 signals:
     void snapshotChanged();
@@ -173,6 +179,7 @@ signals:
     void sensorTestChanged();
     void electricalTestChanged();
     void maintenanceChanged();
+    void fuelComputerChanged();
 
 private:
     void updateSnapshot();
@@ -181,6 +188,8 @@ private:
     void persistRuntime();
     void loadUnitSystem();
     void loadMaintenance();
+    void loadFuelComputer();
+    void persistFuelComputer();
 
     QTimer timer_;
     efis::EngineSimulationProvider engine_provider_{84};
@@ -227,4 +236,10 @@ private:
     QString electrical_test_mode_{QStringLiteral("NORMAL")};
     QVariantList maintenance_tasks_;
     QString unit_system_{QStringLiteral("AVIATION")};
+    double fuel_used_gallons_{};
+    double simulated_fuel_used_gallons_{};
+    double fuel_reserve_gallons_{5.0};
+    efis::MonoTime last_fuel_update_{};
+    efis::MonoTime last_fuel_save_{};
+    efis::MonoTime last_fuel_notify_{};
 };

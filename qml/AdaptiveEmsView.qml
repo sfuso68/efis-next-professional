@@ -45,8 +45,8 @@ Item {
     property var leanPeakValues: []
     property var leanPeakDetected: []
     property int leanFirstCylinder: -1
-    property real fuelUsedGallons: 0
-    property real fuelReserveGallons: 5
+    readonly property real fuelUsedGallons: Number(controller.fuelUsedGallons)
+    readonly property real fuelReserveGallons: Number(controller.fuelReserveGallons)
     readonly property real fuelTotalGallons: Math.max(0,controller.fuelLeft+controller.fuelRight)
     readonly property real fuelUsableGallons: Math.max(0,fuelTotalGallons-fuelReserveGallons)
     readonly property real fuelEnduranceHours: fuelUsableGallons/Math.max(.1,controller.fuelFlow)
@@ -128,7 +128,6 @@ Item {
             var maximum=0; var values=controller.chtValues||[]; for(var i=0;i<values.length;i++)maximum=Math.max(maximum,Number(values[i])); root.chtTrend=root.appendTrend(root.chtTrend,maximum/250)
             root.busTrend=root.appendTrend(root.busTrend,Number(controller.busVoltage||0)/16)
             root.updateLean()
-            if(controller.engineRpm>400 && controller.fuelFlow>0)root.fuelUsedGallons+=Number(controller.fuelFlow)/3600
             root.updateCasEvents()
             trendCanvas.requestPaint()
         } }
@@ -424,11 +423,11 @@ Item {
                 Rectangle { anchors { right:parent.right; top:parent.top; topMargin:130*root.uiScale } width:parent.width*.42; height:68*root.uiScale; radius:4*root.uiScale; color:"#091821"; border.color:root.line
                     Text { x:12*root.uiScale; y:8*root.uiScale; text:"FINAL RESERVE"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
                     Text { anchors.centerIn:parent; text:root.fuel(root.fuelReserveGallons).toFixed(1)+" "+root.fuelUnit; color:root.amber; font.pixelSize:18*root.uiScale; font.bold:true }
-                    Rectangle { anchors { left:parent.left; verticalCenter:parent.verticalCenter; leftMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"−"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:root.fuelReserveGallons=Math.max(0,root.fuelReserveGallons-1) } }
-                    Rectangle { anchors { right:parent.right; verticalCenter:parent.verticalCenter; rightMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"+"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:root.fuelReserveGallons=Math.min(root.fuelTotalGallons,root.fuelReserveGallons+1) } }
+                    Rectangle { anchors { left:parent.left; verticalCenter:parent.verticalCenter; leftMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"−"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:controller.setFuelReserveGallons(Math.max(0,root.fuelReserveGallons-1)) } }
+                    Rectangle { anchors { right:parent.right; verticalCenter:parent.verticalCenter; rightMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"+"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:controller.setFuelReserveGallons(Math.min(root.fuelTotalGallons,root.fuelReserveGallons+1)) } }
                 }
                 Text { x:0; y:207*root.uiScale; text:"SESSION COUNTER • calculated from measured fuel flow"; color:"#7F929A"; font.pixelSize:7*root.uiScale }
-                Text { anchors { right:parent.right; bottom:parent.bottom } text:"RESET USED"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:root.fuelUsedGallons=0 } }
+                Text { anchors { right:parent.right; bottom:parent.bottom } text:"RESET USED"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:controller.resetFuelUsed() } }
             }
             Item { visible:root.selectedPanel === "CAS"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
                 Text { text:"CAS EVENT LOG • CURRENT SESSION"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }

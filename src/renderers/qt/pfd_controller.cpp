@@ -48,12 +48,15 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
     applySimulationRole(chosen);
     loadAircraftProfile();
     loadMaintenance();
+    loadFuelComputer();
     loadCatalogIndex();
     loadNavigationIndex();
     loadRadionavigationIndex();
     loadImageryStatus();
     recorder_status_path_ = qEnvironmentVariable("EFIS_RECORDER_STATUS",
                                                  "run/recorder.status");
+    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+            this, &PfdController::persistFuelComputer);
     timer_.setTimerType(Qt::PreciseTimer);
     timer_.setInterval(20);
     connect(&timer_, &QTimer::timeout, this, &PfdController::updateSnapshot);
@@ -84,6 +87,33 @@ bool PfdController::setUnitSystem(const QString& system) {
     emit unitsChanged();
     emit snapshotChanged();
     return settings.status() == QSettings::NoError;
+}
+
+void PfdController::loadFuelComputer() {
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
+    fuel_used_gallons_ = qMax(0.0, settings.value(QStringLiteral("real/used_gallons"), 0.0).toDouble());
+    fuel_reserve_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/reserve_gallons"), 5.0).toDouble(), 100.0);
+}
+
+void PfdController::persistFuelComputer() {
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
+    settings.setValue(QStringLiteral("real/used_gallons"), fuel_used_gallons_);
+    settings.setValue(QStringLiteral("pilot/reserve_gallons"), fuel_reserve_gallons_);
+    settings.sync();
+}
+
+bool PfdController::setFuelReserveGallons(double gallons) {
+    if (!std::isfinite(gallons)) return false;
+    fuel_reserve_gallons_ = qBound(0.0, gallons, 100.0);
+    persistFuelComputer(); emit fuelComputerChanged(); return true;
+}
+
+void PfdController::resetFuelUsed() {
+    if (engine_snapshot_.fuel_flow_gph.is_simulated()) simulated_fuel_used_gallons_ = 0.0;
+    else { fuel_used_gallons_ = 0.0; persistFuelComputer(); }
+    emit fuelComputerChanged();
 }
 
 void PfdController::loadImageryStatus() {
@@ -1100,6 +1130,21 @@ void PfdController::updateSnapshot() {
         runtime_tracker_.update(accountable_rpm, seconds, airborne && !showingSimulatedData());
     }
     last_runtime_update_ = now;
+    if (last_fuel_update_ != efis::MonoTime{}) {
+        const auto seconds = std::chrono::duration<double>(now - last_fuel_update_).count();
+        if (engine_snapshot_.rpm.value > 400.0 && engine_snapshot_.fuel_flow_gph.value > 0.0) {
+            const double consumed = engine_snapshot_.fuel_flow_gph.value * seconds / 3600.0;
+            if (engine_snapshot_.fuel_flow_gph.is_simulated()) simulated_fuel_used_gallons_ += consumed;
+            else fuel_used_gallons_ += consumed;
+            if (last_fuel_notify_ == efis::MonoTime{} || now - last_fuel_notify_ >= 1s) {
+                last_fuel_notify_ = now; emit fuelComputerChanged();
+            }
+        }
+    }
+    last_fuel_update_ = now;
+    if (last_fuel_save_ == efis::MonoTime{} || now - last_fuel_save_ >= 10s) {
+        last_fuel_save_ = now; persistFuelComputer();
+    }
     if (trend_initialized_) {
         const auto six_second_projection = (snapshot_.air_data.indicated_airspeed_kt.value -
                                             previous_airspeed_) * 300.0;

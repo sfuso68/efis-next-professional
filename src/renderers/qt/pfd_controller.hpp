@@ -136,6 +136,8 @@ class PfdController final : public QObject {
     Q_PROPERTY(double systemSimulationSpeed READ systemSimulationSpeed NOTIFY simulationChanged)
     Q_PROPERTY(QString systemSimulationLastEvent READ systemSimulationLastEvent NOTIFY simulationChanged)
     Q_PROPERTY(QString unitSystem READ unitSystem NOTIFY unitsChanged)
+    Q_PROPERTY(double fuelUsedGallons READ fuelUsedGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(double fuelReserveGallons READ fuelReserveGallons NOTIFY fuelComputerChanged)
 
 public:
     explicit PfdController(QObject* parent = nullptr);
@@ -289,11 +291,15 @@ public:
     Q_INVOKABLE void seekSystemSimulation(double progress);
     Q_INVOKABLE void setSystemSimulationSpeed(double speed);
     [[nodiscard]] QString unitSystem() const { return unit_system_; }
+    [[nodiscard]] double fuelUsedGallons() const { return engine_snapshot_.fuel_flow_gph.is_simulated() ? simulated_fuel_used_gallons_ : fuel_used_gallons_; }
+    [[nodiscard]] double fuelReserveGallons() const { return fuel_reserve_gallons_; }
     Q_INVOKABLE bool setUnitSystem(const QString& system);
     Q_INVOKABLE bool cycleSensorCalibration(int index);
     Q_INVOKABLE bool cycleSensorType(int index);
     Q_INVOKABLE bool cycleSensorInput(int index);
     Q_INVOKABLE bool captureSensorPoint(int index, const QString& point);
+    Q_INVOKABLE bool setFuelReserveGallons(double gallons);
+    Q_INVOKABLE void resetFuelUsed();
 
 signals:
     void snapshotChanged();
@@ -305,6 +311,7 @@ signals:
     void sensorConfigurationChanged();
     void electricalTestChanged();
     void maintenanceChanged();
+    void fuelComputerChanged();
 
 private slots:
     void updateSnapshot();
@@ -317,6 +324,8 @@ private:
     void loadImageryStatus();
     void loadUnitSystem();
     void loadMaintenance();
+    void loadFuelComputer();
+    void persistFuelComputer();
     void updateNearestAirports();
     [[nodiscard]] QString activeProfilePath() const;
     [[nodiscard]] QString stagingProfilePath() const;
@@ -408,5 +417,11 @@ private:
     efis::MonoTime system_simulation_last_tick_{};
     QString system_simulation_last_event_{QStringLiteral("READY")};
     QString unit_system_{QStringLiteral("AVIATION")};
+    double fuel_used_gallons_{};
+    double simulated_fuel_used_gallons_{};
+    double fuel_reserve_gallons_{5.0};
+    efis::MonoTime last_fuel_update_{};
+    efis::MonoTime last_fuel_save_{};
+    efis::MonoTime last_fuel_notify_{};
     int calibration_revision_{};
 };
