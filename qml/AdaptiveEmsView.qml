@@ -22,6 +22,12 @@ Item {
     property var leanPeakValues: []
     property var leanPeakDetected: []
     property int leanFirstCylinder: -1
+    property real fuelUsedGallons: 0
+    property real fuelReserveGallons: 5
+    readonly property real fuelTotalGallons: Math.max(0,controller.fuelLeft+controller.fuelRight)
+    readonly property real fuelUsableGallons: Math.max(0,fuelTotalGallons-fuelReserveGallons)
+    readonly property real fuelEnduranceHours: fuelUsableGallons/Math.max(.1,controller.fuelFlow)
+    readonly property real fuelImbalanceGallons: Math.abs(controller.fuelLeft-controller.fuelRight)
     function resetLean() {
         var values=controller.egtValues||[]; var peaks=[]; var detected=[]
         for(var i=0;i<values.length;i++){peaks.push(Number(values[i]));detected.push(false)}
@@ -63,6 +69,7 @@ Item {
             var maximum=0; var values=controller.chtValues||[]; for(var i=0;i<values.length;i++)maximum=Math.max(maximum,Number(values[i])); root.chtTrend=root.appendTrend(root.chtTrend,maximum/250)
             root.busTrend=root.appendTrend(root.busTrend,Number(controller.busVoltage||0)/16)
             root.updateLean()
+            if(controller.engineRpm>400 && controller.fuelFlow>0)root.fuelUsedGallons+=Number(controller.fuelFlow)/3600
             trendCanvas.requestPaint()
         } }
 
@@ -220,7 +227,7 @@ Item {
          text: "×"; color: "white"; font.pixelSize: 25*root.uiScale
                 MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.selectedPanel="" } }
             Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
-            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST" && root.selectedPanel !== "LEAN"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
+            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST" && root.selectedPanel !== "LEAN" && root.selectedPanel !== "FUEL"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
                 text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
                       root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+"\nFlusso: "+root.flow(controller.fuelFlow).toFixed(1)+" "+root.flowUnit+"\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
                       root.selectedPanel === "TREND" ? "ENGINE TREND\nRPM, pressioni, temperature e parametri elettrici saranno rappresentati su finestre selezionabili da 1, 5, 15 e 60 minuti." :
@@ -316,6 +323,43 @@ Item {
                         TapHandler { onTapped:{if(root.leanActive)root.leanActive=false;else root.startLean()} }
                     }
                 }
+            }
+            Item { visible:root.selectedPanel === "FUEL"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
+                Text { text:"FUEL COMPUTER"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
+                Text { anchors { right:parent.right; top:parent.top } text:root.fuelImbalanceGallons>3?"⚠ TANK IMBALANCE":"TANKS BALANCED"; color:root.fuelImbalanceGallons>3?root.amber:root.green; font.pixelSize:8*root.uiScale; font.bold:true }
+                Row { x:0; y:35*root.uiScale; width:parent.width; height:86*root.uiScale; spacing:7*root.uiScale
+                    Repeater { model:[
+                        {h:"ON BOARD",v:root.fuel(root.fuelTotalGallons).toFixed(1),u:root.fuelUnit,c:"white"},
+                        {h:"FLOW",v:root.flow(controller.fuelFlow).toFixed(1),u:root.flowUnit,c:root.cyan},
+                        {h:"TO RESERVE",v:controller.fuelFlow>.1?root.fuelEnduranceHours.toFixed(1):"--",u:"HOURS",c:controller.fuelFlow>.1?(root.fuelEnduranceHours<.75?root.amber:root.green):"#899BA3"},
+                        {h:"USED",v:root.fuel(root.fuelUsedGallons).toFixed(1),u:root.fuelUnit,c:"white"}]
+                        delegate:Rectangle { required property var modelData; width:(parent.width-3*parent.spacing)/4; height:parent.height; radius:4*root.uiScale; color:"#091821"; border.color:root.line
+                            Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:9*root.uiScale } text:modelData.h; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                            Text { anchors.centerIn:parent; anchors.verticalCenterOffset:3*root.uiScale; text:modelData.v; color:modelData.c; font.pixelSize:21*root.uiScale; font.bold:true }
+                            Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:8*root.uiScale } text:modelData.u; color:"#9DAEB5"; font.pixelSize:7*root.uiScale }
+                        }
+                    }
+                }
+                Rectangle { x:0; y:130*root.uiScale; width:parent.width*.55; height:68*root.uiScale; radius:4*root.uiScale; color:"#091821"; border.color:root.line
+                    Text { x:12*root.uiScale; y:8*root.uiScale; text:"TANK QUANTITY"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                    Repeater { model:[{n:"LEFT",v:controller.fuelLeft},{n:"RIGHT",v:controller.fuelRight}]
+                        delegate:Item { required property var modelData; required property int index; x:12*root.uiScale; y:(index+1)*22*root.uiScale; width:parent.width-24*root.uiScale; height:14*root.uiScale
+                            Text { width:38*root.uiScale; text:modelData.n; color:"#DCE5E8"; font.pixelSize:7*root.uiScale }
+                            Rectangle { x:43*root.uiScale; width:parent.width-100*root.uiScale; height:8*root.uiScale; color:"#1A2A31"; border.color:"#53656D"
+                                Rectangle { anchors { left:parent.left; top:parent.top; bottom:parent.bottom; margins:1 } width:(parent.width-2)*Math.max(0,Math.min(1,modelData.v/20)); color:modelData.v<4?"#FF3933":modelData.v<7?root.amber:root.green }
+                            }
+                            Text { anchors.right:parent.right; text:root.fuel(modelData.v).toFixed(1)+" "+root.fuelUnit; color:"white"; font.pixelSize:7*root.uiScale; font.bold:true }
+                        }
+                    }
+                }
+                Rectangle { anchors { right:parent.right; top:parent.top; topMargin:130*root.uiScale } width:parent.width*.42; height:68*root.uiScale; radius:4*root.uiScale; color:"#091821"; border.color:root.line
+                    Text { x:12*root.uiScale; y:8*root.uiScale; text:"FINAL RESERVE"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                    Text { anchors.centerIn:parent; text:root.fuel(root.fuelReserveGallons).toFixed(1)+" "+root.fuelUnit; color:root.amber; font.pixelSize:18*root.uiScale; font.bold:true }
+                    Rectangle { anchors { left:parent.left; verticalCenter:parent.verticalCenter; leftMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"−"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:root.fuelReserveGallons=Math.max(0,root.fuelReserveGallons-1) } }
+                    Rectangle { anchors { right:parent.right; verticalCenter:parent.verticalCenter; rightMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"+"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:root.fuelReserveGallons=Math.min(root.fuelTotalGallons,root.fuelReserveGallons+1) } }
+                }
+                Text { x:0; y:207*root.uiScale; text:"SESSION COUNTER • calculated from measured fuel flow"; color:"#7F929A"; font.pixelSize:7*root.uiScale }
+                Text { anchors { right:parent.right; bottom:parent.bottom } text:"RESET USED"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:root.fuelUsedGallons=0 } }
             }
             Text { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 22*root.uiScale }
          text: "TOUCH OUTSIDE TO CLOSE"; horizontalAlignment: Text.AlignHCenter; color: "#899BA3"; font.pixelSize: 8*root.uiScale; font.letterSpacing: 1.4 }
