@@ -127,6 +127,8 @@ public:
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
     Q_INVOKABLE bool cycleSensorCalibration(int index);
+    Q_INVOKABLE bool cycleSensorType(int index);
+    Q_INVOKABLE bool cycleSensorInput(int index);
 
 signals:
     void snapshotChanged();

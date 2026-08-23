@@ -271,6 +271,8 @@ public:
     [[nodiscard]] QString unitSystem() const { return unit_system_; }
     Q_INVOKABLE bool setUnitSystem(const QString& system);
     Q_INVOKABLE bool cycleSensorCalibration(int index);
+    Q_INVOKABLE bool cycleSensorType(int index);
+    Q_INVOKABLE bool cycleSensorInput(int index);
 
 signals:
     void snapshotChanged();

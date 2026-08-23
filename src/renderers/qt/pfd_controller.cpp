@@ -15,6 +15,7 @@
 #include <QTextStream>
 #include <QSet>
 #include <QSettings>
+#include <QStringList>
 #include <QUrl>
 
 #include <utility>
@@ -625,6 +626,12 @@ void PfdController::loadAircraftProfile() {
             sensor.insert(QStringLiteral("calibration_state"),
                           calibration.value(QStringLiteral("sensors/%1/state").arg(signal),
                                             QStringLiteral("NOT CONFIGURED")).toString());
+            sensor.insert(QStringLiteral("configured_type"),
+                          calibration.value(QStringLiteral("sensors/%1/type").arg(signal),
+                                            sensor.value(QStringLiteral("type"))).toString());
+            sensor.insert(QStringLiteral("input"),
+                          calibration.value(QStringLiteral("sensors/%1/input").arg(signal),
+                                            QStringLiteral("UNASSIGNED")).toString());
             engine_sensor_configuration_ << sensor;
         }
         electrical_loads_.clear();
@@ -683,6 +690,46 @@ bool PfdController::cycleSensorCalibration(int index) {
     qInfo().noquote() << "event=ems_sensor_calibration signal=" << sensor.value("signal").toString()
                       << "state=" << next << "revision=" << calibration_revision_;
     return settings.status() == QSettings::NoError;
+}
+
+bool PfdController::cycleSensorType(int index) {
+    if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
+    static const QStringList types{QStringLiteral("UNSELECTED"), QStringLiteral("FREQUENCY"),
+        QStringLiteral("THERMOCOUPLE K"), QStringLiteral("PT1000"), QStringLiteral("VDO RESISTIVE"),
+        QStringLiteral("0-5 V"), QStringLiteral("CAN DIGITAL")};
+    auto sensor = engine_sensor_configuration_[index].toMap();
+    const auto current = sensor.value(QStringLiteral("configured_type")).toString();
+    const auto next = types.at((types.indexOf(current) + 1 + types.size()) % types.size());
+    sensor.insert(QStringLiteral("configured_type"), next);
+    sensor.insert(QStringLiteral("calibration_state"), QStringLiteral("NOT CONFIGURED"));
+    engine_sensor_configuration_[index] = sensor; ++calibration_revision_;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-calibration")};
+    const auto signal = sensor.value(QStringLiteral("signal")).toString();
+    settings.setValue(QStringLiteral("sensors/%1/type").arg(signal), next);
+    settings.setValue(QStringLiteral("sensors/%1/state").arg(signal), QStringLiteral("NOT CONFIGURED"));
+    settings.setValue(QStringLiteral("revision"), calibration_revision_); settings.sync();
+    emit sensorConfigurationChanged(); return settings.status() == QSettings::NoError;
+}
+
+bool PfdController::cycleSensorInput(int index) {
+    if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
+    static const QStringList inputs{QStringLiteral("UNASSIGNED"), QStringLiteral("CAN A"),
+        QStringLiteral("CAN B"), QStringLiteral("ADC 1"), QStringLiteral("ADC 2"),
+        QStringLiteral("FREQ 1"), QStringLiteral("FREQ 2")};
+    auto sensor = engine_sensor_configuration_[index].toMap();
+    const auto current = sensor.value(QStringLiteral("input")).toString();
+    const auto next = inputs.at((inputs.indexOf(current) + 1 + inputs.size()) % inputs.size());
+    sensor.insert(QStringLiteral("input"), next);
+    sensor.insert(QStringLiteral("calibration_state"), QStringLiteral("NOT CONFIGURED"));
+    engine_sensor_configuration_[index] = sensor; ++calibration_revision_;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-calibration")};
+    const auto signal = sensor.value(QStringLiteral("signal")).toString();
+    settings.setValue(QStringLiteral("sensors/%1/input").arg(signal), next);
+    settings.setValue(QStringLiteral("sensors/%1/state").arg(signal), QStringLiteral("NOT CONFIGURED"));
+    settings.setValue(QStringLiteral("revision"), calibration_revision_); settings.sync();
+    emit sensorConfigurationChanged(); return settings.status() == QSettings::NoError;
 }
 
 double PfdController::roll() const { return snapshot_.attitude.roll_deg.value; }
