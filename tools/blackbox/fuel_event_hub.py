@@ -13,8 +13,9 @@ class Hub:
         self.db=sqlite3.connect(database,check_same_thread=False)
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY,source TEXT NOT NULL,received_utc TEXT NOT NULL,event_utc TEXT,state TEXT,payload TEXT NOT NULL)")
+        self.db.execute("CREATE TABLE IF NOT EXISTS maintenance_requests(source TEXT NOT NULL,request_id TEXT NOT NULL,action TEXT NOT NULL,state TEXT NOT NULL,updated_utc TEXT NOT NULL,result TEXT NOT NULL,PRIMARY KEY(source,request_id))")
         self.db.commit()
-        self.database=database;self.maintenance_script=maintenance_script;self.root=root;self.key=key;self.export_root=export_root;self.last_maintenance={"state":"READY"}
+        self.database=database;self.maintenance_script=maintenance_script;self.root=root;self.key=key;self.export_root=export_root;self.maintenance_lock=threading.Lock();self.last_maintenance=self.load_last_maintenance()
     def authorized(self,source,token): return source in self.tokens and hmac.compare_digest(self.tokens[source],token)
     def insert(self,source,event):
         digest=hashlib.sha256((source+"\n"+canonical(event)).encode()).hexdigest()
@@ -30,18 +31,34 @@ class Hub:
         with self.lock: rows=self.db.execute("SELECT source,COUNT(*),MAX(received_utc) FROM events GROUP BY source ORDER BY source").fetchall()
         return [{"source":r[0],"records":r[1],"last_contact_utc":r[2]} for r in rows]
     def reader_authorized(self,token): return any(hmac.compare_digest(value,token) for value in self.tokens.values())
+    def load_last_maintenance(self):
+        row=self.db.execute("SELECT source,request_id,action,state,updated_utc,result FROM maintenance_requests ORDER BY rowid DESC LIMIT 1").fetchone()
+        return {"state":"READY"} if not row else {"source":row[0],"request_id":row[1],"action":row[2],"state":row[3],"utc":row[4],"result":row[5]}
+    def save_maintenance(self,source,request_id,action,state,result):
+        value={"source":source,"request_id":request_id,"action":action,"state":state,"utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),"result":result}
+        with self.lock:
+            self.db.execute("INSERT OR REPLACE INTO maintenance_requests VALUES(?,?,?,?,?,?)",(source,request_id,action,state,value["utc"],result));self.db.commit()
+        self.last_maintenance=value;return value
     def run_maintenance(self,source,action,request_id):
-        commands={"CREATE_INCIDENT":["incident","--hours","2"],"VERIFY_SIGNATURES":["verify"]}
-        if action=="EXPORT_USB":
-            if not self.export_root or not os.path.ismount(self.export_root):
-                self.last_maintenance={"state":"WAITING","action":action,"source":source,"request_id":request_id,"utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),"result":"USB_NOT_MOUNTED"}
-                raise RuntimeError("USB_NOT_MOUNTED")
-            command=["export-usb","--usb",self.export_root]
-        elif action in commands: command=commands[action]
-        else: raise ValueError("unsupported_action")
-        args=["/usr/bin/python3",self.maintenance_script,*command,"--database",self.database,"--root",self.root,"--key",self.key]
-        result=subprocess.run(args,capture_output=True,text=True,timeout=60,check=True)
-        self.last_maintenance={"state":"COMPLETE","action":action,"source":source,"request_id":request_id,"utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),"result":result.stdout.strip()};return self.last_maintenance
+        if not request_id: raise ValueError("request_id_required")
+        with self.maintenance_lock:
+            with self.lock: previous=self.db.execute("SELECT action,state,updated_utc,result FROM maintenance_requests WHERE source=? AND request_id=?",(source,request_id)).fetchone()
+            if previous and previous[0]!=action: raise ValueError("request_id_action_mismatch")
+            if previous and previous[1]=="COMPLETE":
+                self.last_maintenance={"source":source,"request_id":request_id,"action":action,"state":"COMPLETE","utc":previous[2],"result":previous[3],"replayed":True};return self.last_maintenance
+            commands={"CREATE_INCIDENT":["incident","--hours","2"],"VERIFY_SIGNATURES":["verify"]}
+            if action=="EXPORT_USB":
+                if not self.export_root or not os.path.ismount(self.export_root):
+                    self.save_maintenance(source,request_id,action,"WAITING","USB_NOT_MOUNTED");raise RuntimeError("USB_NOT_MOUNTED")
+                command=["export-usb","--usb",self.export_root]
+            elif action in commands: command=commands[action]
+            else: raise ValueError("unsupported_action")
+            self.save_maintenance(source,request_id,action,"RUNNING","")
+            args=["/usr/bin/python3",self.maintenance_script,*command,"--database",self.database,"--root",self.root,"--key",self.key]
+            try: result=subprocess.run(args,capture_output=True,text=True,timeout=60,check=True)
+            except Exception as exc:
+                self.save_maintenance(source,request_id,action,"FAILED",str(exc));raise
+            return self.save_maintenance(source,request_id,action,"COMPLETE",result.stdout.strip())
 
 def handler(hub):
     class Handler(BaseHTTPRequestHandler):

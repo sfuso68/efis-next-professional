@@ -180,7 +180,7 @@ void PfdController::loadCentralBlackBoxCache() {
 
 bool PfdController::requestCentralBlackBoxAction(const QString& action) {
     const auto normalized=action.trimmed().toUpper();if(normalized!=QStringLiteral("CREATE_INCIDENT")&&normalized!=QStringLiteral("VERIFY_SIGNATURES")&&normalized!=QStringLiteral("EXPORT_USB"))return false;
-    QDir().mkpath(QFileInfo(central_blackbox_request_path_).absolutePath());QFile file(central_blackbox_request_path_);if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text))return false;
+    QDir().mkpath(QFileInfo(central_blackbox_request_path_).absolutePath());QFile file(central_blackbox_request_path_);if(!file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text))return false;
     QJsonObject request{{"action",normalized},{"request_id",QString::number(QDateTime::currentMSecsSinceEpoch())}};file.write(QJsonDocument(request).toJson(QJsonDocument::Compact));file.write("\n");file.flush();return true;
 }
 

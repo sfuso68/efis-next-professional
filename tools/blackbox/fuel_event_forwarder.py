@@ -17,9 +17,11 @@ def refresh_cache(url,token,path):
 def send_command(url,source,token,path):
     target=Path(path)
     if not target.exists() or not target.stat().st_size:return
-    request=json.loads(target.read_text().splitlines()[0]);body=json.dumps({"source":source,**request},separators=(",",":")).encode();req=urllib.request.Request(url+"/v1/maintenance",body,{"Content-Type":"application/json","Authorization":"Bearer "+token},method="POST")
+    lines=[line for line in target.read_text().splitlines() if line.strip()]
+    if not lines:return
+    request=json.loads(lines[0]);body=json.dumps({"source":source,**request},separators=(",",":")).encode();req=urllib.request.Request(url+"/v1/maintenance",body,{"Content-Type":"application/json","Authorization":"Bearer "+token},method="POST")
     with urllib.request.urlopen(req,timeout=65): pass
-    target.write_text("")
+    tmp=target.with_suffix(".tmp");tmp.write_text(("\n".join(lines[1:])+"\n") if len(lines)>1 else "");os.replace(tmp,target)
 
 def main():
     p=argparse.ArgumentParser();p.add_argument("--journal",required=True);p.add_argument("--state",required=True);p.add_argument("--url",required=True);p.add_argument("--source",required=True);p.add_argument("--token-file",required=True);p.add_argument("--cache");p.add_argument("--commands");p.add_argument("--once",action="store_true");a=p.parse_args()

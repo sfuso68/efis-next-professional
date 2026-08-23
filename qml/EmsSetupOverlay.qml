@@ -217,7 +217,7 @@ Rectangle {
                     }
                 }
             }
-            Text { anchors { right:parent.right; bottom:parent.bottom; rightMargin:19*setup.uiScale; bottomMargin:57*setup.uiScale } width:260*setup.uiScale; horizontalAlignment:Text.AlignRight; elide:Text.ElideRight; text:String((controller.centralBlackBoxMaintenance||{}).action||"READY")+" • "+String((controller.centralBlackBoxMaintenance||{}).state||"READY"); color:String((controller.centralBlackBoxMaintenance||{}).state)==="COMPLETE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+            Text { anchors { right:parent.right; bottom:parent.bottom; rightMargin:19*setup.uiScale; bottomMargin:57*setup.uiScale } width:330*setup.uiScale; horizontalAlignment:Text.AlignRight; elide:Text.ElideRight; text:String((controller.centralBlackBoxMaintenance||{}).action||"READY")+" • "+String((controller.centralBlackBoxMaintenance||{}).state||"READY")+(String((controller.centralBlackBoxMaintenance||{}).result||"").length?" • "+String(controller.centralBlackBoxMaintenance.result):""); color:String((controller.centralBlackBoxMaintenance||{}).state)==="COMPLETE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
         }
     }
     Rectangle { id:footer; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:42*setup.uiScale; color:"#07131C"; border.color:setup.line
