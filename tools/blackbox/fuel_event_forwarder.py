@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+"""Reliably forwards a local append-only JSONL journal to the blackbox hub."""
+import argparse, json, os, time, urllib.error, urllib.request
+from pathlib import Path
+
+def post(url,source,token,event):
+    body=json.dumps({"source":source,"event":event},separators=(",",":")).encode()
+    req=urllib.request.Request(url+"/v1/events",body,{"Content-Type":"application/json","Authorization":"Bearer "+token},method="POST")
+    with urllib.request.urlopen(req,timeout=5) as response: return response.status in (200,201)
+
+def main():
+    p=argparse.ArgumentParser();p.add_argument("--journal",required=True);p.add_argument("--state",required=True);p.add_argument("--url",required=True);p.add_argument("--source",required=True);p.add_argument("--token-file",required=True);p.add_argument("--once",action="store_true");a=p.parse_args()
+    journal=Path(a.journal); state=Path(a.state);state.parent.mkdir(parents=True,exist_ok=True);offset=int(state.read_text() or 0) if state.exists() else 0;token=Path(a.token_file).read_text().strip()
+    while True:
+        try:
+            if journal.exists():
+                with journal.open("rb") as stream:
+                    if offset>journal.stat().st_size: offset=0
+                    stream.seek(offset)
+                    while True:
+                        start=stream.tell();line=stream.readline()
+                        if not line: break
+                        event=json.loads(line);post(a.url,a.source,token,event);offset=stream.tell();tmp=state.with_suffix(".tmp");tmp.write_text(str(offset));os.replace(tmp,state)
+        except (OSError,ValueError,urllib.error.URLError): pass
+        if a.once:return
+        time.sleep(2)
+if __name__=="__main__": main()
