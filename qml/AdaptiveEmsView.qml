@@ -12,6 +12,19 @@ Item {
     readonly property color health: controller.engineHealth >= 2 ? "#FF3933" : controller.engineHealth === 1 ? amber : green
     property string selectedPanel: ""
     property bool setupVisible: false
+    readonly property string units: controller.unitSystem || "AVIATION"
+    readonly property bool metricUnits: units === "METRIC"
+    readonly property bool imperialUnits: units === "IMPERIAL"
+    function temp(v) { return imperialUnits ? v*9/5+32 : v }
+    function pressure(v) { return metricUnits ? v*0.0689476 : v }
+    function fuel(v) { return metricUnits ? v*3.78541 : v }
+    function flow(v) { return metricUnits ? v*3.78541 : v }
+    function mapValue(v) { return metricUnits ? v*33.8639 : v }
+    readonly property string tempUnit: imperialUnits ? "°F" : "°C"
+    readonly property string pressureUnit: metricUnits ? "BAR" : "PSI"
+    readonly property string fuelUnit: metricUnits ? "L" : "GAL"
+    readonly property string flowUnit: metricUnits ? "L/H" : "GPH"
+    readonly property string mapUnit: metricUnits ? "HPA" : "IN HG"
 
     Rectangle { anchors.fill: parent
         gradient: Gradient { orientation: Gradient.Horizontal
@@ -46,7 +59,9 @@ Item {
                     EmsVectorIcon { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 9*root.uiScale }
          width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: modelData.n === "ENGINE" ? root.cyan : "#89969C" }
                     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 8*root.uiScale }
-        text: modelData.n; color: modelData.n === "ENGINE" ? root.cyan : "#A7B0B5"; font.pixelSize: 8*root.uiScale } } }
+        text: modelData.n; color: modelData.n === "ENGINE" ? root.cyan : "#A7B0B5"; font.pixelSize: 8*root.uiScale }
+                    TapHandler { onTapped: { if (modelData.n === "SYSTEM") root.selectedPanel = "SYSTEM" } }
+                } }
         } }
 
     Item { id: body; anchors { left: nav.right; right: parent.right; top: header.bottom; bottom: summary.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; topMargin: 5*root.uiScale } }
@@ -55,13 +70,13 @@ Item {
     Row { id: primary; anchors { left: gauges.left; right: gauges.right; top: gauges.top }
         height: gauges.height*.59; spacing: 7*root.uiScale
         EmsGaugeV3 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: 3000; greenStart: 800; greenEnd: 2600; majorStep: 500; minorStep: 100 }
-        EmsGaugeV3 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; label: "MAP"; value: controller.manifoldPressure; unit: "IN HG"; minimum: 0; maximum: 40; greenStart: 5; greenEnd: 34; majorStep: 5; minorStep: 1; decimals: 1 }
+        EmsGaugeV3 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1 }
     }
     Row { anchors { left: gauges.left; right: gauges.right; top: primary.bottom; bottom: gauges.bottom; topMargin: -3*root.uiScale }
         spacing: 5*root.uiScale
-        EmsGaugeV3 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "OIL PRESS"; value: controller.oilPressure; unit: "PSI"; minimum: 0; maximum: 100; greenStart: 25; greenEnd: 85; majorStep: 20; minorStep: 4 }
-        EmsGaugeV3 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "OIL TEMP"; value: controller.oilTemperature; unit: "°C"; minimum: 20; maximum: 140; greenStart: 50; greenEnd: 110; majorStep: 20; minorStep: 4 }
-        EmsGaugeV3 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "FUEL FLOW"; value: controller.fuelFlow; unit: "GPH"; minimum: 0; maximum: 30; greenStart: 3; greenEnd: 23; majorStep: 5; minorStep: 1; decimals: 1 }
+        EmsGaugeV3 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.metricUnits?7:100; greenStart:root.metricUnits?1.7:25; greenEnd:root.metricUnits?5.9:85; majorStep:root.metricUnits?1:20; minorStep:root.metricUnits?.2:4; decimals:root.metricUnits?1:0 }
+        EmsGaugeV3 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.imperialUnits?70:20; maximum:root.imperialUnits?285:140; greenStart:root.imperialUnits?120:50; greenEnd:root.imperialUnits?230:110; majorStep:root.imperialUnits?40:20; minorStep:root.imperialUnits?8:4 }
+        EmsGaugeV3 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1 }
     }
 
     Item { id: rightColumn; anchors { left: gauges.right; right: body.right; top: body.top; bottom: body.bottom; leftMargin: 8*root.uiScale } }
@@ -113,17 +128,33 @@ Item {
         }
     }
 
-    EngineTemperatureBars { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:false; chtValues:controller.chtValues; egtValues:controller.egtValues }
+    EngineTemperatureBars { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:false; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit }
 
     Rectangle { id: summary; anchors { left: nav.right; right: parent.right; bottom: actions.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
         height: 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale
         Row { anchors.fill: parent
+            Item { width: parent.width*.36; height: parent.height
+                Rectangle { anchors.right: parent.right; width: 1; height: parent.height*.72; anchors.verticalCenter: parent.verticalCenter; color: root.line }
+                Text { x:12*root.uiScale; y:7*root.uiScale; text:"FUEL"; color:root.cyan; font.pixelSize:9*root.uiScale; font.bold:true }
+                Text { anchors { right:parent.right; rightMargin:14*root.uiScale; top:parent.top; topMargin:6*root.uiScale }
+                    text:root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit; color:"white"; font.pixelSize:13*root.uiScale; font.bold:true }
+                Row { x:12*root.uiScale; y:31*root.uiScale; width:parent.width-26*root.uiScale; spacing:12*root.uiScale
+                    Repeater { model:[{n:"L",v:controller.fuelLeft},{n:"R",v:controller.fuelRight}]
+                        delegate:Item { required property var modelData; width:(parent.width-parent.spacing)/2; height:29*root.uiScale
+                            Text { text:modelData.n+"  "+root.fuel(modelData.v).toFixed(1); color:"#E8EEF0"; font.pixelSize:8*root.uiScale; font.bold:true }
+                            Rectangle { anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:8*root.uiScale; color:"#142630"; border.color:"#60727B"
+                                Rectangle { anchors { left:parent.left; top:parent.top; bottom:parent.bottom; margins:1 }
+                                    width:(parent.width-2)*Math.max(0,Math.min(1,modelData.v/20)); color:modelData.v<4?"#FF3933":modelData.v<7?root.amber:root.green }
+                            }
+                        }
+                    }
+                }
+            }
             Repeater { model: [
-                {h:"FUEL  "+(controller.fuelLeft+controller.fuelRight).toFixed(1)+" GAL",v:"L  "+controller.fuelLeft.toFixed(1)+"     R  "+controller.fuelRight.toFixed(1)+" GAL",c:root.green},
                 {h:"ENDURANCE",v:((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR",c:root.cyan},
                 {h:"BUS",v:controller.busVoltage.toFixed(1)+" V",c:"white"},
                 {h:"ALT",v:"+"+controller.alternatorCurrent.toFixed(0)+" A",c:"white"}]
-                delegate: Item { required property var modelData; width: parent.width/4; height: parent.height
+                delegate: Item { required property var modelData; width: parent.width*.64/3; height: parent.height
                     Rectangle { anchors.right: parent.right; width: 1; height: parent.height*.72; anchors.verticalCenter: parent.verticalCenter; color: root.line }
                     Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 9*root.uiScale }
         text: modelData.h; color: root.cyan; font.pixelSize: 9*root.uiScale }
@@ -149,12 +180,31 @@ Item {
          text: "×"; color: "white"; font.pixelSize: 25*root.uiScale
                 MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.selectedPanel="" } }
             Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
-            Text { x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
+            Text { visible:root.selectedPanel !== "SYSTEM"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
                 text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
-                      root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+(controller.fuelLeft+controller.fuelRight).toFixed(1)+" GAL\nFlusso: "+controller.fuelFlow.toFixed(1)+" GPH\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
+                      root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+"\nFlusso: "+root.flow(controller.fuelFlow).toFixed(1)+" "+root.flowUnit+"\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
                       root.selectedPanel === "TREND" ? "ENGINE TREND\nRPM, pressioni, temperature e parametri elettrici saranno rappresentati su finestre selezionabili da 1, 5, 15 e 60 minuti." :
                       "ENGINE CHECKLIST\n□ Parametri motore nel campo verde\n□ Carburante e autonomia verificati\n□ Alternatore e tensione verificati\n□ Carrello e flap configurati"
                 color: "#E8EEF0"; font.pixelSize: 15*root.uiScale; lineHeight: 1.5 }
+            Item { visible:root.selectedPanel === "SYSTEM"; x:22*root.uiScale; y:68*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
+                Text { text:"UNITS OF MEASURE"; color:"white"; font.pixelSize:15*root.uiScale; font.bold:true }
+                Text { y:26*root.uiScale; text:"Select the presentation standard used by EMS, PFD and Canvas"; color:"#AFC0C7"; font.pixelSize:9*root.uiScale }
+                Row { y:55*root.uiScale; width:parent.width; height:112*root.uiScale; spacing:10*root.uiScale
+                    Repeater { model:[
+                        {id:"AVIATION",title:"AVIATION",detail:"°C  •  PSI  •  IN HG\nGAL  •  GPH"},
+                        {id:"METRIC",title:"METRIC",detail:"°C  •  BAR  •  HPA\nL  •  L/H"},
+                        {id:"IMPERIAL",title:"IMPERIAL",detail:"°F  •  PSI  •  IN HG\nGAL  •  GPH"}]
+                        delegate:Rectangle { required property var modelData; width:(parent.width-2*parent.spacing)/3; height:parent.height; radius:5*root.uiScale
+                            color:root.units===modelData.id?"#143542":"#0B1A22"; border.width:root.units===modelData.id?2:1; border.color:root.units===modelData.id?root.cyan:root.line
+                            Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:17*root.uiScale } text:modelData.title; color:root.units===modelData.id?root.cyan:"white"; font.pixelSize:13*root.uiScale; font.bold:true }
+                            Text { anchors.centerIn:parent; anchors.verticalCenterOffset:12*root.uiScale; text:modelData.detail; horizontalAlignment:Text.AlignHCenter; color:"#D7E2E6"; font.pixelSize:9*root.uiScale; lineHeight:1.5 }
+                            Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:8*root.uiScale } text:root.units===modelData.id?"● ACTIVE":"SELECT"; color:root.units===modelData.id?root.green:"#82939A"; font.pixelSize:7*root.uiScale; font.bold:true }
+                            TapHandler { onTapped:controller.setUnitSystem(modelData.id) }
+                        }
+                    }
+                }
+                Text { y:182*root.uiScale; width:parent.width; wrapMode:Text.WordWrap; text:"Display conversion only: recorded sensor data and certified limits remain stored in canonical units."; color:"#83959D"; font.pixelSize:8*root.uiScale }
+            }
             Text { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 22*root.uiScale }
          text: "TOUCH OUTSIDE TO CLOSE"; horizontalAlignment: Text.AlignHCenter; color: "#899BA3"; font.pixelSize: 8*root.uiScale; font.letterSpacing: 1.4 }
         }

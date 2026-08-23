@@ -64,6 +64,7 @@ class EmsController : public QObject {
     Q_PROPERTY(QString runtimePersistenceState READ runtimePersistenceState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong runtimeRevision READ runtimeRevision NOTIFY snapshotChanged)
     Q_PROPERTY(QString runtimeAuthority READ runtimeAuthority CONSTANT)
+    Q_PROPERTY(QString unitSystem READ unitSystem NOTIFY unitsChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -117,17 +118,21 @@ public:
     [[nodiscard]] QString runtimePersistenceState() const { return runtime_persistence_state_; }
     [[nodiscard]] qulonglong runtimeRevision() const { return runtime_revision_; }
     [[nodiscard]] QString runtimeAuthority() const { return QStringLiteral("EMS NODE • AUTHORITATIVE"); }
+    [[nodiscard]] QString unitSystem() const { return unit_system_; }
 
     Q_INVOKABLE void cycleEngineFault();
+    Q_INVOKABLE bool setUnitSystem(const QString& system);
 
 signals:
     void snapshotChanged();
+    void unitsChanged();
 
 private:
     void updateSnapshot();
     void updateRecorderStatus(efis::MonoTime now);
     void loadAircraftProfile();
     void persistRuntime();
+    void loadUnitSystem();
 
     QTimer timer_;
     efis::EngineSimulationProvider engine_provider_{84};
@@ -157,4 +162,5 @@ private:
     QString profile_id_{QStringLiteral("unconfigured")};
     QString runtime_persistence_state_{QStringLiteral("INITIALIZING")};
     qulonglong runtime_revision_{};
+    QString unit_system_{QStringLiteral("AVIATION")};
 };

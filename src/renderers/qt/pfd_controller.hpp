@@ -125,6 +125,7 @@ class PfdController final : public QObject {
     Q_PROPERTY(double systemSimulationProgress READ systemSimulationProgress NOTIFY simulationChanged)
     Q_PROPERTY(double systemSimulationSpeed READ systemSimulationSpeed NOTIFY simulationChanged)
     Q_PROPERTY(QString systemSimulationLastEvent READ systemSimulationLastEvent NOTIFY simulationChanged)
+    Q_PROPERTY(QString unitSystem READ unitSystem NOTIFY unitsChanged)
 
 public:
     explicit PfdController(QObject* parent = nullptr);
@@ -263,6 +264,8 @@ public:
     Q_INVOKABLE void stopSystemSimulation();
     Q_INVOKABLE void seekSystemSimulation(double progress);
     Q_INVOKABLE void setSystemSimulationSpeed(double speed);
+    [[nodiscard]] QString unitSystem() const { return unit_system_; }
+    Q_INVOKABLE bool setUnitSystem(const QString& system);
 
 signals:
     void snapshotChanged();
@@ -270,6 +273,7 @@ signals:
     void navigationSetupChanged();
     void imageryChanged();
     void simulationChanged();
+    void unitsChanged();
 
 private slots:
     void updateSnapshot();
@@ -280,6 +284,7 @@ private:
     void loadNavigationIndex();
     void loadRadionavigationIndex();
     void loadImageryStatus();
+    void loadUnitSystem();
     void updateNearestAirports();
     [[nodiscard]] QString activeProfilePath() const;
     [[nodiscard]] QString stagingProfilePath() const;
@@ -363,4 +368,5 @@ private:
     double system_simulation_elapsed_ms_{};
     efis::MonoTime system_simulation_last_tick_{};
     QString system_simulation_last_event_{QStringLiteral("READY")};
+    QString unit_system_{QStringLiteral("AVIATION")};
 };

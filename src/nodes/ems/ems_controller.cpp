@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QSettings>
 
 using namespace std::chrono_literals;
 
@@ -25,6 +26,7 @@ constexpr std::uint64_t kRecorderStaleMs = 3000;
 }
 
 EmsController::EmsController(QObject* parent) : QObject(parent) {
+    loadUnitSystem();
     loadAircraftProfile();
     runtime_store_ = std::make_unique<efis::engine::RuntimeStore>(
         qEnvironmentVariable("EFIS_ENGINE_RUNTIME_STATE", "state/engine-runtime.state").toStdString());
@@ -49,6 +51,31 @@ EmsController::EmsController(QObject* parent) : QObject(parent) {
     connect(&timer_, &QTimer::timeout, this, &EmsController::updateSnapshot);
     updateSnapshot();
     timer_.start();
+}
+
+void EmsController::loadUnitSystem() {
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-units")};
+    const auto value = settings.value(QStringLiteral("display/unitSystem"),
+                                      QStringLiteral("AVIATION")).toString().toUpper();
+    if (value == QStringLiteral("AVIATION") || value == QStringLiteral("METRIC") ||
+        value == QStringLiteral("IMPERIAL")) unit_system_ = value;
+}
+
+bool EmsController::setUnitSystem(const QString& system) {
+    const auto value = system.trimmed().toUpper();
+    if (value != QStringLiteral("AVIATION") && value != QStringLiteral("METRIC") &&
+        value != QStringLiteral("IMPERIAL")) return false;
+    if (unit_system_ == value) return true;
+    unit_system_ = value;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-units")};
+    settings.setValue(QStringLiteral("display/unitSystem"), unit_system_);
+    settings.sync();
+    qInfo().noquote() << "event=ems_unit_system system=" << unit_system_;
+    emit unitsChanged();
+    emit snapshotChanged();
+    return settings.status() == QSettings::NoError;
 }
 
 void EmsController::loadAircraftProfile() {

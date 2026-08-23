@@ -14,6 +14,7 @@
 #include <QDateTime>
 #include <QTextStream>
 #include <QSet>
+#include <QSettings>
 #include <QUrl>
 
 #include <utility>
@@ -25,6 +26,7 @@
 using namespace std::chrono_literals;
 
 PfdController::PfdController(QObject* parent) : QObject(parent) {
+    loadUnitSystem();
     // La simulazione resta registrata sempre: senza sensori collegati e' cio'
     // che permette di continuare a sviluppare, e con i sensori collegati copre
     // le grandezze che non forniscono. Il ruolo predefinito e' il ripiego, non
@@ -54,6 +56,31 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
     connect(&timer_, &QTimer::timeout, this, &PfdController::updateSnapshot);
     updateSnapshot();
     timer_.start();
+}
+
+void PfdController::loadUnitSystem() {
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-units")};
+    const auto value = settings.value(QStringLiteral("display/unitSystem"),
+                                      QStringLiteral("AVIATION")).toString().toUpper();
+    if (value == QStringLiteral("AVIATION") || value == QStringLiteral("METRIC") ||
+        value == QStringLiteral("IMPERIAL")) unit_system_ = value;
+}
+
+bool PfdController::setUnitSystem(const QString& system) {
+    const auto value = system.trimmed().toUpper();
+    if (value != QStringLiteral("AVIATION") && value != QStringLiteral("METRIC") &&
+        value != QStringLiteral("IMPERIAL")) return false;
+    if (unit_system_ == value) return true;
+    unit_system_ = value;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-units")};
+    settings.setValue(QStringLiteral("display/unitSystem"), unit_system_);
+    settings.sync();
+    qInfo().noquote() << "event=ems_unit_system system=" << unit_system_;
+    emit unitsChanged();
+    emit snapshotChanged();
+    return settings.status() == QSettings::NoError;
 }
 
 void PfdController::loadImageryStatus() {

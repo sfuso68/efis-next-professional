@@ -6,6 +6,8 @@ Rectangle {
     required property var egtValues
     property real uiScale: 1
     property bool compact: false
+    property string temperatureUnit: "°C"
+    function displayTemperature(celsius) { return temperatureUnit === "°F" ? celsius*9/5+32 : celsius }
     readonly property color cyan: "#28D9F4"
     readonly property color green: "#52DE36"
     readonly property color amber: "#FFC72B"
@@ -25,8 +27,8 @@ Rectangle {
                 Row { anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; topMargin:(root.compact?12:18)*root.uiScale } spacing:2*root.uiScale
                     Repeater {
                         model:[
-                            {n:"CHT",v:Number(root.chtValues[index]),lo:100,hi:260,caution:220,warning:240},
-                            {n:"EGT",v:Number(root.egtValues[index]),lo:400,hi:950,caution:850,warning:920}
+                            {n:"CHT",v:root.displayTemperature(Number(root.chtValues[index])),lo:root.displayTemperature(100),hi:root.displayTemperature(260),caution:root.displayTemperature(220),warning:root.displayTemperature(240)},
+                            {n:"EGT",v:root.displayTemperature(Number(root.egtValues[index])),lo:root.displayTemperature(400),hi:root.displayTemperature(950),caution:root.displayTemperature(850),warning:root.displayTemperature(920)}
                         ]
                         delegate:Item {
                             id:bar; required property var modelData
@@ -47,6 +49,6 @@ Rectangle {
             }
         }
     }
-    Text { x:3*root.uiScale; y:root.height*.30; text:"CHT\n°C"; color:root.cyan; font.pixelSize:(root.compact?5:7)*root.uiScale; horizontalAlignment:Text.AlignHCenter; font.bold:true }
-    Text { x:3*root.uiScale; y:root.height*.68; text:"EGT\n°C"; color:root.cyan; font.pixelSize:(root.compact?5:7)*root.uiScale; horizontalAlignment:Text.AlignHCenter; font.bold:true }
+    Text { x:3*root.uiScale; y:root.height*.30; text:"CHT\n"+root.temperatureUnit; color:root.cyan; font.pixelSize:(root.compact?5:7)*root.uiScale; horizontalAlignment:Text.AlignHCenter; font.bold:true }
+    Text { x:3*root.uiScale; y:root.height*.68; text:"EGT\n"+root.temperatureUnit; color:root.cyan; font.pixelSize:(root.compact?5:7)*root.uiScale; horizontalAlignment:Text.AlignHCenter; font.bold:true }
 }
