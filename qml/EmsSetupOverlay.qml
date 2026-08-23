@@ -5,6 +5,7 @@ Rectangle {
     required property var controller
     property real uiScale: Math.min(width/1024, height/600)
     property int section: 0
+    property int monitorSensor: -1
     signal closed()
     z: 200; color: "#F0051018"; border.color: "#28D9F4"
     readonly property color cyan: "#28D9F4"
@@ -78,7 +79,8 @@ Rectangle {
             }
             ListView { anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; margins:10*setup.uiScale; topMargin:46*setup.uiScale } clip:true; spacing:3*setup.uiScale; model:setup.listOr("engineSensorConfiguration")
                 delegate:Rectangle { required property var modelData; required property int index; width:ListView.view.width; height:38*setup.uiScale; color:index%2?"#0B1922":"#10222C"; border.color:String(modelData.calibration_state)==="VERIFIED"?setup.green:"transparent"
-                    Text { x:10*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:150*setup.uiScale; text:String(modelData.signal).replace("_"," "); color:"white"; font.pixelSize:9*setup.uiScale; font.bold:true }
+                    Text { x:10*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:140*setup.uiScale; elide:Text.ElideRight; text:String(modelData.signal).replace("_"," ")+"  ›"; color:"white"; font.pixelSize:8*setup.uiScale; font.bold:true
+                        TapHandler { onTapped:{setup.monitorSensor=index;controller.startEngineSensorTest(String(modelData.signal),true)} } }
                     Text { x:150*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"×"+modelData.quantity; color:setup.cyan; font.pixelSize:8*setup.uiScale }
                     Rectangle { x:184*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:180*setup.uiScale; height:27*setup.uiScale; radius:3*setup.uiScale; color:"#102B36"; border.color:String(modelData.configured_type).indexOf("TO_BE")===0||String(modelData.configured_type)==="UNSELECTED"?setup.amber:setup.cyan
                         Text { anchors.centerIn:parent; width:parent.width-8*setup.uiScale; horizontalAlignment:Text.AlignHCenter; elide:Text.ElideRight; text:String(modelData.configured_type||modelData.type)+"  ›"; color:"white"; font.pixelSize:7*setup.uiScale; font.bold:true }
@@ -100,6 +102,25 @@ Rectangle {
                             TapHandler { onTapped:controller.captureSensorPoint(index,"SPAN") } }
                     }
                 }
+            }
+        }
+        Rectangle { visible:setup.section===2&&setup.monitorSensor>=0; anchors.centerIn:parent; width:660*setup.uiScale; height:310*setup.uiScale; z:20; radius:7*setup.uiScale; color:"#F006151E"; border.width:2; border.color:setup.cyan
+            readonly property var sensor:setup.monitorSensor>=0?setup.listOr("engineSensorConfiguration")[setup.monitorSensor]:({})
+            Text { x:18*setup.uiScale; y:14*setup.uiScale; text:"LIVE CHANNEL • "+String(parent.sensor.signal||""); color:"white"; font.pixelSize:16*setup.uiScale; font.bold:true }
+            Text { x:18*setup.uiScale; y:42*setup.uiScale; text:String(controller.sensorTestStatus||"IDLE")+"  •  "+String(parent.sensor.input||"UNASSIGNED")+"  •  "+String(parent.sensor.configured_type||""); color:String(controller.sensorTestStatus).indexOf("VALID")>=0?setup.green:setup.amber; font.pixelSize:9*setup.uiScale; font.bold:true }
+            Grid { x:18*setup.uiScale; y:78*setup.uiScale; columns:2; spacing:10*setup.uiScale
+                Repeater { model:[{k:"RAW INPUT",v:Number(controller.sensorTestRaw||0).toFixed(2),u:"ADC / BUS"},{k:"CONVERTED",v:Number(controller.sensorTestValue||0).toFixed(2),u:"ENGINE UNIT"},{k:"UPDATE RATE",v:Number(controller.sensorTestRateHz||0).toFixed(1),u:"HZ"},{k:"SAMPLE AGE",v:String(controller.sensorTestAgeMs||0),u:"MS"}]
+                    delegate:Rectangle { required property var modelData; width:300*setup.uiScale; height:72*setup.uiScale; color:setup.panel; border.color:setup.line
+                        Text { x:10*setup.uiScale; y:8*setup.uiScale; text:modelData.k; color:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
+                        Text { x:10*setup.uiScale; y:27*setup.uiScale; text:modelData.v; color:"white"; font.pixelSize:20*setup.uiScale; font.bold:true }
+                        Text { anchors { right:parent.right; rightMargin:10*setup.uiScale; bottom:parent.bottom; bottomMargin:9*setup.uiScale } text:modelData.u; color:"#96A7AE"; font.pixelSize:7*setup.uiScale }
+                    }
+                }
+            }
+            Text { x:18*setup.uiScale; y:238*setup.uiScale; width:470*setup.uiScale; text:"BENCH data exercises diagnostics only. LIVE verification remains locked until the configured physical provider is present."; wrapMode:Text.WordWrap; color:setup.amber; font.pixelSize:7*setup.uiScale }
+            Rectangle { anchors { right:parent.right; bottom:parent.bottom; margins:16*setup.uiScale } width:120*setup.uiScale; height:34*setup.uiScale; color:"#15303C"; border.color:setup.cyan
+                Text { anchors.centerIn:parent; text:"CLOSE"; color:setup.cyan; font.pixelSize:9*setup.uiScale; font.bold:true }
+                TapHandler { onTapped:{controller.stopEngineSensorTest();setup.monitorSensor=-1} }
             }
         }
         Grid { visible:setup.section===3; y:58*setup.uiScale; columns:2; spacing:8*setup.uiScale

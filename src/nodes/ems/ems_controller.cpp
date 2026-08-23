@@ -242,6 +242,15 @@ bool EmsController::captureSensorPoint(int index, const QString& point) {
     emit sensorConfigurationChanged(); return settings.status()==QSettings::NoError;
 }
 
+bool EmsController::startEngineSensorTest(const QString& signal, bool benchSimulation) {
+    bool known=false; for(const auto& item:engine_sensor_configuration_) if(item.toMap().value("signal").toString()==signal){known=true;break;}
+    if(!known)return false; sensor_test_signal_=signal; sensor_test_bench_=benchSimulation; sensor_test_ticks_=0;
+    sensor_test_status_=benchSimulation?QStringLiteral("BENCH SIMULATION"):QStringLiteral("WAITING FOR LIVE PROVIDER");
+    sensor_test_raw_=sensor_test_value_=sensor_test_rate_hz_=0; sensor_test_age_ms_=0; emit sensorTestChanged(); return true;
+}
+
+void EmsController::stopEngineSensorTest(){sensor_test_bench_=false;sensor_test_status_=QStringLiteral("IDLE");emit sensorTestChanged();}
+
 void EmsController::persistRuntime() {
     if (!runtime_store_ || runtime_persistence_state_ == QStringLiteral("INTEGRITY FAULT")) return;
     try {
@@ -360,5 +369,8 @@ void EmsController::updateSnapshot() {
         persistRuntime();
     }
     updateRecorderStatus(now);
+    if(sensor_test_bench_){++sensor_test_ticks_;const double phase=double(sensor_test_ticks_)*0.06;double base=100;
+        if(sensor_test_signal_=="RPM")base=2450;else if(sensor_test_signal_=="OIL_PRESSURE")base=72;else if(sensor_test_signal_=="OIL_TEMPERATURE"||sensor_test_signal_=="COOLANT_TEMPERATURE")base=95;else if(sensor_test_signal_=="CHT")base=180;else if(sensor_test_signal_=="EGT")base=740;else if(sensor_test_signal_=="FUEL_PRESSURE")base=4.8;else if(sensor_test_signal_=="FUEL_FLOW")base=9.6;else if(sensor_test_signal_=="MANIFOLD_PRESSURE")base=24;
+        sensor_test_raw_=base+std::sin(phase)*qMax(0.1,base*.012);sensor_test_value_=sensor_test_raw_;sensor_test_rate_hz_=20;sensor_test_age_ms_=0;sensor_test_status_=QStringLiteral("BENCH • DATA VALID");if(sensor_test_ticks_%4==0)emit sensorTestChanged();}
     emit snapshotChanged();
 }

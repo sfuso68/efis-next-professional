@@ -62,6 +62,12 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration NOTIFY sensorConfigurationChanged)
     Q_PROPERTY(int calibrationRevision READ calibrationRevision NOTIFY sensorConfigurationChanged)
     Q_PROPERTY(bool sensorCalibrationReady READ sensorCalibrationReady NOTIFY sensorConfigurationChanged)
+    Q_PROPERTY(QString sensorTestSignal READ sensorTestSignal NOTIFY sensorTestChanged)
+    Q_PROPERTY(QString sensorTestStatus READ sensorTestStatus NOTIFY sensorTestChanged)
+    Q_PROPERTY(double sensorTestRaw READ sensorTestRaw NOTIFY sensorTestChanged)
+    Q_PROPERTY(double sensorTestValue READ sensorTestValue NOTIFY sensorTestChanged)
+    Q_PROPERTY(double sensorTestRateHz READ sensorTestRateHz NOTIFY sensorTestChanged)
+    Q_PROPERTY(int sensorTestAgeMs READ sensorTestAgeMs NOTIFY sensorTestChanged)
     Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
     Q_PROPERTY(QString runtimePersistenceState READ runtimePersistenceState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong runtimeRevision READ runtimeRevision NOTIFY snapshotChanged)
@@ -118,6 +124,12 @@ public:
     [[nodiscard]] QVariantList engineSensorConfiguration() const { return engine_sensor_configuration_; }
     [[nodiscard]] int calibrationRevision() const { return calibration_revision_; }
     [[nodiscard]] bool sensorCalibrationReady() const;
+    [[nodiscard]] QString sensorTestSignal() const { return sensor_test_signal_; }
+    [[nodiscard]] QString sensorTestStatus() const { return sensor_test_status_; }
+    [[nodiscard]] double sensorTestRaw() const { return sensor_test_raw_; }
+    [[nodiscard]] double sensorTestValue() const { return sensor_test_value_; }
+    [[nodiscard]] double sensorTestRateHz() const { return sensor_test_rate_hz_; }
+    [[nodiscard]] int sensorTestAgeMs() const { return sensor_test_age_ms_; }
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
     [[nodiscard]] QString runtimePersistenceState() const { return runtime_persistence_state_; }
     [[nodiscard]] qulonglong runtimeRevision() const { return runtime_revision_; }
@@ -130,11 +142,14 @@ public:
     Q_INVOKABLE bool cycleSensorType(int index);
     Q_INVOKABLE bool cycleSensorInput(int index);
     Q_INVOKABLE bool captureSensorPoint(int index, const QString& point);
+    Q_INVOKABLE bool startEngineSensorTest(const QString& signal, bool benchSimulation);
+    Q_INVOKABLE void stopEngineSensorTest();
 
 signals:
     void snapshotChanged();
     void unitsChanged();
     void sensorConfigurationChanged();
+    void sensorTestChanged();
 
 private:
     void updateSnapshot();
@@ -172,5 +187,13 @@ private:
     QString runtime_persistence_state_{QStringLiteral("INITIALIZING")};
     qulonglong runtime_revision_{};
     int calibration_revision_{};
+    QString sensor_test_signal_;
+    QString sensor_test_status_{QStringLiteral("IDLE")};
+    double sensor_test_raw_{};
+    double sensor_test_value_{};
+    double sensor_test_rate_hz_{};
+    int sensor_test_age_ms_{};
+    bool sensor_test_bench_{};
+    qulonglong sensor_test_ticks_{};
     QString unit_system_{QStringLiteral("AVIATION")};
 };

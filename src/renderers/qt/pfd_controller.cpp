@@ -546,6 +546,8 @@ bool PfdController::startEngineSensorTest(const QString& signal, bool benchSimul
     bool known = false;
     for (const auto& item : engine_sensor_mappings_)
         if (item.toMap().value("signal").toString() == signal) { known = true; break; }
+    for (const auto& item : engine_sensor_configuration_)
+        if (item.toMap().value("signal").toString() == signal) { known = true; break; }
     if (!known) {
         sensor_test_status_ = QStringLiteral("UNKNOWN_SIGNAL"); emit setupChanged(); return false;
     }
@@ -1108,11 +1110,17 @@ void PfdController::updateSnapshot() {
             if (sensor_test_signal_ == QStringLiteral("RPM")) base = 2450.0;
             else if (sensor_test_signal_ == QStringLiteral("MAP")) base = 24.0;
             else if (sensor_test_signal_ == QStringLiteral("OIL_PRESS")) base = 72.0;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_PRESSURE")) base = 72.0;
             else if (sensor_test_signal_ == QStringLiteral("OIL_TEMP")) base = 92.0;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_TEMPERATURE") || sensor_test_signal_ == QStringLiteral("COOLANT_TEMPERATURE")) base = 92.0;
             else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESS")) base = 4.8;
+            else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESSURE")) base = 4.8;
             else if (sensor_test_signal_ == QStringLiteral("FUEL_FLOW")) base = 18.0;
             else if (sensor_test_signal_.startsWith(QStringLiteral("CHT_"))) base = 108.0;
+            else if (sensor_test_signal_ == QStringLiteral("CHT")) base = 180.0;
             else if (sensor_test_signal_.startsWith(QStringLiteral("EGT_"))) base = 720.0;
+            else if (sensor_test_signal_ == QStringLiteral("EGT")) base = 720.0;
+            else if (sensor_test_signal_ == QStringLiteral("MANIFOLD_PRESSURE")) base = 24.0;
             sensor_test_raw_ = base + std::sin(phase) * qMax(1.0, base * 0.015);
             sensor_test_value_ = sensor_test_raw_ * sensor_test_gain_ + sensor_test_offset_;
             sensor_test_rate_hz_ = 50.0;
