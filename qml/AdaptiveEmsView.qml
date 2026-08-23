@@ -11,6 +11,8 @@ Item {
     readonly property color line: "#55646C"
     readonly property color health: controller.engineHealth >= 2 ? "#FF3933" : controller.engineHealth === 1 ? amber : green
     readonly property var engineLimits: controller.engineLimits||({})
+    readonly property var engineCapabilities: controller.engineCapabilities||({})
+    readonly property bool mixtureControlAvailable: engineCapabilities.mixture_control===true
     function engineLimit(name,fallback) { var value=Number(engineLimits[name]); return isFinite(value)&&value>0?value:fallback }
     readonly property real oilPressureMinimum: engineLimit("oil_pressure_min_psi",25)
     readonly property real oilPressureMaximum: engineLimit("oil_pressure_max_psi",100)
@@ -274,8 +276,8 @@ Item {
         height: 48*root.uiScale; spacing: 12*root.uiScale
         Repeater { model: [{k:"lean",n:"LEAN"},{k:"fuel",n:"FUEL"},{k:"trend",n:"TREND"},{k:"checklist",n:"CHECKLIST"}]
             delegate: Rectangle { required property var modelData; width: (parent.width-3*parent.spacing)/4; height: parent.height; radius: 5*root.uiScale; color: "#101D25"; border.color: root.line
-                EmsVectorIcon { x: 50*root.uiScale; anchors.verticalCenter: parent.verticalCenter; width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: modelData.n === "LEAN" ? root.green : root.cyan }
-                Text { anchors.centerIn: parent; text: modelData.n; color: "#F0F3F4"; font.pixelSize: 14*root.uiScale; font.bold: true }
+                EmsVectorIcon { x: 50*root.uiScale; anchors.verticalCenter: parent.verticalCenter; width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: modelData.n === "LEAN" ? (root.mixtureControlAvailable?root.green:"#66777E") : root.cyan }
+                Text { anchors.centerIn: parent; text:modelData.n==="LEAN"&&!root.mixtureControlAvailable?"LEAN N/A":modelData.n; color:modelData.n==="LEAN"&&!root.mixtureControlAvailable?"#7D8B91":"#F0F3F4"; font.pixelSize: 14*root.uiScale; font.bold: true }
                 MouseArea { anchors.fill: parent; onClicked: root.selectedPanel=modelData.n }
             } }
     }
@@ -358,11 +360,11 @@ Item {
                 }
             }
             Item { visible:root.selectedPanel === "LEAN"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
-                Text { text:"LEAN ASSIST • EGT PEAK MONITOR"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
-                Rectangle { anchors { right:parent.right; top:parent.top } width:112*root.uiScale; height:25*root.uiScale; radius:4*root.uiScale; color:root.leanActive?"#123D20":"#18252C"; border.color:root.leanActive?root.green:root.line
-                    Text { anchors.centerIn:parent; text:root.leanActive?"● CAPTURING":"STANDBY"; color:root.leanActive?root.green:"#A8B5BA"; font.pixelSize:8*root.uiScale; font.bold:true }
+                Text { text:"LEAN ASSIST • EGT PEAK MONITOR"; color:root.mixtureControlAvailable?"white":"#7D8B91"; font.pixelSize:12*root.uiScale; font.bold:true }
+                Rectangle { anchors { right:parent.right; top:parent.top } width:112*root.uiScale; height:25*root.uiScale; radius:4*root.uiScale; color:root.mixtureControlAvailable?(root.leanActive?"#123D20":"#18252C"):"#20282C"; border.color:root.mixtureControlAvailable?(root.leanActive?root.green:root.line):"#66777E"
+                    Text { anchors.centerIn:parent; text:root.mixtureControlAvailable?(root.leanActive?"● CAPTURING":"STANDBY"):"NOT INSTALLED"; color:root.mixtureControlAvailable?(root.leanActive?root.green:"#A8B5BA"):"#8C999E"; font.pixelSize:8*root.uiScale; font.bold:true }
                 }
-                Row { x:0; y:38*root.uiScale; width:parent.width; height:132*root.uiScale; spacing:7*root.uiScale
+                Row { visible:root.mixtureControlAvailable; x:0; y:38*root.uiScale; width:parent.width; height:132*root.uiScale; spacing:7*root.uiScale
                     Repeater { model:controller.egtValues||[]
                         delegate:Rectangle { required property int index; required property real modelData; width:(parent.width-(Math.max(1,(controller.egtValues||[]).length)-1)*parent.spacing)/Math.max(1,(controller.egtValues||[]).length); height:parent.height; radius:4*root.uiScale; color:root.leanFirstCylinder===index?"#3A2D08":"#0A1820"; border.width:root.leanFirstCylinder===index?2:1; border.color:root.leanPeakDetected[index]?root.amber:root.line
                             Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:7*root.uiScale } text:"CYL "+(index+1); color:root.leanFirstCylinder===index?root.amber:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
@@ -374,8 +376,13 @@ Item {
                         }
                     }
                 }
-                Text { x:0; y:178*root.uiScale; text:root.leanFirstCylinder>=0?"FIRST TO PEAK: CYLINDER "+(root.leanFirstCylinder+1):root.leanActive?"Slowly lean mixture • monitoring EGT rise":"Stabilize cruise power, then press START"; color:root.leanFirstCylinder>=0?root.amber:"#B8C5CA"; font.pixelSize:8*root.uiScale; font.bold:true }
-                Row { anchors { right:parent.right; bottom:parent.bottom } spacing:8*root.uiScale
+                Text { visible:root.mixtureControlAvailable; x:0; y:178*root.uiScale; text:root.leanFirstCylinder>=0?"FIRST TO PEAK: CYLINDER "+(root.leanFirstCylinder+1):root.leanActive?"Slowly lean mixture • monitoring EGT rise":"Stabilize cruise power, then press START"; color:root.leanFirstCylinder>=0?root.amber:"#B8C5CA"; font.pixelSize:8*root.uiScale; font.bold:true }
+                Column { visible:!root.mixtureControlAvailable; anchors.centerIn:parent; width:parent.width*.78; spacing:12*root.uiScale
+                    Text { anchors.horizontalCenter:parent.horizontalCenter; text:"FUNCTION NOT APPLICABLE"; color:root.amber; font.pixelSize:17*root.uiScale; font.bold:true }
+                    Text { width:parent.width; horizontalAlignment:Text.AlignHCenter; wrapMode:Text.WordWrap; text:String(controller.engineProfileName)+" profile has no pilot mixture control. EGT remains monitored cylinder by cylinder; Lean Assist is inhibited by configuration."; color:"#C4D0D4"; font.pixelSize:10*root.uiScale; lineHeight:1.35 }
+                    Text { anchors.horizontalCenter:parent.horizontalCenter; text:"CAPABILITY SOURCE • ENGINE PROFILE"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                }
+                Row { visible:root.mixtureControlAvailable; anchors { right:parent.right; bottom:parent.bottom } spacing:8*root.uiScale
                     Rectangle { width:90*root.uiScale; height:24*root.uiScale; radius:3*root.uiScale; color:"#14242C"; border.color:root.line
                         Text { anchors.centerIn:parent; text:"RESET"; color:"#D9E3E6"; font.pixelSize:7*root.uiScale; font.bold:true }
                         TapHandler { onTapped:{root.leanActive=false;root.resetLean()} }

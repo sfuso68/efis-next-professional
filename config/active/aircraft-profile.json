@@ -38,6 +38,14 @@
       "fuel_pressure_min_psi": 2.2,
       "fuel_pressure_max_psi": 5.8
     },
+    "capabilities": {
+      "mixture_control": false,
+      "manifold_pressure_sensor": true,
+      "fuel_flow_sensor": true,
+      "individual_cht": true,
+      "individual_egt": true,
+      "carburetor_synchronization": true
+    },
     "runtime_tracking": {
       "engine_run_threshold_rpm": 500,
       "tach_reference_rpm": 5000,
