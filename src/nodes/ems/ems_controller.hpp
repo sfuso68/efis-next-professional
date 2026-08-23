@@ -129,6 +129,7 @@ public:
     Q_INVOKABLE bool cycleSensorCalibration(int index);
     Q_INVOKABLE bool cycleSensorType(int index);
     Q_INVOKABLE bool cycleSensorInput(int index);
+    Q_INVOKABLE bool captureSensorPoint(int index, const QString& point);
 
 signals:
     void snapshotChanged();

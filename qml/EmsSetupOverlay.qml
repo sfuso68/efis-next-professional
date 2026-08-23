@@ -90,8 +90,14 @@ Rectangle {
                     }
                     Text { x:478*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:modelData.required?"REQ":"OPT"; color:modelData.required?setup.green:"#AAB6BC"; font.pixelSize:7*setup.uiScale; font.bold:true }
                     Rectangle { anchors { right:parent.right; rightMargin:8*setup.uiScale; verticalCenter:parent.verticalCenter } width:190*setup.uiScale; height:27*setup.uiScale; radius:3*setup.uiScale; color:"#142C37"; border.color:String(modelData.calibration_state)==="VERIFIED"?setup.green:setup.amber
-                        Text { anchors.centerIn:parent; text:String(modelData.calibration_state||"NOT CONFIGURED")+"  ›"; color:String(modelData.calibration_state)==="VERIFIED"?setup.green:setup.amber; font.pixelSize:8*setup.uiScale; font.bold:true }
-                        TapHandler { onTapped:controller.cycleSensorCalibration(index) }
+                        Text { x:5*setup.uiScale; width:112*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; horizontalAlignment:Text.AlignHCenter; elide:Text.ElideRight; text:String(modelData.calibration_state||"NOT CONFIGURED"); color:String(modelData.calibration_state)==="VERIFIED"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true
+                            TapHandler { onTapped:controller.cycleSensorCalibration(index) } }
+                        Rectangle { x:122*setup.uiScale; width:30*setup.uiScale; height:parent.height; color:modelData.zero_raw!==undefined?"#174A38":"#243943"; border.color:setup.cyan
+                            Text { anchors.centerIn:parent; text:"Z"; color:"white"; font.pixelSize:8*setup.uiScale; font.bold:true }
+                            TapHandler { onTapped:controller.captureSensorPoint(index,"ZERO") } }
+                        Rectangle { anchors.right:parent.right; width:30*setup.uiScale; height:parent.height; color:modelData.span_raw!==undefined?"#174A38":"#243943"; border.color:setup.cyan
+                            Text { anchors.centerIn:parent; text:"S"; color:"white"; font.pixelSize:8*setup.uiScale; font.bold:true }
+                            TapHandler { onTapped:controller.captureSensorPoint(index,"SPAN") } }
                     }
                 }
             }

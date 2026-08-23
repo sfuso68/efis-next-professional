@@ -632,6 +632,11 @@ void PfdController::loadAircraftProfile() {
             sensor.insert(QStringLiteral("input"),
                           calibration.value(QStringLiteral("sensors/%1/input").arg(signal),
                                             QStringLiteral("UNASSIGNED")).toString());
+            sensor.insert(QStringLiteral("zero_raw"), calibration.value(QStringLiteral("sensors/%1/zero_raw").arg(signal)));
+            sensor.insert(QStringLiteral("span_raw"), calibration.value(QStringLiteral("sensors/%1/span_raw").arg(signal)));
+            sensor.insert(QStringLiteral("gain"), calibration.value(QStringLiteral("sensors/%1/gain").arg(signal), 1.0));
+            sensor.insert(QStringLiteral("offset"), calibration.value(QStringLiteral("sensors/%1/offset").arg(signal), 0.0));
+            sensor.insert(QStringLiteral("calibration_source"), calibration.value(QStringLiteral("sensors/%1/source").arg(signal), QStringLiteral("NONE")));
             engine_sensor_configuration_ << sensor;
         }
         electrical_loads_.clear();
@@ -675,8 +680,10 @@ bool PfdController::cycleSensorCalibration(int index) {
     if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
     auto sensor = engine_sensor_configuration_[index].toMap();
     const auto current = sensor.value(QStringLiteral("calibration_state")).toString();
+    const bool liveCalibration = sensor.value(QStringLiteral("calibration_source")).toString() == QStringLiteral("LIVE") && sensor.value(QStringLiteral("zero_raw")).isValid() && sensor.value(QStringLiteral("span_raw")).isValid();
     const auto next = current == QStringLiteral("NOT CONFIGURED") ? QStringLiteral("CONFIGURED")
-                    : current == QStringLiteral("CONFIGURED") ? QStringLiteral("VERIFIED")
+                    : current == QStringLiteral("CONFIGURED") && liveCalibration ? QStringLiteral("VERIFIED")
+                    : current == QStringLiteral("CONFIGURED") ? QStringLiteral("CONFIGURED")
                                                               : QStringLiteral("NOT CONFIGURED");
     sensor.insert(QStringLiteral("calibration_state"), next);
     engine_sensor_configuration_[index] = sensor;
@@ -730,6 +737,24 @@ bool PfdController::cycleSensorInput(int index) {
     settings.setValue(QStringLiteral("sensors/%1/state").arg(signal), QStringLiteral("NOT CONFIGURED"));
     settings.setValue(QStringLiteral("revision"), calibration_revision_); settings.sync();
     emit sensorConfigurationChanged(); return settings.status() == QSettings::NoError;
+}
+
+bool PfdController::captureSensorPoint(int index, const QString& point) {
+    if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
+    auto sensor=engine_sensor_configuration_[index].toMap(); const auto signal=sensor.value("signal").toString();
+    double raw=0, spanReference=100; bool simulated=true;
+    if(signal=="RPM"){raw=engine_snapshot_.rpm.value;simulated=engine_snapshot_.rpm.is_simulated();spanReference=5000;}
+    else if(signal=="OIL_PRESSURE"){raw=engine_snapshot_.oil_pressure_psi.value;simulated=engine_snapshot_.oil_pressure_psi.is_simulated();spanReference=100;}
+    else if(signal=="OIL_TEMPERATURE"||signal=="COOLANT_TEMPERATURE"){raw=engine_snapshot_.oil_temperature_c.value;simulated=engine_snapshot_.oil_temperature_c.is_simulated();spanReference=120;}
+    else if(signal=="CHT"){raw=engine_snapshot_.cht_c.front().value;simulated=engine_snapshot_.cht_c.front().is_simulated();spanReference=200;}
+    else if(signal=="EGT"){raw=engine_snapshot_.egt_c.front().value;simulated=engine_snapshot_.egt_c.front().is_simulated();spanReference=900;}
+    else if(signal=="FUEL_PRESSURE"){raw=engine_snapshot_.fuel_pressure_psi.value;simulated=engine_snapshot_.fuel_pressure_psi.is_simulated();spanReference=10;}
+    else if(signal=="FUEL_FLOW"){raw=engine_snapshot_.fuel_flow_gph.value;simulated=engine_snapshot_.fuel_flow_gph.is_simulated();spanReference=20;}
+    else if(signal=="MANIFOLD_PRESSURE"){raw=engine_snapshot_.manifold_pressure_inhg.value;simulated=engine_snapshot_.manifold_pressure_inhg.is_simulated();spanReference=40;} else return false;
+    const auto normalized=point.trimmed().toUpper(); if(normalized!="ZERO"&&normalized!="SPAN")return false;
+    sensor.insert(normalized=="ZERO"?"zero_raw":"span_raw",raw); sensor.insert("calibration_source",simulated?"BENCH":"LIVE");
+    const auto zero=sensor.value("zero_raw"),span=sensor.value("span_raw"); if(zero.isValid()&&span.isValid()&&std::abs(span.toDouble()-zero.toDouble())>1e-9){const double gain=spanReference/(span.toDouble()-zero.toDouble());sensor.insert("gain",gain);sensor.insert("offset",-zero.toDouble()*gain);sensor.insert("calibration_state","CONFIGURED");}
+    engine_sensor_configuration_[index]=sensor;++calibration_revision_;QSettings settings{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-calibration"};const auto base=QStringLiteral("sensors/%1/").arg(signal);settings.setValue(base+(normalized=="ZERO"?"zero_raw":"span_raw"),raw);settings.setValue(base+"source",sensor.value("calibration_source"));settings.setValue(base+"gain",sensor.value("gain"));settings.setValue(base+"offset",sensor.value("offset"));settings.setValue(base+"state",sensor.value("calibration_state"));settings.setValue("revision",calibration_revision_);settings.sync();emit sensorConfigurationChanged();return settings.status()==QSettings::NoError;
 }
 
 double PfdController::roll() const { return snapshot_.attitude.roll_deg.value; }
