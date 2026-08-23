@@ -635,6 +635,7 @@ void PfdController::loadAircraftProfile() {
         engine_profile_name_ = engine.value("manufacturer").toString() +
             QStringLiteral(" ") + engine.value("model").toString();
         engine_serial_number_ = engine.value("serial_number").toString(QStringLiteral("TO BE ENTERED"));
+        engine_limits_ = engine.value("limits").toObject().toVariantMap();
         const auto runtime = engine.value("runtime_tracking").toObject();
         runtime_tracker_ = efis::engine::RuntimeTracker{
             {runtime.value("engine_run_threshold_rpm").toDouble(500.0),

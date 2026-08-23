@@ -16,6 +16,7 @@
 #include <QString>
 #include <QTimer>
 #include <QVariantList>
+#include <QVariantMap>
 
 #include <chrono>
 #include <memory>
@@ -54,6 +55,7 @@ class EmsController : public QObject {
     Q_PROPERTY(double flapCommandedAngle READ flapCommandedAngle NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineProfileName READ engineProfileName CONSTANT)
     Q_PROPERTY(QString engineSerialNumber READ engineSerialNumber CONSTANT)
+    Q_PROPERTY(QVariantMap engineLimits READ engineLimits CONSTANT)
     Q_PROPERTY(double masterHours READ masterHours NOTIFY snapshotChanged)
     Q_PROPERTY(double engineHours READ engineHours NOTIFY snapshotChanged)
     Q_PROPERTY(double tachHours READ tachHours NOTIFY snapshotChanged)
@@ -122,6 +124,7 @@ public:
     [[nodiscard]] double flapCommandedAngle() const { return flap_commanded_angle_; }
     [[nodiscard]] QString engineProfileName() const { return engine_profile_name_; }
     [[nodiscard]] QString engineSerialNumber() const { return engine_serial_number_; }
+    [[nodiscard]] QVariantMap engineLimits() const { return engine_limits_; }
     [[nodiscard]] double masterHours() const { return runtime_tracker_.totals().master_hours; }
     [[nodiscard]] double engineHours() const { return runtime_tracker_.totals().engine_hours; }
     [[nodiscard]] double tachHours() const { return runtime_tracker_.totals().tach_hours; }
@@ -196,6 +199,7 @@ private:
     double flap_commanded_angle_{15.0};
     QString engine_profile_name_{QStringLiteral("UNCONFIGURED")};
     QString engine_serial_number_{QStringLiteral("TO BE ENTERED")};
+    QVariantMap engine_limits_;
     QVariantList engine_sensor_configuration_;
     QVariantList electrical_loads_;
     QVariantList electrical_buses_;

@@ -10,6 +10,12 @@ Item {
     readonly property color panel: "#B006121B"
     readonly property color line: "#55646C"
     readonly property color health: controller.engineHealth >= 2 ? "#FF3933" : controller.engineHealth === 1 ? amber : green
+    readonly property var engineLimits: controller.engineLimits||({})
+    function engineLimit(name,fallback) { var value=Number(engineLimits[name]); return isFinite(value)&&value>0?value:fallback }
+    readonly property real oilPressureMinimum: engineLimit("oil_pressure_min_psi",25)
+    readonly property real oilPressureMaximum: engineLimit("oil_pressure_max_psi",100)
+    readonly property real oilTemperatureMaximum: engineLimit("oil_temperature_max_c",120)
+    readonly property real chtMaximum: engineLimit("cht_max_c",230)
     property string selectedPanel: ""
     property bool setupVisible: false
     property int setupSection: 0
@@ -43,19 +49,19 @@ Item {
     readonly property real fuelImbalanceGallons: Math.abs(controller.fuelLeft-controller.fuelRight)
     function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
-    readonly property string casLevel: controller.engineRpm>800 && controller.oilPressure<25 ? "WARNING" :
-                                       maximumCht>230 || controller.oilTemperature>120 ? "WARNING" :
+    readonly property string casLevel: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
+                                       maximumCht>chtMaximum || controller.oilTemperature>oilTemperatureMaximum ? "WARNING" :
                                        controller.busVoltage<12.5 || fuelTotalGallons<6 ? "CAUTION" :
                                        fuelImbalanceGallons>3 ? "ADVISORY" : "NORMAL"
-    readonly property string casHeadline: controller.engineRpm>800 && controller.oilPressure<25 ? "OIL PRESSURE LOW" :
-                                          maximumCht>230 ? "CHT HIGH" :
-                                          controller.oilTemperature>120 ? "OIL TEMPERATURE HIGH" :
+    readonly property string casHeadline: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
+                                          maximumCht>chtMaximum ? "CHT HIGH" :
+                                          controller.oilTemperature>oilTemperatureMaximum ? "OIL TEMPERATURE HIGH" :
                                           controller.busVoltage<12.5 ? "BUS VOLTAGE LOW" :
                                           fuelTotalGallons<6 ? "FUEL QUANTITY LOW" :
                                           fuelImbalanceGallons>3 ? "FUEL IMBALANCE" : "SYSTEM NORMAL"
-    readonly property string casAction: controller.engineRpm>800 && controller.oilPressure<25 ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
-                                        maximumCht>230 ? "INCREASE COOLING • REDUCE POWER" :
-                                        controller.oilTemperature>120 ? "REDUCE POWER • MONITOR PRESSURE" :
+    readonly property string casAction: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
+                                        maximumCht>chtMaximum ? "INCREASE COOLING • REDUCE POWER" :
+                                        controller.oilTemperature>oilTemperatureMaximum ? "REDUCE POWER • MONITOR PRESSURE" :
                                         controller.busVoltage<12.5 ? "CHECK ALTERNATOR AND ELECTRICAL LOAD" :
                                         fuelTotalGallons<6 ? "VERIFY ENDURANCE AND DIVERT" :
                                         fuelImbalanceGallons>3 ? "SELECT FULLER TANK" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
@@ -93,7 +99,7 @@ Item {
         }
         leanPeakValues=peaks; leanPeakDetected=detected
     }
-    readonly property bool checklistEngineOk: controller.engineRpm < 400 || (controller.oilPressure >= 25 && controller.oilTemperature >= 50 && controller.oilTemperature <= 110)
+    readonly property bool checklistEngineOk: controller.engineRpm < 400 || (controller.oilPressure >= oilPressureMinimum && controller.oilPressure <= oilPressureMaximum && controller.oilTemperature >= 50 && controller.oilTemperature <= oilTemperatureMaximum)
     readonly property bool checklistFuelOk: checklistFuelConfirmed && (controller.fuelLeft + controller.fuelRight) >= 8
     readonly property bool checklistElectricalOk: controller.busVoltage >= 13.2 && controller.busVoltage <= 14.8 && controller.alternatorCurrent >= 0
     readonly property bool checklistAirframeOk: checklistAirframeConfirmed && (!controller.landingGearInstalled || controller.gearState === "DOWN & LOCKED")

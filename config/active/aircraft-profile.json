@@ -27,6 +27,17 @@
     "rpm_max": 5800,
     "serial_number": "TO_BE_ENTERED",
     "manual_reference": "TO_BE_VERIFIED",
+    "limits": {
+      "status": "INDICATIVE_UNVERIFIED",
+      "rpm_max": 5800,
+      "oil_pressure_min_psi": 25,
+      "oil_pressure_max_psi": 100,
+      "oil_temperature_max_c": 120,
+      "cht_max_c": 230,
+      "egt_max_c": 920,
+      "fuel_pressure_min_psi": 2.2,
+      "fuel_pressure_max_psi": 5.8
+    },
     "runtime_tracking": {
       "engine_run_threshold_rpm": 500,
       "tach_reference_rpm": 5000,

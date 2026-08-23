@@ -42,7 +42,7 @@ Rectangle {
     }
     Item { id:content; anchors { left:rail.right; right:parent.right; top:top.bottom; bottom:footer.top; margins:14*setup.uiScale }
         Text { text:["ENGINE INSTALLATION","RUNTIME COUNTERS","PROBE CONFIGURATION","ELECTRICAL ARCHITECTURE","LOGGING & MAINTENANCE"][setup.section]; color:"white"; font.pixelSize:18*setup.uiScale; font.bold:true }
-        Text { y:29*setup.uiScale; text:"INDICATIVE until verified against aircraft and engine documentation"; color:setup.amber; font.pixelSize:8*setup.uiScale }
+        Text { y:29*setup.uiScale; text:"LIMIT AUTHORITY • "+String((controller.engineLimits||{}).status||"NOT CONFIGURED")+" • verify against installed-engine documentation"; color:String((controller.engineLimits||{}).status||"").indexOf("VERIFIED")===0?setup.green:setup.amber; font.pixelSize:8*setup.uiScale }
 
         Grid { visible:setup.section===0; y:58*setup.uiScale; columns:2; spacing:12*setup.uiScale
             Repeater { model:[
