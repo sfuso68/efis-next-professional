@@ -50,6 +50,7 @@ EmsController::EmsController(QObject* parent) : QObject(parent) {
     loadFuelComputer();
     fuel_event_log_path_=qEnvironmentVariable("EFIS_BLACKBOX_FUEL_EVENTS","state/blackbox-fuel-events.jsonl");
     loadFuelEventHistory();
+    central_blackbox_cache_path_=qEnvironmentVariable("EFIS_CENTRAL_BLACKBOX_CACHE",QDir::homePath()+QStringLiteral("/.local/state/efis/fuel-central-cache.json"));
     runtime_store_ = std::make_unique<efis::engine::RuntimeStore>(
         qEnvironmentVariable("EFIS_ENGINE_RUNTIME_STATE", "state/engine-runtime.state").toStdString());
     try {
@@ -164,6 +165,14 @@ void EmsController::recordFuelEvent(const QString& state) {
     QVariantMap event{{QStringLiteral("utc"),QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},{QStringLiteral("state"),state},{QStringLiteral("rpm"),engine_snapshot_.rpm.value},{QStringLiteral("left_gal"),fuelLeft()},{QStringLiteral("right_gal"),fuelRight()},{QStringLiteral("remaining_gal"),fuelRemainingGallons()},{QStringLiteral("flow_gph"),engine_snapshot_.fuel_flow_gph.value},{QStringLiteral("excess_gph"),fuel_leak_excess_gph_},{QStringLiteral("simulated"),engine_snapshot_.fuel_flow_gph.is_simulated()}};
     QDir().mkpath(QFileInfo(fuel_event_log_path_).absolutePath()); QFile file(fuel_event_log_path_); if(file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text)){file.write(QJsonDocument(QJsonObject::fromVariantMap(event)).toJson(QJsonDocument::Compact));file.write("\n");file.flush();}
     fuel_event_history_.append(event);if(fuel_event_history_.size()>50)fuel_event_history_.removeFirst();
+}
+
+void EmsController::loadCentralBlackBoxCache() {
+    QFileInfo info(central_blackbox_cache_path_); if(!info.exists()){central_blackbox_state_=QStringLiteral("OFFLINE");return;}
+    const qint64 age=info.lastModified().msecsTo(QDateTime::currentDateTime()); QFile file(central_blackbox_cache_path_); if(!file.open(QIODevice::ReadOnly)){central_blackbox_state_=QStringLiteral("OFFLINE");return;}
+    const auto root=QJsonDocument::fromJson(file.readAll()).object(); central_blackbox_nodes_=root.value("health").toObject().value("nodes").toArray().toVariantList(); central_fuel_events_.clear();
+    for(const auto& item:root.value("events").toObject().value("events").toArray()){auto outer=item.toObject();auto event=outer.value("event").toObject().toVariantMap();event.insert("source",outer.value("source").toString());event.insert("received_utc",outer.value("received_utc").toString());central_fuel_events_.append(event);}
+    central_blackbox_state_=age<=10000?QStringLiteral("ONLINE"):QStringLiteral("LINK LOST");
 }
 
 void EmsController::updateFuelLeakMonitor(efis::MonoTime now) {
@@ -517,6 +526,7 @@ void EmsController::updateSnapshot() {
     }
     last_fuel_update_ = now;
     updateFuelLeakMonitor(now);
+    if(last_central_blackbox_check_==efis::MonoTime{}||now-last_central_blackbox_check_>=1s){last_central_blackbox_check_=now;loadCentralBlackBoxCache();}
     if (last_fuel_save_ == efis::MonoTime{} || now - last_fuel_save_ >= 10s) {
         last_fuel_save_ = now; persistFuelComputer();
     }

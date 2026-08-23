@@ -59,13 +59,14 @@ Item {
     readonly property real fuelDiscrepancyGallons: Math.abs(fuelMeasuredGallons-fuelTotalGallons)
     readonly property string fuelLeakState: String(controller.fuelLeakState||"INITIALIZING")
     readonly property bool fuelLeakAlarm: fuelLeakState==="POSSIBLE LEAK"||fuelLeakState==="FUEL LEAK WARNING"
+    readonly property bool blackBoxLinkLost: String(controller.centralBlackBoxState||"OFFLINE")!=="ONLINE"
     function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
     readonly property string casLevel: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
                                        maximumCht>chtMaximum || controller.oilTemperature>oilTemperatureMaximum ? "WARNING" :
                                        fuelTotalGallons<=fuelReserveGallons*.5 || fuelLeakAlarm || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
                                        controller.busVoltage<12.5 || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
-                                       fuelImbalanceGallons>3 ? "ADVISORY" : "NORMAL"
+                                       fuelImbalanceGallons>3 || blackBoxLinkLost ? "ADVISORY" : "NORMAL"
     readonly property string casHeadline: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
                                           maximumCht>chtMaximum ? "CHT HIGH" :
                                           controller.oilTemperature>oilTemperatureMaximum ? "OIL TEMPERATURE HIGH" :
@@ -74,7 +75,8 @@ Item {
                                           fuelLeakAlarm ? fuelLeakState :
                                           fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "FUEL QUANTITY DISAGREE" :
                                           fuelTotalGallons<=fuelReserveGallons ? "FINAL RESERVE" :
-                                          fuelImbalanceGallons>3 ? "FUEL IMBALANCE" : "SYSTEM NORMAL"
+                                          fuelImbalanceGallons>3 ? "FUEL IMBALANCE" :
+                                          blackBoxLinkLost ? "BLACKBOX LINK LOST" : "SYSTEM NORMAL"
     readonly property string casAction: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
                                         maximumCht>chtMaximum ? "INCREASE COOLING • REDUCE POWER" :
                                         controller.oilTemperature>oilTemperatureMaximum ? "REDUCE POWER • MONITOR PRESSURE" :
@@ -83,7 +85,8 @@ Item {
                                         fuelLeakAlarm ? "CHECK TANKS • SELECT FUEL • LAND SOON" :
                                         fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "CHECK FOR LEAK OR SENSOR FAULT" :
                                         fuelTotalGallons<=fuelReserveGallons ? "VERIFY ENDURANCE AND DIVERT" :
-                                        fuelImbalanceGallons>3 ? "SELECT FULLER TANK" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
+                                        fuelImbalanceGallons>3 ? "SELECT FULLER TANK" :
+                                        blackBoxLinkLost ? "LOCAL RECORDING CONTINUES • CHECK NETWORK" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
     readonly property color casColor: casLevel==="WARNING" ? "#FF3933" : casLevel==="CAUTION" ? amber : casLevel==="ADVISORY" ? cyan : green
     property var casEvents: []
     property string lastCasHeadline: "SYSTEM NORMAL"

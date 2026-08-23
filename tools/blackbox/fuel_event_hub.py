@@ -25,7 +25,10 @@ class Hub:
         return [{"id":r[0],"source":r[1],"received_utc":r[2],"event":json.loads(r[3])} for r in rows]
     def count(self):
         with self.lock: return self.db.execute("SELECT COUNT(*) FROM events").fetchone()[0]
-    def reader_authorized(self,token): return "_reader" in self.tokens and hmac.compare_digest(self.tokens["_reader"],token)
+    def summary(self):
+        with self.lock: rows=self.db.execute("SELECT source,COUNT(*),MAX(received_utc) FROM events GROUP BY source ORDER BY source").fetchall()
+        return [{"source":r[0],"records":r[1],"last_contact_utc":r[2]} for r in rows]
+    def reader_authorized(self,token): return any(hmac.compare_digest(value,token) for value in self.tokens.values())
 
 def handler(hub):
     class Handler(BaseHTTPRequestHandler):
@@ -33,7 +36,7 @@ def handler(hub):
             body=canonical(data).encode();self.send_response(status);self.send_header("Content-Type","application/json");self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body)
         def do_GET(self):
             parsed=urlparse(self.path)
-            if parsed.path=="/health": return self.reply(200,{"ok":True,"records":hub.count()})
+            if parsed.path=="/health": return self.reply(200,{"ok":True,"records":hub.count(),"nodes":hub.summary()})
             if parsed.path=="/v1/events":
                 token=self.headers.get("Authorization","").removeprefix("Bearer ")
                 if not hub.reader_authorized(token): return self.reply(401,{"error":"unauthorized"})

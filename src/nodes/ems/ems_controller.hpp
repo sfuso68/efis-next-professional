@@ -91,6 +91,9 @@ class EmsController : public QObject {
     Q_PROPERTY(QString fuelLeakState READ fuelLeakState NOTIFY fuelComputerChanged)
     Q_PROPERTY(double fuelLeakExcessGph READ fuelLeakExcessGph NOTIFY fuelComputerChanged)
     Q_PROPERTY(QVariantList fuelEventHistory READ fuelEventHistory NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QString centralBlackBoxState READ centralBlackBoxState NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList centralBlackBoxNodes READ centralBlackBoxNodes NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList centralFuelEvents READ centralFuelEvents NOTIFY snapshotChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -170,6 +173,9 @@ public:
     [[nodiscard]] QString fuelLeakState() const { return fuel_leak_state_; }
     [[nodiscard]] double fuelLeakExcessGph() const { return fuel_leak_excess_gph_; }
     [[nodiscard]] QVariantList fuelEventHistory() const { return fuel_event_history_; }
+    [[nodiscard]] QString centralBlackBoxState() const { return central_blackbox_state_; }
+    [[nodiscard]] QVariantList centralBlackBoxNodes() const { return central_blackbox_nodes_; }
+    [[nodiscard]] QVariantList centralFuelEvents() const { return central_fuel_events_; }
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
@@ -210,6 +216,7 @@ private:
     void updateFuelLeakMonitor(efis::MonoTime now);
     void loadFuelEventHistory();
     void recordFuelEvent(const QString& state);
+    void loadCentralBlackBoxCache();
 
     QTimer timer_;
     efis::EngineSimulationProvider engine_provider_{84};
@@ -271,6 +278,11 @@ private:
     efis::MonoTime fuel_leak_suppressed_until_{};
     QString fuel_event_log_path_;
     QVariantList fuel_event_history_;
+    QString central_blackbox_cache_path_;
+    QString central_blackbox_state_{QStringLiteral("OFFLINE")};
+    QVariantList central_blackbox_nodes_;
+    QVariantList central_fuel_events_;
+    efis::MonoTime last_central_blackbox_check_{};
     efis::MonoTime last_fuel_update_{};
     efis::MonoTime last_fuel_save_{};
     efis::MonoTime last_fuel_notify_{};

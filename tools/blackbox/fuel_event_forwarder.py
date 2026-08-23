@@ -8,8 +8,15 @@ def post(url,source,token,event):
     req=urllib.request.Request(url+"/v1/events",body,{"Content-Type":"application/json","Authorization":"Bearer "+token},method="POST")
     with urllib.request.urlopen(req,timeout=5) as response: return response.status in (200,201)
 
+def refresh_cache(url,token,path):
+    headers={"Authorization":"Bearer "+token}; result={"fetched_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())}
+    for key,endpoint in (("health","/health"),("events","/v1/events?limit=50")):
+        req=urllib.request.Request(url+endpoint,headers=headers)
+        with urllib.request.urlopen(req,timeout=5) as response: result[key]=json.load(response)
+    target=Path(path);target.parent.mkdir(parents=True,exist_ok=True);tmp=target.with_suffix(".tmp");tmp.write_text(json.dumps(result,separators=(",",":")));os.replace(tmp,target)
+
 def main():
-    p=argparse.ArgumentParser();p.add_argument("--journal",required=True);p.add_argument("--state",required=True);p.add_argument("--url",required=True);p.add_argument("--source",required=True);p.add_argument("--token-file",required=True);p.add_argument("--once",action="store_true");a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument("--journal",required=True);p.add_argument("--state",required=True);p.add_argument("--url",required=True);p.add_argument("--source",required=True);p.add_argument("--token-file",required=True);p.add_argument("--cache");p.add_argument("--once",action="store_true");a=p.parse_args()
     journal=Path(a.journal); state=Path(a.state);state.parent.mkdir(parents=True,exist_ok=True);offset=int(state.read_text() or 0) if state.exists() else 0;token=Path(a.token_file).read_text().strip()
     while True:
         try:
@@ -21,6 +28,7 @@ def main():
                         start=stream.tell();line=stream.readline()
                         if not line: break
                         event=json.loads(line);post(a.url,a.source,token,event);offset=stream.tell();tmp=state.with_suffix(".tmp");tmp.write_text(str(offset));os.replace(tmp,state)
+            if a.cache: refresh_cache(a.url,token,a.cache)
         except (OSError,ValueError,urllib.error.URLError): pass
         if a.once:return
         time.sleep(2)
