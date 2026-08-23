@@ -90,6 +90,7 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantList fuelCalibrationRight READ fuelCalibrationRight NOTIFY fuelComputerChanged)
     Q_PROPERTY(QString fuelLeakState READ fuelLeakState NOTIFY fuelComputerChanged)
     Q_PROPERTY(double fuelLeakExcessGph READ fuelLeakExcessGph NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QVariantList fuelEventHistory READ fuelEventHistory NOTIFY fuelComputerChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -168,6 +169,7 @@ public:
     [[nodiscard]] QVariantList fuelCalibrationRight() const { return fuel_calibration_right_; }
     [[nodiscard]] QString fuelLeakState() const { return fuel_leak_state_; }
     [[nodiscard]] double fuelLeakExcessGph() const { return fuel_leak_excess_gph_; }
+    [[nodiscard]] QVariantList fuelEventHistory() const { return fuel_event_history_; }
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
@@ -206,6 +208,8 @@ private:
     void loadFuelComputer();
     void persistFuelComputer();
     void updateFuelLeakMonitor(efis::MonoTime now);
+    void loadFuelEventHistory();
+    void recordFuelEvent(const QString& state);
 
     QTimer timer_;
     efis::EngineSimulationProvider engine_provider_{84};
@@ -265,6 +269,8 @@ private:
     efis::MonoTime fuel_leak_last_update_{};
     efis::MonoTime fuel_leak_alarm_since_{};
     efis::MonoTime fuel_leak_suppressed_until_{};
+    QString fuel_event_log_path_;
+    QVariantList fuel_event_history_;
     efis::MonoTime last_fuel_update_{};
     efis::MonoTime last_fuel_save_{};
     efis::MonoTime last_fuel_notify_{};

@@ -6,6 +6,8 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QFile>
+#include <QFileInfo>
+#include <QDir>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -46,6 +48,8 @@ EmsController::EmsController(QObject* parent) : QObject(parent) {
     loadAircraftProfile();
     loadMaintenance();
     loadFuelComputer();
+    fuel_event_log_path_=qEnvironmentVariable("EFIS_BLACKBOX_FUEL_EVENTS","state/blackbox-fuel-events.jsonl");
+    loadFuelEventHistory();
     runtime_store_ = std::make_unique<efis::engine::RuntimeStore>(
         qEnvironmentVariable("EFIS_ENGINE_RUNTIME_STATE", "state/engine-runtime.state").toStdString());
     try {
@@ -151,9 +155,20 @@ bool EmsController::clearFuelCalibration(const QString& tank) {
     persistFuelComputer(); emit fuelComputerChanged(); return true;
 }
 
+void EmsController::loadFuelEventHistory() {
+    fuel_event_history_.clear(); QFile file(fuel_event_log_path_); if(!file.open(QIODevice::ReadOnly|QIODevice::Text))return;
+    while(!file.atEnd()){const auto doc=QJsonDocument::fromJson(file.readLine());if(doc.isObject())fuel_event_history_.append(doc.object().toVariantMap());if(fuel_event_history_.size()>50)fuel_event_history_.removeFirst();}
+}
+
+void EmsController::recordFuelEvent(const QString& state) {
+    QVariantMap event{{QStringLiteral("utc"),QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},{QStringLiteral("state"),state},{QStringLiteral("rpm"),engine_snapshot_.rpm.value},{QStringLiteral("left_gal"),fuelLeft()},{QStringLiteral("right_gal"),fuelRight()},{QStringLiteral("remaining_gal"),fuelRemainingGallons()},{QStringLiteral("flow_gph"),engine_snapshot_.fuel_flow_gph.value},{QStringLiteral("excess_gph"),fuel_leak_excess_gph_},{QStringLiteral("simulated"),engine_snapshot_.fuel_flow_gph.is_simulated()}};
+    QDir().mkpath(QFileInfo(fuel_event_log_path_).absolutePath()); QFile file(fuel_event_log_path_); if(file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text)){file.write(QJsonDocument(QJsonObject::fromVariantMap(event)).toJson(QJsonDocument::Compact));file.write("\n");file.flush();}
+    fuel_event_history_.append(event);if(fuel_event_history_.size()>50)fuel_event_history_.removeFirst();
+}
+
 void EmsController::updateFuelLeakMonitor(efis::MonoTime now) {
     const double measured=fuelLeft()+fuelRight();
-    auto setState=[this](const QString& state){if(fuel_leak_state_==state)return;fuel_leak_state_=state;qInfo().noquote()<<"event=fuel_leak_monitor state="<<state<<"excess_gph="<<fuel_leak_excess_gph_;emit fuelComputerChanged();};
+    auto setState=[this](const QString& state){if(fuel_leak_state_==state)return;fuel_leak_state_=state;recordFuelEvent(state);qInfo().noquote()<<"event=fuel_leak_monitor state="<<state<<"excess_gph="<<fuel_leak_excess_gph_;emit fuelComputerChanged();};
     if(fuel_leak_last_update_==efis::MonoTime{}){fuel_leak_last_update_=now;fuel_leak_last_measured_=measured;setState(QStringLiteral("INITIALIZING"));return;}
     const double seconds=std::chrono::duration<double>(now-fuel_leak_last_update_).count(); if(seconds<1.0)return;
     const double actualDrop=fuel_leak_last_measured_-measured;

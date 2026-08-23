@@ -7,6 +7,7 @@ Rectangle {
     property int section: 0
     property int requestedSection: 0
     property int monitorSensor: -1
+    property bool showFuelHistory: false
     onVisibleChanged: if(visible)section=requestedSection
     signal closed()
     z: 200; color: "#F0051018"; border.color: "#28D9F4"
@@ -169,6 +170,10 @@ Rectangle {
                 Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"ROTAX 912 UL • MAINTENANCE PROGRAM"; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }
                 Text { anchors.centerIn:parent; text:"ENGINE  "+setup.numberOr("engineHours").toFixed(2)+" H"; color:setup.cyan; font.pixelSize:10*setup.uiScale; font.bold:true }
                 Text { anchors { right:parent.right; rightMargin:12*setup.uiScale; verticalCenter:parent.verticalCenter } text:String(controller.maintenanceStatus||"PROGRAM REQUIRED"); color:text==="CURRENT"?setup.green:setup.amber; font.pixelSize:9*setup.uiScale; font.bold:true }
+                Rectangle { x:555*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:130*setup.uiScale; height:29*setup.uiScale; radius:3*setup.uiScale; color:"#15303C"; border.color:setup.cyan
+                    Text { anchors.centerIn:parent; text:"FUEL EVENTS  "+setup.listOr("fuelEventHistory").length; color:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
+                    TapHandler { onTapped:setup.showFuelHistory=true }
+                }
             }
             Grid { y:56*setup.uiScale; columns:2; spacing:8*setup.uiScale
                 Repeater { model:setup.listOr("maintenanceTasks"); delegate:Rectangle { required property var modelData; required property int index; width:390*setup.uiScale; height:86*setup.uiScale; color:setup.panel; border.color:modelData.interval_hours>0?setup.line:setup.amber
@@ -186,6 +191,23 @@ Rectangle {
                 } }
             }
             Text { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; bottomMargin:5*setup.uiScale } text:"Intervals must be confirmed against the applicable Rotax maintenance manual, engine serial number, fuel and operating conditions. BLACKBOX  "+String(controller.blackBoxState||"OFFLINE")+"  •  "+String(controller.blackBoxRecords||0)+" RECORDS"; color:setup.amber; horizontalAlignment:Text.AlignHCenter; font.pixelSize:6*setup.uiScale }
+        }
+        Rectangle { visible:setup.showFuelHistory; anchors.centerIn:parent; width:700*setup.uiScale; height:350*setup.uiScale; z:30; radius:6*setup.uiScale; color:"#F006151E"; border.width:2; border.color:setup.cyan
+            Text { x:16*setup.uiScale; y:14*setup.uiScale; text:"BLACKBOX • FUEL EVENT HISTORY"; color:"white"; font.pixelSize:14*setup.uiScale; font.bold:true }
+            Text { anchors { right:parent.right; top:parent.top; margins:16*setup.uiScale } text:"CLOSE"; color:setup.cyan; font.pixelSize:9*setup.uiScale; font.bold:true; TapHandler { onTapped:setup.showFuelHistory=false } }
+            Rectangle { x:14*setup.uiScale; y:48*setup.uiScale; width:parent.width-28*setup.uiScale; height:24*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"UTC                         STATE                       L / R          FLOW       Δ GPH"; color:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
+            }
+            ListView { x:14*setup.uiScale; y:74*setup.uiScale; width:parent.width-28*setup.uiScale; height:parent.height-90*setup.uiScale; clip:true; spacing:2*setup.uiScale; model:setup.listOr("fuelEventHistory")
+                delegate:Rectangle { required property var modelData; width:ListView.view.width; height:27*setup.uiScale; color:index%2?"#0B1922":"#10222C"; border.color:String(modelData.state).indexOf("LEAK")>=0?setup.amber:"transparent"
+                    Text { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:165*setup.uiScale; text:String(modelData.utc||"").replace("T"," ").replace("Z",""); color:"#B8C5CA"; font.pixelSize:7*setup.uiScale }
+                    Text { x:180*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:185*setup.uiScale; text:String(modelData.state||""); color:String(modelData.state).indexOf("LEAK")>=0?setup.amber:setup.green; font.pixelSize:7*setup.uiScale; font.bold:true }
+                    Text { x:370*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:100*setup.uiScale; text:Number(modelData.left_gal||0).toFixed(1)+" / "+Number(modelData.right_gal||0).toFixed(1); color:"white"; font.pixelSize:7*setup.uiScale }
+                    Text { x:480*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:70*setup.uiScale; text:Number(modelData.flow_gph||0).toFixed(1); color:setup.cyan; font.pixelSize:7*setup.uiScale }
+                    Text { x:565*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:Number(modelData.excess_gph||0).toFixed(2); color:"white"; font.pixelSize:7*setup.uiScale; font.bold:true }
+                }
+                Text { visible:parent.count===0; anchors.centerIn:parent; text:"NO FUEL EVENTS RECORDED"; color:setup.green; font.pixelSize:9*setup.uiScale; font.bold:true }
+            }
         }
     }
     Rectangle { id:footer; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:42*setup.uiScale; color:"#07131C"; border.color:setup.line
