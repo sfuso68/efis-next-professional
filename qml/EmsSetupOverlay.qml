@@ -117,7 +117,11 @@ Rectangle {
                     }
                 }
             }
-            Text { x:18*setup.uiScale; y:238*setup.uiScale; width:470*setup.uiScale; text:"BENCH data exercises diagnostics only. LIVE verification remains locked until the configured physical provider is present."; wrapMode:Text.WordWrap; color:setup.amber; font.pixelSize:7*setup.uiScale }
+            Text { x:18*setup.uiScale; y:238*setup.uiScale; width:350*setup.uiScale; text:"BENCH data exercises diagnostics only. LIVE verification remains locked until the configured physical provider is present."; wrapMode:Text.WordWrap; color:setup.amber; font.pixelSize:7*setup.uiScale }
+            Rectangle { x:382*setup.uiScale; y:232*setup.uiScale; width:150*setup.uiScale; height:38*setup.uiScale; radius:3*setup.uiScale; color:String(controller.sensorTestDiagnostic)==="NORMAL"?"#123A2A":"#4A2118"; border.color:String(controller.sensorTestDiagnostic)==="NORMAL"?setup.green:setup.amber
+                Text { anchors.centerIn:parent; width:parent.width-8*setup.uiScale; horizontalAlignment:Text.AlignHCenter; text:"FAULT TEST\n"+String(controller.sensorTestDiagnostic||"NORMAL")+"  ›"; color:"white"; font.pixelSize:7*setup.uiScale; font.bold:true }
+                TapHandler { onTapped:controller.cycleSensorTestDiagnostic() }
+            }
             Rectangle { anchors { right:parent.right; bottom:parent.bottom; margins:16*setup.uiScale } width:120*setup.uiScale; height:34*setup.uiScale; color:"#15303C"; border.color:setup.cyan
                 Text { anchors.centerIn:parent; text:"CLOSE"; color:setup.cyan; font.pixelSize:9*setup.uiScale; font.bold:true }
                 TapHandler { onTapped:{controller.stopEngineSensorTest();setup.monitorSensor=-1} }

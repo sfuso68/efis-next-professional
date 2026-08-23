@@ -68,6 +68,7 @@ class EmsController : public QObject {
     Q_PROPERTY(double sensorTestValue READ sensorTestValue NOTIFY sensorTestChanged)
     Q_PROPERTY(double sensorTestRateHz READ sensorTestRateHz NOTIFY sensorTestChanged)
     Q_PROPERTY(int sensorTestAgeMs READ sensorTestAgeMs NOTIFY sensorTestChanged)
+    Q_PROPERTY(QString sensorTestDiagnostic READ sensorTestDiagnostic NOTIFY sensorTestChanged)
     Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
     Q_PROPERTY(QString runtimePersistenceState READ runtimePersistenceState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong runtimeRevision READ runtimeRevision NOTIFY snapshotChanged)
@@ -130,6 +131,7 @@ public:
     [[nodiscard]] double sensorTestValue() const { return sensor_test_value_; }
     [[nodiscard]] double sensorTestRateHz() const { return sensor_test_rate_hz_; }
     [[nodiscard]] int sensorTestAgeMs() const { return sensor_test_age_ms_; }
+    [[nodiscard]] QString sensorTestDiagnostic() const { return sensor_test_diagnostic_; }
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
     [[nodiscard]] QString runtimePersistenceState() const { return runtime_persistence_state_; }
     [[nodiscard]] qulonglong runtimeRevision() const { return runtime_revision_; }
@@ -144,6 +146,7 @@ public:
     Q_INVOKABLE bool captureSensorPoint(int index, const QString& point);
     Q_INVOKABLE bool startEngineSensorTest(const QString& signal, bool benchSimulation);
     Q_INVOKABLE void stopEngineSensorTest();
+    Q_INVOKABLE void cycleSensorTestDiagnostic();
 
 signals:
     void snapshotChanged();
@@ -195,5 +198,6 @@ private:
     int sensor_test_age_ms_{};
     bool sensor_test_bench_{};
     qulonglong sensor_test_ticks_{};
+    QString sensor_test_diagnostic_{QStringLiteral("NORMAL")};
     QString unit_system_{QStringLiteral("AVIATION")};
 };

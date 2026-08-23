@@ -554,6 +554,7 @@ bool PfdController::startEngineSensorTest(const QString& signal, bool benchSimul
     sensor_test_signal_ = signal;
     sensor_test_bench_ = benchSimulation;
     sensor_test_fault_ = false;
+    sensor_test_diagnostic_ = QStringLiteral("NORMAL");
     sensor_test_ticks_ = 0;
     sensor_test_raw_ = sensor_test_value_ = sensor_test_rate_hz_ = 0.0;
     sensor_test_age_ms_ = 0;
@@ -590,6 +591,13 @@ void PfdController::toggleEngineSensorTestFault() {
     sensor_test_status_ = sensor_test_fault_ ? QStringLiteral("TIMEOUT_FAULT") : QStringLiteral("BENCH_SIM_ACTIVE");
     appendSetupAudit(QStringLiteral("SENSOR_TEST_FAULT"), sensor_test_fault_ ? QStringLiteral("INJECTED") : QStringLiteral("CLEARED"), sensor_test_signal_);
     emit setupChanged();
+}
+
+void PfdController::cycleSensorTestDiagnostic() {
+    if (!sensor_test_bench_) return;
+    static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("TIMEOUT"),QStringLiteral("OPEN CIRCUIT"),QStringLiteral("SHORT CIRCUIT"),QStringLiteral("UNSTABLE")};
+    sensor_test_diagnostic_=modes.at((modes.indexOf(sensor_test_diagnostic_)+1)%modes.size());
+    sensor_test_fault_=sensor_test_diagnostic_==QStringLiteral("TIMEOUT"); emit setupChanged();
 }
 
 void PfdController::loadAircraftProfile() {
@@ -1101,7 +1109,7 @@ void PfdController::updateSnapshot() {
     }
     if (sensor_test_bench_) {
         ++sensor_test_ticks_;
-        if (sensor_test_fault_) {
+        if (sensor_test_diagnostic_ == QStringLiteral("TIMEOUT")) {
             sensor_test_age_ms_ += 20;
             sensor_test_rate_hz_ = 0.0;
         } else {
@@ -1121,7 +1129,10 @@ void PfdController::updateSnapshot() {
             else if (sensor_test_signal_.startsWith(QStringLiteral("EGT_"))) base = 720.0;
             else if (sensor_test_signal_ == QStringLiteral("EGT")) base = 720.0;
             else if (sensor_test_signal_ == QStringLiteral("MANIFOLD_PRESSURE")) base = 24.0;
-            sensor_test_raw_ = base + std::sin(phase) * qMax(1.0, base * 0.015);
+            if(sensor_test_diagnostic_==QStringLiteral("OPEN CIRCUIT")){sensor_test_raw_=4095.0;sensor_test_status_=QStringLiteral("BENCH_OPEN_CIRCUIT");}
+            else if(sensor_test_diagnostic_==QStringLiteral("SHORT CIRCUIT")){sensor_test_raw_=0.0;sensor_test_status_=QStringLiteral("BENCH_SHORT_CIRCUIT");}
+            else if(sensor_test_diagnostic_==QStringLiteral("UNSTABLE")){sensor_test_raw_=base+std::sin(phase*11.0)*base*.28;sensor_test_status_=QStringLiteral("BENCH_UNSTABLE_SIGNAL");}
+            else {sensor_test_raw_ = base + std::sin(phase) * qMax(1.0, base * 0.015);sensor_test_status_=QStringLiteral("BENCH_SIM_ACTIVE");}
             sensor_test_value_ = sensor_test_raw_ * sensor_test_gain_ + sensor_test_offset_;
             sensor_test_rate_hz_ = 50.0;
             sensor_test_age_ms_ = 0;

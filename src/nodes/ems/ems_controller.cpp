@@ -244,12 +244,17 @@ bool EmsController::captureSensorPoint(int index, const QString& point) {
 
 bool EmsController::startEngineSensorTest(const QString& signal, bool benchSimulation) {
     bool known=false; for(const auto& item:engine_sensor_configuration_) if(item.toMap().value("signal").toString()==signal){known=true;break;}
-    if(!known)return false; sensor_test_signal_=signal; sensor_test_bench_=benchSimulation; sensor_test_ticks_=0;
+    if(!known)return false; sensor_test_signal_=signal; sensor_test_bench_=benchSimulation; sensor_test_ticks_=0; sensor_test_diagnostic_=QStringLiteral("NORMAL");
     sensor_test_status_=benchSimulation?QStringLiteral("BENCH SIMULATION"):QStringLiteral("WAITING FOR LIVE PROVIDER");
     sensor_test_raw_=sensor_test_value_=sensor_test_rate_hz_=0; sensor_test_age_ms_=0; emit sensorTestChanged(); return true;
 }
 
 void EmsController::stopEngineSensorTest(){sensor_test_bench_=false;sensor_test_status_=QStringLiteral("IDLE");emit sensorTestChanged();}
+
+void EmsController::cycleSensorTestDiagnostic(){
+    if(!sensor_test_bench_)return;static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("TIMEOUT"),QStringLiteral("OPEN CIRCUIT"),QStringLiteral("SHORT CIRCUIT"),QStringLiteral("UNSTABLE")};
+    sensor_test_diagnostic_=modes.at((modes.indexOf(sensor_test_diagnostic_)+1)%modes.size());emit sensorTestChanged();
+}
 
 void EmsController::persistRuntime() {
     if (!runtime_store_ || runtime_persistence_state_ == QStringLiteral("INTEGRITY FAULT")) return;
@@ -371,6 +376,13 @@ void EmsController::updateSnapshot() {
     updateRecorderStatus(now);
     if(sensor_test_bench_){++sensor_test_ticks_;const double phase=double(sensor_test_ticks_)*0.06;double base=100;
         if(sensor_test_signal_=="RPM")base=2450;else if(sensor_test_signal_=="OIL_PRESSURE")base=72;else if(sensor_test_signal_=="OIL_TEMPERATURE"||sensor_test_signal_=="COOLANT_TEMPERATURE")base=95;else if(sensor_test_signal_=="CHT")base=180;else if(sensor_test_signal_=="EGT")base=740;else if(sensor_test_signal_=="FUEL_PRESSURE")base=4.8;else if(sensor_test_signal_=="FUEL_FLOW")base=9.6;else if(sensor_test_signal_=="MANIFOLD_PRESSURE")base=24;
-        sensor_test_raw_=base+std::sin(phase)*qMax(0.1,base*.012);sensor_test_value_=sensor_test_raw_;sensor_test_rate_hz_=20;sensor_test_age_ms_=0;sensor_test_status_=QStringLiteral("BENCH • DATA VALID");if(sensor_test_ticks_%4==0)emit sensorTestChanged();}
+        if(sensor_test_diagnostic_=="TIMEOUT"){sensor_test_rate_hz_=0;sensor_test_age_ms_+=50;sensor_test_status_=QStringLiteral("BENCH • TIMEOUT");}
+        else {sensor_test_age_ms_=0;sensor_test_rate_hz_=20;
+            if(sensor_test_diagnostic_=="OPEN CIRCUIT"){sensor_test_raw_=4095;sensor_test_status_=QStringLiteral("BENCH • OPEN CIRCUIT");}
+            else if(sensor_test_diagnostic_=="SHORT CIRCUIT"){sensor_test_raw_=0;sensor_test_status_=QStringLiteral("BENCH • SHORT CIRCUIT");}
+            else if(sensor_test_diagnostic_=="UNSTABLE"){sensor_test_raw_=base+std::sin(phase*11)*base*.28;sensor_test_status_=QStringLiteral("BENCH • UNSTABLE SIGNAL");}
+            else {sensor_test_raw_=base+std::sin(phase)*qMax(0.1,base*.012);sensor_test_status_=QStringLiteral("BENCH • DATA VALID");}
+            sensor_test_value_=sensor_test_raw_;}
+        if(sensor_test_ticks_%4==0)emit sensorTestChanged();}
     emit snapshotChanged();
 }

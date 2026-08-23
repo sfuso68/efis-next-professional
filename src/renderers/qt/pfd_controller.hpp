@@ -108,6 +108,7 @@ class PfdController final : public QObject {
     Q_PROPERTY(double sensorTestRateHz READ sensorTestRateHz NOTIFY setupChanged)
     Q_PROPERTY(int sensorTestAgeMs READ sensorTestAgeMs NOTIFY setupChanged)
     Q_PROPERTY(bool sensorTestFault READ sensorTestFault NOTIFY setupChanged)
+    Q_PROPERTY(QString sensorTestDiagnostic READ sensorTestDiagnostic NOTIFY setupChanged)
     Q_PROPERTY(QString navigationDatabaseVersion READ navigationDatabaseVersion CONSTANT)
     Q_PROPERTY(QVariantList airportCatalog READ airportCatalog CONSTANT)
     Q_PROPERTY(QVariantMap selectedAirport READ selectedAirport NOTIFY navigationSetupChanged)
@@ -239,10 +240,12 @@ public:
     [[nodiscard]] double sensorTestRateHz() const { return sensor_test_rate_hz_; }
     [[nodiscard]] int sensorTestAgeMs() const { return sensor_test_age_ms_; }
     [[nodiscard]] bool sensorTestFault() const { return sensor_test_fault_; }
+    [[nodiscard]] QString sensorTestDiagnostic() const { return sensor_test_diagnostic_; }
     Q_INVOKABLE bool startEngineSensorTest(const QString& signal, bool benchSimulation);
     Q_INVOKABLE void stopEngineSensorTest();
     Q_INVOKABLE void setEngineSensorCalibration(double gain, double offset);
     Q_INVOKABLE void toggleEngineSensorTestFault();
+    Q_INVOKABLE void cycleSensorTestDiagnostic();
     [[nodiscard]] QString navigationDatabaseVersion() const { return navigation_database_version_; }
     [[nodiscard]] QVariantList airportCatalog() const { return airport_catalog_; }
     [[nodiscard]] QVariantMap selectedAirport() const { return selected_airport_; }
@@ -356,6 +359,7 @@ private:
     double sensor_test_gain_{1.0};
     double sensor_test_offset_{};
     qulonglong sensor_test_ticks_{};
+    QString sensor_test_diagnostic_{QStringLiteral("NORMAL")};
     QString navigation_database_version_{QStringLiteral("UNAVAILABLE")};
     QVariantList airport_catalog_;
     QVariantMap selected_airport_;
