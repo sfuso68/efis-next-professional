@@ -73,6 +73,8 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantList electricalBuses READ electricalBuses CONSTANT)
     Q_PROPERTY(QVariantList electricalSources READ electricalSources CONSTANT)
     Q_PROPERTY(QString electricalTestMode READ electricalTestMode NOTIFY electricalTestChanged)
+    Q_PROPERTY(QVariantList maintenanceTasks READ maintenanceTasks NOTIFY maintenanceChanged)
+    Q_PROPERTY(QString maintenanceStatus READ maintenanceStatus NOTIFY maintenanceChanged)
     Q_PROPERTY(QString runtimePersistenceState READ runtimePersistenceState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong runtimeRevision READ runtimeRevision NOTIFY snapshotChanged)
     Q_PROPERTY(QString runtimeAuthority READ runtimeAuthority CONSTANT)
@@ -139,6 +141,8 @@ public:
     [[nodiscard]] QVariantList electricalBuses() const { return electrical_buses_; }
     [[nodiscard]] QVariantList electricalSources() const { return electrical_sources_; }
     [[nodiscard]] QString electricalTestMode() const { return electrical_test_mode_; }
+    [[nodiscard]] QVariantList maintenanceTasks() const { return maintenance_tasks_; }
+    [[nodiscard]] QString maintenanceStatus() const;
     [[nodiscard]] QString runtimePersistenceState() const { return runtime_persistence_state_; }
     [[nodiscard]] qulonglong runtimeRevision() const { return runtime_revision_; }
     [[nodiscard]] QString runtimeAuthority() const { return QStringLiteral("EMS NODE • AUTHORITATIVE"); }
@@ -154,6 +158,8 @@ public:
     Q_INVOKABLE void stopEngineSensorTest();
     Q_INVOKABLE void cycleSensorTestDiagnostic();
     Q_INVOKABLE void cycleElectricalTestMode();
+    Q_INVOKABLE void cycleMaintenanceInterval(int index);
+    Q_INVOKABLE bool completeMaintenanceTask(int index);
 
 signals:
     void snapshotChanged();
@@ -161,6 +167,7 @@ signals:
     void sensorConfigurationChanged();
     void sensorTestChanged();
     void electricalTestChanged();
+    void maintenanceChanged();
 
 private:
     void updateSnapshot();
@@ -168,6 +175,7 @@ private:
     void loadAircraftProfile();
     void persistRuntime();
     void loadUnitSystem();
+    void loadMaintenance();
 
     QTimer timer_;
     efis::EngineSimulationProvider engine_provider_{84};
@@ -210,5 +218,6 @@ private:
     qulonglong sensor_test_ticks_{};
     QString sensor_test_diagnostic_{QStringLiteral("NORMAL")};
     QString electrical_test_mode_{QStringLiteral("NORMAL")};
+    QVariantList maintenance_tasks_;
     QString unit_system_{QStringLiteral("AVIATION")};
 };

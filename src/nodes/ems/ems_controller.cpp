@@ -4,12 +4,14 @@
 
 #include <QDebug>
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
 #include <QStringList>
+#include <QList>
 #include <cmath>
 
 using namespace std::chrono_literals;
@@ -30,6 +32,7 @@ constexpr std::uint64_t kRecorderStaleMs = 3000;
 EmsController::EmsController(QObject* parent) : QObject(parent) {
     loadUnitSystem();
     loadAircraftProfile();
+    loadMaintenance();
     runtime_store_ = std::make_unique<efis::engine::RuntimeStore>(
         qEnvironmentVariable("EFIS_ENGINE_RUNTIME_STATE", "state/engine-runtime.state").toStdString());
     try {
@@ -262,6 +265,19 @@ void EmsController::cycleElectricalTestMode(){
     static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("ALTERNATOR OFFLINE"),QStringLiteral("MAIN BUS LOW"),QStringLiteral("ESSENTIAL BUS ISOLATED"),QStringLiteral("BATTERY LOW")};
     electrical_test_mode_=modes.at((modes.indexOf(electrical_test_mode_)+1)%modes.size()); emit electricalTestChanged();
 }
+
+void EmsController::loadMaintenance(){
+    const QStringList ids{"OIL_FILTER","ENGINE_INSPECTION","SPARK_PLUGS","COOLING_SYSTEM","GEARBOX_CLUTCH","ANNUAL_INSPECTION"};
+    const QStringList labels{"OIL / FILTER SERVICE","ENGINE INSPECTION","SPARK PLUG INSPECTION","COOLING SYSTEM","GEARBOX / CLUTCH","ANNUAL INSPECTION"};
+    QSettings settings{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};
+    for(int i=0;i<ids.size();++i){QVariantMap task{{"id",ids[i]},{"label",labels[i]}};const auto base=QStringLiteral("tasks/%1/").arg(ids[i]);task["interval_hours"]=settings.value(base+"interval_hours",0).toInt();task["last_hours"]=settings.value(base+"last_hours",0.0).toDouble();task["last_utc"]=settings.value(base+"last_utc",QStringLiteral("NEVER")).toString();maintenance_tasks_<<task;}
+}
+
+QString EmsController::maintenanceStatus() const {for(const auto& item:maintenance_tasks_){const auto t=item.toMap();const int interval=t.value("interval_hours").toInt();if(interval<=0)return QStringLiteral("PROGRAM REQUIRED");if(engineHours()>=t.value("last_hours").toDouble()+interval)return QStringLiteral("SERVICE DUE");}return QStringLiteral("CURRENT");}
+
+void EmsController::cycleMaintenanceInterval(int index){if(index<0||index>=maintenance_tasks_.size())return;static const QList<int> values{0,25,50,100,200,600};auto task=maintenance_tasks_[index].toMap();const int current=task.value("interval_hours").toInt();task["interval_hours"]=values[(values.indexOf(current)+1)%values.size()];maintenance_tasks_[index]=task;QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};s.setValue(QStringLiteral("tasks/%1/interval_hours").arg(task.value("id").toString()),task.value("interval_hours"));s.sync();emit maintenanceChanged();}
+
+bool EmsController::completeMaintenanceTask(int index){if(index<0||index>=maintenance_tasks_.size())return false;auto task=maintenance_tasks_[index].toMap();if(task.value("interval_hours").toInt()<=0)return false;task["last_hours"]=engineHours();task["last_utc"]=QDateTime::currentDateTimeUtc().toString(Qt::ISODate);maintenance_tasks_[index]=task;QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};const auto base=QStringLiteral("tasks/%1/").arg(task.value("id").toString());s.setValue(base+"last_hours",task.value("last_hours"));s.setValue(base+"last_utc",task.value("last_utc"));s.sync();emit maintenanceChanged();return s.status()==QSettings::NoError;}
 
 void EmsController::persistRuntime() {
     if (!runtime_store_ || runtime_persistence_state_ == QStringLiteral("INTEGRITY FAULT")) return;

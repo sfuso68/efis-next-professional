@@ -81,6 +81,8 @@ class PfdController final : public QObject {
     Q_PROPERTY(QVariantList electricalBuses READ electricalBuses CONSTANT)
     Q_PROPERTY(QVariantList electricalSources READ electricalSources CONSTANT)
     Q_PROPERTY(QString electricalTestMode READ electricalTestMode NOTIFY electricalTestChanged)
+    Q_PROPERTY(QVariantList maintenanceTasks READ maintenanceTasks NOTIFY maintenanceChanged)
+    Q_PROPERTY(QString maintenanceStatus READ maintenanceStatus NOTIFY maintenanceChanged)
     Q_PROPERTY(bool landingGearInstalled READ landingGearInstalled CONSTANT)
     Q_PROPERTY(bool retractableGear READ retractableGear CONSTANT)
     Q_PROPERTY(bool gearNoseLocked READ gearNoseLocked NOTIFY snapshotChanged)
@@ -202,6 +204,8 @@ public:
     [[nodiscard]] QVariantList electricalBuses() const { return electrical_buses_; }
     [[nodiscard]] QVariantList electricalSources() const { return electrical_sources_; }
     [[nodiscard]] QString electricalTestMode() const { return electrical_test_mode_; }
+    [[nodiscard]] QVariantList maintenanceTasks() const { return maintenance_tasks_; }
+    [[nodiscard]] QString maintenanceStatus() const;
     [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
     [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
     [[nodiscard]] bool gearNoseLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_nose_locked : true; }
@@ -253,6 +257,8 @@ public:
     Q_INVOKABLE void toggleEngineSensorTestFault();
     Q_INVOKABLE void cycleSensorTestDiagnostic();
     Q_INVOKABLE void cycleElectricalTestMode();
+    Q_INVOKABLE void cycleMaintenanceInterval(int index);
+    Q_INVOKABLE bool completeMaintenanceTask(int index);
     [[nodiscard]] QString navigationDatabaseVersion() const { return navigation_database_version_; }
     [[nodiscard]] QVariantList airportCatalog() const { return airport_catalog_; }
     [[nodiscard]] QVariantMap selectedAirport() const { return selected_airport_; }
@@ -294,6 +300,7 @@ signals:
     void unitsChanged();
     void sensorConfigurationChanged();
     void electricalTestChanged();
+    void maintenanceChanged();
 
 private slots:
     void updateSnapshot();
@@ -305,6 +312,7 @@ private:
     void loadRadionavigationIndex();
     void loadImageryStatus();
     void loadUnitSystem();
+    void loadMaintenance();
     void updateNearestAirports();
     [[nodiscard]] QString activeProfilePath() const;
     [[nodiscard]] QString stagingProfilePath() const;
@@ -371,6 +379,7 @@ private:
     qulonglong sensor_test_ticks_{};
     QString sensor_test_diagnostic_{QStringLiteral("NORMAL")};
     QString electrical_test_mode_{QStringLiteral("NORMAL")};
+    QVariantList maintenance_tasks_;
     QString navigation_database_version_{QStringLiteral("UNAVAILABLE")};
     QVariantList airport_catalog_;
     QVariantMap selected_airport_;

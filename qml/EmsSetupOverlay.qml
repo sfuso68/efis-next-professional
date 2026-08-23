@@ -162,13 +162,28 @@ Rectangle {
                 }
             }
         }
-        Grid { visible:setup.section===4; y:58*setup.uiScale; columns:2; spacing:12*setup.uiScale
-            Repeater { model:[{k:"BLACKBOX",v:(controller.blackBoxState||"OFFLINE")},{k:"LOCAL RECORDS",v:String(controller.blackBoxRecords||0)},{k:"NEXT SERVICE",v:"TO BE SET"},{k:"CONFIG AUDIT",v:"ACTIVE"},{k:"EXPORT",v:"CSV / PDF"},{k:"RETENTION",v:"500 HOURS"}]
-                delegate:Rectangle { required property var modelData; width:385*setup.uiScale; height:88*setup.uiScale; color:setup.panel; border.color:setup.line
-                    Text { x:12*setup.uiScale; y:10*setup.uiScale; text:modelData.k; color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
-                    Text { x:12*setup.uiScale; y:35*setup.uiScale; text:modelData.v; color:"white"; font.pixelSize:17*setup.uiScale; font.bold:true }
-                }
+        Item { visible:setup.section===4; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale
+            Rectangle { anchors { left:parent.left; right:parent.right; top:parent.top } height:46*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"ROTAX 912 UL • MAINTENANCE PROGRAM"; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }
+                Text { anchors.centerIn:parent; text:"ENGINE  "+setup.numberOr("engineHours").toFixed(2)+" H"; color:setup.cyan; font.pixelSize:10*setup.uiScale; font.bold:true }
+                Text { anchors { right:parent.right; rightMargin:12*setup.uiScale; verticalCenter:parent.verticalCenter } text:String(controller.maintenanceStatus||"PROGRAM REQUIRED"); color:text==="CURRENT"?setup.green:setup.amber; font.pixelSize:9*setup.uiScale; font.bold:true }
             }
+            Grid { y:56*setup.uiScale; columns:2; spacing:8*setup.uiScale
+                Repeater { model:setup.listOr("maintenanceTasks"); delegate:Rectangle { required property var modelData; required property int index; width:390*setup.uiScale; height:86*setup.uiScale; color:setup.panel; border.color:modelData.interval_hours>0?setup.line:setup.amber
+                    Text { x:10*setup.uiScale; y:8*setup.uiScale; width:215*setup.uiScale; elide:Text.ElideRight; text:modelData.label; color:"white"; font.pixelSize:9*setup.uiScale; font.bold:true }
+                    Text { x:10*setup.uiScale; y:31*setup.uiScale; text:modelData.interval_hours>0?("LAST  "+Number(modelData.last_hours).toFixed(1)+" H  •  NEXT  "+(Number(modelData.last_hours)+Number(modelData.interval_hours)).toFixed(1)+" H"):"PROGRAM REQUIRED"; color:modelData.interval_hours>0?setup.cyan:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+                    Text { x:10*setup.uiScale; y:53*setup.uiScale; text:"RECORDED  "+String(modelData.last_utc||"NEVER"); color:"#91A2AA"; font.pixelSize:6*setup.uiScale }
+                    Rectangle { x:232*setup.uiScale; y:8*setup.uiScale; width:72*setup.uiScale; height:30*setup.uiScale; radius:3*setup.uiScale; color:"#15303C"; border.color:setup.cyan
+                        Text { anchors.centerIn:parent; text:modelData.interval_hours>0?(modelData.interval_hours+" H  ›"):"SET  ›"; color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
+                        TapHandler { onTapped:controller.cycleMaintenanceInterval(index) }
+                    }
+                    Rectangle { x:312*setup.uiScale; y:8*setup.uiScale; width:68*setup.uiScale; height:30*setup.uiScale; radius:3*setup.uiScale; color:modelData.interval_hours>0?"#123A2A":"#28343A"; border.color:modelData.interval_hours>0?setup.green:setup.line
+                        Text { anchors.centerIn:parent; text:"RECORD"; color:modelData.interval_hours>0?setup.green:"#74838A"; font.pixelSize:7*setup.uiScale; font.bold:true }
+                        TapHandler { enabled:modelData.interval_hours>0; onTapped:controller.completeMaintenanceTask(index) }
+                    }
+                } }
+            }
+            Text { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; bottomMargin:5*setup.uiScale } text:"Intervals must be confirmed against the applicable Rotax maintenance manual, engine serial number, fuel and operating conditions. BLACKBOX  "+String(controller.blackBoxState||"OFFLINE")+"  •  "+String(controller.blackBoxRecords||0)+" RECORDS"; color:setup.amber; horizontalAlignment:Text.AlignHCenter; font.pixelSize:6*setup.uiScale }
         }
     }
     Rectangle { id:footer; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:42*setup.uiScale; color:"#07131C"; border.color:setup.line

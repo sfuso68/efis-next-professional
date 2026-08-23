@@ -16,6 +16,7 @@
 #include <QSet>
 #include <QSettings>
 #include <QStringList>
+#include <QList>
 #include <QUrl>
 
 #include <utility>
@@ -46,6 +47,7 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
                                             : efis::SimulationRole::fallback;
     applySimulationRole(chosen);
     loadAircraftProfile();
+    loadMaintenance();
     loadCatalogIndex();
     loadNavigationIndex();
     loadRadionavigationIndex();
@@ -604,6 +606,14 @@ void PfdController::cycleElectricalTestMode(){
     static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("ALTERNATOR OFFLINE"),QStringLiteral("MAIN BUS LOW"),QStringLiteral("ESSENTIAL BUS ISOLATED"),QStringLiteral("BATTERY LOW")};
     electrical_test_mode_=modes.at((modes.indexOf(electrical_test_mode_)+1)%modes.size());emit electricalTestChanged();
 }
+
+void PfdController::loadMaintenance(){const QStringList ids{"OIL_FILTER","ENGINE_INSPECTION","SPARK_PLUGS","COOLING_SYSTEM","GEARBOX_CLUTCH","ANNUAL_INSPECTION"};const QStringList labels{"OIL / FILTER SERVICE","ENGINE INSPECTION","SPARK PLUG INSPECTION","COOLING SYSTEM","GEARBOX / CLUTCH","ANNUAL INSPECTION"};QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};for(int i=0;i<ids.size();++i){QVariantMap t{{"id",ids[i]},{"label",labels[i]}};const auto b=QStringLiteral("tasks/%1/").arg(ids[i]);t["interval_hours"]=s.value(b+"interval_hours",0).toInt();t["last_hours"]=s.value(b+"last_hours",0.0).toDouble();t["last_utc"]=s.value(b+"last_utc",QStringLiteral("NEVER")).toString();maintenance_tasks_<<t;}}
+
+QString PfdController::maintenanceStatus() const{for(const auto& item:maintenance_tasks_){const auto t=item.toMap();const int interval=t.value("interval_hours").toInt();if(interval<=0)return QStringLiteral("PROGRAM REQUIRED");if(engineHours()>=t.value("last_hours").toDouble()+interval)return QStringLiteral("SERVICE DUE");}return QStringLiteral("CURRENT");}
+
+void PfdController::cycleMaintenanceInterval(int index){if(index<0||index>=maintenance_tasks_.size())return;static const QList<int> values{0,25,50,100,200,600};auto t=maintenance_tasks_[index].toMap();const int current=t.value("interval_hours").toInt();t["interval_hours"]=values[(values.indexOf(current)+1)%values.size()];maintenance_tasks_[index]=t;QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};s.setValue(QStringLiteral("tasks/%1/interval_hours").arg(t.value("id").toString()),t.value("interval_hours"));s.sync();emit maintenanceChanged();}
+
+bool PfdController::completeMaintenanceTask(int index){if(index<0||index>=maintenance_tasks_.size())return false;auto t=maintenance_tasks_[index].toMap();if(t.value("interval_hours").toInt()<=0)return false;t["last_hours"]=engineHours();t["last_utc"]=QDateTime::currentDateTimeUtc().toString(Qt::ISODate);maintenance_tasks_[index]=t;QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};const auto b=QStringLiteral("tasks/%1/").arg(t.value("id").toString());s.setValue(b+"last_hours",t.value("last_hours"));s.setValue(b+"last_utc",t.value("last_utc"));s.sync();emit maintenanceChanged();return s.status()==QSettings::NoError;}
 
 void PfdController::loadAircraftProfile() {
     aircraft_speed_profile_ = {{"vso",39.0},{"vs1",45.0},{"vfe",85.0},{"vx",62.0},
