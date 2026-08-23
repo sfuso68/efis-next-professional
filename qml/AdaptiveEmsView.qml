@@ -60,6 +60,23 @@ Item {
                                         fuelTotalGallons<6 ? "VERIFY ENDURANCE AND DIVERT" :
                                         fuelImbalanceGallons>3 ? "SELECT FULLER TANK" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
     readonly property color casColor: casLevel==="WARNING" ? "#FF3933" : casLevel==="CAUTION" ? amber : casLevel==="ADVISORY" ? cyan : green
+    property var casEvents: []
+    property string lastCasHeadline: "SYSTEM NORMAL"
+    property bool casAcknowledged: true
+    function updateCasEvents() {
+        if(casHeadline===lastCasHeadline)return
+        var updated=[]
+        for(var i=0;i<casEvents.length;i++){
+            var event=casEvents[i]
+            updated.push({time:event.time,level:event.level,message:event.message,action:event.action,status:event.status==="ACTIVE"?"CLEARED":event.status})
+        }
+        if(casLevel!=="NORMAL"){
+            updated.unshift({time:Qt.formatTime(new Date(),"hh:mm:ss"),level:casLevel,message:casHeadline,action:casAction,status:"ACTIVE"})
+            casAcknowledged=false
+        } else casAcknowledged=true
+        if(updated.length>12)updated=updated.slice(0,12)
+        casEvents=updated; lastCasHeadline=casHeadline
+    }
     function resetLean() {
         var values=controller.egtValues||[]; var peaks=[]; var detected=[]
         for(var i=0;i<values.length;i++){peaks.push(Number(values[i]));detected.push(false)}
@@ -102,6 +119,7 @@ Item {
             root.busTrend=root.appendTrend(root.busTrend,Number(controller.busVoltage||0)/16)
             root.updateLean()
             if(controller.engineRpm>400 && controller.fuelFlow>0)root.fuelUsedGallons+=Number(controller.fuelFlow)/3600
+            root.updateCasEvents()
             trendCanvas.requestPaint()
         } }
 
@@ -164,9 +182,10 @@ Item {
         Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 5*root.uiScale }
         text: "CAS MESSAGES"; color: "#E7ECEE"; font.pixelSize: 10*root.uiScale }
         Rectangle { id:casBanner; x: 1; y: 25*root.uiScale; width: parent.width-2; height: 34*root.uiScale; color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
-            SequentialAnimation on opacity { running:root.casLevel==="WARNING"; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
+            SequentialAnimation on opacity { running:root.casLevel==="WARNING"&&!root.casAcknowledged; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
             Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:(root.casLevel==="NORMAL"?"✓   ":"⚠   ")+root.casHeadline; color:root.casColor; font.pixelSize:11*root.uiScale; font.bold:true }
             Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:root.casAction; color:"#D9E3E6"; font.pixelSize:5.5*root.uiScale; font.bold:root.casLevel!=="NORMAL" }
+            TapHandler { onTapped:{root.selectedPanel="CAS";root.activeNavigation="INDICATIONS"} }
         }
         Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 64*root.uiScale }
         text: "AIRFRAME  ·  CONFIGURED"; color: root.cyan; font.pixelSize: 9*root.uiScale; font.letterSpacing: 1.2 }
@@ -262,7 +281,7 @@ Item {
          text: "×"; color: "white"; font.pixelSize: 25*root.uiScale
                 MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.closePanel() } }
             Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
-            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST" && root.selectedPanel !== "LEAN" && root.selectedPanel !== "FUEL"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
+            Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST" && root.selectedPanel !== "LEAN" && root.selectedPanel !== "FUEL" && root.selectedPanel !== "CAS"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
                 text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
                       root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+"\nFlusso: "+root.flow(controller.fuelFlow).toFixed(1)+" "+root.flowUnit+"\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
                       root.selectedPanel === "TREND" ? "ENGINE TREND\nRPM, pressioni, temperature e parametri elettrici saranno rappresentati su finestre selezionabili da 1, 5, 15 e 60 minuti." :
@@ -395,6 +414,30 @@ Item {
                 }
                 Text { x:0; y:207*root.uiScale; text:"SESSION COUNTER • calculated from measured fuel flow"; color:"#7F929A"; font.pixelSize:7*root.uiScale }
                 Text { anchors { right:parent.right; bottom:parent.bottom } text:"RESET USED"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:root.fuelUsedGallons=0 } }
+            }
+            Item { visible:root.selectedPanel === "CAS"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
+                Text { text:"CAS EVENT LOG • CURRENT SESSION"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
+                Rectangle { anchors { right:parent.right; top:parent.top } width:118*root.uiScale; height:24*root.uiScale; radius:3*root.uiScale; color:root.casAcknowledged?"#123A2A":"#40270B"; border.color:root.casAcknowledged?root.green:root.amber
+                    Text { anchors.centerIn:parent; text:root.casAcknowledged?"ACKNOWLEDGED":"ACKNOWLEDGE"; color:root.casAcknowledged?root.green:root.amber; font.pixelSize:7*root.uiScale; font.bold:true }
+                    TapHandler { onTapped:root.casAcknowledged=true }
+                }
+                Rectangle { x:0; y:33*root.uiScale; width:parent.width; height:25*root.uiScale; color:"#10232C"; border.color:root.line
+                    Text { x:8*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"TIME"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                    Text { x:68*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"PRIORITY"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                    Text { x:145*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"MESSAGE / CREW ACTION"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                    Text { anchors { right:parent.right; rightMargin:9*root.uiScale; verticalCenter:parent.verticalCenter } text:"STATE"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                }
+                ListView { x:0; y:60*root.uiScale; width:parent.width; height:137*root.uiScale; clip:true; spacing:2*root.uiScale; model:root.casEvents
+                    delegate:Rectangle { required property var modelData; required property int index; width:ListView.view.width; height:43*root.uiScale; color:index%2?"#0A1820":"#0D1D25"; border.color:modelData.status==="ACTIVE"?(modelData.level==="WARNING"?"#FF3933":root.amber):root.line
+                        Text { x:8*root.uiScale; y:7*root.uiScale; text:modelData.time; color:"#DCE5E8"; font.pixelSize:7*root.uiScale }
+                        Text { x:68*root.uiScale; y:7*root.uiScale; text:modelData.level; color:modelData.level==="WARNING"?"#FF3933":modelData.level==="CAUTION"?root.amber:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
+                        Text { x:145*root.uiScale; y:6*root.uiScale; text:modelData.message; color:"white"; font.pixelSize:8*root.uiScale; font.bold:true }
+                        Text { x:145*root.uiScale; y:23*root.uiScale; width:300*root.uiScale; elide:Text.ElideRight; text:modelData.action; color:"#9FB0B7"; font.pixelSize:6*root.uiScale }
+                        Text { anchors { right:parent.right; rightMargin:9*root.uiScale; verticalCenter:parent.verticalCenter } text:modelData.status; color:modelData.status==="ACTIVE"?root.amber:"#7F929A"; font.pixelSize:7*root.uiScale; font.bold:true }
+                    }
+                    Text { visible:root.casEvents.length===0; anchors.centerIn:parent; text:"NO CAS EVENTS RECORDED THIS SESSION"; color:root.green; font.pixelSize:8*root.uiScale; font.bold:true }
+                }
+                Text { anchors { left:parent.left; bottom:parent.bottom } text:"Permanent evidence is recorded by BLACKBOX • "+String(controller.blackBoxState||"OFFLINE"); color:"#80939B"; font.pixelSize:7*root.uiScale }
             }
             Text { anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 22*root.uiScale }
          text: "TOUCH OUTSIDE TO CLOSE"; horizontalAlignment: Text.AlignHCenter; color: "#899BA3"; font.pixelSize: 8*root.uiScale; font.letterSpacing: 1.4 }
