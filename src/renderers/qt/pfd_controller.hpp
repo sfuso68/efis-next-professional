@@ -78,6 +78,9 @@ class PfdController final : public QObject {
     Q_PROPERTY(int calibrationRevision READ calibrationRevision NOTIFY sensorConfigurationChanged)
     Q_PROPERTY(bool sensorCalibrationReady READ sensorCalibrationReady NOTIFY sensorConfigurationChanged)
     Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
+    Q_PROPERTY(QVariantList electricalBuses READ electricalBuses CONSTANT)
+    Q_PROPERTY(QVariantList electricalSources READ electricalSources CONSTANT)
+    Q_PROPERTY(QString electricalTestMode READ electricalTestMode NOTIFY electricalTestChanged)
     Q_PROPERTY(bool landingGearInstalled READ landingGearInstalled CONSTANT)
     Q_PROPERTY(bool retractableGear READ retractableGear CONSTANT)
     Q_PROPERTY(bool gearNoseLocked READ gearNoseLocked NOTIFY snapshotChanged)
@@ -196,6 +199,9 @@ public:
     [[nodiscard]] int calibrationRevision() const { return calibration_revision_; }
     [[nodiscard]] bool sensorCalibrationReady() const;
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
+    [[nodiscard]] QVariantList electricalBuses() const { return electrical_buses_; }
+    [[nodiscard]] QVariantList electricalSources() const { return electrical_sources_; }
+    [[nodiscard]] QString electricalTestMode() const { return electrical_test_mode_; }
     [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
     [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
     [[nodiscard]] bool gearNoseLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_nose_locked : true; }
@@ -246,6 +252,7 @@ public:
     Q_INVOKABLE void setEngineSensorCalibration(double gain, double offset);
     Q_INVOKABLE void toggleEngineSensorTestFault();
     Q_INVOKABLE void cycleSensorTestDiagnostic();
+    Q_INVOKABLE void cycleElectricalTestMode();
     [[nodiscard]] QString navigationDatabaseVersion() const { return navigation_database_version_; }
     [[nodiscard]] QVariantList airportCatalog() const { return airport_catalog_; }
     [[nodiscard]] QVariantMap selectedAirport() const { return selected_airport_; }
@@ -286,6 +293,7 @@ signals:
     void simulationChanged();
     void unitsChanged();
     void sensorConfigurationChanged();
+    void electricalTestChanged();
 
 private slots:
     void updateSnapshot();
@@ -336,6 +344,8 @@ private:
     QString engine_serial_number_{QStringLiteral("TO BE ENTERED")};
     QVariantList engine_sensor_configuration_;
     QVariantList electrical_loads_;
+    QVariantList electrical_buses_;
+    QVariantList electrical_sources_;
     bool landing_gear_installed_{};
     bool retractable_gear_{};
     bool flaps_installed_{};
@@ -360,6 +370,7 @@ private:
     double sensor_test_offset_{};
     qulonglong sensor_test_ticks_{};
     QString sensor_test_diagnostic_{QStringLiteral("NORMAL")};
+    QString electrical_test_mode_{QStringLiteral("NORMAL")};
     QString navigation_database_version_{QStringLiteral("UNAVAILABLE")};
     QVariantList airport_catalog_;
     QVariantMap selected_airport_;

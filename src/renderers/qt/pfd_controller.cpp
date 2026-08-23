@@ -600,6 +600,11 @@ void PfdController::cycleSensorTestDiagnostic() {
     sensor_test_fault_=sensor_test_diagnostic_==QStringLiteral("TIMEOUT"); emit setupChanged();
 }
 
+void PfdController::cycleElectricalTestMode(){
+    static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("ALTERNATOR OFFLINE"),QStringLiteral("MAIN BUS LOW"),QStringLiteral("ESSENTIAL BUS ISOLATED"),QStringLiteral("BATTERY LOW")};
+    electrical_test_mode_=modes.at((modes.indexOf(electrical_test_mode_)+1)%modes.size());emit electricalTestChanged();
+}
+
 void PfdController::loadAircraftProfile() {
     aircraft_speed_profile_ = {{"vso",39.0},{"vs1",45.0},{"vfe",85.0},{"vx",62.0},
         {"vy",68.0},{"va",105.0},{"vno",120.0},{"vne",140.0},{"bestGlide",65.0},{"vref",55.0}};
@@ -649,8 +654,11 @@ void PfdController::loadAircraftProfile() {
             sensor.insert(QStringLiteral("calibration_source"), calibration.value(QStringLiteral("sensors/%1/source").arg(signal), QStringLiteral("NONE")));
             engine_sensor_configuration_ << sensor;
         }
-        electrical_loads_.clear();
-        for (const auto item : root.value("systems").toObject().value("electrical").toObject().value("loads").toArray())
+        electrical_loads_.clear(); electrical_buses_.clear(); electrical_sources_.clear();
+        const auto electrical=root.value("systems").toObject().value("electrical").toObject();
+        for(const auto item:electrical.value("buses").toArray())electrical_buses_<<item.toObject().toVariantMap();
+        for(const auto item:electrical.value("sources").toArray())electrical_sources_<<item.toObject().toVariantMap();
+        for (const auto item : electrical.value("loads").toArray())
             electrical_loads_ << item.toObject().toVariantMap();
         const auto systems = root.value("systems").toObject();
         const auto gear = systems.value("landing_gear").toObject();

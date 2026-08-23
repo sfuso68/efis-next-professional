@@ -70,6 +70,9 @@ class EmsController : public QObject {
     Q_PROPERTY(int sensorTestAgeMs READ sensorTestAgeMs NOTIFY sensorTestChanged)
     Q_PROPERTY(QString sensorTestDiagnostic READ sensorTestDiagnostic NOTIFY sensorTestChanged)
     Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
+    Q_PROPERTY(QVariantList electricalBuses READ electricalBuses CONSTANT)
+    Q_PROPERTY(QVariantList electricalSources READ electricalSources CONSTANT)
+    Q_PROPERTY(QString electricalTestMode READ electricalTestMode NOTIFY electricalTestChanged)
     Q_PROPERTY(QString runtimePersistenceState READ runtimePersistenceState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong runtimeRevision READ runtimeRevision NOTIFY snapshotChanged)
     Q_PROPERTY(QString runtimeAuthority READ runtimeAuthority CONSTANT)
@@ -133,6 +136,9 @@ public:
     [[nodiscard]] int sensorTestAgeMs() const { return sensor_test_age_ms_; }
     [[nodiscard]] QString sensorTestDiagnostic() const { return sensor_test_diagnostic_; }
     [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
+    [[nodiscard]] QVariantList electricalBuses() const { return electrical_buses_; }
+    [[nodiscard]] QVariantList electricalSources() const { return electrical_sources_; }
+    [[nodiscard]] QString electricalTestMode() const { return electrical_test_mode_; }
     [[nodiscard]] QString runtimePersistenceState() const { return runtime_persistence_state_; }
     [[nodiscard]] qulonglong runtimeRevision() const { return runtime_revision_; }
     [[nodiscard]] QString runtimeAuthority() const { return QStringLiteral("EMS NODE • AUTHORITATIVE"); }
@@ -147,12 +153,14 @@ public:
     Q_INVOKABLE bool startEngineSensorTest(const QString& signal, bool benchSimulation);
     Q_INVOKABLE void stopEngineSensorTest();
     Q_INVOKABLE void cycleSensorTestDiagnostic();
+    Q_INVOKABLE void cycleElectricalTestMode();
 
 signals:
     void snapshotChanged();
     void unitsChanged();
     void sensorConfigurationChanged();
     void sensorTestChanged();
+    void electricalTestChanged();
 
 private:
     void updateSnapshot();
@@ -182,6 +190,8 @@ private:
     QString engine_serial_number_{QStringLiteral("TO BE ENTERED")};
     QVariantList engine_sensor_configuration_;
     QVariantList electrical_loads_;
+    QVariantList electrical_buses_;
+    QVariantList electrical_sources_;
     efis::engine::RuntimeTracker runtime_tracker_{};
     efis::MonoTime last_runtime_update_{};
     efis::MonoTime last_runtime_save_{};
@@ -199,5 +209,6 @@ private:
     bool sensor_test_bench_{};
     qulonglong sensor_test_ticks_{};
     QString sensor_test_diagnostic_{QStringLiteral("NORMAL")};
+    QString electrical_test_mode_{QStringLiteral("NORMAL")};
     QString unit_system_{QStringLiteral("AVIATION")};
 };

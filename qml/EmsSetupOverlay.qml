@@ -15,6 +15,8 @@ Rectangle {
     readonly property color panel: "#E00A1821"
     function numberOr(name) { return typeof controller[name] === "number" ? controller[name] : 0 }
     function listOr(name) { var v=controller[name]; return v && typeof v.length === "number" ? v : [] }
+    function busState(bus) { var m=String(controller.electricalTestMode||"NORMAL"); if(m==="ESSENTIAL BUS ISOLATED"&&bus==="ESSENTIAL")return "ISOLATED"; if(m==="MAIN BUS LOW"&&(bus==="MAIN"||bus==="AVIONICS"))return "LOW VOLTAGE"; return m==="ALTERNATOR OFFLINE"?"BATTERY SUPPLY":"POWERED" }
+    function loadPowered(load) { return load.installed && setup.busState(String(load.bus))!=="ISOLATED" }
 
     Rectangle { id: top; anchors { left:parent.left; right:parent.right; top:parent.top } height:54*setup.uiScale; color:"#07131C"; border.color:setup.line
         Text { x:18*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"EFIS"; color:"white"; font.pixelSize:18*setup.uiScale; font.bold:true }
@@ -127,12 +129,38 @@ Rectangle {
                 TapHandler { onTapped:{controller.stopEngineSensorTest();setup.monitorSensor=-1} }
             }
         }
-        Grid { visible:setup.section===3; y:58*setup.uiScale; columns:2; spacing:8*setup.uiScale
-            Repeater { model:setup.listOr("electricalLoads"); delegate:Rectangle { required property var modelData; width:390*setup.uiScale; height:58*setup.uiScale; color:setup.panel; border.color:modelData.critical?setup.amber:setup.line
-                Rectangle { x:10*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:12*setup.uiScale; height:12*setup.uiScale; radius:6*setup.uiScale; color:modelData.installed?setup.green:"#59646A" }
-                Text { x:34*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:modelData.label; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }
-                Text { anchors { right:parent.right; rightMargin:12*setup.uiScale; verticalCenter:parent.verticalCenter } text:modelData.bus+(modelData.critical?" • ESSENTIAL":""); color:modelData.critical?setup.amber:setup.cyan; font.pixelSize:8*setup.uiScale }
-            } }
+        Item { visible:setup.section===3; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale
+            Rectangle { anchors { left:parent.left; right:parent.right; top:parent.top } height:42*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"POWER DISTRIBUTION • MAIN / ESSENTIAL / AVIONICS"; color:setup.cyan; font.pixelSize:9*setup.uiScale; font.bold:true }
+                Rectangle { anchors { right:parent.right; rightMargin:8*setup.uiScale; verticalCenter:parent.verticalCenter } width:210*setup.uiScale; height:29*setup.uiScale; radius:3*setup.uiScale; color:String(controller.electricalTestMode)==="NORMAL"?"#123A2A":"#4A2118"; border.color:String(controller.electricalTestMode)==="NORMAL"?setup.green:setup.amber
+                    Text { anchors.centerIn:parent; text:"BENCH FAULT • "+String(controller.electricalTestMode||"NORMAL")+"  ›"; color:"white"; font.pixelSize:7*setup.uiScale; font.bold:true }
+                    TapHandler { onTapped:controller.cycleElectricalTestMode() }
+                }
+            }
+            Row { y:52*setup.uiScale; width:parent.width; height:parent.height-52*setup.uiScale; spacing:10*setup.uiScale
+                Column { width:175*setup.uiScale; spacing:7*setup.uiScale
+                    Text { text:"SOURCES"; color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
+                    Repeater { model:setup.listOr("electricalSources"); delegate:Rectangle { required property var modelData; width:parent.width; height:60*setup.uiScale; color:setup.panel; border.color:(String(controller.electricalTestMode)==="ALTERNATOR OFFLINE"&&modelData.type==="ALTERNATOR")||(String(controller.electricalTestMode)==="BATTERY LOW"&&modelData.type==="BATTERY")?setup.amber:setup.green
+                        Text { x:9*setup.uiScale; y:8*setup.uiScale; text:modelData.type; color:"white"; font.pixelSize:9*setup.uiScale; font.bold:true }
+                        Text { x:9*setup.uiScale; y:31*setup.uiScale; text:!modelData.installed?"NOT INSTALLED":((String(controller.electricalTestMode)==="ALTERNATOR OFFLINE"&&modelData.type==="ALTERNATOR")?"OFFLINE":((String(controller.electricalTestMode)==="BATTERY LOW"&&modelData.type==="BATTERY")?"LOW":"ONLINE")); color:text==="ONLINE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+                    } }
+                }
+                Column { width:205*setup.uiScale; spacing:7*setup.uiScale
+                    Text { text:"DISTRIBUTION BUSES"; color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
+                    Repeater { model:setup.listOr("electricalBuses"); delegate:Rectangle { required property var modelData; width:parent.width; height:60*setup.uiScale; color:"#102630"; border.width:2; border.color:setup.busState(String(modelData.id))==="POWERED"?setup.green:setup.amber
+                        Text { x:9*setup.uiScale; y:8*setup.uiScale; text:modelData.label; color:"white"; font.pixelSize:9*setup.uiScale; font.bold:true }
+                        Text { x:9*setup.uiScale; y:31*setup.uiScale; text:setup.busState(String(modelData.id)); color:text==="POWERED"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+                        Text { anchors { right:parent.right; rightMargin:9*setup.uiScale; verticalCenter:parent.verticalCenter } text:modelData.id==="MAIN"?Number(controller.busVoltage||0).toFixed(1)+" V":"12.8 V"; color:setup.cyan; font.pixelSize:10*setup.uiScale; font.bold:true }
+                    } }
+                }
+                Grid { width:390*setup.uiScale; columns:2; spacing:6*setup.uiScale
+                    Repeater { model:setup.listOr("electricalLoads"); delegate:Rectangle { required property var modelData; width:190*setup.uiScale; height:51*setup.uiScale; color:setup.panel; border.color:modelData.critical?setup.amber:setup.line
+                        Rectangle { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:10*setup.uiScale; height:10*setup.uiScale; radius:5*setup.uiScale; color:setup.loadPowered(modelData)?setup.green:"#D83B32" }
+                        Text { x:25*setup.uiScale; y:8*setup.uiScale; width:150*setup.uiScale; elide:Text.ElideRight; text:modelData.label; color:"white"; font.pixelSize:8*setup.uiScale; font.bold:true }
+                        Text { x:25*setup.uiScale; y:29*setup.uiScale; text:modelData.bus+" • "+(setup.loadPowered(modelData)?"POWERED":"SHED"); color:setup.loadPowered(modelData)?setup.cyan:setup.amber; font.pixelSize:6*setup.uiScale; font.bold:true }
+                    } }
+                }
+            }
         }
         Grid { visible:setup.section===4; y:58*setup.uiScale; columns:2; spacing:12*setup.uiScale
             Repeater { model:[{k:"BLACKBOX",v:(controller.blackBoxState||"OFFLINE")},{k:"LOCAL RECORDS",v:String(controller.blackBoxRecords||0)},{k:"NEXT SERVICE",v:"TO BE SET"},{k:"CONFIG AUDIT",v:"ACTIVE"},{k:"EXPORT",v:"CSV / PDF"},{k:"RETENTION",v:"500 HOURS"}]

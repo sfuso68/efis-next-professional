@@ -133,6 +133,8 @@ void EmsController::loadAircraftProfile() {
     for (const auto detent : flaps.value("detents_deg").toArray())
         flap_detents_ << detent.toDouble();
     const auto electrical = systems.value("electrical").toObject();
+    for (const auto item : electrical.value("buses").toArray()) electrical_buses_ << item.toObject().toVariantMap();
+    for (const auto item : electrical.value("sources").toArray()) electrical_sources_ << item.toObject().toVariantMap();
     for (const auto item : electrical.value("loads").toArray())
         electrical_loads_ << item.toObject().toVariantMap();
 }
@@ -254,6 +256,11 @@ void EmsController::stopEngineSensorTest(){sensor_test_bench_=false;sensor_test_
 void EmsController::cycleSensorTestDiagnostic(){
     if(!sensor_test_bench_)return;static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("TIMEOUT"),QStringLiteral("OPEN CIRCUIT"),QStringLiteral("SHORT CIRCUIT"),QStringLiteral("UNSTABLE")};
     sensor_test_diagnostic_=modes.at((modes.indexOf(sensor_test_diagnostic_)+1)%modes.size());emit sensorTestChanged();
+}
+
+void EmsController::cycleElectricalTestMode(){
+    static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("ALTERNATOR OFFLINE"),QStringLiteral("MAIN BUS LOW"),QStringLiteral("ESSENTIAL BUS ISOLATED"),QStringLiteral("BATTERY LOW")};
+    electrical_test_mode_=modes.at((modes.indexOf(electrical_test_mode_)+1)%modes.size()); emit electricalTestChanged();
 }
 
 void EmsController::persistRuntime() {
