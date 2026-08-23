@@ -12,6 +12,19 @@ Item {
     readonly property color health: controller.engineHealth >= 2 ? "#FF3933" : controller.engineHealth === 1 ? amber : green
     property string selectedPanel: ""
     property bool setupVisible: false
+    property int setupSection: 0
+    property string activeNavigation: "ENGINE"
+    function closePanel() { selectedPanel=""; activeNavigation="ENGINE" }
+    function openSetup(section) { setupSection=section; activeNavigation=section===3?"ELECTRICAL":section===4?"MAINT":"SYSTEM"; setupVisible=true }
+    function selectNavigation(name) {
+        activeNavigation=name
+        if(name==="ENGINE")selectedPanel=""
+        else if(name==="INDICATIONS")selectedPanel="TREND"
+        else if(name==="ELECTRICAL"){selectedPanel="";openSetup(3)}
+        else if(name==="FUEL")selectedPanel="FUEL"
+        else if(name==="SYSTEM")selectedPanel="SYSTEM"
+        else if(name==="MAINT"){selectedPanel="";openSetup(4)}
+    }
     property var rpmTrend: []
     property var oilTrend: []
     property var chtTrend: []
@@ -112,7 +125,7 @@ Item {
         text: Qt.formatTime(new Date(),"hh:mm:ss")+"   LOCAL     24 °C  OAT     1013 HPA  QNH"; color: "#E8ECEE"; font.pixelSize: 11*root.uiScale; font.bold: true }
         Timer { interval: 1000; running: true; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+"   LOCAL     24 °C  OAT     1013 HPA  QNH" }
         Item { x:0; y:0; width:105*root.uiScale; height:parent.height
-            TapHandler { longPressThreshold:1.2; onLongPressed:root.setupVisible=true }
+            TapHandler { longPressThreshold:1.2; onLongPressed:root.openSetup(0) }
         }
     }
 
@@ -120,13 +133,13 @@ Item {
         width: 96*root.uiScale; color: "#B00A151D"; border.color: root.line; radius: 5*root.uiScale
         Column { anchors.fill: parent
             Repeater { model: [{k:"engine",n:"ENGINE"},{k:"indications",n:"INDICATIONS"},{k:"electrical",n:"ELECTRICAL"},{k:"fuel",n:"FUEL"},{k:"system",n:"SYSTEM"},{k:"checklist",n:"MAINT"}]
-                delegate: Rectangle { required property var modelData; width: nav.width; height: nav.height/6; color: modelData.n === "ENGINE" ? "#172832" : "transparent"; border.color: "#35454D"
-                    Rectangle { visible: modelData.n === "ENGINE"; width: 4*root.uiScale; height: parent.height; color: root.cyan }
+                delegate: Rectangle { required property var modelData; width: nav.width; height: nav.height/6; color: root.activeNavigation === modelData.n ? "#172832" : "transparent"; border.color: "#35454D"
+                    Rectangle { visible: root.activeNavigation === modelData.n; width: 4*root.uiScale; height: parent.height; color: root.cyan }
                     EmsVectorIcon { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 9*root.uiScale }
-         width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: modelData.n === "ENGINE" ? root.cyan : "#89969C" }
+         width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: root.activeNavigation === modelData.n ? root.cyan : "#89969C" }
                     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 8*root.uiScale }
-        text: modelData.n; color: modelData.n === "ENGINE" ? root.cyan : "#A7B0B5"; font.pixelSize: 8*root.uiScale }
-                    TapHandler { onTapped: { if (modelData.n === "SYSTEM") root.selectedPanel = "SYSTEM" } }
+        text: modelData.n; color: root.activeNavigation === modelData.n ? root.cyan : "#A7B0B5"; font.pixelSize: 8*root.uiScale }
+                    TapHandler { onTapped:root.selectNavigation(modelData.n) }
                 } }
         } }
 
@@ -241,13 +254,13 @@ Item {
     }
 
     Rectangle { anchors.fill: parent; visible: root.selectedPanel !== ""; z: 50; color: "#A0000508"
-        MouseArea { anchors.fill: parent; onClicked: root.selectedPanel="" }
+        MouseArea { anchors.fill: parent; onClicked: root.closePanel() }
         Rectangle { anchors.centerIn: parent; width: 610*root.uiScale; height: 330*root.uiScale; radius: 8*root.uiScale; color: "#F0081720"; border.width: 2; border.color: root.cyan
             MouseArea { anchors.fill: parent }
             Text { x: 22*root.uiScale; y: 16*root.uiScale; text: root.selectedPanel; color: root.cyan; font.pixelSize: 21*root.uiScale; font.bold: true }
             Text { anchors { right: parent.right; top: parent.top; margins: 17*root.uiScale }
          text: "×"; color: "white"; font.pixelSize: 25*root.uiScale
-                MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.selectedPanel="" } }
+                MouseArea { anchors.fill: parent; anchors.margins: -10*root.uiScale; onClicked: root.closePanel() } }
             Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
             Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST" && root.selectedPanel !== "LEAN" && root.selectedPanel !== "FUEL"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
                 text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
@@ -388,5 +401,5 @@ Item {
         }
     }
 
-    EmsSetupOverlay { anchors.fill:parent; controller:root.controller; visible:root.setupVisible; onClosed:root.setupVisible=false }
+    EmsSetupOverlay { anchors.fill:parent; controller:root.controller; requestedSection:root.setupSection; visible:root.setupVisible; onClosed:{root.setupVisible=false;root.activeNavigation="ENGINE"} }
 }

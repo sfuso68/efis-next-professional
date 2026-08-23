@@ -5,7 +5,9 @@ Rectangle {
     required property var controller
     property real uiScale: Math.min(width/1024, height/600)
     property int section: 0
+    property int requestedSection: 0
     property int monitorSensor: -1
+    onVisibleChanged: if(visible)section=requestedSection
     signal closed()
     z: 200; color: "#F0051018"; border.color: "#28D9F4"
     readonly property color cyan: "#28D9F4"
