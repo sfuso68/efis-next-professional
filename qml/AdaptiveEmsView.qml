@@ -57,11 +57,13 @@ Item {
     readonly property int fuelCalibrationRightCount: (controller.fuelCalibrationRight||[]).length
     readonly property bool fuelCalibrationReady: fuelCalibrationLeftCount===5&&fuelCalibrationRightCount===5
     readonly property real fuelDiscrepancyGallons: Math.abs(fuelMeasuredGallons-fuelTotalGallons)
+    readonly property string fuelLeakState: String(controller.fuelLeakState||"INITIALIZING")
+    readonly property bool fuelLeakAlarm: fuelLeakState==="POSSIBLE LEAK"||fuelLeakState==="FUEL LEAK WARNING"
     function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
     readonly property string casLevel: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
                                        maximumCht>chtMaximum || controller.oilTemperature>oilTemperatureMaximum ? "WARNING" :
-                                       fuelTotalGallons<=fuelReserveGallons*.5 || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
+                                       fuelTotalGallons<=fuelReserveGallons*.5 || fuelLeakAlarm || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
                                        controller.busVoltage<12.5 || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
                                        fuelImbalanceGallons>3 ? "ADVISORY" : "NORMAL"
     readonly property string casHeadline: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
@@ -69,6 +71,7 @@ Item {
                                           controller.oilTemperature>oilTemperatureMaximum ? "OIL TEMPERATURE HIGH" :
                                           controller.busVoltage<12.5 ? "BUS VOLTAGE LOW" :
                                           fuelTotalGallons<=fuelReserveGallons*.5 ? "FUEL QUANTITY CRITICAL" :
+                                          fuelLeakAlarm ? fuelLeakState :
                                           fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "FUEL QUANTITY DISAGREE" :
                                           fuelTotalGallons<=fuelReserveGallons ? "FINAL RESERVE" :
                                           fuelImbalanceGallons>3 ? "FUEL IMBALANCE" : "SYSTEM NORMAL"
@@ -77,6 +80,7 @@ Item {
                                         controller.oilTemperature>oilTemperatureMaximum ? "REDUCE POWER • MONITOR PRESSURE" :
                                         controller.busVoltage<12.5 ? "CHECK ALTERNATOR AND ELECTRICAL LOAD" :
                                         fuelTotalGallons<=fuelReserveGallons*.5 ? "LAND AS SOON AS POSSIBLE" :
+                                        fuelLeakAlarm ? "CHECK TANKS • SELECT FUEL • LAND SOON" :
                                         fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "CHECK FOR LEAK OR SENSOR FAULT" :
                                         fuelTotalGallons<=fuelReserveGallons ? "VERIFY ENDURANCE AND DIVERT" :
                                         fuelImbalanceGallons>3 ? "SELECT FULLER TANK" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
@@ -405,7 +409,7 @@ Item {
             }
             Item { visible:root.selectedPanel === "FUEL"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
                 Text { text:"FUEL COMPUTER"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
-                Text { anchors { right:parent.right; top:parent.top } text:!root.fuelCalibrationReady?"CALIBRATION REQUIRED":root.fuelDiscrepancyGallons>3?"⚠ FUEL DISAGREE":root.fuelImbalanceGallons>3?"⚠ TANK IMBALANCE":"FUEL CROSS-CHECK NORMAL"; color:(!root.fuelCalibrationReady||root.fuelDiscrepancyGallons>3||root.fuelImbalanceGallons>3)?root.amber:root.green; font.pixelSize:8*root.uiScale; font.bold:true }
+                Text { anchors { right:parent.right; top:parent.top } text:root.fuelLeakAlarm?"⚠ "+root.fuelLeakState:!root.fuelCalibrationReady?"CALIBRATION REQUIRED":root.fuelDiscrepancyGallons>3?"⚠ FUEL DISAGREE":root.fuelImbalanceGallons>3?"⚠ TANK IMBALANCE":"LEAK MONITOR "+root.fuelLeakState; color:(root.fuelLeakAlarm||!root.fuelCalibrationReady||root.fuelDiscrepancyGallons>3||root.fuelImbalanceGallons>3)?root.amber:root.green; font.pixelSize:8*root.uiScale; font.bold:true }
                 Row { x:0; y:35*root.uiScale; width:parent.width; height:86*root.uiScale; spacing:7*root.uiScale
                     Repeater { model:[
                         {h:"REMAINING",v:root.fuel(root.fuelTotalGallons).toFixed(1),u:root.fuelUnit,c:root.fuelTotalGallons<=root.fuelReserveGallons?root.amber:"white"},
@@ -440,7 +444,7 @@ Item {
                     Rectangle { anchors { left:parent.left; verticalCenter:parent.verticalCenter; leftMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"−"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:controller.setFuelReserveGallons(Math.max(0,root.fuelReserveGallons-1)) } }
                     Rectangle { anchors { right:parent.right; verticalCenter:parent.verticalCenter; rightMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"+"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:controller.setFuelReserveGallons(Math.min(root.fuelTotalGallons,root.fuelReserveGallons+1)) } }
                 }
-                Text { x:0; y:207*root.uiScale; text:"FOB "+root.fuel(controller.fuelOnBoardGallons).toFixed(1)+" • USED "+root.fuel(root.fuelUsedGallons).toFixed(1)+" • FLOW-CALCULATED"; color:"#7F929A"; font.pixelSize:7*root.uiScale }
+                Text { x:0; y:207*root.uiScale; text:"FOB "+root.fuel(controller.fuelOnBoardGallons).toFixed(1)+" • USED "+root.fuel(root.fuelUsedGallons).toFixed(1)+" • LEAK Δ "+Number(controller.fuelLeakExcessGph||0).toFixed(1)+" GPH"; color:root.fuelLeakAlarm?root.amber:"#7F929A"; font.pixelSize:7*root.uiScale }
                 Text { anchors { right:parent.right; bottom:parent.bottom } text:"RESET USED"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:controller.resetFuelUsed() } }
             }
             Item { visible:root.selectedPanel === "CAS"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale

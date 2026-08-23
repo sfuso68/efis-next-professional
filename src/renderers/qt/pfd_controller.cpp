@@ -155,6 +155,29 @@ bool PfdController::clearFuelCalibration(const QString& tank) {
     persistFuelComputer(); emit fuelComputerChanged(); return true;
 }
 
+void PfdController::updateFuelLeakMonitor(efis::MonoTime now) {
+    const double measured=fuelLeft()+fuelRight();
+    auto setState=[this](const QString& state){if(fuel_leak_state_==state)return;fuel_leak_state_=state;qInfo().noquote()<<"event=fuel_leak_monitor state="<<state<<"excess_gph="<<fuel_leak_excess_gph_;emit fuelComputerChanged();};
+    if(fuel_leak_last_update_==efis::MonoTime{}){fuel_leak_last_update_=now;fuel_leak_last_measured_=measured;setState(QStringLiteral("INITIALIZING"));return;}
+    const double seconds=std::chrono::duration<double>(now-fuel_leak_last_update_).count(); if(seconds<1.0)return;
+    const double actualDrop=fuel_leak_last_measured_-measured;
+    fuel_leak_last_update_=now;fuel_leak_last_measured_=measured;
+    const bool calibrated=fuel_calibration_left_.size()==5&&fuel_calibration_right_.size()==5;
+    if(!calibrated&&!engine_snapshot_.fuel_left_gal.is_simulated()){fuel_leak_excess_gph_=0;fuel_leak_alarm_since_={};setState(QStringLiteral("CALIBRATION REQUIRED"));return;}
+    if(actualDrop < -0.15){fuel_leak_suppressed_until_=now+120s;fuel_leak_excess_gph_=0;fuel_leak_alarm_since_={};setState(QStringLiteral("REFUEL DETECTED"));return;}
+    if(std::abs(actualDrop)>0.20){fuel_leak_suppressed_until_=now+20s;fuel_leak_excess_gph_=0;fuel_leak_alarm_since_={};setState(QStringLiteral("MOTION SUPPRESSED"));return;}
+    if(now<fuel_leak_suppressed_until_){setState(QStringLiteral("SUPPRESSED"));return;}
+    if(engine_snapshot_.rpm.value<400.0){fuel_leak_excess_gph_=0;fuel_leak_alarm_since_={};setState(QStringLiteral("STANDBY"));return;}
+    const double expected=engine_snapshot_.fuel_flow_gph.value*seconds/3600.0;
+    const double sample=qBound(-20.0,(actualDrop-expected)*3600.0/seconds,20.0);
+    const double alpha=1.0-std::exp(-seconds/45.0); fuel_leak_excess_gph_+=(sample-fuel_leak_excess_gph_)*alpha;
+    const double threshold=fuel_leak_excess_gph_>5.0?5.0:2.0;
+    if(fuel_leak_excess_gph_<=2.0){fuel_leak_alarm_since_={};setState(QStringLiteral("MONITORING"));return;}
+    if(fuel_leak_alarm_since_==efis::MonoTime{})fuel_leak_alarm_since_=now;
+    const double confirmed=std::chrono::duration<double>(now-fuel_leak_alarm_since_).count();
+    setState(confirmed>=(threshold>2.0?10.0:30.0)?(threshold>2.0?QStringLiteral("FUEL LEAK WARNING"):QStringLiteral("POSSIBLE LEAK")):QStringLiteral("VERIFYING"));
+}
+
 void PfdController::resetFuelUsed() {
     if (engine_snapshot_.fuel_flow_gph.is_simulated()) simulated_fuel_used_gallons_ = 0.0;
     else { fuel_used_gallons_ = 0.0; persistFuelComputer(); }
@@ -1192,6 +1215,7 @@ void PfdController::updateSnapshot() {
         }
     }
     last_fuel_update_ = now;
+    updateFuelLeakMonitor(now);
     if (last_fuel_save_ == efis::MonoTime{} || now - last_fuel_save_ >= 10s) {
         last_fuel_save_ = now; persistFuelComputer();
     }
