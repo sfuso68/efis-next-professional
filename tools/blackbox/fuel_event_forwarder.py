@@ -10,7 +10,7 @@ def post(url,source,token,event):
 
 def refresh_cache(url,token,path):
     headers={"Authorization":"Bearer "+token}; result={"fetched_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())}
-    for key,endpoint in (("health","/health"),("events","/v1/events?limit=50")):
+    for key,endpoint in (("health","/health"),("events","/v1/events?limit=50"),("archives","/v1/archives")):
         req=urllib.request.Request(url+endpoint,headers=headers)
         with urllib.request.urlopen(req,timeout=5) as response: result[key]=json.load(response)
     target=Path(path);target.parent.mkdir(parents=True,exist_ok=True);tmp=target.with_suffix(".tmp");tmp.write_text(json.dumps(result,separators=(",",":")));os.replace(tmp,target)

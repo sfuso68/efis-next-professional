@@ -217,6 +217,7 @@ Rectangle {
                     }
                 }
             }
+            Text { anchors { left:parent.left; bottom:parent.bottom; leftMargin:19*setup.uiScale; bottomMargin:57*setup.uiScale } width:310*setup.uiScale; elide:Text.ElideRight; text:"SIGNED FILES  "+setup.listOr("centralBlackBoxArchives").length+(setup.listOr("centralBlackBoxArchives").length?" • LAST  "+String(setup.listOr("centralBlackBoxArchives")[0].kind)+" • "+String(setup.listOr("centralBlackBoxArchives")[0].signature):""); color:setup.listOr("centralBlackBoxArchives").some(function(item){return String(item.signature)!=="VALID"})?setup.amber:setup.green; font.pixelSize:7*setup.uiScale; font.bold:true }
             Text { anchors { right:parent.right; bottom:parent.bottom; rightMargin:19*setup.uiScale; bottomMargin:57*setup.uiScale } width:330*setup.uiScale; horizontalAlignment:Text.AlignRight; elide:Text.ElideRight; text:String((controller.centralBlackBoxMaintenance||{}).action||"READY")+" • "+String((controller.centralBlackBoxMaintenance||{}).state||"READY")+(String((controller.centralBlackBoxMaintenance||{}).result||"").length?" • "+String(controller.centralBlackBoxMaintenance.result):""); color:String((controller.centralBlackBoxMaintenance||{}).state)==="COMPLETE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
         }
     }

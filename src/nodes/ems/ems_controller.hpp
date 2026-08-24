@@ -95,6 +95,7 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantList centralBlackBoxNodes READ centralBlackBoxNodes NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantList centralFuelEvents READ centralFuelEvents NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantMap centralBlackBoxMaintenance READ centralBlackBoxMaintenance NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList centralBlackBoxArchives READ centralBlackBoxArchives NOTIFY snapshotChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -178,6 +179,7 @@ public:
     [[nodiscard]] QVariantList centralBlackBoxNodes() const { return central_blackbox_nodes_; }
     [[nodiscard]] QVariantList centralFuelEvents() const { return central_fuel_events_; }
     [[nodiscard]] QVariantMap centralBlackBoxMaintenance() const { return central_blackbox_maintenance_; }
+    [[nodiscard]] QVariantList centralBlackBoxArchives() const { return central_blackbox_archives_; }
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
@@ -286,6 +288,7 @@ private:
     QVariantList central_blackbox_nodes_;
     QVariantList central_fuel_events_;
     QVariantMap central_blackbox_maintenance_;
+    QVariantList central_blackbox_archives_;
     QString central_blackbox_request_path_;
     efis::MonoTime last_central_blackbox_check_{};
     efis::MonoTime last_fuel_update_{};

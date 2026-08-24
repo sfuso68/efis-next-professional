@@ -15,7 +15,7 @@ class Hub:
         self.db.execute("CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY,source TEXT NOT NULL,received_utc TEXT NOT NULL,event_utc TEXT,state TEXT,payload TEXT NOT NULL)")
         self.db.execute("CREATE TABLE IF NOT EXISTS maintenance_requests(source TEXT NOT NULL,request_id TEXT NOT NULL,action TEXT NOT NULL,state TEXT NOT NULL,updated_utc TEXT NOT NULL,result TEXT NOT NULL,PRIMARY KEY(source,request_id))")
         self.db.commit()
-        self.database=database;self.maintenance_script=maintenance_script;self.root=root;self.key=key;self.export_root=export_root;self.maintenance_lock=threading.Lock();self.last_maintenance=self.load_last_maintenance()
+        self.database=database;self.maintenance_script=maintenance_script;self.root=root;self.key=key;self.export_root=export_root;self.maintenance_lock=threading.Lock();self.archive_lock=threading.Lock();self.archive_cache={};self.last_maintenance=self.load_last_maintenance()
     def authorized(self,source,token): return source in self.tokens and hmac.compare_digest(self.tokens[source],token)
     def insert(self,source,event):
         digest=hashlib.sha256((source+"\n"+canonical(event)).encode()).hexdigest()
@@ -31,6 +31,21 @@ class Hub:
         with self.lock: rows=self.db.execute("SELECT source,COUNT(*),MAX(received_utc) FROM events GROUP BY source ORDER BY source").fetchall()
         return [{"source":r[0],"records":r[1],"last_contact_utc":r[2]} for r in rows]
     def reader_authorized(self,token): return any(hmac.compare_digest(value,token) for value in self.tokens.values())
+    def archive_inventory(self):
+        with self.archive_lock:
+            key=Path(self.key).read_bytes();items=[];seen=set()
+            for kind,folder in (("ARCHIVE","archives"),("INCIDENT","incidents")):
+                for path in (Path(self.root)/folder).glob("*.gz"):
+                    name=str(path);seen.add(name);stat=path.stat();fingerprint=(stat.st_size,stat.st_mtime_ns)
+                    if name in self.archive_cache and self.archive_cache[name][0]==fingerprint: item=self.archive_cache[name][1]
+                    else:
+                        sha=path.with_suffix(path.suffix+".sha256");mac=path.with_suffix(path.suffix+".hmac");status="MISSING"
+                        if sha.exists() and mac.exists():
+                            content=path.read_bytes();valid=hmac.compare_digest(sha.read_text().split()[0],hashlib.sha256(content).hexdigest()) and hmac.compare_digest(mac.read_text().split()[0],hmac.new(key,content,hashlib.sha256).hexdigest());status="VALID" if valid else "INVALID"
+                        item={"name":path.name,"kind":kind,"bytes":stat.st_size,"modified_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime(stat.st_mtime)),"signature":status};self.archive_cache[name]=(fingerprint,item)
+                    items.append(item)
+            self.archive_cache={name:value for name,value in self.archive_cache.items() if name in seen}
+            return sorted(items,key=lambda item:item["modified_utc"],reverse=True)
     def load_last_maintenance(self):
         row=self.db.execute("SELECT source,request_id,action,state,updated_utc,result FROM maintenance_requests ORDER BY rowid DESC LIMIT 1").fetchone()
         return {"state":"READY"} if not row else {"source":row[0],"request_id":row[1],"action":row[2],"state":row[3],"utc":row[4],"result":row[5]}
@@ -71,6 +86,10 @@ def handler(hub):
                 token=self.headers.get("Authorization","").removeprefix("Bearer ")
                 if not hub.reader_authorized(token): return self.reply(401,{"error":"unauthorized"})
                 return self.reply(200,{"events":hub.recent(min(200,max(1,int(parse_qs(parsed.query).get("limit",[50])[0]))))})
+            if parsed.path=="/v1/archives":
+                token=self.headers.get("Authorization","").removeprefix("Bearer ")
+                if not hub.reader_authorized(token): return self.reply(401,{"error":"unauthorized"})
+                return self.reply(200,{"archives":hub.archive_inventory()})
             self.reply(404,{"error":"not_found"})
         def do_POST(self):
             if self.path not in ("/v1/events","/v1/maintenance"): return self.reply(404,{"error":"not_found"})
