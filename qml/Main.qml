@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Window
 
 ApplicationWindow {
     id: root
@@ -8,6 +9,9 @@ ApplicationWindow {
     minimumWidth: 800; minimumHeight: 480
     title: "EFIS NEXT Adaptive Mission Deck"
     color: "#061018"
+    visibility: efisKiosk ? Window.FullScreen : Window.Windowed
+    flags: efisKiosk ? (Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint) : Qt.Window
+    onClosing: function(close) { if (efisKiosk) close.accepted = false }
     property bool maintenanceVisible: Qt.application.arguments.indexOf("--setup-preview") >= 0 || Qt.application.arguments.indexOf("--setup-aircraft-preview") >= 0 || Qt.application.arguments.indexOf("--setup-catalog-preview") >= 0 || Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0 || Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0 || Qt.application.arguments.indexOf("--setup-airport-preview") >= 0 || Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0 || Qt.application.arguments.indexOf("--setup-bench-preview") >= 0
     property bool simulatorVisible: Qt.application.arguments.indexOf("--simulator-preview") >= 0
     Component.onCompleted: { if (Qt.application.arguments.indexOf("--setup-bench-preview") >= 0) bench.startReplay(bench.defaultSource); if (Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0) pfd.stageAircraft(1); if (Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.stageEngine(1); if (Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.startEngineSensorTest("RPM",true); if (Qt.application.arguments.indexOf("--simulator-preview") >= 0) pfd.startSystemSimulation("full-flight") }

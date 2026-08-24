@@ -7,8 +7,9 @@ PartOf=graphical-session.target
 [Service]
 Type=simple
 WorkingDirectory=/home/efis/efis-next
+Environment=EFIS_KIOSK=1
 ExecStart=/home/efis/efis-next/deploy/scripts/run-pfd.sh
-Restart=on-failure
+Restart=always
 RestartSec=2
 TimeoutStopSec=5
 KillSignal=SIGTERM

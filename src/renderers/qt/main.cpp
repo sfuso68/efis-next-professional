@@ -22,6 +22,7 @@
 int main(int argc, char* argv[]) {
     QGuiApplication app(argc, argv);
     QGuiApplication::setApplicationName("EFIS Next PFD");
+    const bool kioskMode = qEnvironmentVariableIntValue("EFIS_KIOSK") > 0;
     qmlRegisterType<GpuMapItem>("EfisNext.Native", 1, 0, "GpuMapItem");
     qmlRegisterType<SyntheticVisionItem>("EfisNext.Native", 1, 0, "SyntheticVisionItem");
     qmlRegisterType<CircularGaugeItem>("EfisNext.Native", 1, 0, "CircularGaugeItem");
@@ -38,6 +39,7 @@ int main(int argc, char* argv[]) {
     engine.rootContext()->setContextProperty("pfd", &controller);
     engine.rootContext()->setContextProperty("connectivity", &connectivity);
     engine.rootContext()->setContextProperty("weather", &weather);
+    engine.rootContext()->setContextProperty("efisKiosk", kioskMode);
     SensorBenchController sensorBench;
     engine.rootContext()->setContextProperty("bench", &sensorBench);
     engine.rootContext()->setContextProperty(
@@ -69,10 +71,26 @@ int main(int argc, char* argv[]) {
         metrics->start();
     }
 
-    if (qEnvironmentVariableIsSet("EFIS_KIOSK")) {
+    if (kioskMode) {
         if (auto* window = qobject_cast<QWindow*>(engine.rootObjects().front())) {
+            window->setFlags(window->flags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
             window->showFullScreen();
+            window->requestActivate();
             QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
+            QObject::connect(window, &QWindow::visibilityChanged, window,
+                             [window](QWindow::Visibility visibility) {
+                if (visibility != QWindow::FullScreen) {
+                    QTimer::singleShot(0, window, [window] {
+                        window->showFullScreen();
+                        window->requestActivate();
+                    });
+                }
+            });
+            QObject::connect(window, &QWindow::activeChanged, window, [window] {
+                if (!window->isActive()) {
+                    QTimer::singleShot(0, window, [window] { window->requestActivate(); });
+                }
+            });
         }
     }
     return app.exec();
