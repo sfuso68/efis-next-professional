@@ -7,7 +7,8 @@ Rectangle {
     property int section: 0
     property int requestedSection: 0
     property int monitorSensor: -1
-    property bool showFuelHistory: false
+    property bool showFuelHistory: Qt.application.arguments.indexOf("--setup-blackbox-preview") >= 0
+    property bool showArchiveInventory: Qt.application.arguments.indexOf("--setup-blackbox-preview") >= 0
     onVisibleChanged: if(visible)section=requestedSection
     signal closed()
     z: 200; color: "#F0051018"; border.color: "#28D9F4"
@@ -193,12 +194,20 @@ Rectangle {
             Text { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; bottomMargin:5*setup.uiScale } text:"Intervals must be confirmed against the applicable Rotax maintenance manual, engine serial number, fuel and operating conditions. BLACKBOX  "+String(controller.blackBoxState||"OFFLINE")+"  •  "+String(controller.blackBoxRecords||0)+" RECORDS"; color:setup.amber; horizontalAlignment:Text.AlignHCenter; font.pixelSize:6*setup.uiScale }
         }
         Rectangle { visible:setup.showFuelHistory; anchors.centerIn:parent; width:700*setup.uiScale; height:350*setup.uiScale; z:30; radius:6*setup.uiScale; color:"#F006151E"; border.width:2; border.color:setup.cyan
-            Text { x:16*setup.uiScale; y:14*setup.uiScale; text:"BLACKBOX • FUEL EVENT HISTORY • "+String(controller.centralBlackBoxState||"OFFLINE"); color:String(controller.centralBlackBoxState)==="ONLINE"?"white":setup.amber; font.pixelSize:14*setup.uiScale; font.bold:true }
+            Text { x:16*setup.uiScale; y:14*setup.uiScale; text:"BLACKBOX • "+String(controller.centralBlackBoxState||"OFFLINE"); color:String(controller.centralBlackBoxState)==="ONLINE"?"white":setup.amber; font.pixelSize:14*setup.uiScale; font.bold:true }
+            Row { x:292*setup.uiScale; y:9*setup.uiScale; spacing:6*setup.uiScale
+                Repeater { model:[{label:"EVENTS",archives:false},{label:"SIGNED FILES",archives:true}]
+                    delegate:Rectangle { required property var modelData; width:105*setup.uiScale; height:29*setup.uiScale; radius:3*setup.uiScale; color:setup.showArchiveInventory===modelData.archives?"#174052":"#10232D"; border.color:setup.showArchiveInventory===modelData.archives?setup.cyan:setup.line
+                        Text { anchors.centerIn:parent; text:modelData.label; color:setup.showArchiveInventory===modelData.archives?setup.cyan:"#91A2AA"; font.pixelSize:7*setup.uiScale; font.bold:true }
+                        TapHandler { onTapped:setup.showArchiveInventory=modelData.archives }
+                    }
+                }
+            }
             Text { anchors { right:parent.right; top:parent.top; margins:16*setup.uiScale } text:"CLOSE"; color:setup.cyan; font.pixelSize:9*setup.uiScale; font.bold:true; TapHandler { onTapped:setup.showFuelHistory=false } }
-            Rectangle { x:14*setup.uiScale; y:48*setup.uiScale; width:parent.width-28*setup.uiScale; height:24*setup.uiScale; color:"#10232D"; border.color:setup.line
+            Rectangle { visible:!setup.showArchiveInventory; x:14*setup.uiScale; y:48*setup.uiScale; width:parent.width-28*setup.uiScale; height:24*setup.uiScale; color:"#10232D"; border.color:setup.line
                 Text { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"SOURCE              UTC                    STATE                 L / R       FLOW    Δ GPH"; color:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
             }
-            ListView { x:14*setup.uiScale; y:74*setup.uiScale; width:parent.width-28*setup.uiScale; height:parent.height-145*setup.uiScale; clip:true; spacing:2*setup.uiScale; model:setup.listOr("centralFuelEvents").length?setup.listOr("centralFuelEvents"):setup.listOr("fuelEventHistory")
+            ListView { visible:!setup.showArchiveInventory; x:14*setup.uiScale; y:74*setup.uiScale; width:parent.width-28*setup.uiScale; height:parent.height-145*setup.uiScale; clip:true; spacing:2*setup.uiScale; model:setup.listOr("centralFuelEvents").length?setup.listOr("centralFuelEvents"):setup.listOr("fuelEventHistory")
                 delegate:Rectangle { required property var modelData; required property int index; width:ListView.view.width; height:27*setup.uiScale; color:index%2?"#0B1922":"#10222C"; border.color:String(modelData.state).indexOf("LEAK")>=0?setup.amber:"transparent"
                     Text { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:105*setup.uiScale; elide:Text.ElideRight; text:String(modelData.source||"LOCAL"); color:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
                     Text { x:118*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:145*setup.uiScale; text:String(modelData.utc||"").replace("T"," ").replace("Z",""); color:"#B8C5CA"; font.pixelSize:7*setup.uiScale }
@@ -208,6 +217,19 @@ Rectangle {
                     Text { x:585*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:Number(modelData.excess_gph||0).toFixed(2); color:"white"; font.pixelSize:7*setup.uiScale; font.bold:true }
                 }
                 Text { visible:parent.count===0; anchors.centerIn:parent; text:"NO FUEL EVENTS RECORDED"; color:setup.green; font.pixelSize:9*setup.uiScale; font.bold:true }
+            }
+            Rectangle { visible:setup.showArchiveInventory; x:14*setup.uiScale; y:48*setup.uiScale; width:parent.width-28*setup.uiScale; height:24*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"TYPE          CREATED UTC                  FILE                                      SIZE       SIGNATURE"; color:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
+            }
+            ListView { visible:setup.showArchiveInventory; x:14*setup.uiScale; y:74*setup.uiScale; width:parent.width-28*setup.uiScale; height:parent.height-145*setup.uiScale; clip:true; spacing:2*setup.uiScale; model:setup.listOr("centralBlackBoxArchives")
+                delegate:Rectangle { required property var modelData; required property int index; width:ListView.view.width; height:30*setup.uiScale; color:index%2?"#0B1922":"#10222C"; border.color:String(modelData.signature)==="VALID"?"transparent":setup.amber
+                    Text { x:8*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:75*setup.uiScale; text:String(modelData.kind||""); color:modelData.kind==="INCIDENT"?setup.amber:setup.cyan; font.pixelSize:7*setup.uiScale; font.bold:true }
+                    Text { x:90*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:130*setup.uiScale; text:String(modelData.modified_utc||"").replace("T"," ").replace("Z",""); color:"#B8C5CA"; font.pixelSize:7*setup.uiScale }
+                    Text { x:230*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:275*setup.uiScale; elide:Text.ElideMiddle; text:String(modelData.name||""); color:"white"; font.pixelSize:7*setup.uiScale }
+                    Text { x:515*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:65*setup.uiScale; horizontalAlignment:Text.AlignRight; text:Number(modelData.bytes||0)>=1048576?(Number(modelData.bytes)/1048576).toFixed(1)+" MB":Math.max(1,Math.round(Number(modelData.bytes||0)/1024))+" KB"; color:setup.cyan; font.pixelSize:7*setup.uiScale }
+                    Text { x:600*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:String(modelData.signature||"MISSING"); color:text==="VALID"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+                }
+                Text { visible:parent.count===0; anchors.centerIn:parent; text:"NO SIGNED FILES AVAILABLE"; color:setup.amber; font.pixelSize:9*setup.uiScale; font.bold:true }
             }
             Row { anchors { left:parent.left; bottom:parent.bottom; margins:14*setup.uiScale } spacing:8*setup.uiScale
                 Repeater { model:[{label:"CREATE INCIDENT",action:"CREATE_INCIDENT"},{label:"VERIFY SIGNATURES",action:"VERIFY_SIGNATURES"},{label:"EXPORT USB",action:"EXPORT_USB"}]

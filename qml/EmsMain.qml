@@ -16,7 +16,11 @@ ApplicationWindow {
     AdaptiveEmsView {
         anchors.fill: parent
         controller: ems
-        Component.onCompleted: setupVisible = Qt.application.arguments.indexOf("--setup-preview") >= 0
+        Component.onCompleted: {
+            var blackboxPreview = Qt.application.arguments.indexOf("--setup-blackbox-preview") >= 0
+            setupVisible = Qt.application.arguments.indexOf("--setup-preview") >= 0 || blackboxPreview
+            if (blackboxPreview) setupSection = 4
+        }
     }
 
     Shortcut { sequence: "Ctrl+F"; onActivated: ems.cycleEngineFault() }
