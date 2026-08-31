@@ -45,7 +45,14 @@ class Hub:
                         item={"name":path.name,"kind":kind,"bytes":stat.st_size,"modified_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime(stat.st_mtime)),"signature":status};self.archive_cache[name]=(fingerprint,item)
                     items.append(item)
             self.archive_cache={name:value for name,value in self.archive_cache.items() if name in seen}
-            return sorted(items,key=lambda item:item["modified_utc"],reverse=True)
+            package_count=len(items);manifest_path=Path(self.root)/"can-segment-manifest.json";can_summary={"segments":0,"valid":0,"rejected":0,"bytes":0,"manifest":"MISSING"}
+            if manifest_path.exists():
+                sha=manifest_path.with_suffix(manifest_path.suffix+".sha256");mac=manifest_path.with_suffix(manifest_path.suffix+".hmac");content=manifest_path.read_bytes();valid=sha.exists() and mac.exists() and hmac.compare_digest(sha.read_text().split()[0],hashlib.sha256(content).hexdigest()) and hmac.compare_digest(mac.read_text().split()[0],hmac.new(key,content,hashlib.sha256).hexdigest());can_summary["manifest"]="VALID" if valid else "INVALID"
+                if valid:
+                    manifest=json.loads(content);can_summary.update(manifest.get("summary",{}));can_summary["manifest"]="VALID";can_summary["generated_utc"]=manifest.get("generated_utc","")
+                    for segment in manifest.get("segments",[])[-50:]:
+                        status=segment.get("format","UNKNOWN");items.append({"name":segment.get("name",""),"kind":"CAN","bytes":segment.get("bytes",0),"modified_utc":segment.get("modified_utc",""),"signature":"VALID" if status in ("VALID","RECOVERED_TRUNCATED") else status,"format":status,"records":segment.get("records",0)})
+            return {"archives":sorted(items,key=lambda item:item["modified_utc"],reverse=True),"summary":{"packages":package_count,"can":can_summary}}
     def load_last_maintenance(self):
         row=self.db.execute("SELECT source,request_id,action,state,updated_utc,result FROM maintenance_requests ORDER BY rowid DESC LIMIT 1").fetchone()
         return {"state":"READY"} if not row else {"source":row[0],"request_id":row[1],"action":row[2],"state":row[3],"utc":row[4],"result":row[5]}
@@ -89,7 +96,7 @@ def handler(hub):
             if parsed.path=="/v1/archives":
                 token=self.headers.get("Authorization","").removeprefix("Bearer ")
                 if not hub.reader_authorized(token): return self.reply(401,{"error":"unauthorized"})
-                return self.reply(200,{"archives":hub.archive_inventory()})
+                return self.reply(200,hub.archive_inventory())
             self.reply(404,{"error":"not_found"})
         def do_POST(self):
             if self.path not in ("/v1/events","/v1/maintenance"): return self.reply(404,{"error":"not_found"})

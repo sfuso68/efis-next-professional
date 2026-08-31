@@ -1,0 +1,17 @@
+[Unit]
+Description=EFIS signed CAN blackbox segment manifest
+After=bbxlog.service
+
+[Service]
+Type=oneshot
+User=blackbox
+Group=blackbox
+ExecStart=/usr/bin/python3 /opt/efis-blackbox/fuel_event_maintenance.py seal-can --root /var/lib/blackbox/ethernet --key /etc/blackbox/archive-signing.key --can-root /var/lib/blackbox/can
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadOnlyPaths=/var/lib/blackbox/can
+ReadWritePaths=/var/lib/blackbox/ethernet

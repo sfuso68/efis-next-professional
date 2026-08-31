@@ -1,16 +1,51 @@
 #!/usr/bin/env python3
 """Retention, signed archives, flight index and incident export for fuel events."""
-import argparse, datetime as dt, gzip, hashlib, hmac, json, shutil, sqlite3, tarfile, tempfile
+import argparse, datetime as dt, gzip, hashlib, hmac, json, shutil, sqlite3, struct, tarfile, tempfile
 from pathlib import Path
 
 def canonical(value): return json.dumps(value,sort_keys=True,separators=(",",":"))
+def file_sha256(path):
+    digest=hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda:stream.read(1024*1024),b""): digest.update(block)
+    return digest.hexdigest()
 def signature(path,key):
-    digest=hashlib.sha256(path.read_bytes()).hexdigest(); mac=hmac.new(key,path.read_bytes(),hashlib.sha256).hexdigest()
+    content=path.read_bytes();digest=hashlib.sha256(content).hexdigest();mac=hmac.new(key,content,hashlib.sha256).hexdigest()
     path.with_suffix(path.suffix+".sha256").write_text(digest+"  "+path.name+"\n");path.with_suffix(path.suffix+".hmac").write_text(mac+"  "+path.name+"\n")
 def verify(path,key):
     sha=path.with_suffix(path.suffix+".sha256");mac=path.with_suffix(path.suffix+".hmac")
     if not sha.exists() or not mac.exists(): return False
     content=path.read_bytes();return hmac.compare_digest(sha.read_text().split()[0],hashlib.sha256(content).hexdigest()) and hmac.compare_digest(mac.read_text().split()[0],hmac.new(key,content,hashlib.sha256).hexdigest())
+def utc_now(): return dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+def write_signed_json(path,payload,key):
+    path.parent.mkdir(parents=True,exist_ok=True);tmp=path.with_suffix(path.suffix+".tmp");tmp.write_text(canonical(payload));tmp.replace(path);signature(path,key)
+def load_can_manifest(path,key):
+    if not path.exists() or not verify(path,key): return {}
+    try: return {item["name"]:item for item in json.loads(path.read_text()).get("segments",[])}
+    except (KeyError,TypeError,ValueError,json.JSONDecodeError): return {}
+def inspect_bbx(path):
+    size=path.stat().st_size
+    if size<64:return "REJECTED_SHORT",0,size
+    with path.open("rb") as stream:header=stream.read(64)
+    magic,version,record_size,_,interfaces=struct.unpack_from("<8sHHQB",header)
+    if magic!=b"FUSOBBX1":return "REJECTED_MAGIC",0,size
+    if version!=1:return "REJECTED_VERSION",0,size
+    if record_size!=24:return "REJECTED_RECORD_SIZE",0,size
+    if not 1<=interfaces<=4:return "REJECTED_INTERFACES",0,size
+    complete=(size-64)//record_size;trailing=(size-64)%record_size
+    return ("VALID" if trailing==0 else "RECOVERED_TRUNCATED"),complete,trailing
+def seal_can(root,can_root,key):
+    manifest=root/"can-segment-manifest.json";previous=load_can_manifest(manifest,key);segments=[]
+    for path in sorted(can_root.glob("bbx-*.bbx")):
+        stat=path.stat();cached=previous.get(path.name);fingerprint=(stat.st_size,stat.st_mtime_ns,stat.st_ctime_ns)
+        if cached and tuple(cached.get("fingerprint",()))==fingerprint:item=cached
+        else:
+            status,records,trailing=inspect_bbx(path);digest=file_sha256(path)
+            item={"name":path.name,"bytes":stat.st_size,"modified_utc":dt.datetime.fromtimestamp(stat.st_mtime,dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),"sha256":digest,"format":status,"records":records,"trailing_bytes":trailing,"fingerprint":list(fingerprint)}
+        segments.append(item)
+    valid=sum(item["format"] in ("VALID","RECOVERED_TRUNCATED") for item in segments)
+    payload={"schema":"efis.blackbox.can-segment-manifest.v1","generated_utc":utc_now(),"source":"FUSOBBX1","segments":segments,"summary":{"segments":len(segments),"valid":valid,"rejected":len(segments)-valid,"bytes":sum(item["bytes"] for item in segments)}}
+    write_signed_json(manifest,payload,key);return payload
 def rows(db,where="1",args=()): return db.execute("SELECT id,source,received_utc,event_utc,state,payload FROM events WHERE "+where+" ORDER BY received_utc",args).fetchall()
 def event_record(row): return {"id":row[0],"source":row[1],"received_utc":row[2],"event_utc":row[3],"state":row[4],"event":json.loads(row[5])}
 def write_archive(path,records,key):
@@ -55,11 +90,16 @@ def export_usb(root,target,key):
     if (root/"flight-index.json").exists(): shutil.copy2(root/"flight-index.json",destination)
     return destination
 def main():
-    p=argparse.ArgumentParser();p.add_argument("command",choices=("maintain","incident","verify","export-usb"));p.add_argument("--database",required=True);p.add_argument("--root",required=True);p.add_argument("--key",required=True);p.add_argument("--retention-days",type=int,default=180);p.add_argument("--hours",type=int,default=2);p.add_argument("--usb");a=p.parse_args();root=Path(a.root);root.mkdir(parents=True,exist_ok=True);key=Path(a.key).read_bytes();db=sqlite3.connect(a.database)
+    p=argparse.ArgumentParser();p.add_argument("command",choices=("maintain","incident","verify","export-usb","seal-can"));p.add_argument("--database");p.add_argument("--root",required=True);p.add_argument("--key",required=True);p.add_argument("--can-root");p.add_argument("--retention-days",type=int,default=180);p.add_argument("--hours",type=int,default=2);p.add_argument("--usb");a=p.parse_args();root=Path(a.root);root.mkdir(parents=True,exist_ok=True);key=Path(a.key).read_bytes()
+    if a.command=="seal-can":
+        if not a.can_root:p.error("--can-root is required for seal-can")
+        payload=seal_can(root,Path(a.can_root),key);print(canonical({"manifest":"SIGNED",**payload["summary"]}));return
+    if not a.database:p.error("--database is required")
+    db=sqlite3.connect(a.database)
     if a.command=="maintain": maintain(db,root,key,a.retention_days)
     elif a.command=="incident": print(incident(db,root,key,a.hours))
     elif a.command=="verify":
-        checked=list((root/"archives").glob("*.gz"))+list((root/"incidents").glob("*.gz"));print(canonical({"verified":sum(verify(path,key) for path in checked),"total":len(checked)}));raise SystemExit(0 if all(verify(path,key) for path in checked) else 2)
+        packages=list((root/"archives").glob("*.gz"))+list((root/"incidents").glob("*.gz"));manifest=root/"can-segment-manifest.json";checked=packages+([manifest] if manifest.exists() else []);valid=[verify(path,key) for path in checked];print(canonical({"verified":sum(valid),"total":len(checked),"packages":len(packages),"can_manifest":"VALID" if manifest.exists() and verify(manifest,key) else "MISSING" if not manifest.exists() else "INVALID"}));raise SystemExit(0 if all(valid) else 2)
     elif not a.usb: p.error("--usb is required for export-usb")
     else: print(export_usb(root,Path(a.usb),key))
 if __name__=="__main__": main()

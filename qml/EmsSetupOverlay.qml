@@ -19,6 +19,7 @@ Rectangle {
     readonly property color panel: "#E00A1821"
     function numberOr(name) { return typeof controller[name] === "number" ? controller[name] : 0 }
     function listOr(name) { var v=controller[name]; return v && typeof v.length === "number" ? v : [] }
+    function mapOr(name) { var v=controller[name]; return v && typeof v === "object" ? v : ({}) }
     function busState(bus) { var m=String(controller.electricalTestMode||"NORMAL"); if(m==="ESSENTIAL BUS ISOLATED"&&bus==="ESSENTIAL")return "ISOLATED"; if(m==="MAIN BUS LOW"&&(bus==="MAIN"||bus==="AVIONICS"))return "LOW VOLTAGE"; return m==="ALTERNATOR OFFLINE"?"BATTERY SUPPLY":"POWERED" }
     function loadPowered(load) { return load.installed && setup.busState(String(load.bus))!=="ISOLATED" }
 
@@ -239,7 +240,7 @@ Rectangle {
                     }
                 }
             }
-            Text { anchors { left:parent.left; bottom:parent.bottom; leftMargin:19*setup.uiScale; bottomMargin:57*setup.uiScale } width:310*setup.uiScale; elide:Text.ElideRight; text:"SIGNED FILES  "+setup.listOr("centralBlackBoxArchives").length+(setup.listOr("centralBlackBoxArchives").length?" • LAST  "+String(setup.listOr("centralBlackBoxArchives")[0].kind)+" • "+String(setup.listOr("centralBlackBoxArchives")[0].signature):""); color:setup.listOr("centralBlackBoxArchives").some(function(item){return String(item.signature)!=="VALID"})?setup.amber:setup.green; font.pixelSize:7*setup.uiScale; font.bold:true }
+            Text { anchors { left:parent.left; bottom:parent.bottom; leftMargin:19*setup.uiScale; bottomMargin:57*setup.uiScale } width:310*setup.uiScale; elide:Text.ElideRight; property var archiveSummary:setup.mapOr("centralBlackBoxArchiveSummary"); property var canSummary:archiveSummary.can||({}); text:"CAN  "+Number(canSummary.segments||0)+" • PACKAGES  "+Number(archiveSummary.packages||0)+" • MANIFEST  "+String(canSummary.manifest||"MISSING"); color:String(canSummary.manifest||"MISSING")==="VALID"&&!setup.listOr("centralBlackBoxArchives").some(function(item){return String(item.signature)!=="VALID"})?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
             Text { anchors { right:parent.right; bottom:parent.bottom; rightMargin:19*setup.uiScale; bottomMargin:57*setup.uiScale } width:330*setup.uiScale; horizontalAlignment:Text.AlignRight; elide:Text.ElideRight; text:String((controller.centralBlackBoxMaintenance||{}).action||"READY")+" • "+String((controller.centralBlackBoxMaintenance||{}).state||"READY")+(String((controller.centralBlackBoxMaintenance||{}).result||"").length?" • "+String(controller.centralBlackBoxMaintenance.result):""); color:String((controller.centralBlackBoxMaintenance||{}).state)==="COMPLETE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
         }
     }
