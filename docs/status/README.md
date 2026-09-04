@@ -2,6 +2,10 @@
 
 Questa directory contiene i documenti ufficiali di controllo del progetto.
 
+**Repository autorevole:** `sfuso68/efis-next-professional`. Il repository
+`sfuso68/efis-evolved` resta il progetto storico separato e non è una base di
+merge per EFIS NEXT.
+
 ## 1. `EFIS_NEXT_STATE.md`
 
 **Single Source of Truth sintetica.**

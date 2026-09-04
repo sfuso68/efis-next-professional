@@ -2,7 +2,8 @@
 
 **Ruolo:** registro operativo del progetto / controllo avanzamento  
 **Fonte sintetica collegata:** `docs/status/EFIS_NEXT_STATE.md`  
-**Baseline tecnica:** `work/claude-strumenti-p1`  
+**Baseline tecnica:** `work/codex-multisource-p1`
+
 **Stato progetto:** DEVELOPMENT / NON-CERT  
 
 ## Regole
