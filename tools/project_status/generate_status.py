@@ -15,11 +15,18 @@ from pathlib import Path
 
 ALLOWED = {"DONE", "PARTIAL", "TODO", "BLOCKED", "VERIFY-HW", "LEGACY"}
 STATUS_ALIASES = {
+    "DONE-SW": "VERIFY-HW",
     "DONE-SW / VERIFY-HW": "VERIFY-HW",
     "PARTIAL-HW": "PARTIAL",
     "EARLY/PARTIAL": "PARTIAL",
+    "DONE/PARTIAL": "PARTIAL",
+    "DONE-ARCH": "PARTIAL",
+    "PARTIAL/DONE-DATA": "PARTIAL",
+    "PARTIAL/EXPERIMENTAL": "PARTIAL",
+    "LEGACY/REFERENCE": "LEGACY",
     "OPERATIONAL-LEGACY": "LEGACY",
     "OPERATIONAL-LEGACY/REFERENCE": "LEGACY",
+    "TODO/DESIGN": "TODO",
     "DESIGN": "TODO",
 }
 ID_RE = re.compile(r"^[A-Z][A-Z0-9_-]*-\d{3}$")
@@ -47,7 +54,6 @@ def parse_matrix(path: Path) -> list[dict[str, str]]:
             continue
         if len(cells) < 5:
             raise ValueError(f"Malformed project row at {path}:{lineno}")
-        # Expected leading columns: ID | Area/Requisito | Nodo | Stato | Evidenza ...
         row = {
             "id": cells[0],
             "requirement": cells[1] if len(cells) > 1 else "",
