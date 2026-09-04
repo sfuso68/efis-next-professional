@@ -27,9 +27,7 @@ jobs:
           python-version: '3.12'
 
       - name: Validate matrix and generated status
-        run: |
-          python tools/project_status/generate_status.py
-          python tools/project_status/generate_status.py --check
+        run: python tools/project_status/generate_status.py --check
 
       - name: Determine changed files
         id: changes
