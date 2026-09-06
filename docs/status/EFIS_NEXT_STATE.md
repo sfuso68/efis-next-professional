@@ -2,7 +2,7 @@
 
 Aggiornamento: 2026-09-06
 
-Branch di lavoro: `work/ddp-v2-udp-adapter-v1`
+Branch di lavoro: `work/blackbox-ddp-publisher-v1`
 
 Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, ADR-001…ADR-008. ADR-009 registra la decisione di questo branch.
 
@@ -59,6 +59,23 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - ADR-009 sceglie UDP unicast per la fase di sviluppo e fissa i gate di rete e
   autenticazione ancora aperti.
 
+### Publisher operativo Blackbox
+
+- Aggiunto `BlackboxPublisherSession`, punto di composizione che collega lo
+  stato della pipeline `MavlinkPipeline` al publisher DDP senza introdurre una
+  sorgente simulata o un percorso di comando.
+- Aggiunto `efis-blackbox-broker`: riceve MAVLink su UDP e, quando configurato,
+  frame ESP32 su SocketCAN; pubblica a 20 Hz lo snapshot normalizzato verso il
+  PFD tramite UDP unicast.
+- Lo stesso snapshot distribuito viene scritto nel recorder segmentato della
+  Blackbox, preceduto dagli eventi di nodo e cambio sorgente del ciclo.
+- In assenza di dati il broker pubblica campioni non disponibili: il display
+  può quindi distinguere il link DDP vivo dalla disponibilità dei sensori.
+- L'eseguibile espone contatori per datagrammi/byte MAVLink, errori e
+  troncamenti socket, frame CAN e datagrammi/byte DDP.
+- Aggiunti unità systemd di predisposizione e guida di deployment. Il servizio
+  non è stato installato né attivato sulla Blackbox reale in questo branch.
+
 ### Inventario firmato dei segmenti CAN della Blackbox
 
 - Aggiunto il comando `seal-can` a `tools/blackbox/fuel_event_maintenance.py`.
@@ -103,11 +120,20 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - `efis_ddp_udp_tests` ha verificato con socket loopback reale ricezione,
   provenienza, identità nodo, metriche, transizioni `LIVE/STALE/LOST` e rifiuto
   di un publisher estraneo.
-- Build completa corrente riuscita per tutti i target. Tredici test su quindici
-  sono stati avviati e superati; `efis_core_tests` ed
-  `efis_engine_runtime_tests` sono stati bloccati prima dell'avvio da Windows
-  Application Control (`BAD_COMMAND`), senza failure di asserzione. Entrambi
-  erano passati nella verifica completa immediatamente precedente.
+- Una precedente esecuzione Windows aveva visto due test bloccati prima
+  dell'avvio da Application Control (`BAD_COMMAND`). La verifica completa più
+  recente di questo branch ha compilato tutti i target e superato **15 test su
+  15**, inclusi `efis_core_tests` ed `efis_engine_runtime_tests`.
+- Build MSVC di `efis-blackbox-broker`, PFD e test UDP completata dopo
+  l'innesto del publisher operativo.
+- Il test UDP end-to-end ora introduce frame MAVLink V2 nella pipeline
+  Blackbox e verifica sul consumer DDP velocità normalizzata, provenienza
+  Pixhawk, assenza del marcatore simulato e metriche di pubblicazione; rilegge
+  inoltre il segmento locale e ritrova la stessa misura e provenienza.
+- Esecuzione locale del broker per un secondo, senza CAN e senza ingresso
+  MAVLink, riuscita: 21 snapshot esplicitamente non disponibili pubblicati e
+  21 registrati, zero errori socket. È una verifica software del ciclo, non
+  hardware.
 
 - Tre test unitari Python su segmenti sintetici `FUSOBBX1`, eseguiti con Python 3.13.5:
   - segmento chiuso valido, firma valida e riuso digest;
@@ -146,10 +172,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 ## Aperto — non dichiarare DONE
 
-- Collegare `DdpUdpPublisher` allo snapshot della pipeline di ingestione reale
-  Blackbox; il publisher da banco usa soltanto simulazione dichiarata.
-- Installare il receiver sul RPi5 e verificare su Ethernet reale perdita,
+- Installare `efis-blackbox-broker` sulla Blackbox e il receiver sul RPi5,
+  configurare gli endpoint reali e verificare su Ethernet perdita,
   riordino, timeout, reboot, latenza e jitter.
+- Confermare la mappa fisica `can_a`/`can_b` prima di abilitare SocketCAN nel
+  servizio; la configurazione `can_a` è soltanto un valore iniziale da banco.
 - Definire cadenza operativa e autenticazione/provisioning. UDP unicast è
   deciso per lo sviluppo, ma una LAN non isolata non soddisfa il gate prodotto.
 

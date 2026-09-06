@@ -1,0 +1,201 @@
+#include "efis/ingest/blackbox_publisher_session.hpp"
+#include "efis/io/socketcan_source.hpp"
+#include "efis/io/udp_datagram.hpp"
+#include "efis/recording/segmented_recorder.hpp"
+
+#include <array>
+#include <atomic>
+#include <chrono>
+#include <csignal>
+#include <cstdint>
+#include <exception>
+#include <filesystem>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <random>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
+
+namespace {
+
+std::atomic_bool running{true};
+void stop(int) { running.store(false); }
+
+struct Options final {
+    std::string mavlink_bind{"0.0.0.0"};
+    std::uint16_t mavlink_port{14'550};
+    std::string can_interface;
+    std::string display;
+    std::filesystem::path records;
+    std::uint16_t display_port{49'002};
+    std::uint32_t source_node{47};
+    int rate_hz{20};
+    int seconds{};
+};
+
+template <class T>
+T unsigned_value(const std::string& text, const char* name, T maximum) {
+    std::size_t used{};
+    const auto value = std::stoull(text, &used);
+    if (used != text.size() || value == 0 || value > maximum) {
+        throw std::invalid_argument{std::string{"invalid "} + name};
+    }
+    return static_cast<T>(value);
+}
+
+Options parse(int argc, char** argv) {
+    Options options;
+    for (int index = 1; index < argc; ++index) {
+        const std::string argument{argv[index]};
+        auto value = [&](const char* name) -> std::string {
+            if (++index >= argc) {
+                throw std::invalid_argument{std::string{name} + " needs a value"};
+            }
+            return argv[index];
+        };
+        if (argument == "--mavlink-bind") options.mavlink_bind = value("--mavlink-bind");
+        else if (argument == "--mavlink-port") {
+            options.mavlink_port = unsigned_value<std::uint16_t>(
+                value("--mavlink-port"), "MAVLink port", 65'535);
+        } else if (argument == "--can-interface") {
+            options.can_interface = value("--can-interface");
+        } else if (argument == "--display") options.display = value("--display");
+        else if (argument == "--records") options.records = value("--records");
+        else if (argument == "--display-port") {
+            options.display_port = unsigned_value<std::uint16_t>(
+                value("--display-port"), "display port", 65'535);
+        } else if (argument == "--source-node") {
+            options.source_node = unsigned_value<std::uint32_t>(
+                value("--source-node"), "source node",
+                std::numeric_limits<std::uint32_t>::max());
+        } else if (argument == "--rate-hz") {
+            options.rate_hz = unsigned_value<int>(value("--rate-hz"), "rate", 100);
+        } else if (argument == "--seconds") {
+            options.seconds = unsigned_value<int>(value("--seconds"), "duration",
+                                                  std::numeric_limits<int>::max());
+        } else {
+            throw std::invalid_argument{"unknown argument: " + argument};
+        }
+    }
+    if (options.display.empty()) {
+        throw std::invalid_argument{"--display is required"};
+    }
+    if (options.records.empty()) {
+        throw std::invalid_argument{"--records is required"};
+    }
+    return options;
+}
+
+std::uint64_t publisher_instance() {
+    std::random_device random;
+    const auto value = (static_cast<std::uint64_t>(random()) << 32U) |
+                       static_cast<std::uint64_t>(random());
+    return value == 0 ? 1 : value;
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+    using namespace std::chrono_literals;
+    try {
+        const auto options = parse(argc, argv);
+        std::signal(SIGINT, stop);
+        std::signal(SIGTERM, stop);
+        std::cout << std::unitbuf;
+
+        efis::io::UdpReceiver mavlink{{options.mavlink_bind, options.mavlink_port}};
+        std::unique_ptr<efis::io::SocketCanSource> can;
+        if (!options.can_interface.empty()) {
+            if (!efis::io::SocketCanSource::supported()) {
+                throw std::runtime_error{"SocketCAN is not supported on this platform"};
+            }
+            can = std::make_unique<efis::io::SocketCanSource>(options.can_interface);
+            if (!can->open()) {
+                throw std::runtime_error{"cannot open CAN interface: " + can->error()};
+            }
+        }
+
+        const auto instance = publisher_instance();
+        efis::recording::SegmentedRecorder recorder{options.records};
+        efis::ingest::BlackboxPublisherSession session{{
+            {options.display, options.display_port},
+            {efis::protocol::ddp::Profile::professional,
+             options.source_node, instance, 1}}, {}, &recorder};
+
+        std::array<std::uint8_t, efis::io::max_udp_payload> mavlink_buffer{};
+        std::vector<efis::can::Frame> can_buffer(64);
+        std::uint64_t mavlink_datagrams{};
+        std::uint64_t mavlink_socket_errors{};
+        std::uint64_t mavlink_truncated{};
+
+        const auto started = efis::MonoClock::now();
+        auto next = started;
+        auto next_report = started;
+        const auto period = std::chrono::microseconds{1'000'000 / options.rate_hz};
+
+        std::cout << "event=blackbox_broker_start mode=LIVE_READ_ONLY mavlink_bind="
+                  << options.mavlink_bind << ':' << options.mavlink_port
+                  << " can=" << (options.can_interface.empty() ? "DISABLED" : options.can_interface)
+                  << " display=" << options.display << ':' << options.display_port
+                  << " records=" << options.records.string()
+                  << " source_node=" << options.source_node
+                  << " instance=" << instance << " rate_hz=" << options.rate_hz << '\n';
+
+        while (running.load()) {
+            const auto now = efis::MonoClock::now();
+            for (int drained = 0; drained < 64; ++drained) {
+                const auto result = mavlink.receive(mavlink_buffer);
+                if (result.status == efis::io::DatagramStatus::would_block) break;
+                if (result.status == efis::io::DatagramStatus::truncated) {
+                    ++mavlink_truncated;
+                    continue;
+                }
+                if (result.status == efis::io::DatagramStatus::failed) {
+                    ++mavlink_socket_errors;
+                    break;
+                }
+                ++mavlink_datagrams;
+                session.consume_mavlink(
+                    std::span<const std::uint8_t>{mavlink_buffer.data(), result.size}, now);
+            }
+            if (can) {
+                const auto count = can->read(can_buffer);
+                if (count > 0) {
+                    session.consume_can(
+                        std::span<const efis::can::Frame>{can_buffer.data(), count}, now);
+                }
+            }
+
+            session.publish(now);
+            if (now >= next_report) {
+                next_report = now + 1s;
+                const auto& stats = session.statistics();
+                std::cout << "event=blackbox_broker_health mavlink_datagrams="
+                          << mavlink_datagrams << " mavlink_bytes=" << stats.mavlink_bytes
+                          << " mavlink_socket_errors=" << mavlink_socket_errors
+                          << " mavlink_truncated=" << mavlink_truncated
+                          << " can_frames=" << stats.can_frames
+                          << " node_events=" << stats.node_events_observed
+                          << " source_events=" << stats.source_events_observed
+                          << " recorded=" << stats.snapshots_recorded
+                          << " ddp_datagrams=" << session.publisher_metrics().datagrams
+                          << " ddp_bytes=" << session.publisher_metrics().bytes << '\n';
+            }
+            if (options.seconds > 0 &&
+                now - started >= std::chrono::seconds{options.seconds}) break;
+            next += period;
+            std::this_thread::sleep_until(next);
+        }
+
+        recorder.close();
+        std::cout << "event=blackbox_broker_stop ddp_datagrams="
+                  << session.publisher_metrics().datagrams << '\n';
+        return 0;
+    } catch (const std::exception& error) {
+        std::cerr << "event=blackbox_broker_failed reason=\"" << error.what() << "\"\n";
+        return 2;
+    }
+}
