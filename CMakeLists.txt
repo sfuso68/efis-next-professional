@@ -42,6 +42,7 @@ add_library(efis_core
     src/core/altimetry.cpp
     src/core/flight_dynamics.cpp
     src/core/signal_access.cpp
+    src/protocol/ddp_v2.cpp
     src/instruments/dial.cpp
     src/instruments/panel.cpp
     src/instruments/panel_store.cpp
@@ -276,6 +277,10 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_system_simulator_tests tests/system_simulator_tests.cpp)
     target_link_libraries(efis_system_simulator_tests PRIVATE efis_core)
     add_test(NAME efis_system_simulator_tests COMMAND efis_system_simulator_tests)
+
+    add_executable(efis_ddp_v2_tests tests/ddp_v2_tests.cpp)
+    target_link_libraries(efis_ddp_v2_tests PRIVATE efis_core)
+    add_test(NAME efis_ddp_v2_tests COMMAND efis_ddp_v2_tests)
 endif()
 
 # --- Nodo EMS ---------------------------------------------------------------
