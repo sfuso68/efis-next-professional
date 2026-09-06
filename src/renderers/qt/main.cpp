@@ -65,7 +65,12 @@ int main(int argc, char* argv[]) {
                 : 0.0;
             qInfo().noquote() << "event=render_health fps=" << QString::number(fps, 'f', 1)
                               << "frame_ms=" << QString::number(fps > 0.0 ? 1000.0 / fps : 0.0, 'f', 2)
-                              << "sequence=" << controller.sequence();
+                              << "sequence=" << controller.sequence()
+                              << "ddp_state=" << controller.ddpLinkState()
+                              << "ddp_accepted=" << controller.ddpAccepted()
+                              << "ddp_rejected=" << controller.ddpRejected()
+                              << "ddp_gaps=" << controller.ddpSequenceGaps()
+                              << "ddp_socket_errors=" << controller.ddpSocketErrors();
             *frames = 0;
         });
         metrics->start();

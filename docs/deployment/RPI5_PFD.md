@@ -33,6 +33,37 @@ Il servizio è legato alla sessione grafica: non parte prima di Wayland e viene
 arrestato quando la sessione termina. `Restart=on-failure` evita loop di riavvio
 dopo uno stop volontario.
 
+## Ricezione DDP V2 dalla Blackbox
+
+Il servizio apre in sola ricezione UDP unicast la porta `49002` e accetta come
+publisher il nodo logico Blackbox `47`. Le variabili sono intenzionalmente
+esplicite nel file systemd:
+
+```ini
+Environment=EFIS_DDP_BIND_ADDRESS=0.0.0.0
+Environment=EFIS_DDP_LISTEN_PORT=49002
+Environment=EFIS_DDP_SOURCE_NODE=47
+Environment=EFIS_SIMULATION_ROLE=FALLBACK
+```
+
+In sviluppo la simulazione resta soltanto fallback: quando DDP è `LIVE` vincono
+i campioni reali trasportati dalla Blackbox; a collegamento assente o perso la
+simulazione è visibile come tale. Per una prova di failure senza sostituzione
+impostare `EFIS_SIMULATION_ROLE=DISABLED`.
+
+Prova da banco, con dati dichiaratamente simulati inviati da un altro host:
+
+```sh
+./build/dev/efis-ddp-bench-publisher \
+  --destination 192.168.1.45 --port 49002 --source-node 47 \
+  --rate-hz 20 --seconds 60 --simulate
+```
+
+Il journal del PFD riporta `ddp_state`, pacchetti accettati/rifiutati, gap di
+sequenza ed errori socket nel record periodico `render_health`. Il publisher da
+banco richiede sempre `--simulate`: non è il processo di ingestione reale della
+Blackbox e non deve essere installato come servizio di volo.
+
 ## Vincoli di banco
 
 - `vcgencmd get_throttled` deve restituire `0x0`;

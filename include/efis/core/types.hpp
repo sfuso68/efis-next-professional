@@ -21,7 +21,11 @@ enum class SourceId : std::uint16_t {
     // misura e non ha qualita' del segnale, ma puo' essere sbagliato: la
     // regolazione barometrica errata e' una causa classica di quota errata.
     // Aggiunta in coda: gli identificativi gia' registrati non si spostano.
-    pilot_setting
+    pilot_setting,
+    // Stato gia' normalizzato ricevuto dal broker blackbox. E' l'identita'
+    // della connessione nel router del display; ogni campione conserva comunque
+    // la sorgente fisica originale (Pixhawk, ESP32, DLVR, NAV).
+    blackbox_broker
 };
 
 enum class Quality : std::uint8_t { unknown, poor, nominal, high };
