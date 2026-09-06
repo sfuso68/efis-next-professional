@@ -48,9 +48,9 @@ All'inizio di ogni attività:
 5. eseguire test e verifiche;
 6. aggiornare gli stessi ID prima del push.
 
-## Automazione prevista
+## Automazione attiva
 
-Prossimo step: introdurre CI e uno script `tools/project_status/generate_status.py` per:
+La CI e `tools/project_status/generate_status.py`:
 - calcolare conteggi e avanzamento dalla matrice;
 - mostrare gate bloccanti;
 - fallire una PR quando cambia un sottosistema senza aggiornamento dello stato;

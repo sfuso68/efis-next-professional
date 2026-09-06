@@ -1,6 +1,7 @@
 # Display Data Protocol V2
 
-Stato: draft implementabile, versione wire `2.0`.
+Stato: codec snapshot implementato e verificato software, trasporto non ancora
+verificato su hardware, versione wire `2.0`.
 
 ## Scopo
 
@@ -16,11 +17,18 @@ Ogni messaggio contiene:
 | `schema` | `u16` | valore `2` |
 | `profile` | enum | `standard`, `professional`, `degraded` |
 | `source_node` | `u32` | identità configurata |
+| `publisher_instance` | `u64` | casuale/univoco per ogni avvio del publisher |
 | `sequence` | `u64` | crescente per publisher |
 | `monotonic_us` | `u64` | tempo monotono publisher |
 | `payload_type` | enum | snapshot, alert, heartbeat, config |
 | `payload_length` | `u32` | limite da definire per trasporto |
 | `payload_crc32c` | `u32` | obbligatorio su datagrammi/CAN |
+
+Il wire format usa ordine di byte di rete (big endian), magic `EFN2` e un
+envelope fisso di 44 byte. `publisher_instance` impedisce che il riavvio della
+blackbox, con sequenza nuovamente bassa, venga interpretato come replay di un
+pacchetto vecchio. Deve cambiare a ogni avvio e restare stabile per tutta
+l'esecuzione.
 
 ## Flight display view
 
@@ -35,6 +43,11 @@ Il PFD riceve valori già convertiti nell'unità visualizzata con:
 Campi minimi: roll, pitch, heading, IAS, altitude, VSI, ground speed, baro,
 flight mode, selected altitude, selected course e health.
 
+Il payload snapshot implementato contiene lo stato health e una lista di record
+campione. Ogni record trasporta `SignalId`, valore `f64`, `SourceId`, validità,
+qualità, unità, età in millisecondi e flag simulazione. I booleani sono codificati
+come `0.0`/`1.0` con unità `boolean`; non sono dedotti dal nome del segnale.
+
 La guida di volo include stato FD, roll/pitch comandati e valori selezionati. Gli
 allarmi sono ordinati dal core per severità e tempo; il renderer non ne cambia la
 priorità e non genera autonomamente condizioni avioniche.
@@ -46,4 +59,23 @@ priorità e non genera autonomamente condizioni avioniche.
 3. Timeout locale porta il campo a failure; l'ultimo valore non resta verde.
 4. `simulated` e `degraded` restano visibili.
 5. Il renderer non arbitra le sorgenti.
-6. La serializzazione wire verrà scelta con ADR separata dopo prove CAN/Ethernet.
+6. La serializzazione binaria è definita dalla ADR-008 e implementata in
+   `efis::protocol::ddp`; il trasporto resta separato.
+7. Payload oltre 64 KiB vengono rifiutati prima dell'allocazione.
+8. CRC errato, lunghezza incoerente, schema sconosciuto e payload malformato
+   causano il rifiuto dell'intero messaggio.
+9. Duplicati e sequenze arretrate sono scartati per coppia
+   `source_node/publisher_instance`.
+10. Nodo zero, istanza publisher zero ed enum sconosciuti sono rifiutati: non
+    vengono reinterpretati come valori predefiniti.
+
+## Evidenza corrente
+
+- round-trip di tutti i campioni di volo, inclusi flag e unità;
+- vettore standard CRC32C Castagnoli `123456789`;
+- rifiuto di corruzione payload e schema futuro;
+- rifiuto duplicati e sequenze arretrate;
+- ripartenza sequenza ammessa soltanto con nuova istanza publisher.
+
+Queste sono verifiche software. Mancano ancora publisher blackbox, consumer
+RPi5, perdita/reordine pacchetti su Ethernet reale e replay da registrazione.

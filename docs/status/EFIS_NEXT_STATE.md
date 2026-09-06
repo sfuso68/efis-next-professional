@@ -1,14 +1,28 @@
 # EFIS NEXT — stato verificato
 
-Aggiornamento: 2026-08-31
+Aggiornamento: 2026-09-06
 
-Branch di lavoro: `work/codex-multisource-p1`
+Branch di lavoro: `work/data-gate-ingestion-v1`
 
 Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, ADR-001…ADR-007.
 
 Questo documento non esisteva nel repository al momento dell'intervento ed è stato creato come stato operativo autorevole. Le parole **implementato**, **verificato software** e **verificato su hardware reale** indicano livelli di evidenza diversi. Una funzione non è considerata conclusa se manca la verifica pertinente.
 
 ## Implementato in questo branch
+
+### Display Data Protocol V2 — codec snapshot
+
+- Aggiunto un codec binario C++20 indipendente da Qt e dai trasporti in
+  `efis::protocol::ddp`.
+- L'envelope `EFN2` usa schema 2, ordine di byte di rete, nodo publisher,
+  istanza di avvio, sequenza, tempo monotono, lunghezza e CRC32C Castagnoli.
+- Lo snapshot trasporta health e 23 campioni di volo con segnale, valore,
+  sorgente, validità, qualità, unità, età e flag simulazione.
+- Il decoder rifiuta schema sconosciuto, magic errato, lunghezza incoerente,
+  payload oltre 64 KiB, CRC errato e payload malformato.
+- `SequenceGate` rifiuta duplicati e sequenze arretrate per nodo; una nuova
+  istanza publisher consente la ripartenza controllata dopo reboot.
+- ADR-008 registra formato, motivazioni e limiti.
 
 ### Inventario firmato dei segmenti CAN della Blackbox
 
@@ -40,6 +54,14 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - La pagina setup Blackbox è predisposta a mostrare conteggio CAN, pacchetti firmati e stato manifesto.
 
 ## Verificato solo software
+
+- Build MSVC 19.51 del codec e del nuovo eseguibile di test completata.
+- Round-trip snapshot, preservazione provenienza/unità/simulazione, CRC32C con
+  vettore standard, corruzione, schema futuro, duplicati, riordino e reboot del
+  publisher verificati da `efis_ddp_v2_tests`.
+- Build completa precedente del branch: tutti i target, inclusi PFD/EMS,
+  compilati. Dieci test su tredici eseguiti e superati; tre eseguibili sono
+  risultati `BAD_COMMAND` per Smart App Control, senza fallimenti di asserzione.
 
 - Tre test unitari Python su segmenti sintetici `FUSOBBX1`, eseguiti con Python 3.13.5:
   - segmento chiuso valido, firma valida e riuso digest;
@@ -77,6 +99,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Non esiste in questo intervento evidenza sufficiente di build completa, installazione o verifica visiva su RPi4; queste attività restano aperte.
 
 ## Aperto — non dichiarare DONE
+
+- Integrare il codec DDP V2 in un publisher blackbox e in un consumer RPi5,
+  poi verificare su Ethernet reale perdita, riordino, timeout e reboot.
+- Definire il trasporto, la cadenza, l'autenticazione e le metriche operative;
+  il codec non decide questi aspetti.
 
 1. Riallineare in modo controllato le copie sorgente RPi4/RPi5 al commit del branch e correggere il drift CMake già presente; compilare e linkare entrambi i renderer.
 2. Installare i binari risultanti, aprire la pagina Blackbox su entrambi i display e acquisire evidenza visiva leggibile del riepilogo e della lista CAN.
