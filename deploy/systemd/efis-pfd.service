@@ -8,6 +8,10 @@ PartOf=graphical-session.target
 Type=simple
 WorkingDirectory=/home/efis/efis-next
 Environment=EFIS_KIOSK=1
+Environment=EFIS_DDP_BIND_ADDRESS=0.0.0.0
+Environment=EFIS_DDP_LISTEN_PORT=49002
+Environment=EFIS_DDP_SOURCE_NODE=47
+Environment=EFIS_SIMULATION_ROLE=FALLBACK
 ExecStart=/home/efis/efis-next/deploy/scripts/run-pfd.sh
 Restart=always
 RestartSec=2

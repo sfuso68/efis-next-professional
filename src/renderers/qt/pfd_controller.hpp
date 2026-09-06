@@ -3,6 +3,7 @@
 #include "efis/core/flight_model.hpp"
 #include "efis/core/flight_source.hpp"
 #include "efis/providers/simulation_source.hpp"
+#include "efis/providers/ddp_udp_source.hpp"
 #include "efis/core/engine_source.hpp"
 #include "efis/core/engine_runtime.hpp"
 #include "efis/providers/engine_simulation_source.hpp"
@@ -49,6 +50,11 @@ class PfdController final : public QObject {
     Q_PROPERTY(bool showingSimulatedData READ showingSimulatedData NOTIFY snapshotChanged)
     Q_PROPERTY(QString dataSourceState READ dataSourceState NOTIFY snapshotChanged)
     Q_PROPERTY(QString sensorNodeState READ sensorNodeState NOTIFY snapshotChanged)
+    Q_PROPERTY(QString ddpLinkState READ ddpLinkState NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong ddpAccepted READ ddpAccepted NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong ddpRejected READ ddpRejected NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong ddpSequenceGaps READ ddpSequenceGaps NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong ddpSocketErrors READ ddpSocketErrors NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineDataState READ engineDataState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
@@ -188,6 +194,11 @@ public:
     [[nodiscard]] bool showingSimulatedData() const;
     [[nodiscard]] QString dataSourceState() const;
     [[nodiscard]] QString sensorNodeState() const;
+    [[nodiscard]] QString ddpLinkState() const { return sensorNodeState(); }
+    [[nodiscard]] qulonglong ddpAccepted() const;
+    [[nodiscard]] qulonglong ddpRejected() const;
+    [[nodiscard]] qulonglong ddpSequenceGaps() const;
+    [[nodiscard]] qulonglong ddpSocketErrors() const;
     [[nodiscard]] QString engineDataState() const;
     Q_INVOKABLE void cycleSimulationRole();
     [[nodiscard]] qulonglong sequence() const;
@@ -371,6 +382,7 @@ private:
     // significhera' registrare una sorgente in piu', non toccare questa classe.
     std::shared_ptr<efis::SimulationSource> simulation_{
         std::make_shared<efis::SimulationSource>(42)};
+    std::shared_ptr<efis::DdpUdpFlightSource> ddp_source_;
     efis::FlightSourceRouter router_{};
     std::shared_ptr<efis::EngineSimulationSource> engine_simulation_{
         std::make_shared<efis::EngineSimulationSource>(84)};

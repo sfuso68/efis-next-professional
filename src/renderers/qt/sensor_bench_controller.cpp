@@ -23,6 +23,8 @@ QString source_label(efis::SourceId source) {
         case efis::SourceId::dlvr_legacy: return QStringLiteral("DLVR");
         case efis::SourceId::nav_rf: return QStringLiteral("NAV RF");
         case efis::SourceId::nav_synthetic: return QStringLiteral("NAV SYN");
+        case efis::SourceId::pilot_setting: return QStringLiteral("PILOT");
+        case efis::SourceId::blackbox_broker: return QStringLiteral("BLACKBOX");
     }
     return QStringLiteral("—");
 }

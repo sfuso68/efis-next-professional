@@ -266,7 +266,7 @@ DecodeResult decode_snapshot(std::span<const std::uint8_t> bytes) {
             !take_u16(payload, at, source) || at + 3U > payload.size()) {
             result.error = DecodeError::malformed_payload; return result;
         }
-        if (!known_signal(signal) || source > static_cast<std::uint16_t>(SourceId::pilot_setting) ||
+        if (!known_signal(signal) || source > static_cast<std::uint16_t>(SourceId::blackbox_broker) ||
             payload[at] > static_cast<std::uint8_t>(Validity::degraded) ||
             payload[at + 1U] > static_cast<std::uint8_t>(Quality::high) ||
             payload[at + 2U] > static_cast<std::uint8_t>(Unit::pascal)) {

@@ -1,8 +1,7 @@
 # Display Data Protocol V2
 
-Stato: codec e session layer snapshot implementati e verificati software;
-adapter di rete e trasporto su hardware non ancora verificati, versione wire
-`2.0`.
+Stato: codec, session layer e adapter UDP unicast implementati e verificati
+software; trasporto su hardware non ancora verificato, versione wire `2.0`.
 
 ## Scopo
 
@@ -79,6 +78,11 @@ priorità e non genera autonomamente condizioni avioniche.
 14. Il payload snapshot V2 contiene esattamente i 21 campioni numerici di volo
     e i due booleani. Segnali duplicati, booleani diversi da `0`/`1` o con unità
     errata causano il rifiuto dell'intero datagramma.
+15. Il trasporto iniziale è UDP unicast IPv4, secondo ADR-009. La porta PFD
+    predefinita di installazione è `49002`; indirizzi e identità sono
+    configurazione di deployment, non costanti del codec.
+16. La sorgente UDP del display è esclusivamente ricevente. Al timeout marca i
+    campioni `stale` e poi `unavailable`; non mantiene verde l'ultimo valore.
 
 ## Evidenza corrente
 
@@ -93,7 +97,10 @@ priorità e non genera autonomamente condizioni avioniche.
 - metriche per pacchetti accettati, CRC, identità, duplicati, riordino, gap e
   reboot del publisher;
 - ultimo snapshot valido non sostituito da datagrammi corrotti o fuori ordine.
+- trasferimento socket UDP loopback reale tra publisher e `FlightSource` PFD;
+- invalidazione `LIVE → STALE → LOST` e rifiuto di un publisher con nodo diverso;
+- build del PFD con receiver configurabile e metriche nel log `render_health`.
 
-Queste sono verifiche software del codec e delle sessioni. Mancano ancora gli
-adapter socket del publisher blackbox e del consumer RPi5, la loro installazione,
-perdita/reordine pacchetti su Ethernet reale e replay da registrazione.
+Queste sono verifiche software e loopback locale. Mancano ancora il collegamento
+del publisher alla pipeline reale della Blackbox, installazione sul RPi5,
+perdita/riordino pacchetti su Ethernet reale e replay da registrazione.

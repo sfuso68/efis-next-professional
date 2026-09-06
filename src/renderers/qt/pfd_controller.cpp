@@ -49,6 +49,38 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
     router_.set_simulation(simulation_);
     engine_router_.set_simulation(engine_simulation_);
 
+    bool ddpPortValid = false;
+    const int ddpPort = qEnvironmentVariableIntValue("EFIS_DDP_LISTEN_PORT",
+                                                     &ddpPortValid);
+    if (ddpPortValid && ddpPort > 0 && ddpPort <= 65535) {
+        bool nodeValid = false;
+        const int expectedNode = qEnvironmentVariableIntValue(
+            "EFIS_DDP_SOURCE_NODE", &nodeValid);
+        if (!nodeValid || expectedNode <= 0 || expectedNode > 65535) {
+            qCritical().noquote()
+                << "event=ddp_receiver_failed reason=invalid_or_missing_source_node";
+        } else {
+            efis::DdpUdpSourceConfig config{};
+            config.local.address = qEnvironmentVariable(
+                "EFIS_DDP_BIND_ADDRESS", "0.0.0.0").toStdString();
+            config.local.port = static_cast<std::uint16_t>(ddpPort);
+            config.consumer.expected_source_node =
+                static_cast<std::uint32_t>(expectedNode);
+            try {
+                ddp_source_ = std::make_shared<efis::DdpUdpFlightSource>(config);
+                router_.add_source(ddp_source_);
+                qInfo().noquote() << "event=ddp_receiver_start bind="
+                                  << QString::fromStdString(config.local.address)
+                                  << "port=" << ddpPort
+                                  << "source_node="
+                                  << config.consumer.expected_source_node;
+            } catch (const std::exception& error) {
+                qCritical().noquote()
+                    << "event=ddp_receiver_failed reason=" << error.what();
+            }
+        }
+    }
+
     // Il ruolo iniziale e' configurabile dall'ambiente, cosi' il banco puo'
     // partire senza dato simulato e vedere cosa il quadro dichiara quando non
     // ha sorgenti: e' la prova che le celle di stato sono calcolate e non
@@ -978,6 +1010,8 @@ QString PfdController::attitudeSource() const {
         case efis::SourceId::dlvr_legacy: return QStringLiteral("DLVR");
         case efis::SourceId::nav_rf: return QStringLiteral("NAV RF");
         case efis::SourceId::nav_synthetic: return QStringLiteral("NAV SYN");
+        case efis::SourceId::blackbox_broker: return QStringLiteral("BLACKBOX");
+        case efis::SourceId::pilot_setting: return QStringLiteral("PILOT");
         case efis::SourceId::unknown: break;
     }
     return QStringLiteral("NONE");
@@ -1024,10 +1058,37 @@ QString PfdController::dataSourceState() const {
 // sorgente reale, ma ora e' una conseguenza dello stato e non una didascalia:
 // cambiera' da solo quando il collegamento verso il nodo di ingestion esistera'.
 QString PfdController::sensorNodeState() const {
-    if (router_.source_count() == 0) return QStringLiteral("NOT INSTALLED");
-    return attitudeSource() == QStringLiteral("PIXHAWK")
-        ? QStringLiteral("LIVE")
-        : QStringLiteral("READY FOR DATA");
+    if (!ddp_source_) return QStringLiteral("NOT INSTALLED");
+    switch (ddp_source_->link_state(efis::MonoClock::now())) {
+        case efis::protocol::ddp::LinkState::waiting:
+            return QStringLiteral("WAITING");
+        case efis::protocol::ddp::LinkState::live:
+            return QStringLiteral("LIVE");
+        case efis::protocol::ddp::LinkState::stale:
+            return QStringLiteral("STALE");
+        case efis::protocol::ddp::LinkState::lost:
+            return QStringLiteral("LOST");
+    }
+    return QStringLiteral("LOST");
+}
+
+qulonglong PfdController::ddpAccepted() const {
+    return ddp_source_ ? ddp_source_->metrics().accepted : 0;
+}
+
+qulonglong PfdController::ddpRejected() const {
+    if (!ddp_source_) return 0;
+    const auto& metrics = ddp_source_->metrics();
+    return metrics.decode_rejected + metrics.identity_rejected +
+           metrics.duplicates + metrics.reversed;
+}
+
+qulonglong PfdController::ddpSequenceGaps() const {
+    return ddp_source_ ? ddp_source_->metrics().sequence_gaps : 0;
+}
+
+qulonglong PfdController::ddpSocketErrors() const {
+    return ddp_source_ ? ddp_source_->socket_errors() : 0;
 }
 
 // Il ruolo vale per volo e motore insieme: e' una sola scelta dell'operatore, e

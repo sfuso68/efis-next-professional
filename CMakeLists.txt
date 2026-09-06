@@ -27,6 +27,8 @@ add_library(efis_core
     src/display/display_model.cpp
     src/providers/simulation_provider.cpp
     src/providers/simulation_source.cpp
+    src/providers/ddp_udp_source.cpp
+    src/providers/ddp_udp_publisher.cpp
     src/providers/engine_simulation_provider.cpp
     src/simulation/system_simulator.cpp
     src/providers/mavlink_parser.cpp
@@ -38,6 +40,7 @@ add_library(efis_core
     src/ingest/mavlink_pipeline.cpp
     src/ingest/recording_session.cpp
     src/io/byte_source.cpp
+    src/io/udp_datagram.cpp
     src/bench/sensor_bench.cpp
     src/core/altimetry.cpp
     src/core/flight_dynamics.cpp
@@ -52,6 +55,9 @@ add_library(efis_core
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
+if(WIN32)
+    target_link_libraries(efis_core PRIVATE ws2_32)
+endif()
 
 if(MSVC)
     target_compile_options(efis_core PRIVATE /W4 /permissive-)
@@ -70,6 +76,9 @@ target_link_libraries(efis-recorder PRIVATE efis_core)
 
 add_executable(efis-simulator src/apps/efis_simulator_main.cpp)
 target_link_libraries(efis-simulator PRIVATE efis_core)
+
+add_executable(efis-ddp-bench-publisher src/apps/efis_ddp_bench_publisher_main.cpp)
+target_link_libraries(efis-ddp-bench-publisher PRIVATE efis_core)
 
 add_library(efis_reference_renderer src/display/svg_pfd_renderer.cpp)
 target_include_directories(efis_reference_renderer PUBLIC include)
@@ -282,6 +291,10 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_ddp_v2_tests tests/ddp_v2_tests.cpp)
     target_link_libraries(efis_ddp_v2_tests PRIVATE efis_core)
     add_test(NAME efis_ddp_v2_tests COMMAND efis_ddp_v2_tests)
+
+    add_executable(efis_ddp_udp_tests tests/ddp_udp_tests.cpp)
+    target_link_libraries(efis_ddp_udp_tests PRIVATE efis_core)
+    add_test(NAME efis_ddp_udp_tests COMMAND efis_ddp_udp_tests)
 endif()
 
 # --- Nodo EMS ---------------------------------------------------------------

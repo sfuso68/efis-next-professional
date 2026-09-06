@@ -2,9 +2,9 @@
 
 Aggiornamento: 2026-09-06
 
-Branch di lavoro: `work/ddp-v2-distribution-v1`
+Branch di lavoro: `work/ddp-v2-udp-adapter-v1`
 
-Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, ADR-001…ADR-008.
+Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, ADR-001…ADR-008. ADR-009 registra la decisione di questo branch.
 
 Questo documento non esisteva nel repository al momento dell'intervento ed è stato creato come stato operativo autorevole. Le parole **implementato**, **verificato software** e **verificato su hardware reale** indicano livelli di evidenza diversi. Una funzione non è considerata conclusa se manca la verifica pertinente.
 
@@ -40,6 +40,24 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   snapshot valido.
 - Il decoder V2 rifiuta inoltre segnali duplicati, booleani non canonici e
   snapshot che non contengono esattamente i 23 campioni previsti dallo schema.
+
+### Display Data Protocol V2 — adapter UDP unicast
+
+- Aggiunti socket UDP IPv4 non bloccanti e multipiattaforma dietro
+  `efis::io`, senza dipendenze Qt nel core.
+- Aggiunti `DdpUdpPublisher` e `DdpUdpFlightSource`: il primo invia snapshot
+  completi, il secondo è una sorgente read-only consumabile dal router PFD.
+- La sorgente PFD drena un numero limitato di datagrammi per ciclo, conserva le
+  metriche e rende i campioni `STALE` e poi `UNAVAILABLE` alla perdita del link.
+- Il controller PFD abilita la sorgente tramite `EFIS_DDP_BIND_ADDRESS`,
+  `EFIS_DDP_LISTEN_PORT` ed `EFIS_DDP_SOURCE_NODE`; stato e metriche entrano nel
+  log periodico `render_health`.
+- Il servizio RPi5 è predisposto per ascoltare `0.0.0.0:49002`, nodo Blackbox
+  logico `47`, con simulazione in fallback esplicitamente riconoscibile.
+- Aggiunto `efis-ddp-bench-publisher`, che richiede il flag esplicito
+  `--simulate` e non viene presentato come publisher di volo.
+- ADR-009 sceglie UDP unicast per la fase di sviluppo e fissa i gate di rete e
+  autenticazione ancora aperti.
 
 ### Inventario firmato dei segmenti CAN della Blackbox
 
@@ -81,6 +99,15 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   reboot, conservazione ultimo dato valido e reset diagnostico.
 - Build completa MSVC 19.51 del branch eseguita dopo il session layer: tutti i
   target, inclusi PFD, EMS e strumenti, compilati e 14 test su 14 superati.
+- Build MSVC del receiver PFD, del publisher da banco e del test UDP completata.
+- `efis_ddp_udp_tests` ha verificato con socket loopback reale ricezione,
+  provenienza, identità nodo, metriche, transizioni `LIVE/STALE/LOST` e rifiuto
+  di un publisher estraneo.
+- Build completa corrente riuscita per tutti i target. Tredici test su quindici
+  sono stati avviati e superati; `efis_core_tests` ed
+  `efis_engine_runtime_tests` sono stati bloccati prima dell'avvio da Windows
+  Application Control (`BAD_COMMAND`), senza failure di asserzione. Entrambi
+  erano passati nella verifica completa immediatamente precedente.
 
 - Tre test unitari Python su segmenti sintetici `FUSOBBX1`, eseguiti con Python 3.13.5:
   - segmento chiuso valido, firma valida e riuso digest;
@@ -119,11 +146,12 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 ## Aperto — non dichiarare DONE
 
-- Integrare gli adapter socket DDP V2 nel processo publisher blackbox e nel
-  consumer RPi5, poi verificare su Ethernet reale perdita, riordino, timeout e
-  reboot.
-- Definire il trasporto, la cadenza e l'autenticazione. Le metriche di sessione
-  esistono, ma non sono ancora esposte da un servizio operativo.
+- Collegare `DdpUdpPublisher` allo snapshot della pipeline di ingestione reale
+  Blackbox; il publisher da banco usa soltanto simulazione dichiarata.
+- Installare il receiver sul RPi5 e verificare su Ethernet reale perdita,
+  riordino, timeout, reboot, latenza e jitter.
+- Definire cadenza operativa e autenticazione/provisioning. UDP unicast è
+  deciso per lo sviluppo, ma una LAN non isolata non soddisfa il gate prodotto.
 
 1. Riallineare in modo controllato le copie sorgente RPi4/RPi5 al commit del branch e correggere il drift CMake già presente; compilare e linkare entrambi i renderer.
 2. Installare i binari risultanti, aprire la pagina Blackbox su entrambi i display e acquisire evidenza visiva leggibile del riepilogo e della lista CAN.
