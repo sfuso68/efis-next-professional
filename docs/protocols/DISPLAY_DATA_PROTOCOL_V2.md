@@ -1,7 +1,8 @@
 # Display Data Protocol V2
 
-Stato: codec snapshot implementato e verificato software, trasporto non ancora
-verificato su hardware, versione wire `2.0`.
+Stato: codec e session layer snapshot implementati e verificati software;
+adapter di rete e trasporto su hardware non ancora verificati, versione wire
+`2.0`.
 
 ## Scopo
 
@@ -68,6 +69,16 @@ priorità e non genera autonomamente condizioni avioniche.
    `source_node/publisher_instance`.
 10. Nodo zero, istanza publisher zero ed enum sconosciuti sono rifiutati: non
     vengono reinterpretati come valori predefiniti.
+11. Il publisher possiede la sequenza wire: non riutilizza quella eventualmente
+    presente nello snapshot del dominio.
+12. Il consumer può essere vincolato al `source_node` della blackbox installata;
+    un nodo differente viene rifiutato e contato.
+13. `LIVE`, `STALE` e `LOST` derivano dal tempo di ricezione locale. Il tempo
+    monotono del publisher non viene confrontato direttamente con quello del
+    display, perché appartengono a clock diversi.
+14. Il payload snapshot V2 contiene esattamente i 21 campioni numerici di volo
+    e i due booleani. Segnali duplicati, booleani diversi da `0`/`1` o con unità
+    errata causano il rifiuto dell'intero datagramma.
 
 ## Evidenza corrente
 
@@ -76,6 +87,13 @@ priorità e non genera autonomamente condizioni avioniche.
 - rifiuto di corruzione payload e schema futuro;
 - rifiuto duplicati e sequenze arretrate;
 - ripartenza sequenza ammessa soltanto con nuova istanza publisher.
+- publisher con sequenza propria e ricostruzione dello snapshot lato consumer;
+- conservazione di source, unità, qualità, validità, age e marcatore SIM;
+- timeout deterministici `WAITING/LIVE/STALE/LOST`;
+- metriche per pacchetti accettati, CRC, identità, duplicati, riordino, gap e
+  reboot del publisher;
+- ultimo snapshot valido non sostituito da datagrammi corrotti o fuori ordine.
 
-Queste sono verifiche software. Mancano ancora publisher blackbox, consumer
-RPi5, perdita/reordine pacchetti su Ethernet reale e replay da registrazione.
+Queste sono verifiche software del codec e delle sessioni. Mancano ancora gli
+adapter socket del publisher blackbox e del consumer RPi5, la loro installazione,
+perdita/reordine pacchetti su Ethernet reale e replay da registrazione.

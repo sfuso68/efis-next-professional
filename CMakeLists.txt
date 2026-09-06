@@ -43,6 +43,7 @@ add_library(efis_core
     src/core/flight_dynamics.cpp
     src/core/signal_access.cpp
     src/protocol/ddp_v2.cpp
+    src/protocol/ddp_session.cpp
     src/instruments/dial.cpp
     src/instruments/panel.cpp
     src/instruments/panel_store.cpp

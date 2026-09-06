@@ -281,7 +281,23 @@ DecodeResult decode_snapshot(std::span<const std::uint8_t> bytes) {
             result.error = DecodeError::malformed_payload; return result;
         }
         sample.simulated = payload[at++] != 0;
+        const auto duplicate = std::find_if(
+            result.message.samples.begin(), result.message.samples.end(),
+            [&](const WireSample& existing) { return existing.signal == sample.signal; });
+        if (duplicate != result.message.samples.end()) {
+            result.error = DecodeError::malformed_payload; return result;
+        }
+        const bool is_boolean = sample.signal == SignalId::flight_director_active ||
+                                sample.signal == SignalId::to_flag;
+        if ((is_boolean && (sample.unit != Unit::boolean ||
+                            (sample.value != 0.0 && sample.value != 1.0))) ||
+            (!is_boolean && sample.unit == Unit::boolean)) {
+            result.error = DecodeError::malformed_payload; return result;
+        }
         result.message.samples.push_back(sample);
+    }
+    if (result.message.samples.size() != flight_signals().size() + 2U) {
+        result.error = DecodeError::malformed_payload; return result;
     }
     return result;
 }
