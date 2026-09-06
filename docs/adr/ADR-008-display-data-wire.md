@@ -39,6 +39,8 @@ nuovo ciclo.
 
 ## Limiti aperti
 
-Il codec non decide UDP/TCP/QUIC né la cadenza. Mancano publisher e consumer
-reali, gestione timeout locale, metriche di perdita/reordine, autenticazione del
-canale e test su Ethernet avionica. L'implementazione non rende `BBX-003` DONE.
+Il codec non decide UDP/TCP/QUIC né la cadenza. Il session layer ora assegna la
+sequenza publisher, ricostruisce lo snapshot consumer, applica timeout locali e
+misura perdita/riordino/duplicati/reboot senza dipendere da socket o Qt. Mancano
+gli adapter di rete e i processi reali, autenticazione del canale e test su
+Ethernet avionica. L'implementazione non rende `BBX-003` DONE.

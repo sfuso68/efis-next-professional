@@ -2,9 +2,9 @@
 
 Aggiornamento: 2026-09-06
 
-Branch di lavoro: `work/data-gate-ingestion-v1`
+Branch di lavoro: `work/ddp-v2-distribution-v1`
 
-Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, ADR-001…ADR-007.
+Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, ADR-001…ADR-008.
 
 Questo documento non esisteva nel repository al momento dell'intervento ed è stato creato come stato operativo autorevole. Le parole **implementato**, **verificato software** e **verificato su hardware reale** indicano livelli di evidenza diversi. Una funzione non è considerata conclusa se manca la verifica pertinente.
 
@@ -23,6 +23,23 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - `SequenceGate` rifiuta duplicati e sequenze arretrate per nodo; una nuova
   istanza publisher consente la ripartenza controllata dopo reboot.
 - ADR-008 registra formato, motivazioni e limiti.
+
+### Display Data Protocol V2 — session layer
+
+- Aggiunti `SnapshotPublisher` e `SnapshotConsumer`, indipendenti da Qt e dal
+  tipo di socket.
+- Il publisher assegna una sequenza wire propria e valida identità, istanza e
+  profilo prima di produrre datagrammi.
+- Il consumer ricostruisce lo `FlightSnapshot` senza scegliere sorgenti,
+  conserva provenienza, unità, validità, qualità, age e flag simulazione e può
+  essere vincolato all'identità della blackbox installata.
+- Sono espliciti gli stati locali `WAITING`, `LIVE`, `STALE` e `LOST`.
+- Le metriche distinguono pacchetti accettati, CRC errati, identità estranee,
+  duplicati, sequenze arretrate, gap e riavvii del publisher.
+- Un pacchetto corrotto, duplicato o fuori ordine non sostituisce l'ultimo
+  snapshot valido.
+- Il decoder V2 rifiuta inoltre segnali duplicati, booleani non canonici e
+  snapshot che non contengono esattamente i 23 campioni previsti dallo schema.
 
 ### Inventario firmato dei segmenti CAN della Blackbox
 
@@ -59,9 +76,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Round-trip snapshot, preservazione provenienza/unità/simulazione, CRC32C con
   vettore standard, corruzione, schema futuro, duplicati, riordino e reboot del
   publisher verificati da `efis_ddp_v2_tests`.
-- Build completa precedente del branch: tutti i target, inclusi PFD/EMS,
-  compilati. Dieci test su tredici eseguiti e superati; tre eseguibili sono
-  risultati `BAD_COMMAND` per Smart App Control, senza fallimenti di asserzione.
+- Sessione publisher/consumer verificata nello stesso test per sequenza propria,
+  ricostruzione, identità attesa, timeout, perdita, CRC, duplicati, riordino,
+  reboot, conservazione ultimo dato valido e reset diagnostico.
+- Build completa MSVC 19.51 del branch eseguita dopo il session layer: tutti i
+  target, inclusi PFD, EMS e strumenti, compilati e 14 test su 14 superati.
 
 - Tre test unitari Python su segmenti sintetici `FUSOBBX1`, eseguiti con Python 3.13.5:
   - segmento chiuso valido, firma valida e riuso digest;
@@ -100,10 +119,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 ## Aperto — non dichiarare DONE
 
-- Integrare il codec DDP V2 in un publisher blackbox e in un consumer RPi5,
-  poi verificare su Ethernet reale perdita, riordino, timeout e reboot.
-- Definire il trasporto, la cadenza, l'autenticazione e le metriche operative;
-  il codec non decide questi aspetti.
+- Integrare gli adapter socket DDP V2 nel processo publisher blackbox e nel
+  consumer RPi5, poi verificare su Ethernet reale perdita, riordino, timeout e
+  reboot.
+- Definire il trasporto, la cadenza e l'autenticazione. Le metriche di sessione
+  esistono, ma non sono ancora esposte da un servizio operativo.
 
 1. Riallineare in modo controllato le copie sorgente RPi4/RPi5 al commit del branch e correggere il drift CMake già presente; compilare e linkare entrambi i renderer.
 2. Installare i binari risultanti, aprire la pagina Blackbox su entrambi i display e acquisire evidenza visiva leggibile del riepilogo e della lista CAN.
