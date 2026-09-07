@@ -108,6 +108,17 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   condividere failure mode e carico con il nodo strumenti motore.
 - Aggiunti runbook di migrazione reversibile e validatore offline del piano. I
   parametri `NET_*` del Pixhawk non vengono scritti da questo lavoro.
+- Blackbox e PFD reali sono ora collegati al Waveshare e configurati
+  rispettivamente come `10.77.10.2/24` e `10.77.10.11/24` sui profili
+  NetworkManager `netplan-eth0`. Entrambi hanno negoziato 1000 Mbit/s full
+  duplex, MTU 1500, zero errori di interfaccia e nessun gateway Ethernet.
+- Il broker reale pubblica DDP a `10.77.10.11:49002`. Dopo l'assestamento, un
+  campione di 30 secondi ha consegnato 601 snapshot senza nuovi gap, rifiuti,
+  errori socket o overflow UDP kernel. Il PFD è rimasto `LIVE` a circa 25 fps.
+- Un fault test logico di cinque secondi sul profilo Ethernet del PFD ha
+  verificato `LIVE -> LOST -> LIVE`; broker e recorder sono rimasti attivi e
+  senza failure. I 112 gap aggiunti sono coerenti con la finestra di perdita
+  intenzionale. Non equivale ancora a una prova di scollegamento fisico.
 
 ### Distribuzione DDP multi-display
 
@@ -319,22 +330,30 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 ### Audit Ethernet dei nodi reali — 2026-09-07
 
-- PFD `eth0`, Blackbox `eth0` e Ground Station `eno1` risultano amministrativamente
-  abilitati ma `NO-CARRIER`; il traffico operativo continua sulla WLAN di casa.
+- PFD `eth0` e Blackbox `eth0` sono `UP/LOWER_UP` sul Waveshare verificato,
+  negoziano 1000/full e comunicano su `10.77.10.0/24`. Un campione ICMP
+  assestato di 100 pacchetti ha avuto 0% perdita e latenza media 0,258 ms.
+- La destinazione DDP Blackbox -> PFD è stata trasferita dalla WLAN a Ethernet;
+  rotta, contatori interfaccia, log publisher e contatori consumer dimostrano
+  il percorso reale. La WLAN resta volutamente attiva soltanto come recovery.
 - Il PFD ascolta DDP su `0.0.0.0:49002`; la Blackbox ascolta MAVLink su
   `0.0.0.0:14550`. Sono bind da restringere con firewall/interfaccia durante il
   collaudo cablato.
 - Il nodo EMS `192.168.1.48` non era raggiungibile e la sua interfaccia Ethernet
   non è stata verificata.
-- Nessun profilo Ethernet, indirizzo, route, firewall o parametro Pixhawk è
-  stato modificato: la verifica su Ethernet reale è ancora aperta.
+- Ground Station e Pixhawk non sono stati collegati al dominio FLIGHT-DATA;
+  nessun parametro Pixhawk è stato modificato.
+- Rischio scoperto: quando `eth0` cade, la route connessa scompare mentre il
+  gateway WLAN resta disponibile. Prima dell'uso operativo occorre una regola
+  di egress persistente e provata che impedisca a destinazioni
+  `10.77.10.0/24` di uscire da interfacce diverse da `eth0`.
 
 ## Aperto — non dichiarare DONE
 
 - Broker e receiver PFD sono installati, attivi e verificati end-to-end sulla
-  WLAN di banco. Restano da verificare su Ethernet avionica cablata riordino,
-  reboot, latenza, jitter, carico prolungato e la transizione intermedia
-  `STALE`; perdita e stato finale `LOST` sono stati verificati.
+  prima tratta Ethernet avionica cablata. Restano da verificare egress isolato,
+  scollegamento fisico, `STALE`, reboot, latenza/jitter e carico prolungato; il
+  fault logico e lo stato finale `LOST` sono verificati su hardware reale.
 - Confermare con cablaggio e inventario finale la destinazione di `can_b` per
   Pixhawk/DroneCAN. `can_a` porta il flusso sensori corrente ed è stato usato in
   sola lettura; `can_b` era silente durante l'audit.
@@ -355,7 +374,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 7. Aggiungere TLS o una rete avionica isolata prima di considerare professionale il trasporto HTTP dell'hub; oggi autenticazione bearer e rete locale non costituiscono una certificazione avionica.
 8. Collegare il parsing/normalizzazione dei messaggi CAN e MAVLink al modello dati arbitrato secondo ADR-003/ADR-005. L'inventario firmato prova l'esistenza e integrità dei segmenti, non la correttezza semantica di ogni misura.
 9. Verificare carico CAN reale, latenze end-to-end, stasis/cross-check e comportamento degradato con Pixhawk 6X, M10 e Matek ASPD-DLVR collegati simultaneamente.
-10. Ethernet cablata della Blackbox risulta ancora senza carrier nell'ultimo audit; Wi-Fi è il collegamento attivo. L'architettura Ethernet avionica resta da cablare e collaudare.
+10. La tratta Ethernet Blackbox-PFD è attiva e verificata; mancano EMS,
+    Ground Station, Pixhawk, guard egress, endurance e fault fisico prima del
+    collaudo completo dell'architettura.
 11. Il servizio utente Ground Station è abilitato ma `Linger=no`: parte con la
     sessione utente. Decidere se il nodo deve funzionare prima del login e, in
     quel caso, abilitare il linger con autorizzazione amministrativa.

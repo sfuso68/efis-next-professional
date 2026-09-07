@@ -9,7 +9,7 @@ Type=simple
 User=blackbox
 Group=blackbox
 WorkingDirectory=/opt/efis-blackbox
-Environment="EFIS_DDP_DISPLAY_ARGS=--display 192.168.1.45"
+Environment="EFIS_DDP_DISPLAY_ARGS=--display 10.77.10.11"
 Environment=EFIS_PFD_DDP_PORT=49002
 Environment=EFIS_BLACKBOX_NODE=47
 Environment=EFIS_MAVLINK_BIND=0.0.0.0

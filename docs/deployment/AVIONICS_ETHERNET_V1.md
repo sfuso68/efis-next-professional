@@ -6,14 +6,15 @@ Stato: procedura di banco reversibile, non approvata per il volo.
 
 | Nodo | Interfaccia | Stato osservato | Accesso di recupero |
 |---|---|---|---|
-| PFD `192.168.1.45` | `eth0` | `NO-CARRIER` | WLAN attiva |
-| Blackbox `192.168.1.47` | `eth0` | `NO-CARRIER` | WLAN attiva |
+| PFD `192.168.1.45` | `eth0` | `10.77.10.11/24`, 1000/full | WLAN attiva |
+| Blackbox `192.168.1.47` | `eth0` | `10.77.10.2/24`, 1000/full | WLAN attiva |
 | Ground Station `192.168.1.39` | `eno1` | `NO-CARRIER` | WLAN attiva |
 | EMS `192.168.1.48` | non verificata | nodo non raggiungibile | da ripristinare |
 
 La targhetta fotografata ha confermato il modello Waveshare
-`Gigabit-Switch-5P (EU)`. Non è stata applicata alcuna modifica di rete: prima
-della configurazione devono essere alimentati switch e nodi e collegati i cavi.
+`Gigabit-Switch-5P (EU)`. Il 2026-09-07 Blackbox e PFD sono stati collegati allo
+switch e configurati sui profili NetworkManager `netplan-eth0`, senza gateway
+o DNS sulla rete avionica e mantenendo la WLAN come accesso di recupero.
 
 ## Porte dello switch FLIGHT-DATA a cinque porte
 
@@ -56,20 +57,20 @@ e VIDEO-CORE; il cinque porte è soltanto il banco iniziale.
 Non eseguire i comandi finché il relativo cavo non è collegato e l'accesso WLAN
 di recupero non è stato verificato.
 
-Blackbox:
+Blackbox (modificare il profilo netplan esistente, senza crearne un duplicato):
 
 ```sh
-sudo nmcli connection add type ethernet ifname eth0 con-name efis-flight-data \
-  ipv4.method manual ipv4.addresses 10.77.10.2/24 ipv4.never-default yes \
-  ipv6.method disabled 802-3-ethernet.mtu 1500
+sudo nmcli connection modify netplan-eth0 ipv4.method manual \
+  ipv4.addresses 10.77.10.2/24 ipv4.gateway "" ipv4.never-default yes \
+  ipv4.dns "" ipv6.method disabled 802-3-ethernet.mtu 1500
 ```
 
-PFD:
+PFD (modificare il profilo netplan esistente, senza crearne un duplicato):
 
 ```sh
-sudo nmcli connection add type ethernet ifname eth0 con-name efis-flight-data \
-  ipv4.method manual ipv4.addresses 10.77.10.11/24 ipv4.never-default yes \
-  ipv6.method disabled 802-3-ethernet.mtu 1500
+sudo nmcli connection modify netplan-eth0 ipv4.method manual \
+  ipv4.addresses 10.77.10.11/24 ipv4.gateway "" ipv4.never-default yes \
+  ipv4.dns "" ipv6.method disabled 802-3-ethernet.mtu 1500
 ```
 
 Ground Station di banco:
