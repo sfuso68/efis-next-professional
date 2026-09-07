@@ -1,0 +1,32 @@
+name: EFIS Core CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'work/**'
+      - 'integration/**'
+
+permissions:
+  contents: read
+
+jobs:
+  linux-core:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure core without Qt
+        run: >-
+          cmake -S . -B build/ci -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DEFIS_BUILD_QT_RENDERER=OFF
+          -DEFIS_BUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build build/ci --parallel 4
+
+      - name: Test
+        run: ctest --test-dir build/ci --output-on-failure --timeout 60

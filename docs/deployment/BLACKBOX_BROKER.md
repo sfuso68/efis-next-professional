@@ -29,6 +29,19 @@ Il file `deploy/systemd/efis-blackbox-broker.service` usa questi valori di banco
 - nodo logico Blackbox: `47`;
 - frequenza snapshot: 20 Hz.
 
+`--display` è ripetibile. Per esempio, quando anche un secondo pannello avrà un
+consumer DDP verificato:
+
+```sh
+--display 192.168.1.45 --display 192.168.1.48 --display-port 49002
+```
+
+Tutte le destinazioni condividono identità publisher e cadenza, ma mantengono
+socket e contatori separati. Una destinazione duplicata viene rifiutata; un
+pannello spento non arresta recorder o invio agli altri endpoint. L'unità
+systemd usa `EFIS_DDP_DISPLAY_ARGS`, sovrascrivibile nel file ambiente, per
+fornire la lista completa senza modificare l'unità distribuita.
+
 Gli indirizzi osservati via DHCP non sono identità permanenti. Prima
 dell'installazione creare `/etc/efis/blackbox-broker.env` con i valori della
 rete di banco e permessi `0640 root:blackbox`, oppure introdurre prenotazioni
@@ -54,6 +67,10 @@ sudo install -d -o blackbox -g blackbox -m 0750 /var/lib/blackbox/flight
 Non esiste un fallback simulato in questo eseguibile. Se gli ingressi tacciono,
 il broker continua a inviare uno snapshot esplicitamente non disponibile, così
 il display distingue un collegamento DDP vivo da sensori assenti.
+
+Il log periodico `blackbox_display_health` espone per ogni destinazione
+datagrammi, byte, errori e ultimo errore; `blackbox_broker_health` riporta il
+totale e continua a essere emesso anche se una destinazione fallisce.
 
 ## Gate prima dell'attivazione persistente
 

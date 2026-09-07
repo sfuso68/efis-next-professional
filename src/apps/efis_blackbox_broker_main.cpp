@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -28,7 +29,7 @@ struct Options final {
     std::string mavlink_bind{"0.0.0.0"};
     std::uint16_t mavlink_port{14'550};
     std::string can_interface;
-    std::string display;
+    std::vector<std::string> displays;
     std::filesystem::path records;
     std::uint16_t display_port{49'002};
     std::uint32_t source_node{47};
@@ -62,7 +63,9 @@ Options parse(int argc, char** argv) {
                 value("--mavlink-port"), "MAVLink port", 65'535);
         } else if (argument == "--can-interface") {
             options.can_interface = value("--can-interface");
-        } else if (argument == "--display") options.display = value("--display");
+        } else if (argument == "--display") {
+            options.displays.push_back(value("--display"));
+        }
         else if (argument == "--records") options.records = value("--records");
         else if (argument == "--display-port") {
             options.display_port = unsigned_value<std::uint16_t>(
@@ -80,8 +83,8 @@ Options parse(int argc, char** argv) {
             throw std::invalid_argument{"unknown argument: " + argument};
         }
     }
-    if (options.display.empty()) {
-        throw std::invalid_argument{"--display is required"};
+    if (options.displays.empty()) {
+        throw std::invalid_argument{"at least one --display is required"};
     }
     if (options.records.empty()) {
         throw std::invalid_argument{"--records is required"};
@@ -120,10 +123,16 @@ int main(int argc, char** argv) {
 
         const auto instance = publisher_instance();
         efis::recording::SegmentedRecorder recorder{options.records};
-        efis::ingest::BlackboxPublisherSession session{{
-            {options.display, options.display_port},
-            {efis::protocol::ddp::Profile::professional,
-             options.source_node, instance, 1}}, {}, &recorder};
+        std::vector<efis::DdpUdpPublisherConfig> publishers;
+        publishers.reserve(options.displays.size());
+        for (const auto& display : options.displays) {
+            publishers.push_back({
+                {display, options.display_port},
+                {efis::protocol::ddp::Profile::professional,
+                 options.source_node, instance, 1}});
+        }
+        efis::ingest::BlackboxPublisherSession session{
+            std::move(publishers), {}, &recorder};
 
         std::array<std::uint8_t, efis::io::max_udp_payload> mavlink_buffer{};
         std::vector<efis::can::Frame> can_buffer(64);
@@ -139,7 +148,8 @@ int main(int argc, char** argv) {
         std::cout << "event=blackbox_broker_start mode=LIVE_READ_ONLY mavlink_bind="
                   << options.mavlink_bind << ':' << options.mavlink_port
                   << " can=" << (options.can_interface.empty() ? "DISABLED" : options.can_interface)
-                  << " display=" << options.display << ':' << options.display_port
+                  << " displays=" << options.displays.size()
+                  << " display_port=" << options.display_port
                   << " records=" << options.records.string()
                   << " source_node=" << options.source_node
                   << " instance=" << instance << " rate_hz=" << options.rate_hz << '\n';
@@ -173,6 +183,7 @@ int main(int argc, char** argv) {
             if (now >= next_report) {
                 next_report = now + 1s;
                 const auto& stats = session.statistics();
+                const auto transmitted = session.publisher_metrics();
                 std::cout << "event=blackbox_broker_health mavlink_datagrams="
                           << mavlink_datagrams << " mavlink_bytes=" << stats.mavlink_bytes
                           << " mavlink_socket_errors=" << mavlink_socket_errors
@@ -181,8 +192,21 @@ int main(int argc, char** argv) {
                           << " node_events=" << stats.node_events_observed
                           << " source_events=" << stats.source_events_observed
                           << " recorded=" << stats.snapshots_recorded
-                          << " ddp_datagrams=" << session.publisher_metrics().datagrams
-                          << " ddp_bytes=" << session.publisher_metrics().bytes << '\n';
+                          << " ddp_datagrams=" << transmitted.datagrams
+                          << " ddp_bytes=" << transmitted.bytes
+                          << " ddp_failures=" << stats.ddp_publish_failures << '\n';
+                for (const auto& display : session.display_statistics()) {
+                    std::cout << "event=blackbox_display_health destination="
+                              << display.destination.address << ':'
+                              << display.destination.port
+                              << " datagrams=" << display.transmitted.datagrams
+                              << " bytes=" << display.transmitted.bytes
+                              << " failures=" << display.failures;
+                    if (!display.last_error.empty()) {
+                        std::cout << " last_error=\"" << display.last_error << '"';
+                    }
+                    std::cout << '\n';
+                }
             }
             if (options.seconds > 0 &&
                 now - started >= std::chrono::seconds{options.seconds}) break;
@@ -191,8 +215,11 @@ int main(int argc, char** argv) {
         }
 
         recorder.close();
+        const auto transmitted = session.publisher_metrics();
         std::cout << "event=blackbox_broker_stop ddp_datagrams="
-                  << session.publisher_metrics().datagrams << '\n';
+                  << transmitted.datagrams
+                  << " ddp_failures=" << session.statistics().ddp_publish_failures
+                  << '\n';
         return 0;
     } catch (const std::exception& error) {
         std::cerr << "event=blackbox_broker_failed reason=\"" << error.what() << "\"\n";
