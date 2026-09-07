@@ -346,6 +346,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   switch definitivo servono ruolo/IP univoci del nodo, Ethernet sullo switch,
   pacchetto terrain/imagery compatibile, profiling fino al target e acceptance
   visiva.
+- Il controllo finale ha misurato 48,3 °C e `get_throttled=0x50000`: nessun bit
+  di allarme e' attivo al momento della lettura, ma dall'ultimo boot sono state
+  registrate sottotensione e limitazione di frequenza. Alimentatore/cavo,
+  riavvio con contatori puliti e nuova prova prestazionale sono prerequisiti;
+  i 13-15 FPS attuali non costituiscono una baseline affidabile di chiusura.
 
 ### Ground Station `Port-hp` — 192.168.1.39 / Pixhawk 6X
 

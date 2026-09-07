@@ -71,7 +71,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | PROD-005 | Update/rollback software | Tutti | PARTIAL | release immutabili su `.45`; release separata e rollback renderer reale verificato su `.49` | deployment non uniforme tra nodi | standardizzare attivazione atomica e rollback | rollback simulato su tutti i nodi |
 | VER-001 | Test automatici core | Dev/RPi5 | DONE/PARTIAL | suite multiple + 16/16 CTest PASS su release ARM64 12b4697 (`.45`) e ab0429e (`.49`) + EFIS Core CI Linux PASS su PR #6 | estendere piattaforme e fault test | mantenere CI green | green required per PR |
 | VER-002 | HIL | Banco | TODO | concetto | hardware fixture | costruire banco HIL | fault injection ripetibile |
-| VER-003 | Test termico prolungato RPi5 | RPi5 | TODO | misure brevi | PSU/thermal | soak test | nessun throttle/undervoltage |
+| VER-003 | Test termico prolungato RPi5 | RPi5 | TODO | `.45` senza throttle nella prova breve; `.49` a 48,3 °C ma `get_throttled=0x50000` storico | PSU/cavo del secondo nodo; misura FPS non conclusiva | correggere alimentazione, reboot e soak test | nessun throttle/undervoltage |
 | VER-004 | Test vibrazioni/EMI | Sistema | TODO | nessuna chiusura | hardware finale | piano di prova | limiti definiti e report |
 | VER-005 | Acceptance bench/flight | Sistema | TODO | non ancora | precedenti gate | checklist incrementale | tutte le funzioni safety-critical verificate |
 
