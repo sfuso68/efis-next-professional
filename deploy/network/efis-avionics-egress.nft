@@ -1,0 +1,9 @@
+table inet efis_avionics {
+    chain output {
+        type filter hook output priority filter; policy accept;
+
+        # Never let FLIGHT-DATA destinations follow a recovery/default route.
+        # The counter is part of the operational evidence and fault diagnostics.
+        ip daddr 10.77.10.0/24 oifname != "eth0" counter reject with icmp type admin-prohibited
+    }
+}

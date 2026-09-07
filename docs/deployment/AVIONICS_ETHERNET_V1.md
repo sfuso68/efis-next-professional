@@ -84,6 +84,36 @@ sudo nmcli connection add type ethernet ifname eno1 con-name efis-flight-maint \
 I profili non definiscono DNS o gateway. Non creare `bridge`, NAT o Internet
 Connection Sharing.
 
+## Protezione egress fail-closed
+
+Poiché la WLAN resta disponibile durante il collaudo come accesso di recupero,
+la scomparsa della route connessa di `eth0` non deve permettere al traffico
+FLIGHT-DATA di seguire il gateway predefinito. Installare sui nodi Linux:
+
+```sh
+sudo install -D -o root -g root -m 0644 \
+  deploy/network/efis-avionics-egress.nft \
+  /etc/efis/avionics-egress.nft
+sudo install -o root -g root -m 0644 \
+  deploy/systemd/efis-avionics-egress.service \
+  /etc/systemd/system/efis-avionics-egress.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now efis-avionics-egress.service
+```
+
+La tabella `inet efis_avionics` rifiuta e conta ogni pacchetto IPv4 destinato a
+`10.77.10.0/24` quando l'interfaccia di uscita scelta non è `eth0`. Non cambia
+la policy generale del firewall e non inoltra alcun pacchetto. Rollback:
+
+```sh
+sudo systemctl disable --now efis-avionics-egress.service
+```
+
+Il gate richiede tre prove: comunicazione invariata con `eth0` attiva; contatore
+`reject` crescente e nessun pacchetto avionico sulla WLAN con `eth0` disattiva;
+ripristino `LIVE` dopo la riattivazione. Il semplice fatto che il servizio sia
+`active` non costituisce evidenza sufficiente.
+
 ## Parametri Pixhawk — valori proposti, non ancora autorizzati
 
 ArduPlane 4.7 supporta il framework Ethernet sul Pixhawk 6X. La configurazione

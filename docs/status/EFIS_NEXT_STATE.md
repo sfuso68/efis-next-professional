@@ -119,6 +119,18 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   verificato `LIVE -> LOST -> LIVE`; broker e recorder sono rimasti attivi e
   senza failure. I 112 gap aggiunti sono coerenti con la finestra di perdita
   intenzionale. Non equivale ancora a una prova di scollegamento fisico.
+- Installata e abilitata su Blackbox e PFD la tabella nftables separata
+  `inet efis_avionics`: le destinazioni `10.77.10.0/24` sono ammesse soltanto
+  quando la route sceglie `eth0`. Con `eth0` Blackbox disattiva, Linux ha scelto
+  il gateway WLAN ma la regola ha rifiutato 148 pacchetti; 146 invii DDP hanno
+  prodotto `Operation not permitted` mentre il recorder continuava a crescere.
+  Sul PFD la prova simmetrica ha rifiutato e contato due ping. Entrambi i nodi
+  hanno recuperato con servizio egress `enabled/active` e DDP `LIVE`.
+- Dopo i fault, due finestre brevi hanno però mostrato gap DDP intermittenti
+  anche a link attivo (10 su 390 snapshot in 20 secondi in una finestra, 6 su
+  394 in un'altra), senza incremento di `RcvbufErrors`, errori driver o failure
+  publisher. Ping bidirezionali a 5 Hz erano 100/100. La causa resta aperta e
+  vieta di dichiarare completato il gate di qualità del trasporto.
 
 ### Distribuzione DDP multi-display
 
@@ -343,16 +355,16 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   non è stata verificata.
 - Ground Station e Pixhawk non sono stati collegati al dominio FLIGHT-DATA;
   nessun parametro Pixhawk è stato modificato.
-- Rischio scoperto: quando `eth0` cade, la route connessa scompare mentre il
-  gateway WLAN resta disponibile. Prima dell'uso operativo occorre una regola
-  di egress persistente e provata che impedisca a destinazioni
-  `10.77.10.0/24` di uscire da interfacce diverse da `eth0`.
+- Il rischio di fallback sul gateway WLAN è mitigato da una regola nftables
+  fail-closed persistente e verificata su entrambi i nodi. Il reboot completo
+  dei due nodi e una cattura Ethernet/WLAN correlata restano gate separati.
 
 ## Aperto — non dichiarare DONE
 
 - Broker e receiver PFD sono installati, attivi e verificati end-to-end sulla
-  prima tratta Ethernet avionica cablata. Restano da verificare egress isolato,
-  scollegamento fisico, `STALE`, reboot, latenza/jitter e carico prolungato; il
+  prima tratta Ethernet avionica cablata. L'egress fail-closed è verificato a
+  runtime; restano da verificare reboot, cattura correlata, scollegamento
+  fisico, `STALE`, gap intermittenti, latenza/jitter e carico prolungato. Il
   fault logico e lo stato finale `LOST` sono verificati su hardware reale.
 - Confermare con cablaggio e inventario finale la destinazione di `can_b` per
   Pixhawk/DroneCAN. `can_a` porta il flusso sensori corrente ed è stato usato in
@@ -374,9 +386,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 7. Aggiungere TLS o una rete avionica isolata prima di considerare professionale il trasporto HTTP dell'hub; oggi autenticazione bearer e rete locale non costituiscono una certificazione avionica.
 8. Collegare il parsing/normalizzazione dei messaggi CAN e MAVLink al modello dati arbitrato secondo ADR-003/ADR-005. L'inventario firmato prova l'esistenza e integrità dei segmenti, non la correttezza semantica di ogni misura.
 9. Verificare carico CAN reale, latenze end-to-end, stasis/cross-check e comportamento degradato con Pixhawk 6X, M10 e Matek ASPD-DLVR collegati simultaneamente.
-10. La tratta Ethernet Blackbox-PFD è attiva e verificata; mancano EMS,
-    Ground Station, Pixhawk, guard egress, endurance e fault fisico prima del
-    collaudo completo dell'architettura.
+10. La tratta Ethernet Blackbox-PFD e il guard egress sono attivi e verificati;
+    mancano diagnosi dei gap intermittenti, reboot, EMS, Ground Station,
+    Pixhawk, endurance e fault fisico prima del collaudo completo.
 11. Il servizio utente Ground Station è abilitato ma `Linger=no`: parte con la
     sessione utente. Decidere se il nodo deve funzionare prima del login e, in
     quel caso, abilitare il linger con autorizzazione amministrativa.

@@ -1,0 +1,22 @@
+[Unit]
+Description=EFIS avionics Ethernet egress guard
+Documentation=file:///home/efis/efis-next/docs/deployment/AVIONICS_ETHERNET_V1.md
+Wants=network-pre.target
+Before=network.target
+ConditionPathExists=/etc/efis/avionics-egress.nft
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=-/usr/sbin/nft delete table inet efis_avionics
+ExecStart=/usr/sbin/nft -f /etc/efis/avionics-egress.nft
+ExecStop=-/usr/sbin/nft delete table inet efis_avionics
+CapabilityBoundingSet=CAP_NET_ADMIN
+AmbientCapabilities=CAP_NET_ADMIN
+NoNewPrivileges=true
+ProtectHome=true
+ProtectSystem=strict
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
