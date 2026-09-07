@@ -22,7 +22,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | CORE-002 | Snapshot, provenance, timestamp, quality, validity | Black box/Core | DONE | test core/arbitration | regressioni dati plausibili ma falsi | estendere nuovi segnali | copertura test per ogni SignalId |
 | CORE-003 | Arbitraggio per grandezza e failover | Black box/Core | DONE | `SnapshotArbitrator`, test | tuning priorità reali | integrare sorgenti P2/P4 | failover/reversione verificati su HW |
 | CORE-004 | Health model nodo/sorgente/dato | Black box/Core | PARTIAL | heartbeat, stale, lost node | health Pixhawk/DroneCAN incompleto | consolidare stati OK/DEGRADED/STALE/FAILED | fault injection completa |
-| PFD-001 | PFD primario 1024x600 | RPi5 | PARTIAL | kiosk reale, catture, test QML | qualità grafica non definitiva | revisione layout su vetro | acceptance visuale + 60 min runtime |
+| PFD-001 | PFD primario 1024x600 | RPi5 | PARTIAL | release immutabile 12b4697 attiva su RPi5; DDP LIVE senza reject/gap; imagery OFFLINE_READY; ~23-24 FPS come baseline precedente | qualità grafica non definitiva; manca acceptance visuale/60 min | revisione layout su vetro e soak | acceptance visuale + 60 min runtime |
 | PFD-002 | Nastri IAS/ALT professionali | RPi5 | PARTIAL | componenti presenti | overlap/leggibilità | rifinitura e catture | nessuna sovrapposizione, scale corrette |
 | PFD-003 | HSI/FMA/heading e annunci | RPi5 | PARTIAL | componenti presenti | validità sorgenti NAV | collegare modello nav canonico | annunci coerenti in failover |
 | INST-001 | Framework strumenti analogici | RPi5/display secondari | DONE-SW | 29 SVG, six-pack, 10/10 test | verifica display post-router | test su RPi5 reale | catture HW + fail-state verificati |
@@ -69,7 +69,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | PROD-003 | Enclosure e termica | Aereo | TODO | prototipi HW | vibrazioni/temperatura | progetto meccanico | soak/vibration/thermal test |
 | PROD-004 | Harness/connettori | Aereo | PARTIAL | Waveshare 5P identificato; schema FLIGHT-DATA V1; video separato | 5 porte insufficienti per finale; cavi/EMI aperti | cablare banco e selezionare switch video/finale | harness documentato e testato |
 | PROD-005 | Update/rollback software | Tutti | PARTIAL | git/config rollback | deployment nodes | A/B or transactional deploy | rollback simulato su tutti i nodi |
-| VER-001 | Test automatici core | Dev/RPi5 | DONE/PARTIAL | suite multiple + EFIS Core CI Linux PASS su PR #6 | estendere piattaforme e fault test | mantenere CI green | green required per PR |
+| VER-001 | Test automatici core | Dev/RPi5 | DONE/PARTIAL | suite multiple + 16/16 CTest PASS su release ARM64 12b4697 + EFIS Core CI Linux PASS su PR #6 | estendere piattaforme e fault test | mantenere CI green | green required per PR |
 | VER-002 | HIL | Banco | TODO | concetto | hardware fixture | costruire banco HIL | fault injection ripetibile |
 | VER-003 | Test termico prolungato RPi5 | RPi5 | TODO | misure brevi | PSU/thermal | soak test | nessun throttle/undervoltage |
 | VER-004 | Test vibrazioni/EMI | Sistema | TODO | nessuna chiusura | hardware finale | piano di prova | limiti definiti e report |

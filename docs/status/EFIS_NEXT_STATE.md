@@ -383,6 +383,29 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 ## Aperto — non dichiarare DONE
 
+### RPi5 PFD — deployment completo 2026-09-07
+
+- Nodo identificato su hardware reale: `efis-pfd-01`, Raspberry Pi 5 Model B
+  Rev 1.1, ARM64, FLIGHT-DATA `10.77.10.11`, WLAN recovery `192.168.1.45`,
+  Qt 6.8.2, 8 GiB RAM e 36 GiB liberi.
+- Tutti i file versionati del commit
+  `12b469729bfd8d5bb723efc9e086f2daa07c76eb` sono stati caricati nella release
+  immutabile `/home/efis/efis-next-avionics-12b4697`. Build Release completa
+  riuscita per core, PFD, EMS, broker, strumenti e simulatori; 16/16 test CTest
+  passati e nessuna libreria PFD mancante.
+- Lo switch atomico `efis-next-current` dalla release `efis-next-ddp-35dff11`
+  alla nuova release è riuscito; la release precedente resta disponibile per
+  rollback. Il servizio utente avvia il binario della nuova release.
+- Verifica hardware runtime: DDP `LIVE`, zero reject, gap ed errori socket nel
+  periodo osservato; catalogo 70 aeromobili/24 motori, navigation 65 aeroporti
+  e pacchetto imagery `OFFLINE_READY` da 1326 tile caricati. Il frame rate si è
+  stabilizzato a circa 23-24 FPS, equivalente alla release precedente;
+  temperatura 56 °C e `get_throttled=0x0` durante la verifica.
+- Non verificato: acceptance visiva mediante cattura, 60 minuti continuativi,
+  reboot completo e fault fisico. `SIGUSR1` non è un'interfaccia di cattura del
+  PFD e ha provocato un riavvio automatico del servizio; il processo è tornato
+  attivo e DDP `LIVE`, ma questa non costituisce verifica grafica.
+
 ### EDP V1 Blackbox → EMS — implementazione 2026-09-07
 
 - Implementato un protocollo motore separato e versionato, EDP V1/UDP 49003,
@@ -427,7 +450,7 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Definire cadenza operativa e autenticazione/provisioning. UDP unicast è
   deciso per lo sviluppo, ma una LAN non isolata non soddisfa il gate prodotto.
 
-1. Riallineare in modo controllato le copie sorgente RPi4/RPi5 al commit del branch e correggere il drift CMake già presente; compilare e linkare entrambi i renderer.
+1. RPi5 riallineato alla release immutabile 12b4697 e verificato; resta da riallineare in modo controllato la copia sorgente RPi4 senza perdere configurazioni locali.
 2. Installare i binari risultanti, aprire la pagina Blackbox su entrambi i display e acquisire evidenza visiva leggibile del riepilogo e della lista CAN.
 3. Aggiungere un test API automatico per manifesto valido, mancante, HMAC errato e JSON non valido.
 4. Eseguire una prova reale di power-loss/reboot durante la scrittura `.bbx.part` e documentare il recupero; il comportamento è previsto dal formato ma non è stato provocato su hardware in questo intervento.
