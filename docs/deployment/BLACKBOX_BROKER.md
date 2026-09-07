@@ -54,6 +54,14 @@ di banco va abilitato solo in modo esplicito:
 --engine-display 10.77.10.12 --engine-port 49003 --engine-simulation
 ```
 
+Sul banco a due display installare anche
+`deploy/systemd/efis-blackbox-broker-multidisplay.override.conf` come
+`/etc/systemd/system/efis-blackbox-broker.service.d/multidisplay.conf`. Il
+drop-in sostituisce intenzionalmente `ExecStart` e rende esplicite entrambe le
+destinazioni (`10.77.10.11` PFD e `10.77.10.13` MFD), anche quando un precedente
+`/etc/efis/blackbox-broker.env` contiene ancora un solo display. La destinazione
+EMS resta separata su EDP V1/49003.
+
 `--engine-simulation` non è un alias per il futuro ingresso reale: deve essere
 rimosso quando il publisher verrà collegato allo snapshot CAN arbitrato.
 

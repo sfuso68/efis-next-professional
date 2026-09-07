@@ -15,6 +15,9 @@ Item {
     readonly property real tileDepth: 111320
     readonly property real cameraX: (longitude - 12.5) * tileWidth
     readonly property real cameraZ: -(latitude - 46.5) * tileDepth
+    readonly property string gpuRoot: efisTerrainGpuRoot
+    readonly property string imageryRoot: efisImageryTextureRoot
+    function asset(root, name) { return root + name }
 
     Rectangle {
         anchors.fill: parent
@@ -81,17 +84,17 @@ Item {
         // samples based on camera distance; the active N46E012 tile retains a
         // 1025-sample near mesh and the Sentinel-2 texture.
         TerrainTile3D { cameraX: terrain.cameraX; cameraZ: terrain.cameraZ; aircraftAltitudeFt: terrain.altitude; tileX: -terrain.tileWidth; tileZ: 0
-            lowGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N46E011-257.pgm"; highGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N46E011-513.pgm"; textureSource: "file:///home/efis/efis-next/data/terrain/gpu/N46E011-sentinel2.png" }
+            lowGeometry: terrain.asset(terrain.gpuRoot,"N46E011-257.pgm"); highGeometry: terrain.asset(terrain.gpuRoot,"N46E011-513.pgm"); textureSource: terrain.asset(terrain.gpuRoot,"N46E011-sentinel2.png") }
         TerrainTile3D { cameraX: terrain.cameraX; cameraZ: terrain.cameraZ; aircraftAltitudeFt: terrain.altitude; tileX: 0; tileZ: 0
-            lowGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N46E012-257.pgm"; highGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N46E012-1025.pgm"; textureSource: "file:///home/efis/efis-next/output/imagery/active-textures/N46E012-sentinel2-active.png" }
+            lowGeometry: terrain.asset(terrain.gpuRoot,"N46E012-257.pgm"); highGeometry: terrain.asset(terrain.gpuRoot,"N46E012-1025.pgm"); textureSource: terrain.asset(terrain.imageryRoot,"N46E012-sentinel2-active.png") }
         TerrainTile3D { cameraX: terrain.cameraX; cameraZ: terrain.cameraZ; aircraftAltitudeFt: terrain.altitude; tileX: terrain.tileWidth; tileZ: 0
-            lowGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N46E013-257.pgm"; highGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N46E013-513.pgm"; textureSource: "file:///home/efis/efis-next/data/terrain/gpu/N46E013-sentinel2.png" }
+            lowGeometry: terrain.asset(terrain.gpuRoot,"N46E013-257.pgm"); highGeometry: terrain.asset(terrain.gpuRoot,"N46E013-513.pgm"); textureSource: terrain.asset(terrain.gpuRoot,"N46E013-sentinel2.png") }
         TerrainTile3D { cameraX: terrain.cameraX; cameraZ: terrain.cameraZ; aircraftAltitudeFt: terrain.altitude; tileX: -terrain.tileWidth; tileZ: terrain.tileDepth
-            lowGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N45E011-257.pgm"; highGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N45E011-513.pgm"; textureSource: "file:///home/efis/efis-next/data/terrain/gpu/N45E011-sentinel2.png" }
+            lowGeometry: terrain.asset(terrain.gpuRoot,"N45E011-257.pgm"); highGeometry: terrain.asset(terrain.gpuRoot,"N45E011-513.pgm"); textureSource: terrain.asset(terrain.gpuRoot,"N45E011-sentinel2.png") }
         TerrainTile3D { cameraX: terrain.cameraX; cameraZ: terrain.cameraZ; aircraftAltitudeFt: terrain.altitude; tileX: 0; tileZ: terrain.tileDepth
-            lowGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N45E012-513.pgm"; highGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N45E012-1025.pgm"; textureSource: "file:///home/efis/efis-next/output/imagery/active-textures/N45E012-sentinel2-active.png" }
+            lowGeometry: terrain.asset(terrain.gpuRoot,"N45E012-513.pgm"); highGeometry: terrain.asset(terrain.gpuRoot,"N45E012-1025.pgm"); textureSource: terrain.asset(terrain.imageryRoot,"N45E012-sentinel2-active.png") }
         TerrainTile3D { cameraX: terrain.cameraX; cameraZ: terrain.cameraZ; aircraftAltitudeFt: terrain.altitude; tileX: terrain.tileWidth; tileZ: terrain.tileDepth
-            lowGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N45E013-257.pgm"; highGeometry: "file:///home/efis/efis-next/data/terrain/gpu/N45E013-513.pgm"; textureSource: "file:///home/efis/efis-next/data/terrain/gpu/N45E013-sentinel2.png" }
+            lowGeometry: terrain.asset(terrain.gpuRoot,"N45E013-257.pgm"); highGeometry: terrain.asset(terrain.gpuRoot,"N45E013-513.pgm"); textureSource: terrain.asset(terrain.gpuRoot,"N45E013-sentinel2.png") }
 
         // A translucent horizontal reference adds distance perception without
         // drawing wireframe over the flight-critical terrain.

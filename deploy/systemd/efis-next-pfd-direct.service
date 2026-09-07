@@ -23,6 +23,9 @@ Environment=EFIS_DDP_BIND_ADDRESS=0.0.0.0
 Environment=EFIS_DDP_LISTEN_PORT=49002
 Environment=EFIS_DDP_SOURCE_NODE=47
 Environment=EFIS_SIMULATION_ROLE=FALLBACK
+Environment=EFIS_TERRAIN_GPU_ROOT=/home/pi/efis-data/terrain/gpu
+Environment=EFIS_IMAGERY_TEXTURE_ROOT=/home/pi/efis-data/imagery/active-textures
+Environment=EFIS_IMAGERY_ACTIVE_PACKAGE=/home/pi/efis-data/imagery/active-package.json
 ExecStartPre=/usr/bin/sleep 1
 ExecStart=/home/pi/efis-next-current/build-rpi5/efis-pfd-qt
 Restart=always

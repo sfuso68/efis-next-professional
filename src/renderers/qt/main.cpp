@@ -9,12 +9,14 @@
 #include <QGuiApplication>
 #include <QCursor>
 #include <QDebug>
+#include <QDir>
 #include <QElapsedTimer>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QWindow>
 #include <QQuickWindow>
 #include <QTimer>
+#include <QUrl>
 #include <qqml.h>
 
 #include <memory>
@@ -36,10 +38,22 @@ int main(int argc, char* argv[]) {
         weather.updatePosition(controller.latitude(), controller.longitude());
     });
     QQmlApplicationEngine engine;
+    const auto directoryUrl = [](const char* environmentName, const QString& fallback) {
+        const QString configured = qEnvironmentVariable(environmentName);
+        const QString path = QDir(configured.isEmpty() ? fallback : configured).absolutePath();
+        return QUrl::fromLocalFile(path + QLatin1Char('/')).toString();
+    };
     engine.rootContext()->setContextProperty("pfd", &controller);
     engine.rootContext()->setContextProperty("connectivity", &connectivity);
     engine.rootContext()->setContextProperty("weather", &weather);
     engine.rootContext()->setContextProperty("efisKiosk", kioskMode);
+    engine.rootContext()->setContextProperty(
+        "efisTerrainGpuRoot",
+        directoryUrl("EFIS_TERRAIN_GPU_ROOT", QDir::current().filePath("data/terrain/gpu")));
+    engine.rootContext()->setContextProperty(
+        "efisImageryTextureRoot",
+        directoryUrl("EFIS_IMAGERY_TEXTURE_ROOT",
+                     QDir::current().filePath("output/imagery/active-textures")));
     SensorBenchController sensorBench;
     engine.rootContext()->setContextProperty("bench", &sensorBench);
     engine.rootContext()->setContextProperty(
