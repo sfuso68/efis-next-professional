@@ -27,8 +27,8 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | PFD-003 | HSI/FMA/heading e annunci | RPi5 | PARTIAL | componenti presenti | validità sorgenti NAV | collegare modello nav canonico | annunci coerenti in failover |
 | INST-001 | Framework strumenti analogici | RPi5/display secondari | DONE-SW | 29 SVG, six-pack, 10/10 test | verifica display post-router | test su RPi5 reale | catture HW + fail-state verificati |
 | INST-002 | PanelStore atomico con backup/rollback | Core | DONE | test persistenza | nessuno noto | mantenere schema versionato | attivazione/rollback testati su target |
-| PIX-001 | Pixhawk 6X come primary flight source | Pixhawk/Black box | PARTIAL | MAVLink ingestion P1 | P2 non congelata | completare P2 read-only | mapping segnali+health+timeout HW |
-| PIX-002 | MAVLink read-only verso FlightSourceRouter | Black box | PARTIAL | adapter/pipeline presenti | regole priorità da consolidare | P2 | fixture + stream reale Pixhawk |
+| PIX-001 | Pixhawk 6X come primary flight source | Pixhawk/Black box | PARTIAL | stream reale; attitude/alt/VS `pixhawk_primary`, non simulati | IAS resta ESP32; GNSS non disponibile; P2 non congelata | completare Matek/M10 e health | mapping segnali+health+timeout HW |
+| PIX-002 | MAVLink read-only verso FlightSourceRouter | Black box | PARTIAL | bridge O_RDONLY HW + recorder con provenance Pixhawk | priorità e fault test da consolidare | disconnect/reconnect + timeout/failover | mapping, stale e failover verificati su HW |
 | PIX-003 | Comandi autopilota | Pixhawk | TODO | fuori scope P2 | safety elevata | fase separata dopo read-only | specifica, interlock, test HIL |
 | GNSS-001 | M10 comunicante | Pixhawk GPS2 | PARTIAL-HW | ricezione presente | fix outdoor non chiuso | test cielo aperto | fix 3D, sat, accuracy, log |
 | GNSS-002 | Magnetometro esterno M10 | Pixhawk | PARTIAL-HW | device rilevato | orientamento/interferenze | calibrazione installata | compass consistency test |
@@ -43,7 +43,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | EMS-004 | Limiti motore da manuale | Setup/EMS | TODO | campi presenti | serve fonte esterna | verificare per motore installato | POH/manuale citato e approvato |
 | BBX-001 | Black box append-only | Black box | DONE/PARTIAL | recorder e ingest | retention/robustezza da chiudere | endurance test | power-loss recovery + retention |
 | BBX-002 | Ingestion unico dei bus | Black box | DONE-ARCH | ADR-003 | deployment finale | consolidare distribuzione | nessun display consuma frame grezzi |
-| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | ADR-008/009 + broker recorder/DDP multi-display, UDP loopback e PFD build | deployment e trasporto HW aperti | installare e collaudare Blackbox→RPi5 | protocollo versionato + replay + perdita/reordine HW |
+| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | broker installato; Pixhawk reale ricevuto e DDP PFD LIVE | Ethernet, jitter/riordino e provenance completa aperti | collaudo rete avionica e fault injection | protocollo versionato + replay + perdita/reordine HW |
 | BBX-004 | Edge weather/cache | Black box | PARTIAL | servizio presente | freshness/offline | hardening | live/cached/stale verificati |
 | SRV-001 | Server mappe/imagery | Server casa | PARTIAL | mapapp/Caddy/status | lifecycle pacchetti | versioning+manifest | update atomico + rollback |
 | SRV-002 | Cataloghi/navdata centralizzati | Server casa | PARTIAL | DB/cataloghi presenti | validità/fonti | pipeline update | checksum/provenance/versione |
@@ -59,7 +59,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | FPV-001 | Vista FPV | RPi5/RPi4 | PARTIAL | QML/design | pipeline reale | GStreamer/V4L2 HW | latenza e freeze detection |
 | FPV-002 | Quattro telecamere | Video node | TODO | requisito definito | banda/decoder/power | architettura ingressi | 4 feed, PiP, failover |
 | FPV-003 | Registrazione video sincronizzata | Black box | TODO | requisito | storage/timestamp | specifica | sync telemetria verificata |
-| GS-001 | QGroundControl/MAVProxy | Portatile | PARTIAL | uso e backup Pixhawk | procedure manuali | formalizzare runbook | recovery ripetibile da backup |
+| GS-001 | QGroundControl/bridge manutenzione | Portatile | PARTIAL | bridge O_RDONLY installato + runbook separazione QGC | `Linger=no`, recovery e confronto parametri aperti | test USB fault + recovery da backup | recovery ripetibile e nessuna scrittura involontaria |
 | GS-002 | Backup firmware/parametri Pixhawk | Portatile | DONE | backup PX4/ArduPlane | proteggere copie | replica verificata | doppia copia + hash |
 | GS-003 | Tooling sviluppo Windows | Portatile | PARTIAL | build MSVC/Qt | Smart App Control | documentare workaround | build/test riproducibili |
 | LEG-R4-001 | EFIS RPi4 storico | RPi4 | LEGACY | operativo | non regredire | congelare | nessuna modifica salvo fix critici |
