@@ -2,7 +2,7 @@
 
 Aggiornamento: 2026-09-07
 
-Branch di lavoro: `work/blackbox-hw-stage-v1`
+Branch di lavoro: `work/mavlink-readonly-bridge-v1`
 
 Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-009.
 
@@ -75,6 +75,23 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   troncamenti socket, frame CAN e datagrammi/byte DDP.
 - Aggiunti unità systemd di predisposizione e guida di deployment. Il servizio
   non è stato installato né attivato sulla Blackbox reale in questo branch.
+
+### Bridge Pixhawk MAVLink strettamente sola-lettura
+
+- Aggiunto `tools/groundstation/mavlink_readonly_forwarder.py`, bridge Python
+  senza dipendenze esterne che apre la seriale Pixhawk con `O_RDONLY`, non
+  contiene un percorso di scrittura e inoltra i byte invariati su una o più
+  destinazioni UDP.
+- Il bridge non interpreta MAVLink, non genera heartbeat, non richiede stream
+  e non può modificare parametri o stato dell'autopilota. Parsing,
+  normalizzazione, arbitraggio e registrazione restano concentrati sulla
+  Blackbox come richiesto da ADR-003.
+- Aggiunti test con pseudo-terminale Linux, unità systemd utente, configurazione
+  di esempio e runbook di installazione/manutenzione. Il percorso seriale usa
+  l'identità USB persistente del Pixhawk 6X e non il nome variabile `ttyACM0`.
+- QGroundControl deve ricevere la copia UDP locale e non aprire la stessa
+  seriale mentre il bridge è attivo; le operazioni di manutenzione richiedono
+  l'arresto esplicito del bridge.
 
 ### Distribuzione DDP multi-display
 
@@ -158,6 +175,12 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   dichiarato superato; è stata quindi richiesta una verifica indipendente.
 - Il job indipendente `linux-core` della PR #6 ha completato con esito `success`
   gli step configure, build e test, includendo il test fan-out multi-display.
+- `py_compile` del bridge e del relativo test è riuscito con Python 3.13 sia
+  sul sistema di sviluppo sia sul portatile Debian. Il test Linux con
+  pseudo-terminale ha verificato che un payload binario MAVLink-like di 10 byte
+  viene ricevuto via UDP identico, con un solo datagramma e zero errori. Tre
+  test su tre sono passati, includendo validazione destinazioni e retry
+  controllato quando la seriale non esiste.
 
 - Tre test unitari Python su segmenti sintetici `FUSOBBX1`, eseguiti con Python 3.13.5:
   - segmento chiuso valido, firma valida e riuso digest;
@@ -233,6 +256,41 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   `SIMULATION ACTIVE`. Durante il link DDP il renderer ha mantenuto circa
   24 fps. Temperatura finale 52,7 °C e `get_throttled=0x0`.
 
+### Ground Station `Port-hp` — 192.168.1.39 / Pixhawk 6X
+
+- Il Pixhawk 6X reale è presente come
+  `/dev/serial/by-id/usb-ArduPilot_Pixhawk6X_3F001D000751333439393536-if00`;
+  la porta era libera e QGroundControl non era in esecuzione durante il test.
+- Una prova temporanea di 12 secondi ha letto 100.036 byte reali, prodotto 588
+  invii UDP verso due destinazioni, senza errori di lettura, invio o
+  riconnessione.
+- L'ispezione kernel del processo attivo ha mostrato la seriale su file
+  descriptor 4 con flag ottali `02104000`; i bit di accesso sono zero e quindi
+  confermano `O_RDONLY`.
+- Il servizio utente `efis-mavlink-readonly-bridge.service` è installato,
+  abilitato e attivo con la sorgente USB persistente e le destinazioni
+  `192.168.1.47:14550` e `127.0.0.1:14550`. `systemd-analyze --user verify` e
+  `py_compile` sono riusciti sul target.
+- Sulla Blackbox reale, durante il servizio attivo, i contatori sono passati
+  da 643 datagrammi / 209.052 byte a 863 / 282.505 in nove secondi, con zero
+  errori socket e zero troncamenti. Il broker ha continuato nello stesso
+  intervallo a registrare e pubblicare DDP senza failure.
+- Sul PFD reale il consumer è tornato `LIVE`, con contatore accepted crescente,
+  zero pacchetti rifiutati e zero errori socket. Il log corrente non espone la
+  provenienza per singolo segnale.
+- La rilettura in sola lettura dell'ultimo segmento recorder ha confermato
+  `source=2` (`pixhawk_primary`) e `simulated=0` per rollio, beccheggio, prua,
+  quota pressione e velocità verticale. Rollio, beccheggio e prua erano
+  classificati `DEGRADED`; quota pressione e velocità verticale `VALID`.
+- Nello stesso snapshot IAS risultava ancora selezionata da `source=3`
+  (`esp32_legacy`) e valida. Latitudine, longitudine e ground speed erano
+  attribuite all'ESP32 ma `UNAVAILABLE`. Il trasporto e una parte del mapping
+  Pixhawk sono quindi verificati; non sono ancora chiusi airspeed Matek, GNSS
+  M10, health completo e priorità finali.
+- Durante una precedente interruzione di raggiungibilità WLAN il PFD è passato
+  `LOST` e poi nuovamente `LIVE`; i gap cumulativi sono aumentati. È evidenza
+  concreta che il banco Wi-Fi non soddisfa ancora il trasporto avionico finale.
+
 ### RPi4 EMS — 192.168.1.48
 
 - I sorgenti della proprietà e della pagina sono stati predisposti nella copia di build.
@@ -247,8 +305,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Confermare con cablaggio e inventario finale la destinazione di `can_b` per
   Pixhawk/DroneCAN. `can_a` porta il flusso sensori corrente ed è stato usato in
   sola lettura; `can_b` era silente durante l'audit.
-- Nessun datagramma MAVLink è arrivato durante le prove: il percorso reale
-  Pixhawk 6X/M10/Matek verso la Blackbox resta da cablare e collaudare.
+- Il percorso MAVLink reale Pixhawk 6X USB → Ground Station → UDP Blackbox →
+  DDP PFD è operativo sul banco. Restano da verificare mapping e provenienza di
+  ogni segnale, timeout/failover, scollegamento e riconnessione USB, assenza di
+  variazioni parametri mediante confronto backup e la futura sostituzione del
+  tratto USB/WLAN con Ethernet avionica cablata.
 - Definire cadenza operativa e autenticazione/provisioning. UDP unicast è
   deciso per lo sviluppo, ma una LAN non isolata non soddisfa il gate prodotto.
 
@@ -262,6 +323,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 8. Collegare il parsing/normalizzazione dei messaggi CAN e MAVLink al modello dati arbitrato secondo ADR-003/ADR-005. L'inventario firmato prova l'esistenza e integrità dei segmenti, non la correttezza semantica di ogni misura.
 9. Verificare carico CAN reale, latenze end-to-end, stasis/cross-check e comportamento degradato con Pixhawk 6X, M10 e Matek ASPD-DLVR collegati simultaneamente.
 10. Ethernet cablata della Blackbox risulta ancora senza carrier nell'ultimo audit; Wi-Fi è il collegamento attivo. L'architettura Ethernet avionica resta da cablare e collaudare.
+11. Il servizio utente Ground Station è abilitato ma `Linger=no`: parte con la
+    sessione utente. Decidere se il nodo deve funzionare prima del login e, in
+    quel caso, abilitare il linger con autorizzazione amministrativa.
 
 ## Vincoli architetturali mantenuti
 
