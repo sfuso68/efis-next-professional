@@ -1,8 +1,8 @@
 # EFIS NEXT — stato verificato
 
-Aggiornamento: 2026-09-06
+Aggiornamento: 2026-09-07
 
-Branch di lavoro: `work/blackbox-ddp-publisher-v1`
+Branch di lavoro: `work/ddp-multidisplay-v1`
 
 Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, ADR-001…ADR-008. ADR-009 registra la decisione di questo branch.
 
@@ -76,6 +76,19 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Aggiunti unità systemd di predisposizione e guida di deployment. Il servizio
   non è stato installato né attivato sulla Blackbox reale in questo branch.
 
+### Distribuzione DDP multi-display
+
+- Il broker accetta più opzioni `--display` e crea per ciascuna un'uscita UDP
+  unicast indipendente, mantenendo un solo stato arbitrato e un solo recorder.
+- Tutte le uscite devono condividere profilo, nodo, istanza e sequenza iniziale;
+  destinazioni duplicate o identità divergenti sono rifiutate in configurazione.
+- Errori di invio sono isolati per destinazione e non interrompono recorder o
+  gli altri pannelli; metriche aggregate e per-display sono esposte nel log.
+- L'unità systemd usa `EFIS_DDP_DISPLAY_ARGS` per rendere configurabile la lista
+  degli endpoint senza duplicare processi di ingestion.
+- Aggiunto il workflow `EFIS Core CI`, che configura e prova su Linux il core e
+  i processi senza Qt. La sua prima esecuzione resta da verificare nella PR.
+
 ### Inventario firmato dei segmenti CAN della Blackbox
 
 - Aggiunto il comando `seal-can` a `tools/blackbox/fuel_event_maintenance.py`.
@@ -134,6 +147,15 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   MAVLink, riuscita: 21 snapshot esplicitamente non disponibili pubblicati e
   21 registrati, zero errori socket. È una verifica software del ciclo, non
   hardware.
+- Test fan-out software verso due consumer UDP: entrambi ricevono lo stesso
+  snapshot normalizzato; dopo la rimozione di un consumer il rimanente continua
+  a ricevere e il recorder continua a scrivere. Verificati inoltre contatori
+  aggregati/per-endpoint e rifiuto di destinazioni duplicate.
+- La build MSVC completa del branch è riuscita. Dopo il relink Windows
+  Application Control ha bloccato prima dell'avvio tutti i 15 eseguibili di
+  test (`BAD_COMMAND`), senza eseguire asserzioni. Nessuno di questi tentativi è
+  dichiarato superato; la verifica indipendente Linux della PR è il gate
+  corrente.
 
 - Tre test unitari Python su segmenti sintetici `FUSOBBX1`, eseguiti con Python 3.13.5:
   - segmento chiuso valido, firma valida e riuso digest;
@@ -171,6 +193,10 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Non esiste in questo intervento evidenza sufficiente di build completa, installazione o verifica visiva su RPi4; queste attività restano aperte.
 
 ## Aperto — non dichiarare DONE
+
+- Installazione Blackbox sospesa al checkpoint
+  `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md`: l'accesso SSH dedicato non è ancora
+  autorizzato. Riprendere soltanto al messaggio operativo `fatto blackbox`.
 
 - Installare `efis-blackbox-broker` sulla Blackbox e il receiver sul RPi5,
   configurare gli endpoint reali e verificare su Ethernet perdita,

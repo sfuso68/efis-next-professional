@@ -5,7 +5,10 @@
 #include "efis/recording/segmented_recorder.hpp"
 
 #include <cstdint>
+#include <memory>
 #include <span>
+#include <string>
+#include <vector>
 
 namespace efis::ingest {
 
@@ -16,6 +19,14 @@ struct BlackboxPublisherStatistics final {
     std::uint64_t snapshots_recorded{};
     std::uint64_t node_events_observed{};
     std::uint64_t source_events_observed{};
+    std::uint64_t ddp_publish_failures{};
+};
+
+struct BlackboxDisplayStatistics final {
+    io::UdpEndpoint destination;
+    DdpUdpPublisherMetrics transmitted{};
+    std::uint64_t failures{};
+    std::string last_error;
 };
 
 // Punto unico di composizione del data plane Blackbox. Riceve soltanto dati
@@ -27,6 +38,10 @@ public:
     explicit BlackboxPublisherSession(DdpUdpPublisherConfig publisher,
                                       PipelinePolicy policy = {},
                                       recording::SegmentedRecorder* recorder = nullptr);
+    explicit BlackboxPublisherSession(
+        std::vector<DdpUdpPublisherConfig> publishers,
+        PipelinePolicy policy = {},
+        recording::SegmentedRecorder* recorder = nullptr);
 
     void consume_mavlink(std::span<const std::uint8_t> bytes, MonoTime now);
     void consume_can(std::span<const can::Frame> frames, MonoTime now);
@@ -38,13 +53,20 @@ public:
     [[nodiscard]] const BlackboxPublisherStatistics& statistics() const noexcept {
         return statistics_;
     }
-    [[nodiscard]] const DdpUdpPublisherMetrics& publisher_metrics() const noexcept {
-        return publisher_.metrics();
-    }
+    [[nodiscard]] DdpUdpPublisherMetrics publisher_metrics() const noexcept;
+    [[nodiscard]] std::vector<BlackboxDisplayStatistics>
+        display_statistics() const;
 
 private:
+    struct DisplayPublisher final {
+        io::UdpEndpoint destination;
+        std::unique_ptr<DdpUdpPublisher> publisher;
+        std::uint64_t failures{};
+        std::string last_error;
+    };
+
     MavlinkPipeline pipeline_;
-    DdpUdpPublisher publisher_;
+    std::vector<DisplayPublisher> publishers_;
     recording::SegmentedRecorder* recorder_{};
     BlackboxPublisherStatistics statistics_{};
 };

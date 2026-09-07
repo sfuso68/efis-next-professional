@@ -104,6 +104,9 @@ priorità e non genera autonomamente condizioni avioniche.
   publisher DDP, con ingressi MAVLink UDP e SocketCAN monitor-only;
 - test end-to-end MAVLink V2 → pipeline → UDP DDP → consumer display, con
   conservazione della provenienza Pixhawk.
+- fan-out unicast verso più display con identità coerente, sequenze per endpoint
+  e metriche individuali; la scomparsa di un consumer non ferma gli altri né il
+  recorder locale.
 
 Queste sono verifiche software e loopback locale. Mancano ancora installazione
 su Blackbox/RPi5, ingresso dal Pixhawk e dal CAN fisici, perdita/riordino

@@ -43,7 +43,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | EMS-004 | Limiti motore da manuale | Setup/EMS | TODO | campi presenti | serve fonte esterna | verificare per motore installato | POH/manuale citato e approvato |
 | BBX-001 | Black box append-only | Black box | DONE/PARTIAL | recorder e ingest | retention/robustezza da chiudere | endurance test | power-loss recovery + retention |
 | BBX-002 | Ingestion unico dei bus | Black box | DONE-ARCH | ADR-003 | deployment finale | consolidare distribuzione | nessun display consuma frame grezzi |
-| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | ADR-008/009 + broker pipeline→DDP, UDP loopback e PFD build | deployment e trasporto HW aperti | installare e collaudare Blackbox→RPi5 | protocollo versionato + replay + perdita/reordine HW |
+| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | ADR-008/009 + broker recorder/DDP multi-display, UDP loopback e PFD build | deployment e trasporto HW aperti | installare e collaudare Blackbox→RPi5 | protocollo versionato + replay + perdita/reordine HW |
 | BBX-004 | Edge weather/cache | Black box | PARTIAL | servizio presente | freshness/offline | hardening | live/cached/stale verificati |
 | SRV-001 | Server mappe/imagery | Server casa | PARTIAL | mapapp/Caddy/status | lifecycle pacchetti | versioning+manifest | update atomico + rollback |
 | SRV-002 | Cataloghi/navdata centralizzati | Server casa | PARTIAL | DB/cataloghi presenti | validità/fonti | pipeline update | checksum/provenance/versione |
@@ -69,7 +69,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | PROD-003 | Enclosure e termica | Aereo | TODO | prototipi HW | vibrazioni/temperatura | progetto meccanico | soak/vibration/thermal test |
 | PROD-004 | Harness/connettori | Aereo | TODO | parti sparse | EMI/manutenzione | schema cablaggio | harness documentato e testato |
 | PROD-005 | Update/rollback software | Tutti | PARTIAL | git/config rollback | deployment nodes | A/B or transactional deploy | rollback simulato su tutti i nodi |
-| VER-001 | Test automatici core | Dev/RPi5 | DONE/PARTIAL | suite multiple | estendere nuove feature | CI multipiattaforma | green required per PR |
+| VER-001 | Test automatici core | Dev/RPi5 | DONE/PARTIAL | suite multiple + workflow Linux core | prima esecuzione CI da verificare | rendere green la CI Linux | green required per PR |
 | VER-002 | HIL | Banco | TODO | concetto | hardware fixture | costruire banco HIL | fault injection ripetibile |
 | VER-003 | Test termico prolungato RPi5 | RPi5 | TODO | misure brevi | PSU/thermal | soak test | nessun throttle/undervoltage |
 | VER-004 | Test vibrazioni/EMI | Sistema | TODO | nessuna chiusura | hardware finale | piano di prova | limiti definiti e report |

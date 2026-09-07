@@ -12,6 +12,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -149,15 +151,20 @@ int main() {
     live_source_config.local = {"127.0.0.1", 0};
     live_source_config.consumer = {50ms, 150ms, 47};
     efis::DdpUdpFlightSource live_source{live_source_config};
+    auto secondary_source =
+        std::make_unique<efis::DdpUdpFlightSource>(live_source_config);
     const auto record_directory = std::filesystem::temp_directory_path() /
         ("efis-blackbox-ddp-" + std::to_string(
             std::chrono::steady_clock::now().time_since_epoch().count()));
     std::filesystem::remove_all(record_directory);
     efis::recording::SegmentedRecorder recorder{record_directory};
-    efis::ingest::BlackboxPublisherSession broker{{
-        {"127.0.0.1", live_source.local_endpoint().port},
-        {efis::protocol::ddp::Profile::professional, 47, 0xB10CU, 1}}, {},
-        &recorder};
+    const efis::protocol::ddp::PublisherConfig broker_identity{
+        efis::protocol::ddp::Profile::professional, 47, 0xB10CU, 1};
+    std::vector<efis::DdpUdpPublisherConfig> display_publishers{
+        {{"127.0.0.1", live_source.local_endpoint().port}, broker_identity},
+        {{"127.0.0.1", secondary_source->local_endpoint().port}, broker_identity}};
+    efis::ingest::BlackboxPublisherSession broker{
+        std::move(display_publishers), {}, &recorder};
     const auto health = healthy_air_data(1);
     const auto air = vfr_hud(83.0, 2);
     broker.consume_mavlink(health, now + 300ms);
@@ -179,10 +186,50 @@ int main() {
             "the broker must preserve Pixhawk physical provenance");
     require(!live_received.air_data.indicated_airspeed_kt.origin.simulated,
             "the operational broker must not relabel live input as simulation");
+
+    efis::FlightSnapshot secondary_received{};
+    for (int attempt = 0; attempt < 100; ++attempt) {
+        secondary_received = secondary_source->poll(now + 300ms, 10s);
+        if (secondary_received.air_data.indicated_airspeed_kt.usable()) break;
+        std::this_thread::sleep_for(1ms);
+    }
+    require(secondary_received.air_data.indicated_airspeed_kt.usable(),
+            "each configured display must receive the normalized snapshot");
+
+    // La scomparsa di un display UDP non deve fermare il recorder ne' il PFD
+    // rimasto: non esistono ACK o dipendenze inverse dal renderer.
+    secondary_source.reset();
+    broker.publish(now + 310ms);
+    for (int attempt = 0; attempt < 100; ++attempt) {
+        live_received = live_source.poll(now + 310ms, 10s);
+        if (live_source.metrics().accepted == 2) break;
+        std::this_thread::sleep_for(1ms);
+    }
+    const auto aggregate = broker.publisher_metrics();
+    const auto display_metrics = broker.display_statistics();
+    require(live_source.metrics().accepted == 2,
+            "a remaining display must continue after another display disappears");
+    require(aggregate.datagrams == 4 && display_metrics.size() == 2 &&
+                display_metrics[0].transmitted.datagrams == 2 &&
+                display_metrics[1].transmitted.datagrams == 2,
+            "fan-out metrics must remain separate and aggregate correctly");
     require(broker.statistics().mavlink_bytes == health.size() + air.size() &&
-                broker.statistics().snapshots_published == 1 &&
-                broker.statistics().snapshots_recorded == 1,
+                broker.statistics().snapshots_published == 2 &&
+                broker.statistics().snapshots_recorded == 2 &&
+                broker.statistics().ddp_publish_failures == 0,
             "the broker must expose ingress and publication metrics");
+
+    bool duplicate_rejected = false;
+    try {
+        const efis::DdpUdpPublisherConfig duplicate{
+            {"127.0.0.1", live_source.local_endpoint().port}, broker_identity};
+        efis::ingest::BlackboxPublisherSession invalid{
+            std::vector<efis::DdpUdpPublisherConfig>{duplicate, duplicate}};
+    } catch (const std::invalid_argument&) {
+        duplicate_rejected = true;
+    }
+    require(duplicate_rejected,
+            "duplicate display endpoints must be rejected at configuration time");
 
     recorder.close();
     std::filesystem::path segment;
