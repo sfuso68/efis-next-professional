@@ -1,7 +1,8 @@
 # Blackbox DDP broker
 
-Stato: predisposizione software; non ancora installato o verificato sulla
-Blackbox reale.
+Stato: installato in staging e verificato lato Blackbox reale il 2026-09-07;
+unità arrestata e disabilitata in attesa del receiver DDP sul PFD e delle prove
+end-to-end.
 
 `efis-blackbox-broker` è il processo del data plane che realizza il confine
 della ADR-003:

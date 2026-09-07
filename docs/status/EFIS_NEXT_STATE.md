@@ -2,9 +2,9 @@
 
 Aggiornamento: 2026-09-07
 
-Branch di lavoro: `work/ddp-multidisplay-v1`
+Branch di lavoro: `work/blackbox-hw-stage-v1`
 
-Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, ADR-001…ADR-008. ADR-009 registra la decisione di questo branch.
+Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-009.
 
 Questo documento non esisteva nel repository al momento dell'intervento ed è stato creato come stato operativo autorevole. Le parole **implementato**, **verificato software** e **verificato su hardware reale** indicano livelli di evidenza diversi. Una funzione non è considerata conclusa se manca la verifica pertinente.
 
@@ -182,6 +182,29 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Verifica manutentiva: quattro oggetti su quattro validi, cioè tre pacchetti esistenti più il manifesto CAN (`can_manifest=VALID`).
 - Il manifesto reale contiene solo segmenti `VALID`; non sono stati rilevati segmenti troncati o rifiutati nell'archivio esistente.
 - La registrazione CAN legacy resta in modalità listen-only e continua a produrre segmenti durante le prove.
+- Accesso SSH dedicato V2 verificato il 2026-09-07 come utente `pi`; nessuna
+  credenziale è stata scritta nel repository.
+- Audit aggiornato: root filesystem NVMe con 420 GiB disponibili, nessuna unità
+  systemd fallita e `bbxlog`, `bbxevent`, `bbxmqtt`, `bbxnav`, servizi edge e
+  fuel hub attivi.
+- `can_a` è a 500 kbit/s, `ERROR-ACTIVE`, in modalità kernel `LISTEN-ONLY` e
+  trasporta frame standard `0x100`, `0x101`, `0x200`, `0x201`, `0x300`,
+  `0x301`, `0x302`; il traffico osservato corrisponde alla famiglia di frame
+  sensore/ESP32 documentata. `can_b` è a 500 kbit/s ma non ha mostrato traffico
+  nel campione. Entrambe le interfacce avevano zero errori e zero bus-off.
+- Il commit approvato `35dff11c3f969eb2efb81430accb02cbbea396c0` è stato
+  compilato nativamente aarch64 in una directory separata con GCC 14.2,
+  CMake 3.31.6 e Ninja 1.12.1; i 15 test non-Qt hanno superato la prova sul
+  nodo reale.
+- Il broker è installato in staging in
+  `/opt/efis-blackbox/bin/efis-blackbox-broker`; SHA-256
+  `389125b7d4a99801faf0e1d14c32c0c6417b69cacd79860a9721f27d67f5a0cd`.
+  L'unità systemd è installata ma deliberatamente **disabilitata**.
+- Prova temporanea dell'unità come utente/gruppo `blackbox`: 204 frame CAN
+  letti, 122 datagrammi DDP inviati senza errori e segmento recorder chiuso da
+  101.835 byte, proprietà `blackbox:blackbox`. Prima e dopo la prova `can_a`
+  riportava zero pacchetti TX; `bbxlog` è rimasto attivo. Il servizio è stato
+  arrestato correttamente e non è abilitato al boot.
 
 ### PFD RPi5 `efis-pfd-01` — 192.168.1.45
 
@@ -196,15 +219,18 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 ## Aperto — non dichiarare DONE
 
-- Installazione Blackbox sospesa al checkpoint
-  `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md`: l'accesso SSH dedicato non è ancora
-  autorizzato. Riprendere soltanto al messaggio operativo `fatto blackbox`.
-
-- Installare `efis-blackbox-broker` sulla Blackbox e il receiver sul RPi5,
-  configurare gli endpoint reali e verificare su Ethernet perdita,
-  riordino, timeout, reboot, latenza e jitter.
-- Confermare la mappa fisica `can_a`/`can_b` prima di abilitare SocketCAN nel
-  servizio; la configurazione `can_a` è soltanto un valore iniziale da banco.
+- Il broker Blackbox è installato in staging ma non è abilitato. Il PFD reale
+  esegue ancora il deployment precedente: non ascolta su UDP 49002 e non
+  espone metriche DDP. Riallineare, compilare, installare e verificare il
+  receiver sul RPi5 prima dell'attivazione persistente del broker.
+- La prova lato Blackbox dimostra invio UDP senza errori locali, non ricezione
+  end-to-end. Restano da verificare su Ethernet perdita, riordino, timeout,
+  reboot, latenza e jitter e le transizioni `LIVE → STALE → LOST` sul display.
+- Confermare con cablaggio e inventario finale la destinazione di `can_b` per
+  Pixhawk/DroneCAN. `can_a` porta il flusso sensori corrente ed è stato usato in
+  sola lettura; `can_b` era silente durante l'audit.
+- Nessun datagramma MAVLink è arrivato durante le prove: il percorso reale
+  Pixhawk 6X/M10/Matek verso la Blackbox resta da cablare e collaudare.
 - Definire cadenza operativa e autenticazione/provisioning. UDP unicast è
   deciso per lo sviluppo, ma una LAN non isolata non soddisfa il gate prodotto.
 
