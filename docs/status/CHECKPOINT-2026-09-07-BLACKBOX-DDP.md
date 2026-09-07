@@ -9,16 +9,32 @@
 - Nessun binario del broker è stato installato sulla Blackbox reale.
 - Nessun servizio, bus CAN o parametro Pixhawk è stato modificato.
 
-## Motivo della sospensione hardware
+## Ripresa hardware del 2026-09-07
 
-L'accesso SSH diretto a `pi@192.168.1.47` e quello indiretto tramite il PFD sono
-stati rifiutati perché la workstation corrente non possiede una chiave già
-autorizzata. È stata generata una chiave dedicata fuori dal repository; la
-chiave pubblica deve ancora essere aggiunta a `~pi/.ssh/authorized_keys`.
+L'operatore ha autorizzato una chiave SSH V2 dedicata e l'accesso diretto a
+`pi@192.168.1.47` è stato verificato. La chiave privata resta fuori dal
+repository.
 
-Il lavoro hardware riprende solo quando l'operatore scrive **fatto blackbox**.
-Quella frase significa esclusivamente che l'accesso SSH è stato autorizzato;
-non costituisce evidenza di installazione o collaudo.
+La sequenza prevista è stata eseguita fino al collaudo temporaneo dell'unità:
+
+- audit di sistema, storage, servizi e porte completato;
+- `can_a` identificato come bus sensori corrente a 500 kbit/s in listen-only;
+  `can_b` era attivo ma silente;
+- build aarch64 del commit `35dff11` completata e 15 test su 15 superati;
+- binario e unità installati senza sostituire o arrestare `bbxlog`;
+- prova reale come utente `blackbox` completata con recorder e DDP attivi,
+  zero errori di invio e zero pacchetti CAN TX.
+
+Il receiver è stato poi compilato e provato sul PFD reale. La prova correlata ha
+mostrato `WAITING → LIVE`, 138 snapshot accettati, zero rifiuti, gap ed errori
+socket. Un arresto controllato del broker ha prodotto lo stato `LOST`; il log
+non ha campionato separatamente lo stato intermedio `STALE`.
+
+Il vecchio servizio PFD puntava a un binario già eliminato da `build/dev` ed è
+risultato non riavviabile dopo l'arresto. Il renderer verificato è stato quindi
+reso persistente tramite `/home/efis/efis-next-current` e il drop-in systemd
+`efis-pfd-release.override.conf`. PFD e broker sono ora attivi e abilitati; il
+broker resta read-only sugli ingressi e `can_a` conserva zero pacchetti TX.
 
 ## Sequenza di ripresa
 
@@ -27,7 +43,10 @@ non costituisce evidenza di installazione o collaudo.
 3. build ARM del commit approvato in una directory separata;
 4. installazione binario/unità senza sostituire `bbxlog`;
 5. avvio manuale temporaneo, poi verifica recorder e DDP;
-6. attivazione persistente solo dopo esito positivo;
-7. aggiornamento di `EFIS_NEXT_STATE.md` con evidenza distinta software/HW.
+6. attivazione persistente solo dopo installazione e prova del receiver PFD —
+   completata sulla WLAN di banco;
+7. aggiornamento di `EFIS_NEXT_STATE.md` con evidenza distinta software/HW —
+   completato per lo staging Blackbox.
 
-`BBX-003` resta `PARTIAL` fino alle prove Ethernet e ai fault test reali.
+`BBX-003` resta `PARTIAL`: mancano Ethernet cablata, autenticazione, MAVLink
+reale, riordino, reboot, latenza/jitter e carico prolungato.

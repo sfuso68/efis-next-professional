@@ -1,7 +1,9 @@
 # Blackbox DDP broker
 
-Stato: predisposizione software; non ancora installato o verificato sulla
-Blackbox reale.
+Stato: installato, attivo e abilitato sulla Blackbox reale il 2026-09-07;
+verificato end-to-end con il receiver DDP sul PFD attraverso la WLAN di banco.
+I gate prodotto su Ethernet isolata, autenticazione e fault test estesi restano
+aperti.
 
 `efis-blackbox-broker` è il processo del data plane che realizza il confine
 della ADR-003:
