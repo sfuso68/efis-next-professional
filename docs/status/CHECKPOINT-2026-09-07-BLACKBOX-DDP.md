@@ -25,9 +25,16 @@ La sequenza prevista è stata eseguita fino al collaudo temporaneo dell'unità:
 - prova reale come utente `blackbox` completata con recorder e DDP attivi,
   zero errori di invio e zero pacchetti CAN TX.
 
-Il servizio è stato arrestato ed è rimasto disabilitato. Il receiver DDP non è
-ancora presente nel deployment PFD reale; l'attivazione persistente resta quindi
-sospesa e non è evidenza end-to-end.
+Il receiver è stato poi compilato e provato sul PFD reale. La prova correlata ha
+mostrato `WAITING → LIVE`, 138 snapshot accettati, zero rifiuti, gap ed errori
+socket. Un arresto controllato del broker ha prodotto lo stato `LOST`; il log
+non ha campionato separatamente lo stato intermedio `STALE`.
+
+Il vecchio servizio PFD puntava a un binario già eliminato da `build/dev` ed è
+risultato non riavviabile dopo l'arresto. Il renderer verificato è stato quindi
+reso persistente tramite `/home/efis/efis-next-current` e il drop-in systemd
+`efis-pfd-release.override.conf`. PFD e broker sono ora attivi e abilitati; il
+broker resta read-only sugli ingressi e `can_a` conserva zero pacchetti TX.
 
 ## Sequenza di ripresa
 
@@ -36,8 +43,10 @@ sospesa e non è evidenza end-to-end.
 3. build ARM del commit approvato in una directory separata;
 4. installazione binario/unità senza sostituire `bbxlog`;
 5. avvio manuale temporaneo, poi verifica recorder e DDP;
-6. attivazione persistente solo dopo installazione e prova del receiver PFD;
+6. attivazione persistente solo dopo installazione e prova del receiver PFD —
+   completata sulla WLAN di banco;
 7. aggiornamento di `EFIS_NEXT_STATE.md` con evidenza distinta software/HW —
    completato per lo staging Blackbox.
 
-`BBX-003` resta `PARTIAL` fino alle prove Ethernet e ai fault test reali.
+`BBX-003` resta `PARTIAL`: mancano Ethernet cablata, autenticazione, MAVLink
+reale, riordino, reboot, latenza/jitter e carico prolungato.

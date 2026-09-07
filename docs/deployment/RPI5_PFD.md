@@ -46,6 +46,23 @@ Environment=EFIS_DDP_SOURCE_NODE=47
 Environment=EFIS_SIMULATION_ROLE=FALLBACK
 ```
 
+## Deployment atomico del renderer
+
+Sul nodo operativo non eseguire direttamente un binario incrementale in
+`build/dev`: una pulizia della directory può lasciare systemd con un processo
+ancora vivo ma senza eseguibile riavviabile. Ogni release verificata vive in una
+directory immutabile e il puntatore operativo è:
+
+```text
+/home/efis/efis-next-current -> /home/efis/efis-next-<release>
+```
+
+Installare `deploy/systemd/efis-pfd-release.override.conf` come
+`~/.config/systemd/user/efis-pfd.service.d/release.conf`. Il drop-in avvia il
+binario attraverso il puntatore stabile, configura il receiver DDP e scrive il
+log nella release attiva. Per il rollback si cambia atomicamente il symlink
+verso una release precedente già verificata, quindi si riavvia il servizio.
+
 In sviluppo la simulazione resta soltanto fallback: quando DDP è `LIVE` vincono
 i campioni reali trasportati dalla Blackbox; a collegamento assente o perso la
 simulazione è visibile come tale. Per una prova di failure senza sostituzione

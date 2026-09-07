@@ -196,21 +196,42 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   compilato nativamente aarch64 in una directory separata con GCC 14.2,
   CMake 3.31.6 e Ninja 1.12.1; i 15 test non-Qt hanno superato la prova sul
   nodo reale.
-- Il broker è installato in staging in
+- Il broker è installato in
   `/opt/efis-blackbox/bin/efis-blackbox-broker`; SHA-256
   `389125b7d4a99801faf0e1d14c32c0c6417b69cacd79860a9721f27d67f5a0cd`.
-  L'unità systemd è installata ma deliberatamente **disabilitata**.
+  Dopo il collaudo end-to-end l'unità systemd è stata abilitata al boot ed è
+  attiva.
 - Prova temporanea dell'unità come utente/gruppo `blackbox`: 204 frame CAN
   letti, 122 datagrammi DDP inviati senza errori e segmento recorder chiuso da
   101.835 byte, proprietà `blackbox:blackbox`. Prima e dopo la prova `can_a`
   riportava zero pacchetti TX; `bbxlog` è rimasto attivo. Il servizio è stato
-  arrestato correttamente e non è abilitato al boot.
+  arrestato correttamente prima del collaudo end-to-end.
+- Collaudo con il servizio PFD definitivo: 184 snapshot inviati nel campione
+  Blackbox senza failure; il PFD è passato da `WAITING` a `LIVE`, ha accettato
+  138 snapshot senza rifiuti, gap o errori socket. Dopo l'abilitazione il
+  contatore PFD osservato è salito a 538 snapshot, ancora senza errori.
+- Fault test di perdita publisher: dopo l'arresto controllato del broker il PFD
+  è passato a `LOST` mantenendo 160 snapshot accettati e zero errori. La
+  cadenza del log non ha fornito evidenza separata dello stato intermedio
+  `STALE`, quindi quella transizione non è dichiarata verificata su hardware.
 
 ### PFD RPi5 `efis-pfd-01` — 192.168.1.45
 
 - Il forwarder reale è attivo e ha ricevuto via API autenticata il riepilogo Blackbox.
 - Cache end-to-end verificata con manifesto `VALID`, conteggi e segmenti CAN più recenti.
-- Il renderer attualmente installato non è stato sostituito; la nuova presentazione grafica dell'inventario non è quindi verificata visivamente sul display.
+- Il commit `35dff11` è stato compilato in una directory release separata con
+  Qt 6.8.2; build completa e 15 test su 15 superati sul nodo.
+- Il vecchio servizio eseguiva un file già eliminato da `build/dev`: il processo
+  vivo funzionava, ma dopo l'arresto non poteva essere riavviato. Il deployment
+  usa ora il puntatore atomico `/home/efis/efis-next-current` verso la release
+  verificata e un drop-in systemd versionato nel repository.
+- `efis-pfd.service` è attivo e abilitato, ascolta in sola ricezione su UDP
+  49002 e accetta esclusivamente il nodo logico Blackbox 47.
+- Cattura reale 1024×600 acquisita dal compositor Wayland e conservata in
+  `docs/status/evidence/pfd-ddp-2026-09-07.png`: renderer completo visibile con
+  PFD, terreno ed EMS; in assenza DDP espone correttamente
+  `SIMULATION ACTIVE`. Durante il link DDP il renderer ha mantenuto circa
+  24 fps. Temperatura finale 52,7 °C e `get_throttled=0x0`.
 
 ### RPi4 EMS — 192.168.1.48
 
@@ -219,13 +240,10 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 ## Aperto — non dichiarare DONE
 
-- Il broker Blackbox è installato in staging ma non è abilitato. Il PFD reale
-  esegue ancora il deployment precedente: non ascolta su UDP 49002 e non
-  espone metriche DDP. Riallineare, compilare, installare e verificare il
-  receiver sul RPi5 prima dell'attivazione persistente del broker.
-- La prova lato Blackbox dimostra invio UDP senza errori locali, non ricezione
-  end-to-end. Restano da verificare su Ethernet perdita, riordino, timeout,
-  reboot, latenza e jitter e le transizioni `LIVE → STALE → LOST` sul display.
+- Broker e receiver PFD sono installati, attivi e verificati end-to-end sulla
+  WLAN di banco. Restano da verificare su Ethernet avionica cablata riordino,
+  reboot, latenza, jitter, carico prolungato e la transizione intermedia
+  `STALE`; perdita e stato finale `LOST` sono stati verificati.
 - Confermare con cablaggio e inventario finale la destinazione di `can_b` per
   Pixhawk/DroneCAN. `can_a` porta il flusso sensori corrente ed è stato usato in
   sola lettura; `can_b` era silente durante l'audit.
