@@ -39,6 +39,7 @@ add_library(efis_core
     src/io/socketcan_source.cpp
     src/ingest/mavlink_pipeline.cpp
     src/ingest/recording_session.cpp
+    src/ingest/blackbox_publisher_session.cpp
     src/io/byte_source.cpp
     src/io/udp_datagram.cpp
     src/bench/sensor_bench.cpp
@@ -79,6 +80,9 @@ target_link_libraries(efis-simulator PRIVATE efis_core)
 
 add_executable(efis-ddp-bench-publisher src/apps/efis_ddp_bench_publisher_main.cpp)
 target_link_libraries(efis-ddp-bench-publisher PRIVATE efis_core)
+
+add_executable(efis-blackbox-broker src/apps/efis_blackbox_broker_main.cpp)
+target_link_libraries(efis-blackbox-broker PRIVATE efis_core)
 
 add_library(efis_reference_renderer src/display/svg_pfd_renderer.cpp)
 target_include_directories(efis_reference_renderer PUBLIC include)

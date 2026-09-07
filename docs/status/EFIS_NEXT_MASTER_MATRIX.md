@@ -43,7 +43,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | EMS-004 | Limiti motore da manuale | Setup/EMS | TODO | campi presenti | serve fonte esterna | verificare per motore installato | POH/manuale citato e approvato |
 | BBX-001 | Black box append-only | Black box | DONE/PARTIAL | recorder e ingest | retention/robustezza da chiudere | endurance test | power-loss recovery + retention |
 | BBX-002 | Ingestion unico dei bus | Black box | DONE-ARCH | ADR-003 | deployment finale | consolidare distribuzione | nessun display consuma frame grezzi |
-| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | ADR-008/009 + DDP V2 UDP publisher/consumer loopback e PFD build | pipeline publisher Blackbox, deployment e trasporto HW aperti | collegare pipeline reale e collaudare Blackbox→RPi5 | protocollo versionato + replay + perdita/reordine HW |
+| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | ADR-008/009 + broker pipeline→DDP, UDP loopback e PFD build | deployment e trasporto HW aperti | installare e collaudare Blackbox→RPi5 | protocollo versionato + replay + perdita/reordine HW |
 | BBX-004 | Edge weather/cache | Black box | PARTIAL | servizio presente | freshness/offline | hardening | live/cached/stale verificati |
 | SRV-001 | Server mappe/imagery | Server casa | PARTIAL | mapapp/Caddy/status | lifecycle pacchetti | versioning+manifest | update atomico + rollback |
 | SRV-002 | Cataloghi/navdata centralizzati | Server casa | PARTIAL | DB/cataloghi presenti | validità/fonti | pipeline update | checksum/provenance/versione |

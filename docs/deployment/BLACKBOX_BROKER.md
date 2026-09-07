@@ -1,0 +1,69 @@
+# Blackbox DDP broker
+
+Stato: predisposizione software; non ancora installato o verificato sulla
+Blackbox reale.
+
+`efis-blackbox-broker` è il processo del data plane che realizza il confine
+della ADR-003:
+
+```text
+Pixhawk MAVLink UDP ─┐
+                     ├─ pipeline normalizzata/arbitrata ─┬─ DDP V2 UDP ─ RPi5
+ESP32 SocketCAN ─────┘                                   └─ flight recorder
+```
+
+Entrambi gli ingressi sono monitor-only. Il processo apre una porta UDP locale
+per ricevere MAVLink e un socket SocketCAN in lettura; non contiene sender
+MAVLink, richieste stream, scritture parametri o trasmissioni CAN. L'unica
+uscita di rete è lo snapshot DDP normalizzato diretto al display configurato.
+Lo stesso snapshot, preceduto dagli eventi nodo/sorgente che lo hanno prodotto,
+viene scritto nel recorder segmentato locale.
+
+## Configurazione iniziale
+
+Il file `deploy/systemd/efis-blackbox-broker.service` usa questi valori di banco:
+
+- MAVLink: `0.0.0.0:14550`;
+- sensori ESP32: `can_a`;
+- destinazione PFD: `192.168.1.45:49002`;
+- nodo logico Blackbox: `47`;
+- frequenza snapshot: 20 Hz.
+
+Gli indirizzi osservati via DHCP non sono identità permanenti. Prima
+dell'installazione creare `/etc/efis/blackbox-broker.env` con i valori della
+rete di banco e permessi `0640 root:blackbox`, oppure introdurre prenotazioni
+DHCP/DNS controllate. Il file non deve contenere token e non va committato.
+
+Prima di installare l'unità creare esplicitamente l'area persistente richiesta
+dal sandbox systemd:
+
+```sh
+sudo install -d -o blackbox -g blackbox -m 0750 /var/lib/blackbox/flight
+```
+
+## Avvio manuale di verifica
+
+```sh
+/opt/efis-blackbox/bin/efis-blackbox-broker \
+  --mavlink-bind 0.0.0.0 --mavlink-port 14550 \
+  --can-interface can_a \
+  --display 192.168.1.45 --display-port 49002 \
+  --source-node 47 --records /var/lib/blackbox/flight --rate-hz 20
+```
+
+Non esiste un fallback simulato in questo eseguibile. Se gli ingressi tacciono,
+il broker continua a inviare uno snapshot esplicitamente non disponibile, così
+il display distingue un collegamento DDP vivo da sensori assenti.
+
+## Gate prima dell'attivazione persistente
+
+1. confermare quale interfaccia fisica (`can_a`/`can_b`) porta ESP32 e Matek;
+2. configurare Pixhawk/companion networking separatamente e senza disabilitare
+   controlli pre-arm; il broker non effettua questa configurazione;
+3. verificare con `ss` che il broker ascolti soltanto sulla porta prevista;
+4. catturare contatori `blackbox_broker_health` e `render_health` PFD;
+5. provare scollegamento, riordino/perdita, reboot, latenza e jitter;
+6. confermare con cattura rete che dal PFD non partano pacchetti verso il
+   controllo di volo.
+
+Questi gate non sono chiusi dalla build o dal test loopback software.

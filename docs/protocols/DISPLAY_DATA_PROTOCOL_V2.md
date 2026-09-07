@@ -100,7 +100,11 @@ priorità e non genera autonomamente condizioni avioniche.
 - trasferimento socket UDP loopback reale tra publisher e `FlightSource` PFD;
 - invalidazione `LIVE → STALE → LOST` e rifiuto di un publisher con nodo diverso;
 - build del PFD con receiver configurabile e metriche nel log `render_health`.
+- processo Blackbox non simulato che collega la pipeline normalizzata al
+  publisher DDP, con ingressi MAVLink UDP e SocketCAN monitor-only;
+- test end-to-end MAVLink V2 → pipeline → UDP DDP → consumer display, con
+  conservazione della provenienza Pixhawk.
 
-Queste sono verifiche software e loopback locale. Mancano ancora il collegamento
-del publisher alla pipeline reale della Blackbox, installazione sul RPi5,
-perdita/riordino pacchetti su Ethernet reale e replay da registrazione.
+Queste sono verifiche software e loopback locale. Mancano ancora installazione
+su Blackbox/RPi5, ingresso dal Pixhawk e dal CAN fisici, perdita/riordino
+pacchetti su Ethernet reale e replay da registrazione.
