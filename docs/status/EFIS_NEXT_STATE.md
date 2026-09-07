@@ -87,7 +87,8 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - L'unità systemd usa `EFIS_DDP_DISPLAY_ARGS` per rendere configurabile la lista
   degli endpoint senza duplicare processi di ingestion.
 - Aggiunto il workflow `EFIS Core CI`, che configura e prova su Linux il core e
-  i processi senza Qt. La sua prima esecuzione resta da verificare nella PR.
+  i processi senza Qt. La prima esecuzione completa sulla PR #6 ha superato
+  configurazione, build e test.
 
 ### Inventario firmato dei segmenti CAN della Blackbox
 
@@ -154,8 +155,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - La build MSVC completa del branch è riuscita. Dopo il relink Windows
   Application Control ha bloccato prima dell'avvio tutti i 15 eseguibili di
   test (`BAD_COMMAND`), senza eseguire asserzioni. Nessuno di questi tentativi è
-  dichiarato superato; la verifica indipendente Linux della PR è il gate
-  corrente.
+  dichiarato superato; è stata quindi richiesta una verifica indipendente.
+- Il job indipendente `linux-core` della PR #6 ha completato con esito `success`
+  gli step configure, build e test, includendo il test fan-out multi-display.
 
 - Tre test unitari Python su segmenti sintetici `FUSOBBX1`, eseguiti con Python 3.13.5:
   - segmento chiuso valido, firma valida e riuso digest;
