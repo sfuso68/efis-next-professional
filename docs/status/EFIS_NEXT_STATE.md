@@ -309,6 +309,44 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   `SIMULATION ACTIVE`. Durante il link DDP il renderer ha mantenuto circa
   24 fps. Temperatura finale 52,7 °C e `get_throttled=0x0`.
 
+### RPi5 storico `pi5` — WLAN 192.168.1.49
+
+- Hardware reale identificato come Raspberry Pi 5 Model B Rev 1.1, Debian 13
+  ARM64, 8 GiB RAM e root filesystem su microSD da 53 GiB con circa 34 GiB
+  liberi. `eth0` e' senza portante; `can1` e' attivo. Il nodo non fa ancora
+  parte della rete cablata FLIGHT-DATA.
+- Il software esistente `/home/pi/efis`, branch `sv3d-fondamenta`, resta
+  invariato. `fuso-sv3d.service` continua ad avviare il renderer GLES diretto
+  con CAN; `/home/pi/efis2` e i suoi circa 4,9 GiB di dati HGT/nav non sono
+  stati modificati.
+- Installata la toolchain Qt 6.8.2/CMake 3.31.6 necessaria. Il commit
+  `ab0429e37b614a3201d6b77fb49536aed9db6712` e' stato caricato nella release
+  separata `/home/pi/efis-next-avionics-ab0429e` e compilato nativamente in
+  Release: core, PFD, EMS, strumenti, broker e simulatori sono stati prodotti;
+  16/16 CTest sono passati e `generate_status.py --check` ha restituito zero.
+- Verifica hardware grafica: la selezione EGLFS automatica fallisce perche'
+  sceglie `/dev/dri/card0` (V3D senza connettori). Con il nuovo profilo KMS
+  esplicito `/dev/dri/card1` il PFD ha occupato correttamente il display reale
+  per una prova limitata a 15 secondi. Terminata la prova, il servizio legacy e'
+  tornato `active`; il rollback e' quindi verificato sul nodo.
+- Il runtime Qt/EGLFS osservato ha prodotto circa 13-15 FPS e
+  `imagery_package_unavailable`. Il database radionavigazione della release
+  contiene zero facilities. Nel successivo test del servizio DDP era in
+  `WAITING`, con zero snapshot ricevuti: il receiver e' installato ma il nodo
+  non ha ancora il collegamento FLIGHT-DATA. Questi risultati sono evidenza di
+  staging, build e breve avvio hardware, non di accettazione operativa.
+- Aggiunti e installati una configurazione KMS versionata e un servizio systemd
+  direct-DRM. Un primo test dell'unita' ha rilevato una corsa nel rilascio del
+  DRM (`page flip: Permission denied`); l'ordine `After/Conflicts` e una pausa
+  di un secondo hanno risolto il problema. Nel secondo test il servizio Next e'
+  rimasto `active` per 12 secondi, il legacy `inactive`, senza errori DRM; al
+  termine Next e' tornato `inactive` e il legacy `active`.
+- `/home/pi/efis-next-current` punta alla release nuova, ma il servizio Next
+  resta disabilitato e il renderer legacy resta abilitato al boot. Prima dello
+  switch definitivo servono ruolo/IP univoci del nodo, Ethernet sullo switch,
+  pacchetto terrain/imagery compatibile, profiling fino al target e acceptance
+  visiva.
+
 ### Ground Station `Port-hp` — 192.168.1.39 / Pixhawk 6X
 
 - Il Pixhawk 6X reale è presente come

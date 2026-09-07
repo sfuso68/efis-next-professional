@@ -51,7 +51,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | NAV-001 | Database aeroporti/navaid/airspace/reporting | RPi5/Server | PARTIAL/DONE-DATA | DB e importer | ciclo aggiornamento | validazione fonti | dataset versionato e controllato |
 | NAV-002 | Modello unico FlightPlan/leg/WP | Core | PARTIAL | route/prototipi | sorgenti NAV multiple | consolidare modello canonico | direct-to/nearest/route test |
 | NAV-003 | CDI/OBS/BRG/DTK/TRK | RPi5/Core | PARTIAL | prototipi | annunci validità | integrare con model | scenari GPS/VOR/NDB e loss test |
-| SV-001 | Synthetic Vision | RPi5 | PARTIAL | GLES storico + Qt3D Next | due linee tecniche | congelare architettura finale | prestazioni e qualità target |
+| SV-001 | Synthetic Vision | RPi5 | PARTIAL | GLES storico attivo su `pi5` `.49`; Qt3D Next ARM64 compilato e avviato su DRM reale con selezione esplicita `card1`, ma solo ~13-14 FPS nella prova breve e senza terrain Next | due linee tecniche; prestazioni insufficienti sul secondo nodo | integrare dati terrain e profilare GPU/render loop prima dello switch al boot | prestazioni e qualità target |
 | SV-002 | DEM Copernicus/SRTM | RPi5/Server | PARTIAL | pacchetto Veneto verificato | copertura/provenance | estendere Nord Italia | seam/quote/checksum verificati |
 | SV-003 | TAWS | RPi5/Core | PARTIAL/EXPERIMENTAL | shader/envelope prototipale | safety critica | definire envelope | test indipendenti, no terrain-safe su missing |
 | WX-001 | METAR/TAF | Black box/RPi5 | PARTIAL | parser/edge service | provider/licenze/freshness | registry e timestamp separati | raw+parsed+stale test |
@@ -63,13 +63,13 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | GS-002 | Backup firmware/parametri Pixhawk | Portatile | DONE | backup PX4/ArduPlane | proteggere copie | replica verificata | doppia copia + hash |
 | GS-003 | Tooling sviluppo Windows | Portatile | PARTIAL | build MSVC/Qt | Smart App Control | documentare workaround | build/test riproducibili |
 | LEG-R4-001 | EFIS RPi4 storico | RPi4 | LEGACY | operativo | non regredire | congelare | nessuna modifica salvo fix critici |
-| LEG-R5-001 | `sv3d-fondamenta` | RPi5 | LEGACY/REFERENCE | 3D GLES verificato | divergenza storica | estrarre solo concetti utili | nessuna dipendenza nascosta |
+| LEG-R5-001 | `sv3d-fondamenta` | RPi5 | LEGACY/REFERENCE | attivo su `pi5` WLAN `192.168.1.49`; rollback verificato dopo due prove Qt/EGLFS | divergenza storica; contesa DRM | mantenere fino ad acceptance EFIS NEXT sul nodo | nessuna dipendenza nascosta |
 | PROD-001 | Profili Standard/Professional | Tutti | TODO/DESIGN | concetto definito | hardware feature matrix | congelare SKU/features | matrice prodotto approvata |
 | PROD-002 | Alimentazione avionica | Aereo | TODO | requisito | safety/hardware | progettare PSU/protezioni | brownout/EMI/load test |
 | PROD-003 | Enclosure e termica | Aereo | TODO | prototipi HW | vibrazioni/temperatura | progetto meccanico | soak/vibration/thermal test |
 | PROD-004 | Harness/connettori | Aereo | PARTIAL | Waveshare 5P identificato; schema FLIGHT-DATA V1; video separato | 5 porte insufficienti per finale; cavi/EMI aperti | cablare banco e selezionare switch video/finale | harness documentato e testato |
-| PROD-005 | Update/rollback software | Tutti | PARTIAL | git/config rollback | deployment nodes | A/B or transactional deploy | rollback simulato su tutti i nodi |
-| VER-001 | Test automatici core | Dev/RPi5 | DONE/PARTIAL | suite multiple + 16/16 CTest PASS su release ARM64 12b4697 + EFIS Core CI Linux PASS su PR #6 | estendere piattaforme e fault test | mantenere CI green | green required per PR |
+| PROD-005 | Update/rollback software | Tutti | PARTIAL | release immutabili su `.45`; release separata e rollback renderer reale verificato su `.49` | deployment non uniforme tra nodi | standardizzare attivazione atomica e rollback | rollback simulato su tutti i nodi |
+| VER-001 | Test automatici core | Dev/RPi5 | DONE/PARTIAL | suite multiple + 16/16 CTest PASS su release ARM64 12b4697 (`.45`) e ab0429e (`.49`) + EFIS Core CI Linux PASS su PR #6 | estendere piattaforme e fault test | mantenere CI green | green required per PR |
 | VER-002 | HIL | Banco | TODO | concetto | hardware fixture | costruire banco HIL | fault injection ripetibile |
 | VER-003 | Test termico prolungato RPi5 | RPi5 | TODO | misure brevi | PSU/thermal | soak test | nessun throttle/undervoltage |
 | VER-004 | Test vibrazioni/EMI | Sistema | TODO | nessuna chiusura | hardware finale | piano di prova | limiti definiti e report |

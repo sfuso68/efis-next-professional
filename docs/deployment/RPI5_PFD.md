@@ -33,6 +33,36 @@ Il servizio è legato alla sessione grafica: non parte prima di Wayland e viene
 arrestato quando la sessione termina. `Restart=on-failure` evita loop di riavvio
 dopo uno stop volontario.
 
+## Variante direct DRM/EGLFS
+
+Il nodo storico `pi5` usa il renderer GLES direttamente sul DRM e non una
+sessione Wayland. Su quel profilo usare
+`deploy/systemd/efis-next-pfd-direct.service` e
+`deploy/rpi5/eglfs-kms-card1.json`. Il file KMS seleziona esplicitamente
+`/dev/dri/card1`: sul Raspberry Pi 5 verificato `card0` e' il solo device V3D,
+mentre il connettore `HDMI-A-2` appartiene a `card1` (`vc4-drm`). Lasciare la
+selezione automatica produce `drmModeGetResources failed` e nessuno schermo.
+
+Installazione in staging, senza cambiare il renderer al boot:
+
+```sh
+sudo install -d -m 755 /etc/efis
+sudo install -m 644 deploy/rpi5/eglfs-kms-card1.json /etc/efis/eglfs-kms.json
+sudo install -m 644 deploy/systemd/efis-next-pfd-direct.service /etc/systemd/system/
+sudo systemctl daemon-reload
+```
+
+L'unita' e' in conflitto esplicito con `fuso-sv3d.service`, con la sua variante
+di simulazione e con LightDM: un solo processo puo' possedere il DRM master.
+Non abilitarla al boot prima di avere chiuso ruolo del nodo, indirizzo
+FLIGHT-DATA, pacchetto terrain/imagery e acceptance prestazionale. Il rollback
+di banco e':
+
+```sh
+sudo systemctl disable --now efis-next-pfd-direct.service
+sudo systemctl enable --now fuso-sv3d.service
+```
+
 ## Ricezione DDP V2 dalla Blackbox
 
 Il servizio apre in sola ricezione UDP unicast la porta `49002` e accetta come
