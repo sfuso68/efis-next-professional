@@ -40,6 +40,10 @@
       "items": 2,
       "progress": 100.0
     },
+    "MFD": {
+      "items": 1,
+      "progress": 50.0
+    },
     "NAV": {
       "items": 3,
       "progress": 50.0
@@ -74,16 +78,16 @@
     }
   },
   "blocked": [],
-  "requirements": 56,
+  "requirements": 57,
   "status_counts": {
     "DONE": 6,
     "LEGACY": 2,
-    "PARTIAL": 34,
+    "PARTIAL": 35,
     "TODO": 13,
     "VERIFY-HW": 1
   },
   "verify_hw": [
     "INST-001"
   ],
-  "weighted_progress": 46.0
+  "weighted_progress": 46.1
 }

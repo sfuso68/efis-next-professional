@@ -313,44 +313,53 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 - Hardware reale identificato come Raspberry Pi 5 Model B Rev 1.1, Debian 13
   ARM64, 8 GiB RAM e root filesystem su microSD da 53 GiB con circa 34 GiB
-  liberi. `eth0` e' senza portante; `can1` e' attivo. Il nodo non fa ancora
-  parte della rete cablata FLIGHT-DATA.
+  liberi. `can1` e' attivo. `eth0` e' ora collegata allo switch, usa
+  `10.77.10.13/24` senza gateway/DNS e negozia 1000/full.
 - Il software esistente `/home/pi/efis`, branch `sv3d-fondamenta`, resta
   invariato. `fuso-sv3d.service` continua ad avviare il renderer GLES diretto
   con CAN; `/home/pi/efis2` e i suoi circa 4,9 GiB di dati HGT/nav non sono
   stati modificati.
-- Installata la toolchain Qt 6.8.2/CMake 3.31.6 necessaria. Il commit
-  `ab0429e37b614a3201d6b77fb49536aed9db6712` e' stato caricato nella release
-  separata `/home/pi/efis-next-avionics-ab0429e` e compilato nativamente in
-  Release: core, PFD, EMS, strumenti, broker e simulatori sono stati prodotti;
-  16/16 CTest sono passati e `generate_status.py --check` ha restituito zero.
+- Installata la toolchain Qt 6.8.2/CMake 3.31.6 necessaria. Dopo lo staging
+  iniziale `ab0429e`, il commit `3458552` con radici terrain portabili e broker
+  multi-display e' stato caricato nella release separata
+  `/home/pi/efis-next-avionics-3458552` e compilato nativamente in Release:
+  core, PFD, EMS, strumenti, broker e simulatori sono stati prodotti; 16/16
+  CTest sono passati e `generate_status.py --check` ha restituito zero.
 - Verifica hardware grafica: la selezione EGLFS automatica fallisce perche'
   sceglie `/dev/dri/card0` (V3D senza connettori). Con il nuovo profilo KMS
   esplicito `/dev/dri/card1` il PFD ha occupato correttamente il display reale
   per una prova limitata a 15 secondi. Terminata la prova, il servizio legacy e'
   tornato `active`; il rollback e' quindi verificato sul nodo.
-- Il runtime Qt/EGLFS osservato ha prodotto circa 13-15 FPS e
-  `imagery_package_unavailable`. Il database radionavigazione della release
-  contiene zero facilities. Nel successivo test del servizio DDP era in
-  `WAITING`, con zero snapshot ricevuti: il receiver e' installato ma il nodo
-  non ha ancora il collegamento FLIGHT-DATA. Questi risultati sono evidenza di
-  staging, build e breve avvio hardware, non di accettazione operativa.
+- EEE e' disabilitato e il guard egress fail-closed e' attivo. Dopo il primo
+  transitorio di attivazione, tre prove da 50 pacchetti verso Blackbox, PFD ed
+  EMS hanno ottenuto 0% perdita, massimi rispettivamente 0,219/0,398/0,382 ms
+  e zero errori RX. Non e' ancora una prova endurance.
+- Il broker Blackbox reale e' stato aggiornato con backup e drop-in versionato:
+  dichiara `displays=2` e pubblica a `10.77.10.11` e `10.77.10.13`, senza
+  failure osservate. Nella prova MFD di 30 secondi DDP era `LIVE`, con 579
+  snapshot accettati e zero reject, gap o errori socket.
+- Le radici Quick3D non sono piu' codificate su `/home/efis`: il servizio usa
+  `/home/pi/efis-data`. Dal PFD principale sono stati trasferiti 34 asset GPU,
+  10 file active-textures e la cache da 1326 tile piu' report. Conteggi e hash
+  dei file critici coincidono con la sorgente. Il runtime ha caricato il
+  manifesto `OFFLINE_READY`, 1326 tile e 27 gap di copertura, senza errori di
+  percorso osservati. Non e' stata acquisita una cattura hardware che dimostri
+  la qualita' visiva del terrain.
 - Aggiunti e installati una configurazione KMS versionata e un servizio systemd
   direct-DRM. Un primo test dell'unita' ha rilevato una corsa nel rilascio del
   DRM (`page flip: Permission denied`); l'ordine `After/Conflicts` e una pausa
   di un secondo hanno risolto il problema. Nel secondo test il servizio Next e'
   rimasto `active` per 12 secondi, il legacy `inactive`, senza errori DRM; al
   termine Next e' tornato `inactive` e il legacy `active`.
-- `/home/pi/efis-next-current` punta alla release nuova, ma il servizio Next
+- `/home/pi/efis-next-current` punta alla release `3458552`, ma il servizio Next
   resta disabilitato e il renderer legacy resta abilitato al boot. Prima dello
-  switch definitivo servono ruolo/IP univoci del nodo, Ethernet sullo switch,
-  pacchetto terrain/imagery compatibile, profiling fino al target e acceptance
-  visiva.
-- Il controllo finale ha misurato 48,3 °C e `get_throttled=0x50000`: nessun bit
-  di allarme e' attivo al momento della lettura, ma dall'ultimo boot sono state
-  registrate sottotensione e limitazione di frequenza. Alimentatore/cavo,
-  riavvio con contatori puliti e nuova prova prestazionale sono prerequisiti;
-  i 13-15 FPS attuali non costituiscono una baseline affidabile di chiusura.
+  switch definitivo servono profiling fino al target e acceptance visiva.
+- Dopo la correzione dichiarata e il reboot `get_throttled` era `0x0`, ma e'
+  tornato a `0x50000` durante la compilazione. Nella prova display la CPU del
+  processo era circa 102-105%, il clock ARM 2,4 GHz, il core 910 MHz, la
+  temperatura massima osservata 54,9 °C e il renderer 13,8-14,6 FPS.
+  Alimentatore/cavo non sono quindi ancora validati sotto carico e il frame
+  rate non soddisfa il gate display; non abilitare Next al boot.
 
 ### Ground Station `Port-hp` — 192.168.1.39 / Pixhawk 6X
 

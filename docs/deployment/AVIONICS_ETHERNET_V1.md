@@ -10,6 +10,7 @@ Stato: procedura di banco reversibile, non approvata per il volo.
 | Blackbox `192.168.1.47` | `eth0` | `10.77.10.2/24`, 1000/full | WLAN attiva |
 | Ground Station `192.168.1.39` | `eno1` | `NO-CARRIER` | WLAN attiva |
 | EMS `192.168.1.36` | `eth0` | `10.77.10.12/24`, 1000/full | WLAN attiva |
+| MFD/SV `192.168.1.49` | `eth0` | `10.77.10.13/24`, 1000/full | WLAN attiva |
 
 La targhetta fotografata ha confermato il modello Waveshare
 `Gigabit-Switch-5P (EU)`. Il 2026-09-07 Blackbox e PFD sono stati collegati allo
@@ -26,7 +27,7 @@ Per il Gigabit-Switch-5P non gestito verificato:
 | 2 | Pixhawk 6X Ethernet | solo dopo backup/configurazione controllata |
 | 3 | PFD RPi5 `eth0` | consumer DDP |
 | 4 | EMS RPi4 `eth0` | consumer EDP V1 `10.77.10.12:49003`; feed banco SIM |
-| 5 | Ground Station `eno1` | manutenzione di banco; futuro MFD in esercizio |
+| 5 | MFD/SV RPi5 `eth0` | consumer DDP `10.77.10.13:49002`; Ground Station rinviata |
 
 Non collegare le telecamere a questo switch. Quattro camere più VIDEO-CORE
 richiedono almeno cinque porte e lascerebbero il data plane senza capacità né
