@@ -9,7 +9,7 @@ Stato: procedura di banco reversibile, non approvata per il volo.
 | PFD `192.168.1.45` | `eth0` | `10.77.10.11/24`, 1000/full | WLAN attiva |
 | Blackbox `192.168.1.47` | `eth0` | `10.77.10.2/24`, 1000/full | WLAN attiva |
 | Ground Station `192.168.1.39` | `eno1` | `NO-CARRIER` | WLAN attiva |
-| EMS `192.168.1.48` | non verificata | nodo non raggiungibile | da ripristinare |
+| EMS `192.168.1.36` | `eth0` | `10.77.10.12/24`, 1000/full | WLAN attiva |
 
 La targhetta fotografata ha confermato il modello Waveshare
 `Gigabit-Switch-5P (EU)`. Il 2026-09-07 Blackbox e PFD sono stati collegati allo
@@ -25,7 +25,7 @@ Per il Gigabit-Switch-5P non gestito verificato:
 | 1 | Blackbox `eth0` | broker centrale |
 | 2 | Pixhawk 6X Ethernet | solo dopo backup/configurazione controllata |
 | 3 | PFD RPi5 `eth0` | consumer DDP |
-| 4 | EMS RPi4 `eth0` | consumer DDP, quando raggiungibile |
+| 4 | EMS RPi4 `eth0` | rete pronta; protocollo engine normalizzato da implementare |
 | 5 | Ground Station `eno1` | manutenzione di banco; futuro MFD in esercizio |
 
 Non collegare le telecamere a questo switch. Quattro camere più VIDEO-CORE
@@ -113,6 +113,42 @@ Il gate richiede tre prove: comunicazione invariata con `eth0` attiva; contatore
 `reject` crescente e nessun pacchetto avionico sulla WLAN con `eth0` disattiva;
 ripristino `LIVE` dopo la riattivazione. Il semplice fatto che il servizio sia
 `active` non costituisce evidenza sufficiente.
+
+## Tuning deterministico del link
+
+Sul banco reale EEE risultava `enabled - active` sui tre Raspberry Pi. Con EEE
+attivo sono stati osservati gap DDP e, sul RPi4 EMS, perdita ICMP del 13–15%.
+Disabilitando EEE e riservando CPU0 agli interrupt Ethernet dell'EMS, la prova
+correlata ha ottenuto 300/300 ping Blackbox-PFD con massimo 0,272 ms e 1.201
+snapshot DDP senza nuovi gap in 60 secondi. Sul RPi4, con renderer fermo oppure
+confinato a CPU1–3, i ping EMS hanno avuto massimo 0,309 ms; senza affinità si
+osservavano burst fino a 2.040 ms.
+
+Installare sui tre nodi verificati:
+
+```sh
+sudo install -o root -g root -m 0644 \
+  deploy/systemd/efis-avionics-link-tuning.service \
+  /etc/systemd/system/efis-avionics-link-tuning.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now efis-avionics-link-tuning.service
+```
+
+Sul solo RPi4 EMS installare inoltre il drop-in:
+
+```sh
+sudo install -d -o root -g root -m 0755 \
+  /etc/systemd/system/efis-ems.service.d
+sudo install -o root -g root -m 0644 \
+  deploy/systemd/efis-ems-performance.override.conf \
+  /etc/systemd/system/efis-ems.service.d/performance.conf
+sudo systemctl daemon-reload
+sudo systemctl restart efis-ems.service
+```
+
+`systemctl disable --now efis-avionics-link-tuning.service` riabilita EEE come
+rollback. Questi risultati sono prove di banco brevi, non sostituiscono il gate
+di endurance o la qualifica dello switch/cablaggio.
 
 ## Parametri Pixhawk — valori proposti, non ancora autorizzati
 

@@ -38,12 +38,12 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | ESP-001 | ESP32-S3 legacy adapter | Black box/CAN | PARTIAL | adapter + test | ruolo da ridurre | usarlo come aux/fallback | dati reali arbitrati senza conflitti |
 | ESP-002 | ESP32 come I/O ausiliario | Aereo | TODO | concetto definito | hardware/protocollo | definire discrete/OAT/flap/trim | specifica + nodo testato |
 | EMS-001 | Simulazione motore | RPi5/Core | DONE | UI e test | non confondere con reale | mantenere SIM marcato | sempre riconoscibile come SIM |
-| EMS-002 | Nodo EMS software | RPi4/ESP32/Black box | PARTIAL | engine source, service, test | HW reale incompleto | cablaggio e sensori reali | canali calibrati e health verificato |
+| EMS-002 | Nodo EMS software | RPi4/ESP32/Black box | PARTIAL | RPi4 reale attivo; 10.77.10.12 1000/full + guard egress; UI/simulatore | nessun protocollo EngineSnapshot Blackbox->EMS; sensori reali incompleti | definire/implementare protocollo engine normalizzato | canali calibrati, provenienza e health verificati |
 | EMS-003 | DroneCAN engine/fuel/power | CAN | PARTIAL | ADR-007, decoder/test | carico bus/timing | prova bus reale multi-nodo | bus load + recovery + loss test |
 | EMS-004 | Limiti motore da manuale | Setup/EMS | TODO | campi presenti | serve fonte esterna | verificare per motore installato | POH/manuale citato e approvato |
 | BBX-001 | Black box append-only | Black box | DONE/PARTIAL | recorder e ingest | retention/robustezza da chiudere | endurance test | power-loss recovery + retention |
 | BBX-002 | Ingestion unico dei bus | Black box | DONE-ARCH | ADR-003 | deployment finale | consolidare distribuzione | nessun display consuma frame grezzi |
-| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | broker HW + ADR-010; Blackbox/PFD 1000/full; DDP Ethernet LIVE; guard egress nft verificato sui due nodi | EMS/Pixhawk non cablati; gap intermittenti, riordino/endurance aperti | diagnosticare gap, poi cablare EMS | protocollo versionato + replay + perdita/reordine HW multi-display |
+| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | tre nodi 1000/full; guard egress + EEE-off; DDP PFD 1201 snapshot/60 s senza gap; affinità EMS verificata | DDP V2 non trasporta EngineSnapshot; reboot/Pixhawk/endurance aperti | definire protocollo motore e prova reboot/endurance | protocollo versionato + replay + perdita/reordine HW multi-display |
 | BBX-004 | Edge weather/cache | Black box | PARTIAL | servizio presente | freshness/offline | hardening | live/cached/stale verificati |
 | SRV-001 | Server mappe/imagery | Server casa | PARTIAL | mapapp/Caddy/status | lifecycle pacchetti | versioning+manifest | update atomico + rollback |
 | SRV-002 | Cataloghi/navdata centralizzati | Server casa | PARTIAL | DB/cataloghi presenti | validità/fonti | pipeline update | checksum/provenance/versione |

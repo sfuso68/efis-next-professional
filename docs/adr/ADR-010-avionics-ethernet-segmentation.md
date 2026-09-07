@@ -24,8 +24,8 @@ Il flusso primario è:
 ```text
 Pixhawk 10.77.10.3 --MAVLink2/UDP 14550--> Blackbox 10.77.10.2
 Blackbox 10.77.10.2 --DDP V2/UDP 49002--> PFD 10.77.10.11
-                                           EMS 10.77.10.12
                                            MFD 10.77.10.13 (futuro)
+Blackbox 10.77.10.2 --engine protocol TBD--> EMS 10.77.10.12
 ```
 
 Il VIDEO-CORE è un processo e un computer separato dall'EMS. Aggrega, controlla
@@ -60,7 +60,9 @@ switch o almeno due domini fisici indipendenti.
 - `net.ipv4.ip_forward=0` e nessun bridge fra WLAN/service e FLIGHT-DATA;
 - UDP unicast, niente broadcast MAVLink e niente multicast iniziale;
 - Blackbox in ricezione MAVLink; nessuna risposta, richiesta stream o comando;
-- PFD/EMS accettano DDP soltanto dall'indirizzo e dal nodo Blackbox previsti;
+- PFD/MFD accettano DDP soltanto dall'indirizzo e dal nodo Blackbox previsti;
+- l'EMS accetta soltanto snapshot motore normalizzati dalla Blackbox; DDP V2
+  non soddisfa ancora questo contratto e non va dichiarato operativo;
 - nessun jumbo frame finché tutti i nodi non sono collaudati: MTU 1500;
 - Wi-Fi ammesso per manutenzione durante la migrazione, non come data plane di
   volo;

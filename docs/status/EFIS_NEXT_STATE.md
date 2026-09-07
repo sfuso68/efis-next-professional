@@ -108,10 +108,10 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   condividere failure mode e carico con il nodo strumenti motore.
 - Aggiunti runbook di migrazione reversibile e validatore offline del piano. I
   parametri `NET_*` del Pixhawk non vengono scritti da questo lavoro.
-- Blackbox e PFD reali sono ora collegati al Waveshare e configurati
-  rispettivamente come `10.77.10.2/24` e `10.77.10.11/24` sui profili
-  NetworkManager `netplan-eth0`. Entrambi hanno negoziato 1000 Mbit/s full
-  duplex, MTU 1500, zero errori di interfaccia e nessun gateway Ethernet.
+- Blackbox, PFD ed EMS reali sono collegati al Waveshare e configurati
+  rispettivamente come `10.77.10.2/24`, `10.77.10.11/24` e
+  `10.77.10.12/24`. Tutti hanno negoziato 1000 Mbit/s full duplex, MTU 1500 e
+  nessun gateway Ethernet; la WLAN resta recovery separata.
 - Il broker reale pubblica DDP a `10.77.10.11:49002`. Dopo l'assestamento, un
   campione di 30 secondi ha consegnato 601 snapshot senza nuovi gap, rifiuti,
   errori socket o overflow UDP kernel. Il PFD è rimasto `LIVE` a circa 25 fps.
@@ -119,18 +119,27 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   verificato `LIVE -> LOST -> LIVE`; broker e recorder sono rimasti attivi e
   senza failure. I 112 gap aggiunti sono coerenti con la finestra di perdita
   intenzionale. Non equivale ancora a una prova di scollegamento fisico.
-- Installata e abilitata su Blackbox e PFD la tabella nftables separata
+- Installata e abilitata su Blackbox, PFD ed EMS la tabella nftables separata
   `inet efis_avionics`: le destinazioni `10.77.10.0/24` sono ammesse soltanto
   quando la route sceglie `eth0`. Con `eth0` Blackbox disattiva, Linux ha scelto
   il gateway WLAN ma la regola ha rifiutato 148 pacchetti; 146 invii DDP hanno
   prodotto `Operation not permitted` mentre il recorder continuava a crescere.
-  Sul PFD la prova simmetrica ha rifiutato e contato due ping. Entrambi i nodi
-  hanno recuperato con servizio egress `enabled/active` e DDP `LIVE`.
+  Sul PFD e sull'EMS le prove simmetriche hanno rifiutato e contato due ping.
+  Tutti i nodi hanno recuperato con servizio egress `enabled/active`; il DDP
+  PFD è tornato `LIVE`.
 - Dopo i fault, due finestre brevi hanno però mostrato gap DDP intermittenti
   anche a link attivo (10 su 390 snapshot in 20 secondi in una finestra, 6 su
   394 in un'altra), senza incremento di `RcvbufErrors`, errori driver o failure
-  publisher. Ping bidirezionali a 5 Hz erano 100/100. La causa resta aperta e
-  vieta di dichiarare completato il gate di qualità del trasporto.
+  publisher. EEE era attivo su tutti i link; sul RPi4 il renderer `eglfs`
+  senza affinità produceva inoltre 13–15% di perdita ICMP e burst fino a
+  2.040 ms. Con EEE disabilitato, e tutti i thread EMS confinati a CPU1–3 per
+  lasciare CPU0 agli IRQ Ethernet, il collaudo successivo ha dato 200/200 ping
+  EMS con massimi 0,276/0,324 ms. In parallelo il PFD ha accettato 900 snapshot
+  senza nuovi gap; una prova separata Blackbox-PFD ha dato 300/300 ping e
+  1.201 snapshot senza gap in 60 secondi. La mitigazione è installata e
+  verificata a runtime. Sul nodo EMS anche il rollback del servizio è stato
+  provato (`EEE enabled-inactive`) e il successivo start ha ripristinato
+  `EEE disabled`; endurance e reboot restano aperti.
 
 ### Distribuzione DDP multi-display
 
@@ -335,37 +344,49 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   `LOST` e poi nuovamente `LIVE`; i gap cumulativi sono aumentati. È evidenza
   concreta che il banco Wi-Fi non soddisfa ancora il trasporto avionico finale.
 
-### RPi4 EMS — 192.168.1.48
+### RPi4 EMS — WLAN 192.168.1.36 / FLIGHT-DATA 10.77.10.12
 
-- I sorgenti della proprietà e della pagina sono stati predisposti nella copia di build.
-- Non esiste in questo intervento evidenza sufficiente di build completa, installazione o verifica visiva su RPi4; queste attività restano aperte.
+- Identità reale verificata: utente `pi`, hostname `efis`, Raspberry Pi 4
+  Model B Rev 1.5, Debian 13 aarch64. Il precedente lease `192.168.1.48` è ora
+  assegnato a un telefono e non identifica più l'EMS.
+- `efis-ems.service` è abilitato e attivo con renderer `eglfs`; il processo
+  installato non apre socket DDP e usa ancora `EngineSimulationProvider`.
+  L'Ethernet è quindi pronta, ma il percorso dati motore Blackbox -> EMS non è
+  implementato. DDP V2 trasporta soltanto lo snapshot di volo.
+- `eth0` usa `10.77.10.12/24`, 1000/full, EEE disabilitato e guard egress
+  verificato. Il drop-in systemd confina il renderer a CPU1–3; dopo il restart
+  del servizio l'affinità effettiva è `1-3` e la rete resta senza perdita.
+- `can1` è `ERROR-ACTIVE` a 500 kbit/s e riceve frame, ma mostrava 293 drop RX
+  cumulativi. Il servizio storico `fuso-can.service` funzionava nonostante
+  `[init]` non valido; il file è stato corretto a `[Unit]`, validato e
+  installato senza riavviare il bus. Provenienza e correttezza semantica dei
+  dati CAN non sono verificate.
 
 ### Audit Ethernet dei nodi reali — 2026-09-07
 
-- PFD `eth0` e Blackbox `eth0` sono `UP/LOWER_UP` sul Waveshare verificato,
-  negoziano 1000/full e comunicano su `10.77.10.0/24`. Un campione ICMP
-  assestato di 100 pacchetti ha avuto 0% perdita e latenza media 0,258 ms.
+- PFD, Blackbox ed EMS sono `UP/LOWER_UP` sul Waveshare verificato, negoziano
+  1000/full e comunicano su `10.77.10.0/24`.
 - La destinazione DDP Blackbox -> PFD è stata trasferita dalla WLAN a Ethernet;
   rotta, contatori interfaccia, log publisher e contatori consumer dimostrano
   il percorso reale. La WLAN resta volutamente attiva soltanto come recovery.
 - Il PFD ascolta DDP su `0.0.0.0:49002`; la Blackbox ascolta MAVLink su
   `0.0.0.0:14550`. Sono bind da restringere con firewall/interfaccia durante il
   collaudo cablato.
-- Il nodo EMS `192.168.1.48` non era raggiungibile e la sua interfaccia Ethernet
-  non è stata verificata.
+- L'EMS è raggiungibile sulla WLAN di recovery `192.168.1.36` e sulla rete
+  avionica `10.77.10.12`; non è ancora un consumer di dati motore normalizzati.
 - Ground Station e Pixhawk non sono stati collegati al dominio FLIGHT-DATA;
   nessun parametro Pixhawk è stato modificato.
 - Il rischio di fallback sul gateway WLAN è mitigato da una regola nftables
-  fail-closed persistente e verificata su entrambi i nodi. Il reboot completo
-  dei due nodi e una cattura Ethernet/WLAN correlata restano gate separati.
+  fail-closed persistente e verificata sui tre nodi. Il reboot completo dei
+  nodi e una cattura Ethernet/WLAN correlata restano gate separati.
 
 ## Aperto — non dichiarare DONE
 
 - Broker e receiver PFD sono installati, attivi e verificati end-to-end sulla
   prima tratta Ethernet avionica cablata. L'egress fail-closed è verificato a
-  runtime; restano da verificare reboot, cattura correlata, scollegamento
-  fisico, `STALE`, gap intermittenti, latenza/jitter e carico prolungato. Il
-  fault logico e lo stato finale `LOST` sono verificati su hardware reale.
+  runtime. EEE-off e l'affinità EMS hanno eliminato gap e burst nelle prove
+  brevi; restano reboot, cattura correlata, scollegamento fisico, `STALE` ed
+  endurance. Il fault logico e `LOST` sono verificati su hardware reale.
 - Confermare con cablaggio e inventario finale la destinazione di `can_b` per
   Pixhawk/DroneCAN. `can_a` porta il flusso sensori corrente ed è stato usato in
   sola lettura; `can_b` era silente durante l'audit.
@@ -386,9 +407,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 7. Aggiungere TLS o una rete avionica isolata prima di considerare professionale il trasporto HTTP dell'hub; oggi autenticazione bearer e rete locale non costituiscono una certificazione avionica.
 8. Collegare il parsing/normalizzazione dei messaggi CAN e MAVLink al modello dati arbitrato secondo ADR-003/ADR-005. L'inventario firmato prova l'esistenza e integrità dei segmenti, non la correttezza semantica di ogni misura.
 9. Verificare carico CAN reale, latenze end-to-end, stasis/cross-check e comportamento degradato con Pixhawk 6X, M10 e Matek ASPD-DLVR collegati simultaneamente.
-10. La tratta Ethernet Blackbox-PFD e il guard egress sono attivi e verificati;
-    mancano diagnosi dei gap intermittenti, reboot, EMS, Ground Station,
-    Pixhawk, endurance e fault fisico prima del collaudo completo.
+10. Le tratte Ethernet Blackbox-PFD-EMS, guard egress, EEE-off e affinità EMS
+    sono attive e verificate a runtime; mancano reboot, Ground Station,
+    Pixhawk, protocollo motore, endurance e fault fisico.
 11. Il servizio utente Ground Station è abilitato ma `Linger=no`: parte con la
     sessione utente. Decidere se il nodo deve funzionare prima del login e, in
     quel caso, abilitare il linger con autorizzazione amministrativa.

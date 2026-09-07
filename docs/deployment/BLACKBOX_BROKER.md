@@ -1,7 +1,8 @@
 # Blackbox DDP broker
 
 Stato: installato, attivo e abilitato sulla Blackbox reale il 2026-09-07;
-verificato end-to-end con il receiver DDP sul PFD attraverso la WLAN di banco.
+verificato end-to-end con il receiver DDP sul PFD attraverso FLIGHT-DATA
+Ethernet `10.77.10.0/24`.
 I gate prodotto su Ethernet isolata, autenticazione e fault test estesi restano
 aperti.
 
@@ -27,7 +28,7 @@ Il file `deploy/systemd/efis-blackbox-broker.service` usa questi valori di banco
 
 - MAVLink: `0.0.0.0:14550`;
 - sensori ESP32: `can_a`;
-- destinazione PFD: `192.168.1.45:49002`;
+- destinazione PFD: `10.77.10.11:49002`;
 - nodo logico Blackbox: `47`;
 - frequenza snapshot: 20 Hz.
 
@@ -35,7 +36,7 @@ Il file `deploy/systemd/efis-blackbox-broker.service` usa questi valori di banco
 consumer DDP verificato:
 
 ```sh
---display 192.168.1.45 --display 192.168.1.48 --display-port 49002
+--display 10.77.10.11 --display 10.77.10.13 --display-port 49002
 ```
 
 Tutte le destinazioni condividono identità publisher e cadenza, ma mantengono
@@ -43,6 +44,12 @@ socket e contatori separati. Una destinazione duplicata viene rifiutata; un
 pannello spento non arresta recorder o invio agli altri endpoint. L'unità
 systemd usa `EFIS_DDP_DISPLAY_ARGS`, sovrascrivibile nel file ambiente, per
 fornire la lista completa senza modificare l'unità distribuita.
+
+Il secondo esempio è un futuro MFD che consuma lo stesso snapshot di volo.
+Non usare `--display 10.77.10.12` per l'EMS: DDP V2 non contiene
+`EngineSnapshot` e l'EMS installato non dispone ancora di receiver. Il percorso
+normalizzato motore Blackbox -> EMS richiede un contratto di protocollo e test
+separati; il collegamento Ethernet da solo non lo implementa.
 
 Gli indirizzi osservati via DHCP non sono identità permanenti. Prima
 dell'installazione creare `/etc/efis/blackbox-broker.env` con i valori della
@@ -62,7 +69,7 @@ sudo install -d -o blackbox -g blackbox -m 0750 /var/lib/blackbox/flight
 /opt/efis-blackbox/bin/efis-blackbox-broker \
   --mavlink-bind 0.0.0.0 --mavlink-port 14550 \
   --can-interface can_a \
-  --display 192.168.1.45 --display-port 49002 \
+  --display 10.77.10.11 --display-port 49002 \
   --source-node 47 --records /var/lib/blackbox/flight --rate-hz 20
 ```
 

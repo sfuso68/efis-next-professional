@@ -14,14 +14,14 @@ darebbe per scontato venendo dal RPi5.
 
 | | |
 |---|---|
-| Accesso | `pi@192.168.1.48`, hostname `efis`, alias `efis.local` |
+| Accesso | recovery WLAN `pi@192.168.1.36`; FLIGHT-DATA `10.77.10.12`; hostname `efis` |
 | Hardware | Raspberry Pi 4 Model B Rev 1.5, 4 core, 3,7 GiB |
 | Sistema | Debian 13 trixie, aarch64, gcc 14.2, cmake 3.31 |
 | Pannello | DSI collegato (`card1-DSI-1`); HDMI entrambi scollegati |
 | Target di default | `multi-user.target` — **nessuna sessione grafica** |
 | Qt | 6.8.2 già installato, con i moduli CMake che servono |
 | `ninja` | **assente** |
-| `sudo` | **richiede password** |
+| `sudo` | non interattivo verificato il 7 settembre 2026 |
 
 Le conseguenze, in ordine di importanza:
 
@@ -63,7 +63,7 @@ Il progetto va in `~/efis-next`, che non è né `~/efis` né `~/efis2`.
 Dalla macchina di sviluppo:
 
 ```sh
-git archive --format=tar HEAD | ssh pi@192.168.1.48 "mkdir -p ~/efis-next && tar -x -C ~/efis-next"
+git archive --format=tar HEAD | ssh pi@192.168.1.36 "mkdir -p ~/efis-next && tar -x -C ~/efis-next"
 ```
 
 Sul nodo, senza root:
@@ -217,3 +217,35 @@ programmi, e li deve verificare entrambi. La ADR-006 lo pone come vincolo.
 - nessuna porta SSH esposta fuori dalla LAN;
 - il nodo usa solo dati simulati finché non viene dichiarato diversamente;
 - questo è un banco di sviluppo, non un'immagine di produzione.
+
+## Ethernet avionica verificata
+
+Il 7 settembre 2026 il RPi4 reale è stato identificato nuovamente dopo il
+reset. Il precedente lease `192.168.1.48` non appartiene più al nodo e non deve
+essere usato: il router lo assegna a un telefono. La WLAN di recupero corrente
+è `192.168.1.36`.
+
+Il profilo NetworkManager `Wired connection 1` assegna a `eth0`
+`10.77.10.12/24`, MTU 1500, senza gateway, DNS o IPv6. Collegato al Waveshare,
+il link reale ha negoziato 1000 Mbit/s full duplex e ha raggiunto Blackbox e
+PFD. Il servizio `efis-avionics-egress.service` applica lo stesso guard
+fail-closed degli altri nodi.
+
+Il processo EMS installato non apre ancora un receiver di rete e usa soltanto
+`EngineSimulationProvider`. DDP V2 codifica lo snapshot di volo, non
+`EngineSnapshot`: aggiungere l'EMS alla lista `--display` del broker non
+costituirebbe integrazione motore e non va fatto finché non è definito e
+verificato un protocollo engine normalizzato Blackbox -> EMS.
+
+Il servizio CAN storico `/etc/systemd/system/fuso-can.service` aveva `[init]`
+al posto di `[Unit]`. systemd ignorava descrizione e dipendenze pur eseguendo
+la sezione `[Service]`; la versione corretta è ora conservata in
+`deploy/systemd/fuso-can.service`.
+
+Con renderer `eglfs` attivo e senza affinità sono stati misurati 13–15% di
+perdita ICMP e burst fino a 2.040 ms, pur con CPU totale libera, alimentazione
+sana (`get_throttled=0x0`) e zero errori PHY. Fermando il renderer la latenza è
+scesa a 0,18–0,22 ms. La prova equivalente con tutti i thread del renderer su
+CPU1–3, lasciando CPU0 ai due IRQ `bcmgenet`, ha dato 100/100 ping con massimo
+0,282 ms. Il drop-in `efis-ems-performance.override.conf` rende questa affinità
+parte del deployment; non è un'ottimizzazione estetica.

@@ -1,0 +1,22 @@
+[Unit]
+Description=EFIS avionics Ethernet deterministic link tuning
+Documentation=file:///home/efis/efis-next/docs/deployment/AVIONICS_ETHERNET_V1.md
+Wants=NetworkManager.service
+After=NetworkManager.service
+Before=efis-blackbox-broker.service efis-ems.service
+ConditionPathExists=/sys/class/net/eth0
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/ethtool --set-eee eth0 eee off
+ExecStop=/usr/sbin/ethtool --set-eee eth0 eee on
+CapabilityBoundingSet=CAP_NET_ADMIN
+AmbientCapabilities=CAP_NET_ADMIN
+NoNewPrivileges=true
+ProtectHome=true
+ProtectSystem=strict
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
