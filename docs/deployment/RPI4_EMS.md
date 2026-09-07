@@ -215,7 +215,7 @@ programmi, e li deve verificare entrambi. La ADR-006 lo pone come vincolo.
   all'avvio, ed è reversibile con una riga;
 - `efis-web.service` ed `efis-plan.service` restano attivi e non vanno toccati;
 - nessuna porta SSH esposta fuori dalla LAN;
-- il nodo usa solo dati simulati finché non viene dichiarato diversamente;
+- il feed EDP di banco usa dati simulati e li dichiara `LIVE • SIM`;
 - questo è un banco di sviluppo, non un'immagine di produzione.
 
 ## Ethernet avionica verificata
@@ -231,11 +231,12 @@ il link reale ha negoziato 1000 Mbit/s full duplex e ha raggiunto Blackbox e
 PFD. Il servizio `efis-avionics-egress.service` applica lo stesso guard
 fail-closed degli altri nodi.
 
-Il processo EMS installato non apre ancora un receiver di rete e usa soltanto
-`EngineSimulationProvider`. DDP V2 codifica lo snapshot di volo, non
-`EngineSnapshot`: aggiungere l'EMS alla lista `--display` del broker non
-costituirebbe integrazione motore e non va fatto finché non è definito e
-verificato un protocollo engine normalizzato Blackbox -> EMS.
+Il processo EMS installato apre EDP V1 su `10.77.10.12:49003` e accetta soltanto
+il nodo Blackbox 47. DDP V2 continua a codificare lo snapshot di volo, non
+`EngineSnapshot`: l'EMS non va aggiunto alla lista `--display` del broker.
+L'arresto del publisher produce `STALE`, poi `SIM FALLBACK • LINK LOST`; il
+ripristino torna a `LIVE • SIM`. La qualifica `SIM` resta obbligatoria finché
+il publisher non riceve dati dal decoder CAN reale verificato.
 
 Il servizio CAN storico `/etc/systemd/system/fuso-can.service` aveva `[init]`
 al posto di `[Unit]`. systemd ignorava descrizione e dipendenze pur eseguendo

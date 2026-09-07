@@ -47,9 +47,15 @@ fornire la lista completa senza modificare l'unità distribuita.
 
 Il secondo esempio è un futuro MFD che consuma lo stesso snapshot di volo.
 Non usare `--display 10.77.10.12` per l'EMS: DDP V2 non contiene
-`EngineSnapshot` e l'EMS installato non dispone ancora di receiver. Il percorso
-normalizzato motore Blackbox -> EMS richiede un contratto di protocollo e test
-separati; il collegamento Ethernet da solo non lo implementa.
+`EngineSnapshot`. L'EMS usa EDP V1 separato sulla porta 49003. Il feed iniziale
+di banco va abilitato solo in modo esplicito:
+
+```sh
+--engine-display 10.77.10.12 --engine-port 49003 --engine-simulation
+```
+
+`--engine-simulation` non è un alias per il futuro ingresso reale: deve essere
+rimosso quando il publisher verrà collegato allo snapshot CAN arbitrato.
 
 Gli indirizzi osservati via DHCP non sono identità permanenti. Prima
 dell'installazione creare `/etc/efis/blackbox-broker.env` con i valori della

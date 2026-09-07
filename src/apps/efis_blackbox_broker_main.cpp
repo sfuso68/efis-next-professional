@@ -1,6 +1,8 @@
 #include "efis/ingest/blackbox_publisher_session.hpp"
 #include "efis/io/socketcan_source.hpp"
 #include "efis/io/udp_datagram.hpp"
+#include "efis/providers/edp_udp.hpp"
+#include "efis/providers/engine_simulation_provider.hpp"
 #include "efis/recording/segmented_recorder.hpp"
 
 #include <array>
@@ -32,6 +34,9 @@ struct Options final {
     std::vector<std::string> displays;
     std::filesystem::path records;
     std::uint16_t display_port{49'002};
+    std::string engine_display;
+    std::uint16_t engine_port{49'003};
+    bool engine_simulation{};
     std::uint32_t source_node{47};
     int rate_hz{20};
     int seconds{};
@@ -65,6 +70,13 @@ Options parse(int argc, char** argv) {
             options.can_interface = value("--can-interface");
         } else if (argument == "--display") {
             options.displays.push_back(value("--display"));
+        } else if (argument == "--engine-display") {
+            options.engine_display = value("--engine-display");
+        } else if (argument == "--engine-port") {
+            options.engine_port = unsigned_value<std::uint16_t>(
+                value("--engine-port"), "engine port", 65'535);
+        } else if (argument == "--engine-simulation") {
+            options.engine_simulation = true;
         }
         else if (argument == "--records") options.records = value("--records");
         else if (argument == "--display-port") {
@@ -88,6 +100,11 @@ Options parse(int argc, char** argv) {
     }
     if (options.records.empty()) {
         throw std::invalid_argument{"--records is required"};
+    }
+    if (!options.engine_display.empty() && !options.engine_simulation) {
+        throw std::invalid_argument{
+            "engine display requires an implemented engine source; use "
+            "--engine-simulation only for an explicitly simulated bench feed"};
     }
     return options;
 }
@@ -133,6 +150,14 @@ int main(int argc, char** argv) {
         }
         efis::ingest::BlackboxPublisherSession session{
             std::move(publishers), {}, &recorder};
+        std::unique_ptr<efis::EdpUdpPublisher> engine_publisher;
+        std::unique_ptr<efis::EngineSimulationProvider> engine_simulator;
+        if (!options.engine_display.empty()) {
+            engine_publisher = std::make_unique<efis::EdpUdpPublisher>(
+                efis::EdpUdpPublisherConfig{{options.engine_display, options.engine_port},
+                                             {options.source_node, instance, 1}});
+            engine_simulator = std::make_unique<efis::EngineSimulationProvider>(84);
+        }
 
         std::array<std::uint8_t, efis::io::max_udp_payload> mavlink_buffer{};
         std::vector<efis::can::Frame> can_buffer(64);
@@ -150,6 +175,9 @@ int main(int argc, char** argv) {
                   << " can=" << (options.can_interface.empty() ? "DISABLED" : options.can_interface)
                   << " displays=" << options.displays.size()
                   << " display_port=" << options.display_port
+                  << " engine_display=" << (options.engine_display.empty() ? "DISABLED" : options.engine_display)
+                  << " engine_port=" << options.engine_port
+                  << " engine_source=" << (engine_simulator ? "SIMULATION" : "DISABLED")
                   << " records=" << options.records.string()
                   << " source_node=" << options.source_node
                   << " instance=" << instance << " rate_hz=" << options.rate_hz << '\n';
@@ -180,6 +208,10 @@ int main(int argc, char** argv) {
             }
 
             session.publish(now);
+            if (engine_publisher && engine_simulator) {
+                engine_publisher->publish(
+                    engine_simulator->sample(now, std::chrono::duration_cast<std::chrono::milliseconds>(now - started)), now);
+            }
             if (now >= next_report) {
                 next_report = now + 1s;
                 const auto& stats = session.statistics();
@@ -195,6 +227,13 @@ int main(int argc, char** argv) {
                           << " ddp_datagrams=" << transmitted.datagrams
                           << " ddp_bytes=" << transmitted.bytes
                           << " ddp_failures=" << stats.ddp_publish_failures << '\n';
+                if (engine_publisher) {
+                    std::cout << "event=blackbox_engine_health destination="
+                              << options.engine_display << ':' << options.engine_port
+                              << " source=SIMULATION edp_datagrams="
+                              << engine_publisher->datagrams() << " edp_bytes="
+                              << engine_publisher->bytes() << '\n';
+                }
                 for (const auto& display : session.display_statistics()) {
                     std::cout << "event=blackbox_display_health destination="
                               << display.destination.address << ':'

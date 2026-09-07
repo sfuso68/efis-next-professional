@@ -9,6 +9,7 @@
 // pubblica e' la stessa che la pagina EMS consuma dentro il PFD completo.
 
 #include "efis/providers/engine_simulation_provider.hpp"
+#include "efis/providers/edp_udp.hpp"
 #include "efis/core/engine_runtime.hpp"
 #include "efis/core/engine_runtime_store.hpp"
 
@@ -37,9 +38,9 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantList egtValues READ egtValues NOTIFY snapshotChanged)
     Q_PROPERTY(int engineHealth READ engineHealth NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineFaultMode READ engineFaultMode NOTIFY snapshotChanged)
-    Q_PROPERTY(QString engineDataState READ engineDataState CONSTANT)
-    Q_PROPERTY(QString dataSourceState READ dataSourceState CONSTANT)
-    Q_PROPERTY(QString sensorNodeState READ sensorNodeState CONSTANT)
+    Q_PROPERTY(QString engineDataState READ engineDataState NOTIFY snapshotChanged)
+    Q_PROPERTY(QString dataSourceState READ dataSourceState NOTIFY snapshotChanged)
+    Q_PROPERTY(QString sensorNodeState READ sensorNodeState NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong blackBoxRecords READ blackBoxRecords NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
@@ -115,14 +116,9 @@ public:
     [[nodiscard]] QVariantList egtValues() const;
     [[nodiscard]] int engineHealth() const;
     [[nodiscard]] QString engineFaultMode() const;
-    [[nodiscard]] QString engineDataState() const { return QStringLiteral("SIM"); }
-    // Finche' questo processo usa EngineSimulationProvider deve dichiararlo
-    // alla barra di stato. Una proprieta' assente diventa `undefined` in QML e
-    // lascia il pilota senza indicazione sull'origine dei numeri mostrati.
-    [[nodiscard]] QString dataSourceState() const { return QStringLiteral("SIM"); }
-    [[nodiscard]] QString sensorNodeState() const {
-        return QStringLiteral("SIMULATED");
-    }
+    [[nodiscard]] QString engineDataState() const { return engine_data_state_; }
+    [[nodiscard]] QString dataSourceState() const { return data_source_state_; }
+    [[nodiscard]] QString sensorNodeState() const { return sensor_node_state_; }
     [[nodiscard]] QString blackBoxState() const { return black_box_state_; }
     [[nodiscard]] qulonglong blackBoxRecords() const { return black_box_records_; }
     [[nodiscard]] qulonglong sequence() const {
@@ -227,7 +223,12 @@ private:
 
     QTimer timer_;
     efis::EngineSimulationProvider engine_provider_{84};
+    std::unique_ptr<efis::EdpUdpEngineSource> engine_network_source_;
     efis::engine::EngineSnapshot engine_snapshot_{};
+    QString engine_data_state_{QStringLiteral("SIM FALLBACK")};
+    QString data_source_state_{QStringLiteral("SIMULATION")};
+    QString sensor_node_state_{QStringLiteral("SIMULATED")};
+    QString last_logged_engine_data_state_;
     efis::MonoTime started_at_{efis::MonoClock::now()};
     efis::MonoTime last_recorder_check_{};
     QString recorder_status_path_;

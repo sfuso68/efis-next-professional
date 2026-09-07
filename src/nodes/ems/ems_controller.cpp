@@ -44,6 +44,20 @@ double calibratedFuel(double raw, const QVariantList& curve) {
 }
 
 EmsController::EmsController(QObject* parent) : QObject(parent) {
+    const auto edp_bind = qEnvironmentVariable("EFIS_EDP_BIND");
+    if (!edp_bind.isEmpty()) {
+        bool port_ok = false;
+        bool node_ok = false;
+        const auto port = qEnvironmentVariableIntValue("EFIS_EDP_PORT", &port_ok);
+        const auto node = qEnvironmentVariableIntValue("EFIS_EDP_SOURCE_NODE", &node_ok);
+        efis::EdpUdpSourceConfig config;
+        config.local = {edp_bind.toStdString(), static_cast<std::uint16_t>(port_ok ? port : 49'003)};
+        config.consumer.expected_source_node = static_cast<std::uint32_t>(node_ok ? node : 47);
+        engine_network_source_ = std::make_unique<efis::EdpUdpEngineSource>(std::move(config));
+        engine_data_state_ = QStringLiteral("WAITING");
+        data_source_state_ = QStringLiteral("NETWORK");
+        sensor_node_state_ = QStringLiteral("BLACKBOX WAITING");
+    }
     loadUnitSystem();
     loadAircraftProfile();
     loadMaintenance();
@@ -461,7 +475,7 @@ int EmsController::engineHealth() const {
 
 QString EmsController::engineFaultMode() const {
     using efis::engine::EngineFault;
-    switch (engine_provider_.fault()) {
+    switch (engine_snapshot_.injected_fault) {
         case EngineFault::none: return QStringLiteral("NONE");
         case EngineFault::low_oil_pressure: return QStringLiteral("LOW OIL PRESS");
         case EngineFault::high_cht: return QStringLiteral("HIGH CHT 3");
@@ -514,7 +528,51 @@ void EmsController::updateSnapshot() {
     const auto now = efis::MonoClock::now();
     const auto elapsed =
         std::chrono::duration_cast<std::chrono::milliseconds>(now - started_at_);
-    engine_snapshot_ = engine_provider_.sample(now, elapsed);
+    bool use_simulation = true;
+    if (engine_network_source_) {
+        const auto network = engine_network_source_->poll(now);
+        switch (engine_network_source_->link_state(now)) {
+            case efis::protocol::edp::LinkState::live:
+                engine_snapshot_ = network;
+                engine_data_state_ = network.rpm.is_simulated()
+                    ? QStringLiteral("LIVE • SIM") : QStringLiteral("LIVE");
+                data_source_state_ = network.rpm.is_simulated()
+                    ? QStringLiteral("NETWORK • SIM") : QStringLiteral("NETWORK");
+                sensor_node_state_ = network.rpm.is_simulated()
+                    ? QStringLiteral("BLACKBOX 47 • SIM") : QStringLiteral("BLACKBOX 47");
+                use_simulation = false;
+                break;
+            case efis::protocol::edp::LinkState::stale:
+                engine_snapshot_ = network;
+                engine_data_state_ = network.rpm.is_simulated()
+                    ? QStringLiteral("STALE • SIM") : QStringLiteral("STALE");
+                data_source_state_ = network.rpm.is_simulated()
+                    ? QStringLiteral("NETWORK • SIM") : QStringLiteral("NETWORK");
+                sensor_node_state_ = network.rpm.is_simulated()
+                    ? QStringLiteral("BLACKBOX STALE • SIM") : QStringLiteral("BLACKBOX STALE");
+                use_simulation = false;
+                break;
+            case efis::protocol::edp::LinkState::waiting:
+                engine_data_state_ = QStringLiteral("SIM FALLBACK • WAITING");
+                sensor_node_state_ = QStringLiteral("BLACKBOX WAITING");
+                break;
+            case efis::protocol::edp::LinkState::lost:
+                engine_data_state_ = QStringLiteral("SIM FALLBACK • LINK LOST");
+                sensor_node_state_ = QStringLiteral("BLACKBOX LINK LOST");
+                break;
+        }
+    }
+    if (use_simulation) {
+        engine_snapshot_ = engine_provider_.sample(now, elapsed);
+        data_source_state_ = QStringLiteral("SIMULATION");
+        if (!engine_network_source_) sensor_node_state_ = QStringLiteral("SIMULATED");
+    }
+    if (engine_data_state_ != last_logged_engine_data_state_) {
+        last_logged_engine_data_state_ = engine_data_state_;
+        qInfo().noquote() << "event=ems_engine_data_state state=" << engine_data_state_
+                          << "source=" << data_source_state_
+                          << "node=" << sensor_node_state_;
+    }
     if (!fuel_on_board_initialized_) {
         fuel_on_board_gallons_ = fuelLeft() + fuelRight();
         fuel_on_board_initialized_ = true;

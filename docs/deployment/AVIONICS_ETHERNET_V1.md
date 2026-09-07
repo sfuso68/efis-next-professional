@@ -25,7 +25,7 @@ Per il Gigabit-Switch-5P non gestito verificato:
 | 1 | Blackbox `eth0` | broker centrale |
 | 2 | Pixhawk 6X Ethernet | solo dopo backup/configurazione controllata |
 | 3 | PFD RPi5 `eth0` | consumer DDP |
-| 4 | EMS RPi4 `eth0` | rete pronta; protocollo engine normalizzato da implementare |
+| 4 | EMS RPi4 `eth0` | consumer EDP V1 `10.77.10.12:49003`; feed banco SIM |
 | 5 | Ground Station `eno1` | manutenzione di banco; futuro MFD in esercizio |
 
 Non collegare le telecamere a questo switch. Quattro camere più VIDEO-CORE

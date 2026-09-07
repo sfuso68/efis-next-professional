@@ -25,7 +25,7 @@ Il flusso primario è:
 Pixhawk 10.77.10.3 --MAVLink2/UDP 14550--> Blackbox 10.77.10.2
 Blackbox 10.77.10.2 --DDP V2/UDP 49002--> PFD 10.77.10.11
                                            MFD 10.77.10.13 (futuro)
-Blackbox 10.77.10.2 --engine protocol TBD--> EMS 10.77.10.12
+Blackbox 10.77.10.2 --EDP V1/UDP 49003--> EMS 10.77.10.12
 ```
 
 Il VIDEO-CORE è un processo e un computer separato dall'EMS. Aggrega, controlla

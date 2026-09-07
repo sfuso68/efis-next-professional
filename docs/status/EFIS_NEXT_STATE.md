@@ -349,10 +349,10 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Identità reale verificata: utente `pi`, hostname `efis`, Raspberry Pi 4
   Model B Rev 1.5, Debian 13 aarch64. Il precedente lease `192.168.1.48` è ora
   assegnato a un telefono e non identifica più l'EMS.
-- `efis-ems.service` è abilitato e attivo con renderer `eglfs`; il processo
-  installato non apre socket DDP e usa ancora `EngineSimulationProvider`.
-  L'Ethernet è quindi pronta, ma il percorso dati motore Blackbox -> EMS non è
-  implementato. DDP V2 trasporta soltanto lo snapshot di volo.
+- `efis-ems.service` è abilitato e attivo con renderer `eglfs`. Il processo
+  installato apre EDP V1 esclusivamente su `10.77.10.12:49003` e mantiene
+  `EngineSimulationProvider` come fallback esplicitamente indicato. DDP V2
+  resta limitato allo snapshot di volo.
 - `eth0` usa `10.77.10.12/24`, 1000/full, EEE disabilitato e guard egress
   verificato. Il drop-in systemd confina il renderer a CPU1–3; dopo il restart
   del servizio l'affinità effettiva è `1-3` e la rete resta senza perdita.
@@ -373,7 +373,8 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   `0.0.0.0:14550`. Sono bind da restringere con firewall/interfaccia durante il
   collaudo cablato.
 - L'EMS è raggiungibile sulla WLAN di recovery `192.168.1.36` e sulla rete
-  avionica `10.77.10.12`; non è ancora un consumer di dati motore normalizzati.
+  avionica `10.77.10.12`; è consumer EDP V1 dei dati motore normalizzati. Il
+  feed attuale è ancora simulato sulla Blackbox e dichiarato `LIVE • SIM`.
 - Ground Station e Pixhawk non sono stati collegati al dominio FLIGHT-DATA;
   nessun parametro Pixhawk è stato modificato.
 - Il rischio di fallback sul gateway WLAN è mitigato da una regola nftables
@@ -381,6 +382,34 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   nodi e una cattura Ethernet/WLAN correlata restano gate separati.
 
 ## Aperto — non dichiarare DONE
+
+### EDP V1 Blackbox → EMS — implementazione 2026-09-07
+
+- Implementato un protocollo motore separato e versionato, EDP V1/UDP 49003,
+  con snapshot atomico di 18 campioni, provenienza completa, valore raw,
+  revisione di calibrazione, marker simulated, identità, istanza, sequenza e
+  CRC32C. DDP V2 non è stato esteso e resta riservato ai dati di volo.
+- Implementati publisher Blackbox, consumer UDP EMS e stati visibili
+  `WAITING/LIVE/STALE/LOST`; in perdita del collegamento l'EMS usa la
+  simulazione soltanto come `SIM FALLBACK`, senza presentarla come dato reale.
+- Verifica software: build core e broker ARM riuscita sulla Blackbox; test EDP
+  di round-trip, UDP loopback, CRC, identità, duplicati e timeout riusciti. La
+  build Qt ARM dell'EMS è riuscita sul kit Qt 6.8 del Raspberry Pi 4. Dopo la
+  build completa sulla Blackbox sono passati tutti i 16 test CTest, inclusi
+  ingest, safety, DDP, DroneCAN, engine ed EDP.
+- Verifica su hardware reale: binari installati con backup su Blackbox ed EMS;
+  publisher Blackbox attivo a 20 Hz verso `10.77.10.12:49003`; EMS in ascolto
+  solo sull'indirizzo FLIGHT-DATA e transizione osservata `WAITING` →
+  `LIVE • SIM`. Fermando per due secondi il broker sono state osservate
+  `STALE • SIM` → `SIM FALLBACK • LINK LOST`; dopo il riavvio il nodo è tornato
+  `LIVE • SIM`. DDP PFD, registrazione Blackbox e servizi sono rimasti/rientrati
+  attivi. Questa è una prova di fault del processo, non di cavo fisico.
+- Il publisher di banco è ancora una simulazione esplicitamente abilitata con
+  `--engine-simulation`; decoder e arbitraggio CAN motore reali, reboot dei
+  nodi, fault fisico ed endurance restano aperti. Sul nodo EMS l'ambiente EDP è
+  per ora esportato dal launcher versionato perché l'installazione della nuova
+  unità systemd richiede una successiva operazione amministrativa; il processo
+  effettivo e il bind `10.77.10.12:49003` sono stati verificati.
 
 - Broker e receiver PFD sono installati, attivi e verificati end-to-end sulla
   prima tratta Ethernet avionica cablata. L'egress fail-closed è verificato a
@@ -407,9 +436,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 7. Aggiungere TLS o una rete avionica isolata prima di considerare professionale il trasporto HTTP dell'hub; oggi autenticazione bearer e rete locale non costituiscono una certificazione avionica.
 8. Collegare il parsing/normalizzazione dei messaggi CAN e MAVLink al modello dati arbitrato secondo ADR-003/ADR-005. L'inventario firmato prova l'esistenza e integrità dei segmenti, non la correttezza semantica di ogni misura.
 9. Verificare carico CAN reale, latenze end-to-end, stasis/cross-check e comportamento degradato con Pixhawk 6X, M10 e Matek ASPD-DLVR collegati simultaneamente.
-10. Le tratte Ethernet Blackbox-PFD-EMS, guard egress, EEE-off e affinità EMS
-    sono attive e verificate a runtime; mancano reboot, Ground Station,
-    Pixhawk, protocollo motore, endurance e fault fisico.
+10. Le tratte Ethernet Blackbox-PFD-EMS, guard egress, EEE-off, affinità EMS ed
+    EDP V1 simulato sono attive e verificate a runtime; mancano reboot, Ground
+    Station, sorgente motore CAN reale, endurance e fault fisico.
 11. Il servizio utente Ground Station è abilitato ma `Linger=no`: parte con la
     sessione utente. Decidere se il nodo deve funzionare prima del login e, in
     quel caso, abilitare il linger con autorizzazione amministrativa.

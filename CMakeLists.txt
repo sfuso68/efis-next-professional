@@ -29,6 +29,7 @@ add_library(efis_core
     src/providers/simulation_source.cpp
     src/providers/ddp_udp_source.cpp
     src/providers/ddp_udp_publisher.cpp
+    src/providers/edp_udp.cpp
     src/providers/engine_simulation_provider.cpp
     src/simulation/system_simulator.cpp
     src/providers/mavlink_parser.cpp
@@ -48,6 +49,7 @@ add_library(efis_core
     src/core/signal_access.cpp
     src/protocol/ddp_v2.cpp
     src/protocol/ddp_session.cpp
+    src/protocol/edp_v1.cpp
     src/instruments/dial.cpp
     src/instruments/panel.cpp
     src/instruments/panel_store.cpp
@@ -299,6 +301,10 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_ddp_udp_tests tests/ddp_udp_tests.cpp)
     target_link_libraries(efis_ddp_udp_tests PRIVATE efis_core)
     add_test(NAME efis_ddp_udp_tests COMMAND efis_ddp_udp_tests)
+
+    add_executable(efis_edp_v1_tests tests/edp_v1_tests.cpp)
+    target_link_libraries(efis_edp_v1_tests PRIVATE efis_core)
+    add_test(NAME efis_edp_v1_tests COMMAND efis_edp_v1_tests)
 endif()
 
 # --- Nodo EMS ---------------------------------------------------------------
