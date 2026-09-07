@@ -40,7 +40,10 @@
   "switches": [
     {
       "id": "flight-switch",
-      "model": "VERIFY_PHYSICAL_LABEL",
+      "manufacturer": "Waveshare",
+      "model": "Gigabit-Switch-5P (EU)",
+      "management": "unmanaged",
+      "hardware_label_verified": "2026-09-07",
       "prototype_ports": 5,
       "minimum_operational_ports": 6,
       "segment": "flight-data",

@@ -35,8 +35,8 @@ alimentazione al PFD, all'EMS o alla Blackbox.
 
 ## Valutazione dello switch Waveshare
 
-Il modello esatto deve essere verificato dalla targhetta. Se si tratta del
-Waveshare **Gigabit-Switch-5P** plug-and-play, è uno switch non gestito: non
+La targhetta fotografata il 2026-09-07 identifica il dispositivo come Waveshare
+**Gigabit-Switch-5P (EU)**. È uno switch plug-and-play non gestito: non
 fornisce VLAN, ACL o QoS configurabili. È utilizzabile come switch FLIGHT-DATA
 del prototipo, con cinque porte dedicate, ma non deve ospitare anche le quattro
 camere. Non basta inoltre alla configurazione finale con Blackbox, Pixhawk,
@@ -45,7 +45,8 @@ porta di manutenzione desiderabile. La rete video richiede un secondo switch
 separato, preferibilmente gestito e con alimentazioni camera individualmente
 protette.
 
-La dicitura commerciale «industrial grade» non costituisce una qualifica
+La verifica della targhetta chiude l'identificazione del modello, non i gate di
+rete o ambientali. La dicitura commerciale «industrial grade» non costituisce una qualifica
 aeronautica. Alimentazione, transitori, EMI, temperatura, vibrazioni,
 connettori e ritenzione dei cavi restano gate hardware indipendenti.
 

@@ -101,9 +101,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Aggiunto `config/network/avionics-network-v1.json` con indirizzi statici,
   flussi UDP unicast, MTU 1500, assenza di DHCP/default gateway e separazione
   esplicita delle quattro camere.
-- Il Waveshare a cinque porte, se confermato come modello plug-and-play non
-  gestito, è destinato soltanto a FLIGHT-DATA. Non è accettato come switch unico
-  per telemetria e quattro flussi video.
+- La targhetta fotografata conferma il Waveshare `Gigabit-Switch-5P (EU)`,
+  plug-and-play non gestito. È destinato soltanto al banco FLIGHT-DATA e non è
+  accettato come switch unico per telemetria e quattro flussi video.
 - EMS e VIDEO-CORE restano computer distinti: il decoder/mosaico video non può
   condividere failure mode e carico con il nodo strumenti motore.
 - Aggiunti runbook di migrazione reversibile e validatore offline del piano. I
@@ -359,9 +359,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 11. Il servizio utente Ground Station è abilitato ma `Linger=no`: parte con la
     sessione utente. Decidere se il nodo deve funzionare prima del login e, in
     quel caso, abilitare il linger con autorizzazione amministrativa.
-12. Confermare dalla targhetta il modello preciso dello switch Waveshare. Se è
-    il Gigabit-Switch-5P non gestito, servirà un secondo switch video; se è un
-    modello gestito, documentare e provare VLAN, QoS e comportamento al reboot.
+12. Il modello Waveshare è identificato come Gigabit-Switch-5P non gestito.
+    Servono un secondo switch video e, per la configurazione finale completa,
+    almeno sei porte operative sul dominio FLIGHT-DATA.
 
 ## Vincoli architetturali mantenuti
 

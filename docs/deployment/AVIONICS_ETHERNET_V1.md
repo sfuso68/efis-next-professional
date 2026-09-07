@@ -11,12 +11,13 @@ Stato: procedura di banco reversibile, non approvata per il volo.
 | Ground Station `192.168.1.39` | `eno1` | `NO-CARRIER` | WLAN attiva |
 | EMS `192.168.1.48` | non verificata | nodo non raggiungibile | da ripristinare |
 
-Non è stata applicata alcuna modifica di rete. Prima della configurazione serve
-il modello esatto dello switch Waveshare e devono essere collegati i cavi.
+La targhetta fotografata ha confermato il modello Waveshare
+`Gigabit-Switch-5P (EU)`. Non è stata applicata alcuna modifica di rete: prima
+della configurazione devono essere alimentati switch e nodi e collegati i cavi.
 
 ## Porte dello switch FLIGHT-DATA a cinque porte
 
-Se il dispositivo è il Gigabit-Switch-5P non gestito:
+Per il Gigabit-Switch-5P non gestito verificato:
 
 | Porta | Collegamento iniziale | Nota |
 |---|---|---|
