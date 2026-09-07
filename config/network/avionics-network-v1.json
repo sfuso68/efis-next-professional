@@ -1,0 +1,57 @@
+{
+  "schema": "efis-next.avionics-network.v1",
+  "status": "BENCH_NOT_FLIGHT_APPROVED",
+  "segments": [
+    {
+      "id": "flight-data",
+      "cidr": "10.77.10.0/24",
+      "dhcp": false,
+      "default_gateway": null,
+      "mtu": 1500,
+      "physical_isolation_required": true
+    },
+    {
+      "id": "video",
+      "cidr": "10.77.20.0/24",
+      "dhcp": false,
+      "default_gateway": null,
+      "mtu": 1500,
+      "physical_isolation_required": true
+    }
+  ],
+  "nodes": [
+    {"id": "blackbox", "role": "broker-recorder", "addresses": {"flight-data": "10.77.10.2"}},
+    {"id": "pixhawk-6x", "role": "flight-source", "addresses": {"flight-data": "10.77.10.3"}},
+    {"id": "pfd-01", "role": "display", "addresses": {"flight-data": "10.77.10.11"}},
+    {"id": "ems-01", "role": "display", "addresses": {"flight-data": "10.77.10.12"}},
+    {"id": "mfd-01", "role": "future-display", "addresses": {"flight-data": "10.77.10.13"}},
+    {"id": "video-core", "role": "video-aggregator", "addresses": {"flight-data": "10.77.10.20", "video": "10.77.20.2"}},
+    {"id": "maintenance", "role": "ground-only", "addresses": {"flight-data": "10.77.10.50"}},
+    {"id": "cam-01", "role": "camera", "addresses": {"video": "10.77.20.11"}},
+    {"id": "cam-02", "role": "camera", "addresses": {"video": "10.77.20.12"}},
+    {"id": "cam-03", "role": "camera", "addresses": {"video": "10.77.20.13"}},
+    {"id": "cam-04", "role": "camera", "addresses": {"video": "10.77.20.14"}}
+  ],
+  "flows": [
+    {"id": "pixhawk-mavlink", "source": "pixhawk-6x", "destination": "blackbox", "segment": "flight-data", "transport": "udp", "port": 14550, "unicast": true, "direction": "one-way"},
+    {"id": "blackbox-ddp-pfd", "source": "blackbox", "destination": "pfd-01", "segment": "flight-data", "transport": "udp", "port": 49002, "unicast": true, "direction": "one-way"},
+    {"id": "blackbox-ddp-ems", "source": "blackbox", "destination": "ems-01", "segment": "flight-data", "transport": "udp", "port": 49002, "unicast": true, "direction": "one-way"}
+  ],
+  "switches": [
+    {
+      "id": "flight-switch",
+      "model": "VERIFY_PHYSICAL_LABEL",
+      "prototype_ports": 5,
+      "minimum_operational_ports": 6,
+      "segment": "flight-data",
+      "allowed_roles": ["broker-recorder", "flight-source", "display", "future-display", "video-aggregator", "ground-only"]
+    },
+    {
+      "id": "video-switch",
+      "model": "NOT_SELECTED",
+      "minimum_operational_ports": 6,
+      "segment": "video",
+      "allowed_roles": ["video-aggregator", "camera"]
+    }
+  ]
+}

@@ -43,7 +43,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | EMS-004 | Limiti motore da manuale | Setup/EMS | TODO | campi presenti | serve fonte esterna | verificare per motore installato | POH/manuale citato e approvato |
 | BBX-001 | Black box append-only | Black box | DONE/PARTIAL | recorder e ingest | retention/robustezza da chiudere | endurance test | power-loss recovery + retention |
 | BBX-002 | Ingestion unico dei bus | Black box | DONE-ARCH | ADR-003 | deployment finale | consolidare distribuzione | nessun display consuma frame grezzi |
-| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | broker installato; Pixhawk reale ricevuto e DDP PFD LIVE | Ethernet, jitter/riordino e provenance completa aperti | collaudo rete avionica e fault injection | protocollo versionato + replay + perdita/reordine HW |
+| BBX-003 | Broker stato normalizzato ai display | Black box | PARTIAL | broker HW + ADR-010/piano Ethernet validato | nodi Ethernet ancora NO-CARRIER; jitter/riordino aperti | cablare FLIGHT-DATA nodo per nodo | protocollo versionato + replay + perdita/reordine HW |
 | BBX-004 | Edge weather/cache | Black box | PARTIAL | servizio presente | freshness/offline | hardening | live/cached/stale verificati |
 | SRV-001 | Server mappe/imagery | Server casa | PARTIAL | mapapp/Caddy/status | lifecycle pacchetti | versioning+manifest | update atomico + rollback |
 | SRV-002 | Cataloghi/navdata centralizzati | Server casa | PARTIAL | DB/cataloghi presenti | validità/fonti | pipeline update | checksum/provenance/versione |
@@ -67,7 +67,7 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 | PROD-001 | Profili Standard/Professional | Tutti | TODO/DESIGN | concetto definito | hardware feature matrix | congelare SKU/features | matrice prodotto approvata |
 | PROD-002 | Alimentazione avionica | Aereo | TODO | requisito | safety/hardware | progettare PSU/protezioni | brownout/EMI/load test |
 | PROD-003 | Enclosure e termica | Aereo | TODO | prototipi HW | vibrazioni/temperatura | progetto meccanico | soak/vibration/thermal test |
-| PROD-004 | Harness/connettori | Aereo | TODO | parti sparse | EMI/manutenzione | schema cablaggio | harness documentato e testato |
+| PROD-004 | Harness/connettori | Aereo | PARTIAL | schema porte FLIGHT-DATA V1; video separato | modello switch/cavi/EMI non verificati | identificare switch e cablare banco | harness documentato e testato |
 | PROD-005 | Update/rollback software | Tutti | PARTIAL | git/config rollback | deployment nodes | A/B or transactional deploy | rollback simulato su tutti i nodi |
 | VER-001 | Test automatici core | Dev/RPi5 | DONE/PARTIAL | suite multiple + EFIS Core CI Linux PASS su PR #6 | estendere piattaforme e fault test | mantenere CI green | green required per PR |
 | VER-002 | HIL | Banco | TODO | concetto | hardware fixture | costruire banco HIL | fault injection ripetibile |

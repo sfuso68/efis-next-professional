@@ -54,7 +54,7 @@
     },
     "PROD": {
       "items": 5,
-      "progress": 10.0
+      "progress": 20.0
     },
     "SRV": {
       "items": 3,
@@ -78,12 +78,12 @@
   "status_counts": {
     "DONE": 6,
     "LEGACY": 2,
-    "PARTIAL": 33,
-    "TODO": 14,
+    "PARTIAL": 34,
+    "TODO": 13,
     "VERIFY-HW": 1
   },
   "verify_hw": [
     "INST-001"
   ],
-  "weighted_progress": 45.1
+  "weighted_progress": 46.0
 }

@@ -2,9 +2,9 @@
 
 Aggiornamento: 2026-09-07
 
-Branch di lavoro: `work/mavlink-readonly-bridge-v1`
+Branch di lavoro: `work/avionics-ethernet-v1`
 
-Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-009.
+Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-010.
 
 Questo documento non esisteva nel repository al momento dell'intervento ed è stato creato come stato operativo autorevole. Le parole **implementato**, **verificato software** e **verificato su hardware reale** indicano livelli di evidenza diversi. Una funzione non è considerata conclusa se manca la verifica pertinente.
 
@@ -92,6 +92,22 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - QGroundControl deve ricevere la copia UDP locale e non aprire la stessa
   seriale mentre il bridge è attivo; le operazioni di manutenzione richiedono
   l'arresto esplicito del bridge.
+
+### Piano Ethernet avionico segmentato
+
+- Aggiunta ADR-010: la Blackbox resta broker applicativo e non diventa router o
+  bridge IP. Pixhawk, Blackbox e display usano FLIGHT-DATA `10.77.10.0/24`;
+  camere e VIDEO-CORE usano VIDEO `10.77.20.0/24`.
+- Aggiunto `config/network/avionics-network-v1.json` con indirizzi statici,
+  flussi UDP unicast, MTU 1500, assenza di DHCP/default gateway e separazione
+  esplicita delle quattro camere.
+- Il Waveshare a cinque porte, se confermato come modello plug-and-play non
+  gestito, è destinato soltanto a FLIGHT-DATA. Non è accettato come switch unico
+  per telemetria e quattro flussi video.
+- EMS e VIDEO-CORE restano computer distinti: il decoder/mosaico video non può
+  condividere failure mode e carico con il nodo strumenti motore.
+- Aggiunti runbook di migrazione reversibile e validatore offline del piano. I
+  parametri `NET_*` del Pixhawk non vengono scritti da questo lavoro.
 
 ### Distribuzione DDP multi-display
 
@@ -181,6 +197,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   viene ricevuto via UDP identico, con un solo datagramma e zero errori. Tre
   test su tre sono passati, includendo validazione destinazioni e retry
   controllato quando la seriale non esiste.
+- Il piano Ethernet V1 ha superato cinque test Python: schema repository,
+  rifiuto indirizzo duplicato, rifiuto camera su FLIGHT-DATA e rifiuto di un
+  gateway sulla rete operativa, oltre al rifiuto di uno switch FLIGHT-DATA
+  sottodimensionato. Il comando di validazione riporta 2 segmenti, 11 nodi, 3
+  flussi obbligatori e 2 switch distinti.
 
 - Tre test unitari Python su segmenti sintetici `FUSOBBX1`, eseguiti con Python 3.13.5:
   - segmento chiuso valido, firma valida e riuso digest;
@@ -296,6 +317,18 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - I sorgenti della proprietà e della pagina sono stati predisposti nella copia di build.
 - Non esiste in questo intervento evidenza sufficiente di build completa, installazione o verifica visiva su RPi4; queste attività restano aperte.
 
+### Audit Ethernet dei nodi reali — 2026-09-07
+
+- PFD `eth0`, Blackbox `eth0` e Ground Station `eno1` risultano amministrativamente
+  abilitati ma `NO-CARRIER`; il traffico operativo continua sulla WLAN di casa.
+- Il PFD ascolta DDP su `0.0.0.0:49002`; la Blackbox ascolta MAVLink su
+  `0.0.0.0:14550`. Sono bind da restringere con firewall/interfaccia durante il
+  collaudo cablato.
+- Il nodo EMS `192.168.1.48` non era raggiungibile e la sua interfaccia Ethernet
+  non è stata verificata.
+- Nessun profilo Ethernet, indirizzo, route, firewall o parametro Pixhawk è
+  stato modificato: la verifica su Ethernet reale è ancora aperta.
+
 ## Aperto — non dichiarare DONE
 
 - Broker e receiver PFD sono installati, attivi e verificati end-to-end sulla
@@ -326,6 +359,9 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 11. Il servizio utente Ground Station è abilitato ma `Linger=no`: parte con la
     sessione utente. Decidere se il nodo deve funzionare prima del login e, in
     quel caso, abilitare il linger con autorizzazione amministrativa.
+12. Confermare dalla targhetta il modello preciso dello switch Waveshare. Se è
+    il Gigabit-Switch-5P non gestito, servirà un secondo switch video; se è un
+    modello gestito, documentare e provare VLAN, QoS e comportamento al reboot.
 
 ## Vincoli architetturali mantenuti
 
