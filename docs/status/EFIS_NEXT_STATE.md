@@ -452,8 +452,18 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Il fault ha anche rivelato che `NodeHealthMonitor` registrava le due
   transizioni di peggioramento ma non restituiva quella di recupero: lo stato
   interno tornava `ONLINE` direttamente in `heartbeat()`. La correzione e il
-  test di regressione hanno superato build MSVC e 16/16 test; non e' ancora
-  verificata sul broker ARM reale e quindi non chiude il gate hardware.
+  test di regressione hanno superato build MSVC e 16/16 test. La release esatta
+  `e916548` ha poi superato build GCC 14.2 e 16/16 test nativi ARM in una
+  directory separata sulla Blackbox.
+- Il broker `e916548` e' installato e attivo con SHA-256
+  `c621c272f2039123e7aee90232ae9ae3cc5488a11654873330ae15c79823c712`;
+  il precedente e' conservato come
+  `efis-blackbox-broker.pre-e916548-20260908`. Lo smoke test isolato ha prodotto
+  21 snapshot/21 datagrammi e zero failure. Dopo lo switch, MAVLink, CAN,
+  recorder, EDP e le due uscite DDP sono cresciuti senza errori; il PFD e'
+  rimasto `LIVE` e `ddp_gaps` non e' aumentato. La generazione dell'evento di
+  recovery non e' ancora verificata sul broker reale: richiede un secondo fault
+  dopo questo deployment.
 - Una prova temporanea di 12 secondi ha letto 100.036 byte reali, prodotto 588
   invii UDP verso due destinazioni, senza errori di lettura, invio o
   riconnessione.
