@@ -7,7 +7,10 @@ Wants=network-online.target
 [Service]
 Type=simple
 Environment=EFIS_PIXHAWK_SERIAL=/dev/ttyACM0
-Environment="EFIS_MAVLINK_DEST_ARGS=--destination 192.168.1.47:14550 --destination 127.0.0.1:14550"
+# Il default e' solo locale. L'ingest operativo arriva direttamente dal
+# Pixhawk alla Blackbox sulla rete FLIGHT-DATA; duplicarlo qui confonderebbe
+# provenienza, sequenze e metriche.
+Environment="EFIS_MAVLINK_DEST_ARGS=--destination 127.0.0.1:14550"
 EnvironmentFile=-%h/.config/efis/mavlink-readonly-bridge.env
 ExecStart=/usr/bin/python3 %h/.local/lib/efis-next/mavlink_readonly_forwarder.py --serial ${EFIS_PIXHAWK_SERIAL} $EFIS_MAVLINK_DEST_ARGS
 Restart=always

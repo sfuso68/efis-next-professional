@@ -170,6 +170,13 @@ anche destinazione `10.77.10.2`, porta `14550` e protocollo MAVLink2. Resta il
 riavvio di applicazione e la cattura filtrata su `eth0`: fino a quella prova non
 esiste evidenza di traffico MAVLink Ethernet operativo.
 
+Dopo il riavvio finale la cattura hardware ha verificato datagrammi MAVLink2
+(`0xfd`) da `10.77.10.3` a `10.77.10.2:14550`. La prova con bridge USB isolato
+ha mantenuto broker, recorder, DDP e PFD `LIVE`. Per evitare duplicati
+indistinguibili, il bridge USB resta destinato soltanto a
+`127.0.0.1:14550`; ripristinare l'inoltro WLAN e' un rollback manuale, non una
+ridondanza attiva. Endurance e fault fisico restano gate separati.
+
 Non scrivere questi parametri dal bridge EFIS. La modifica avviene in una
 sessione manutentiva separata con QGroundControl/MAVProxy, backup precedente,
 elenco esatto delle sole differenze, riavvio, read-back e rollback provato.

@@ -411,6 +411,33 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   bridge USB e' tornato attivo. Resta necessario il riavvio di applicazione,
   seguito da backup/diff e cattura filtrata su `eth0`; la sola risposta ICMP non
   dimostra ancora il flusso MAVLink Ethernet.
+- Dopo il terzo power-cycle la cattura sulla Blackbox ha verificato il percorso
+  operativo: 20/20 datagrammi da `10.77.10.3:62510` a
+  `10.77.10.2:14550`, checksum UDP valido, zero drop kernel. Il filtro sul primo
+  byte del payload ha trovato `0xfd` e l'hexdump contiene messaggi ArduPlane
+  reali, quindi il protocollo sul filo e' MAVLink2 e non semplice traffico UDP.
+- Con il bridge USB fermato, in 12 secondi sono stati catturati 296 datagrammi
+  Ethernet. Nello stesso intervallo sono cresciuti i contatori MAVLink, recorder
+  e DDP del broker, con zero errori/troncamenti/failure; sul PFD lo stato e'
+  rimasto `LIVE`, `ddp_accepted` e' cresciuto, con zero rifiuti e zero errori
+  socket. Questa e' evidenza HW end-to-end breve, non endurance.
+- Il backup finale
+  `arduplane-4.7.0-ethernet-final-20260908-20260908-181340` e' completo
+  1084/1084, senza indici mancanti, SHA-256
+  `960f36c4ad5359b6eea43284ac2b2a681c289c298b794e120baefc14aa05e641`.
+  Rispetto al backup P1 precedente contiene i sei valori voluti, gli undici
+  parametri `MAV5_*` esposti automaticamente dal canale MAVLink2 e normali
+  valori adattivi/contatori variati al reboot; firmware e UID2 sono invariati.
+- Il bridge USB non inoltra piu' alla Blackbox: resta attivo soltanto verso
+  `127.0.0.1:14550` come endpoint locale di manutenzione. La cattura finale ha
+  misurato 0 pacchetti da `192.168.1.39` a `wlan0:14550` e 139 pacchetti dal
+  Pixhawk su `eth0` in sei secondi. Questo evita due copie indistinguibili dello
+  stesso flusso; i file precedenti del servizio/env sono conservati sul target
+  come rollback.
+- La telemetria riporta correttamente pre-arm non superato per calibrazione
+  accelerometro 3D e bussola. Non e' un difetto Ethernet e non va aggirato:
+  calibrazione/installazione e verifica pre-arm restano gate hardware prima di
+  qualunque uso operativo.
 - Una prova temporanea di 12 secondi ha letto 100.036 byte reali, prodotto 588
   invii UDP verso due destinazioni, senza errori di lettura, invio o
   riconnessione.
