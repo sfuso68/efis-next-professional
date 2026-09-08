@@ -398,6 +398,19 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   esporre `NET_P1_IP*`/porta/protocollo, configurazione unicast MAVLink2 verso
   `10.77.10.2:14550`, backup/diff finale e cattura su `eth0` che dimostri la
   provenienza `10.77.10.3`. Non disattivare ancora il bridge USB.
+- Dopo il secondo power-cycle il Pixhawk reale ha risposto dalla Blackbox a
+  `10.77.10.3`: 4/4 ping, 0% perdita, RTT medio 0,201 ms e neighbor Ethernet
+  `c2:af:51:69:1d:d7`, coincidente con `NET_MACADDR0..5`. Il terzo backup
+  `arduplane-4.7.0-p1-exposed-20260908-20260908-180416` e' completo 1073/1073,
+  senza indici mancanti, SHA-256
+  `37a94cc4ccbd62f9e8259943edbedd7d57de2c48ee425041c7256613ebad424c`;
+  firmware e UID2 sono invariati.
+- I sei parametri P1 appena esposti sono stati applicati sul Pixhawk reale con
+  dry-run, guardia, audit e riletta indipendente: destinazione `10.77.10.2`,
+  porta `14550`, protocollo `2` (MAVLink2). Tutti gli esiti sono `verified` e il
+  bridge USB e' tornato attivo. Resta necessario il riavvio di applicazione,
+  seguito da backup/diff e cattura filtrata su `eth0`; la sola risposta ICMP non
+  dimostra ancora il flusso MAVLink Ethernet.
 - Una prova temporanea di 12 secondi ha letto 100.036 byte reali, prodotto 588
   invii UDP verso due destinazioni, senza errori di lettura, invio o
   riconnessione.

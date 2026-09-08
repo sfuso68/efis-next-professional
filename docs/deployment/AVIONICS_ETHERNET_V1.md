@@ -164,9 +164,11 @@ prevista è statica e unicast:
 - destinazione `10.77.10.2`, porta `14550`, protocollo MAVLink2.
 
 Il 2026-09-08 `NET_ENABLE`, l'indirizzo statico, il gateway nullo e
-`NET_P1_TYPE=1` sono stati applicati e riletti sul Pixhawk reale. Destinazione,
-porta e protocollo restano aperti fino al riavvio che ne espone i parametri;
-questo non costituisce ancora evidenza di traffico Ethernet operativo.
+`NET_P1_TYPE=1` sono stati applicati e riletti sul Pixhawk reale. Dopo il
+riavvio il nodo ha risposto come `10.77.10.3` e sono stati applicati e riletti
+anche destinazione `10.77.10.2`, porta `14550` e protocollo MAVLink2. Resta il
+riavvio di applicazione e la cattura filtrata su `eth0`: fino a quella prova non
+esiste evidenza di traffico MAVLink Ethernet operativo.
 
 Non scrivere questi parametri dal bridge EFIS. La modifica avviene in una
 sessione manutentiva separata con QGroundControl/MAVProxy, backup precedente,
