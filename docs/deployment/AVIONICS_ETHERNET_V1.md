@@ -157,7 +157,8 @@ ArduPlane 4.7 supporta il framework Ethernet sul Pixhawk 6X. La configurazione
 prevista è statica e unicast:
 
 - `NET_ENABLE=1`, `NET_DHCP=0`;
-- `NET_IPADDR=10.77.10.3`, `NET_NETMASK=24`;
+- `NET_IPADDR0=10`, `NET_IPADDR1=77`, `NET_IPADDR2=10`,
+  `NET_IPADDR3=3`, `NET_NETMASK=24`;
 - nessun traffico fuori subnet;
 - una porta `NET_Px_TYPE=1` UDP client;
 - destinazione `10.77.10.2`, porta `14550`, protocollo MAVLink2.
@@ -165,8 +166,10 @@ prevista è statica e unicast:
 Non scrivere questi parametri dal bridge EFIS. La modifica deve avvenire in una
 sessione manutentiva separata con QGroundControl/MAVProxy, backup precedente,
 elenco esatto delle sole differenze, riavvio, read-back e rollback provato.
-I nomi/valori definitivi vanno letti direttamente dal firmware ArduPlane 4.7.0
-installato: non si assume che un numero di porta logica sia libero.
+Gli indirizzi ArduPilot sono esposti come quattro parametri byte, non come un
+singolo valore puntato. I nomi/valori definitivi vanno letti direttamente dal
+firmware ArduPlane 4.7.0 installato dopo `NET_ENABLE=1` e riavvio: non si assume
+che un numero di porta logica sia libero.
 
 ## Gate di accettazione
 

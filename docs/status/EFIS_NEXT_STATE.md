@@ -366,6 +366,22 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Il Pixhawk 6X reale è presente come
   `/dev/serial/by-id/usb-ArduPilot_Pixhawk6X_3F001D000751333439393536-if00`;
   la porta era libera e QGroundControl non era in esecuzione durante il test.
+- Prima della migrazione Ethernet e' stato acquisito il backup completo
+  `arduplane-4.7.0-pre-ethernet-20260908-055450`: 1050 parametri dichiarati e
+  ricevuti, nessun indice mancante, SHA-256
+  `8893d6bddd638751aee9b515b505e9c9f547ff5b60d58e3f72b9690f3666751d`.
+  Il firmware ha riportato 4.7.0.255 e UID2
+  `3f001d000751333439393536000000000000`.
+- Dal backup iniziale risultavano soltanto `NET_ENABLE=0` e
+  `NET_P1_TYPE`...`NET_P4_TYPE=0`; come previsto, gli altri parametri sono
+  nascosti finche' la rete non viene abilitata. In sessione manutentiva separata
+  il solo `NET_ENABLE` e' stato portato da 0 a 1: dry-run, guardia sul valore
+  precedente, eco, riletta indipendente e audit hanno tutti avuto esito
+  verificato. Il bridge USB read-only e' stato riavviato ed e' tornato attivo.
+- Restano esplicitamente non eseguiti: reboot necessario a esporre i parametri,
+  indirizzo `10.77.10.3`, UDP client/MAVLink2 verso `10.77.10.2:14550`, read-back
+  completo, diff rispetto al backup e prova del percorso Ethernet. Non
+  disattivare ancora il bridge USB.
 - Una prova temporanea di 12 secondi ha letto 100.036 byte reali, prodotto 588
   invii UDP verso due destinazioni, senza errori di lettura, invio o
   riconnessione.
