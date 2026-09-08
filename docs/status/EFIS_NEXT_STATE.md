@@ -73,8 +73,12 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   può quindi distinguere il link DDP vivo dalla disponibilità dei sensori.
 - L'eseguibile espone contatori per datagrammi/byte MAVLink, errori e
   troncamenti socket, frame CAN e datagrammi/byte DDP.
-- Aggiunti unità systemd di predisposizione e guida di deployment. Il servizio
-  non è stato installato né attivato sulla Blackbox reale in questo branch.
+- Aggiunti unità systemd e guida di deployment; le sezioni hardware seguenti
+  documentano la successiva installazione e attivazione sulla Blackbox reale.
+- Il monitor dei nodi conserva ora anche le transizioni di recupero prodotte
+  da un battito valido (`STALE/LOST -> ONLINE`) fino al successivo ciclo di
+  ingest. In precedenza lo stato tornava online, ma l'evento veniva perso prima
+  che adapter e recorder potessero osservarlo.
 
 ### Bridge Pixhawk MAVLink strettamente sola-lettura
 
@@ -438,6 +442,18 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   accelerometro 3D e bussola. Non e' un difetto Ethernet e non va aggirato:
   calibrazione/installazione e verifica pre-arm restano gate hardware prima di
   qualunque uso operativo.
+- Il fault fisico del cavo Pixhawk del 2026-09-08 ha prodotto 100% perdita ICMP,
+  arresto completo del contatore MAVLink a 1.951.512 e nessun nuovo datagramma
+  utile su `eth0`; broker, recorder e DDP hanno continuato senza errori e il PFD
+  e' rimasto collegato alla Blackbox. Dopo la riconnessione: 4/4 ping, RTT medio
+  0,197 ms, pacchetti MAVLink2 nuovamente catturati con checksum valido e
+  contatore broker nuovamente crescente. Il bridge USB era destinato solo a
+  localhost e non ha mascherato perdita o recupero.
+- Il fault ha anche rivelato che `NodeHealthMonitor` registrava le due
+  transizioni di peggioramento ma non restituiva quella di recupero: lo stato
+  interno tornava `ONLINE` direttamente in `heartbeat()`. La correzione e il
+  test di regressione hanno superato build MSVC e 16/16 test; non e' ancora
+  verificata sul broker ARM reale e quindi non chiude il gate hardware.
 - Una prova temporanea di 12 secondi ha letto 100.036 byte reali, prodotto 588
   invii UDP verso due destinazioni, senza errori di lettura, invio o
   riconnessione.
@@ -445,8 +461,8 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   descriptor 4 con flag ottali `02104000`; i bit di accesso sono zero e quindi
   confermano `O_RDONLY`.
 - Il servizio utente `efis-mavlink-readonly-bridge.service` è installato,
-  abilitato e attivo con la sorgente USB persistente e le destinazioni
-  `192.168.1.47:14550` e `127.0.0.1:14550`. `systemd-analyze --user verify` e
+  abilitato e attivo con la sorgente USB persistente e la sola destinazione
+  locale `127.0.0.1:14550`. `systemd-analyze --user verify` e
   `py_compile` sono riusciti sul target.
 - Sulla Blackbox reale, durante il servizio attivo, i contatori sono passati
   da 643 datagrammi / 209.052 byte a 863 / 282.505 in nove secondi, con zero

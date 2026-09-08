@@ -395,8 +395,15 @@ int main() {
             "a returning node must be accepted again");
     require(monitor.status(engine_node)->state == efis::NodeState::online,
             "a returning node must come back online immediately");
+    const auto recovery_changes = monitor.update(epoch + 7s);
+    require(recovery_changes.size() == 1 &&
+                recovery_changes.front().node == engine_node &&
+                recovery_changes.front().previous == efis::NodeState::lost &&
+                recovery_changes.front().current == efis::NodeState::online &&
+                recovery_changes.front().timestamp == epoch + 7s,
+            "a recovery accepted by heartbeat must be returned for recording");
     require(monitor.update(epoch + 7s).empty(),
-            "the recovery is already recorded by the accepted heartbeat");
+            "a recorded recovery must not be emitted twice");
 
     // I salti di sequenza misurano i messaggi persi, non gli episodi.
     require(monitor.heartbeat(engine_node, epoch + 8s, 6) ==
