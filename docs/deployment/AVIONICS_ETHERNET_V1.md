@@ -151,7 +151,7 @@ sudo systemctl restart efis-ems.service
 rollback. Questi risultati sono prove di banco brevi, non sostituiscono il gate
 di endurance o la qualifica dello switch/cablaggio.
 
-## Parametri Pixhawk — valori proposti, non ancora autorizzati
+## Parametri Pixhawk — configurazione controllata in corso
 
 ArduPlane 4.7 supporta il framework Ethernet sul Pixhawk 6X. La configurazione
 prevista è statica e unicast:
@@ -163,7 +163,12 @@ prevista è statica e unicast:
 - una porta `NET_Px_TYPE=1` UDP client;
 - destinazione `10.77.10.2`, porta `14550`, protocollo MAVLink2.
 
-Non scrivere questi parametri dal bridge EFIS. La modifica deve avvenire in una
+Il 2026-09-08 `NET_ENABLE`, l'indirizzo statico, il gateway nullo e
+`NET_P1_TYPE=1` sono stati applicati e riletti sul Pixhawk reale. Destinazione,
+porta e protocollo restano aperti fino al riavvio che ne espone i parametri;
+questo non costituisce ancora evidenza di traffico Ethernet operativo.
+
+Non scrivere questi parametri dal bridge EFIS. La modifica avviene in una
 sessione manutentiva separata con QGroundControl/MAVProxy, backup precedente,
 elenco esatto delle sole differenze, riavvio, read-back e rollback provato.
 Gli indirizzi ArduPilot sono esposti come quattro parametri byte, non come un

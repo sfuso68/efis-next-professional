@@ -93,6 +93,37 @@ def run_setter(port: int, *args: str, timeout: float = 60):
 def main() -> int:
     print("Prove degli strumenti parametri ArduPilot\n")
 
+    print("0. Recupero dal difetto pymavlink multi-istanza")
+    sys.path.insert(0, str(HERE))
+    from set_mavlink_parameter import receive_match  # noqa: E402
+
+    class IntermittentLink:
+        def __init__(self):
+            self.calls = 0
+
+        def recv_match(self, **_):
+            self.calls += 1
+            if self.calls == 1:
+                raise TypeError("'NoneType' object does not support item assignment")
+            return "heartbeat"
+
+    intermittent = IntermittentLink()
+    check(receive_match(intermittent, message_type="HEARTBEAT", timeout=1) == "heartbeat",
+          "il frame multi-istanza difettoso viene scartato entro lo stesso timeout")
+    check(intermittent.calls == 2, "la ricezione prosegue dopo il solo errore noto")
+
+    class UnexpectedFailureLink:
+        def recv_match(self, **_):
+            raise TypeError("errore differente")
+
+    try:
+        receive_match(UnexpectedFailureLink(), message_type="HEARTBEAT", timeout=1)
+    except TypeError:
+        unexpected_visible = True
+    else:
+        unexpected_visible = False
+    check(unexpected_visible, "gli altri TypeError non vengono nascosti")
+
     print("1. Prova a vuoto: legge, verifica la guardia, non scrive")
     with Stub(14551):
         completed, record = run_setter(
@@ -218,7 +249,6 @@ def main() -> int:
         check(completed.returncode == 0, "la copia completa non e' un errore")
 
     print("\n12. I valori si scrivono nella forma piu' corta che si rilegge identica")
-    sys.path.insert(0, str(HERE))
     from backup_parameters import format_value  # noqa: E402
 
     import struct as _struct

@@ -378,10 +378,26 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   il solo `NET_ENABLE` e' stato portato da 0 a 1: dry-run, guardia sul valore
   precedente, eco, riletta indipendente e audit hanno tutti avuto esito
   verificato. Il bridge USB read-only e' stato riavviato ed e' tornato attivo.
-- Restano esplicitamente non eseguiti: reboot necessario a esporre i parametri,
-  indirizzo `10.77.10.3`, UDP client/MAVLink2 verso `10.77.10.2:14550`, read-back
-  completo, diff rispetto al backup e prova del percorso Ethernet. Non
-  disattivare ancora il bridge USB.
+- Dopo il power-cycle del 2026-09-08 e' stato acquisito il secondo backup
+  completo `arduplane-4.7.0-net-enabled-20260908-175339`: 1067/1067 parametri,
+  nessun indice mancante, SHA-256
+  `59dbc2e033d80eada44d4bf163d088733df0790603dfc88349a5f9ab84166827`.
+  Il firmware e l'UID2 coincidono con il backup precedente.
+- Sul Pixhawk reale sono poi stati applicati e riletti singolarmente, con
+  guardia e audit, soltanto i parametri di rete: `NET_DHCP=0`, indirizzo statico
+  `10.77.10.3/24`, gateway `0.0.0.0` e `NET_P1_TYPE=1` (UDP client). Tutte le
+  dieci scritture hanno esito `verified`; nessun parametro di volo e' stato
+  modificato. Il bridge USB e' nuovamente attivo.
+- Prima delle scritture lo strumento di manutenzione ha intercettato un
+  `TypeError` intermittente interno a pymavlink durante una prova a vuoto;
+  quindi non era avvenuta alcuna scrittura. La ricezione ora scarta soltanto la
+  firma multi-istanza nota entro il timeout originario e lascia emergere ogni
+  altro errore. Sintassi e banco software hanno superato 45/45 verifiche; la
+  sequenza completa di dry-run e read-back e' stata poi verificata sul Pixhawk.
+- Restano esplicitamente aperti: secondo riavvio per applicare l'indirizzo ed
+  esporre `NET_P1_IP*`/porta/protocollo, configurazione unicast MAVLink2 verso
+  `10.77.10.2:14550`, backup/diff finale e cattura su `eth0` che dimostri la
+  provenienza `10.77.10.3`. Non disattivare ancora il bridge USB.
 - Una prova temporanea di 12 secondi ha letto 100.036 byte reali, prodotto 588
   invii UDP verso due destinazioni, senza errori di lettura, invio o
   riconnessione.
