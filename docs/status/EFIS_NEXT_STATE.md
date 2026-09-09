@@ -385,8 +385,26 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 ## Verificato su hardware reale
 
 Il profilo completo di simulazione, il nuovo marcatore campo per campo e la
-relativa presentazione Setup non sono stati verificati su RPi4/RPi5 reale in
-questa sessione.
+relativa presentazione Setup non hanno ancora acceptance touch/visiva su
+RPi4/RPi5 reale in questa sessione. Il deployment controllato PFD ha però
+prodotto le evidenze negative e di rollback registrate qui sotto.
+
+### Tentativo workflow operativo sul PFD — 2026-09-09
+
+- Il commit `b29fc03` è stato trasferito in una release separata sul PFD `.45`,
+  compilato nativamente ARM64 (302/302) e verificato con 17/17 CTest PASS;
+  `generate_status.py --check`, temperatura e alimentazione erano regolari.
+- Il primo switch non ha avviato il processo perché il percorso
+  `logs/pfd.log` non poteva essere aperto: la directory vuota `logs/` non era
+  inclusa da `git archive`. Il rollback automatico alla release `12b4697` ha
+  ripristinato servizio, eseguibile e DDP LIVE.
+- Creato `logs/`, il secondo avvio ha raggiunto DDP LIVE ma ha emesso due
+  errori QML dell'editor: `FieldBox` esponeva l'alias `value`, mentre il codice
+  assegnava `text`. È stato eseguito un secondo rollback a `12b4697`.
+- La correzione usa ora l'alias `text`, conserva `logs/` tramite `.gitkeep` e
+  comprime l'editor affinché pulsante successivo e nota di sicurezza rientrino
+  nel pannello 1024x600. Build e smoke offscreen Windows sono PASS, ma questa
+  versione corretta non è ancora dichiarata verificata su hardware.
 
 ### Blackbox `efisblackbox` — 192.168.1.47
 

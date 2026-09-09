@@ -128,43 +128,43 @@ Item {
                 Text { anchors.centerIn:parent; text:"SIMULATED"; color:"white"; font.pixelSize:6.5*root.uiScale; font.bold:true }
             }
 
-            Grid { x:10*root.uiScale; y:62*root.uiScale; columns:3; spacing:4*root.uiScale
+            Grid { x:10*root.uiScale; y:58*root.uiScale; columns:3; spacing:3*root.uiScale
                 Repeater { model:[{l:"VALUE",v:"VALUE"},{l:"UNKNOWN",v:"UNKNOWN"},{l:"INHERIT",v:"INHERIT"},{l:"N/A",v:"NOT_APPLICABLE"},{l:"NOT INST.",v:"NOT_INSTALLED"}]
-                    delegate:Rectangle { required property var modelData; width:83*root.uiScale; height:25*root.uiScale; radius:2*root.uiScale; color:root.editDisposition===modelData.v?"#1A4857":"#102630"; border.color:root.editDisposition===modelData.v?root.cyan:root.line
-                        Text { anchors.centerIn:parent; text:modelData.l; color:root.editDisposition===modelData.v?"white":"#9EADB4"; font.pixelSize:5.8*root.uiScale; font.bold:true }
+                    delegate:Rectangle { required property var modelData; width:83*root.uiScale; height:21*root.uiScale; radius:2*root.uiScale; color:root.editDisposition===modelData.v?"#1A4857":"#102630"; border.color:root.editDisposition===modelData.v?root.cyan:root.line
+                        Text { anchors.centerIn:parent; text:modelData.l; color:root.editDisposition===modelData.v?"white":"#9EADB4"; font.pixelSize:5.5*root.uiScale; font.bold:true }
                         TapHandler { onTapped:root.editDisposition=modelData.v }
                     }
                 }
             }
 
             component FieldBox: Rectangle {
-                property alias value: input.text
+                property alias text: input.text
                 property string hint: ""
-                width:parent.width-20*root.uiScale; height:29*root.uiScale; radius:2*root.uiScale; color:"#0B1820"; border.color:root.line
-                TextInput { id:input; anchors { fill:parent; margins:6*root.uiScale } color:"white"; font.pixelSize:6.5*root.uiScale; clip:true; selectByMouse:true }
+                width:parent.width-20*root.uiScale; height:25*root.uiScale; radius:2*root.uiScale; color:"#0B1820"; border.color:root.line
+                TextInput { id:input; anchors { fill:parent; margins:5*root.uiScale } color:"white"; font.pixelSize:6.5*root.uiScale; clip:true; selectByMouse:true }
                 Text { visible:!input.text.length; x:6*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:parent.hint; color:"#647881"; font.pixelSize:6*root.uiScale }
             }
-            FieldBox { id:valueInput; x:10*root.uiScale; y:121*root.uiScale; hint:"VALUE • JSON FOR TABLE/CURVE" }
-            FieldBox { id:sourceInput; x:10*root.uiScale; y:154*root.uiScale; hint:"SOURCE DOCUMENT" }
-            Row { x:10*root.uiScale; y:187*root.uiScale; spacing:5*root.uiScale
+            FieldBox { id:valueInput; x:10*root.uiScale; y:106*root.uiScale; hint:"VALUE • JSON FOR TABLE/CURVE" }
+            FieldBox { id:sourceInput; x:10*root.uiScale; y:134*root.uiScale; hint:"SOURCE DOCUMENT" }
+            Row { x:10*root.uiScale; y:162*root.uiScale; spacing:5*root.uiScale
                 FieldBox { id:revisionInput; width:125*root.uiScale; hint:"REVISION" }
                 FieldBox { id:pageInput; width:125*root.uiScale; hint:"PAGE" }
             }
-            FieldBox { id:rationaleInput; x:10*root.uiScale; y:220*root.uiScale; hint:"RATIONALE / APPLICABILITY" }
+            FieldBox { id:rationaleInput; x:10*root.uiScale; y:190*root.uiScale; hint:"RATIONALE / APPLICABILITY" }
 
-            Rectangle { x:10*root.uiScale; y:258*root.uiScale; width:161*root.uiScale; height:34*root.uiScale; radius:3*root.uiScale; color:"#154234"; border.color:root.green
+            Rectangle { x:10*root.uiScale; y:220*root.uiScale; width:161*root.uiScale; height:30*root.uiScale; radius:3*root.uiScale; color:"#154234"; border.color:root.green
                 Text { anchors.centerIn:parent; text:"SAVE DRAFT FIELD"; color:"white"; font.pixelSize:7*root.uiScale; font.bold:true }
                 TapHandler { onTapped:controller.stageOperationalField(root.editDisposition,valueInput.text,rationaleInput.text,sourceInput.text,revisionInput.text,pageInput.text) }
             }
-            Rectangle { x:178*root.uiScale; y:258*root.uiScale; width:82*root.uiScale; height:34*root.uiScale; radius:3*root.uiScale; color:"#3A211B"; border.color:root.amber
+            Rectangle { x:178*root.uiScale; y:220*root.uiScale; width:82*root.uiScale; height:30*root.uiScale; radius:3*root.uiScale; color:"#3A211B"; border.color:root.amber
                 Text { anchors.centerIn:parent; horizontalAlignment:Text.AlignHCenter; text:"HOLD 1.2s\nCLEAR DRAFT"; color:root.amber; font.pixelSize:5.5*root.uiScale; font.bold:true }
                 TapHandler { longPressThreshold:1.2; onLongPressed:controller.discardOperationalDraft() }
             }
-            Rectangle { x:10*root.uiScale; y:298*root.uiScale; width:250*root.uiScale; height:28*root.uiScale; radius:3*root.uiScale; color:"#102D3A"; border.color:root.cyan
+            Rectangle { x:10*root.uiScale; y:255*root.uiScale; width:250*root.uiScale; height:25*root.uiScale; radius:3*root.uiScale; color:"#102D3A"; border.color:root.cyan
                 Text { anchors.centerIn:parent; text:"SAVE AND OPEN NEXT ISSUE"; color:root.cyan; font.pixelSize:6.5*root.uiScale; font.bold:true }
                 TapHandler { onTapped:if(controller.stageOperationalField(root.editDisposition,valueInput.text,rationaleInput.text,sourceInput.text,revisionInput.text,pageInput.text))controller.selectNextOperationalIssue() }
             }
-            Text { x:10*root.uiScale; y:331*root.uiScale; width:parent.width-20*root.uiScale; wrapMode:Text.WordWrap; text:"Safety-critical VALUE fields require controlled document, revision and page before a future release. This screen cannot activate a profile."; color:root.amber; font.pixelSize:6*root.uiScale }
+            Text { x:10*root.uiScale; y:284*root.uiScale; width:parent.width-20*root.uiScale; height:27*root.uiScale; maximumLineCount:2; elide:Text.ElideRight; wrapMode:Text.WordWrap; text:"Safety-critical VALUE fields require controlled document, revision and page. This screen cannot activate a profile."; color:root.amber; font.pixelSize:5.5*root.uiScale }
         }
 
         Item { id:overviewPage; visible:root.workflowPage===0; anchors { left:parent.left; right:parent.right; top:workflowBar.bottom; bottom:statusBar.top; margins:7*root.uiScale }

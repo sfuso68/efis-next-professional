@@ -87,6 +87,11 @@ directory immutabile e il puntatore operativo è:
 /home/efis/efis-next-current -> /home/efis/efis-next-<release>
 ```
 
+Prima di attivare una release, verificare che contenga `logs/`. Il drop-in
+systemd apre `logs/pfd.log` prima di avviare il processo: se la directory manca,
+il servizio fallisce senza eseguire il binario. Il repository conserva
+`logs/.gitkeep` proprio per non perdere la directory durante `git archive`.
+
 Installare `deploy/systemd/efis-pfd-release.override.conf` come
 `~/.config/systemd/user/efis-pfd.service.d/release.conf`. Il drop-in avvia il
 binario attraverso il puntatore stabile, configura il receiver DDP e scrive il

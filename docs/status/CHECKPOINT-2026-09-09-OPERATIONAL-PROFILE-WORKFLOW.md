@@ -39,9 +39,25 @@ ID di controllo: `CFG-001`, `PFD-001`, `EMS-002`.
 - Il launcher CTest Windows resta in timeout sullo stesso eseguibile; questa
   anomalia non viene confusa con il PASS dell'esecuzione diretta.
 
+## Evidenza deployment PFD
+
+- Il commit `b29fc03` è stato trasferito nella release separata
+  `/home/efis/efis-next-avionics-b29fc03` sul PFD reale `.45`, compilato ARM64
+  con tutti i 302 step e verificato con 17/17 CTest PASS.
+- Il primo switch non ha eseguito il binario perché `logs/` non era presente
+  nel pacchetto prodotto da `git archive`; il rollback automatico a `12b4697`
+  è riuscito. `logs/.gitkeep` e il runbook ora rendono esplicito il requisito.
+- Il secondo switch ha avviato il nuovo PFD con DDP `LIVE`, ma il log runtime
+  ha rilevato due errori QML: `FieldBox` esponeva `value` mentre l'editor usava
+  `text`. La release è stata nuovamente riportata a `12b4697`, attiva e LIVE.
+- La correzione dell'alias e la compressione verticale dell'editor hanno
+  superato rebuild, smoke offscreen senza errori QML e controllo visivo del
+  layout software. Non sono ancora verificate sul pannello reale.
+
 ## Non verificato
 
-- Nessuna installazione o prova touch su RPi5/PFD o RPi4/EMS.
+- La release iniziale è stata installata e poi ritirata dal PFD; la correzione
+  successiva non è ancora installata né provata via touch su RPi5/RPi4.
 - Nessuna acceptance visiva a 1024x600 o 800x480.
 - Nessuna validazione di documenti dell'aeromobile reale.
 - Nessun workflow di firma, review a quattro occhi, rilascio o attivazione.
