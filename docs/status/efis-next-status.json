@@ -48,6 +48,10 @@
       "items": 3,
       "progress": 50.0
     },
+    "PAN": {
+      "items": 4,
+      "progress": 0.0
+    },
     "PFD": {
       "items": 3,
       "progress": 50.0
@@ -77,17 +81,21 @@
       "progress": 50.0
     }
   },
-  "blocked": [],
-  "requirements": 57,
+  "blocked": [
+    "PAN-002",
+    "PAN-003"
+  ],
+  "requirements": 61,
   "status_counts": {
+    "BLOCKED": 2,
     "DONE": 6,
     "LEGACY": 2,
     "PARTIAL": 35,
-    "TODO": 13,
+    "TODO": 15,
     "VERIFY-HW": 1
   },
   "verify_hw": [
     "INST-001"
   ],
-  "weighted_progress": 46.1
+  "weighted_progress": 43.0
 }

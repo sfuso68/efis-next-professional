@@ -1,10 +1,15 @@
 # EFIS NEXT — stato verificato
 
-Aggiornamento: 2026-09-07
+Aggiornamento: 2026-09-09
 
 Branch di lavoro: `work/avionics-ethernet-v1`
 
 Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-010.
+
+Checkpoint corrente: `CHECKPOINT-2026-09-09-PIXHAWK-ETHERNET.md`. Il concept
+consultivo `Emergency Assist / Panic V1` è fissato in
+`docs/design/EMERGENCY_ASSIST_V1.md`; non esiste ancora codice della funzione e
+non è stata concessa autorità di comando al sistema EFIS.
 
 Questo documento non esisteva nel repository al momento dell'intervento ed è stato creato come stato operativo autorevole. Le parole **implementato**, **verificato software** e **verificato su hardware reale** indicano livelli di evidenza diversi. Una funzione non è considerata conclusa se manca la verifica pertinente.
 
@@ -532,6 +537,25 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   nodi e una cattura Ethernet/WLAN correlata restano gate separati.
 
 ## Aperto — non dichiarare DONE
+
+### Emergency Assist e servi autopilota — concept 2026-09-09
+
+- È documentata una V1 consultiva: procedure ordinate, voce, navigazione di
+  emergenza, glide footprint conservativo e registrazione Blackbox. Non è
+  implementata né verificata software/hardware.
+- Il percorso critico sarà deterministico e basato su procedure POH/AFM
+  versionate; un sistema AI generativo non potrà decidere comandi, velocità,
+  assetto o modalità di volo.
+- Un eventuale `Stabilize Assist` futuro potrà soltanto richiedere al Pixhawk
+  una modalità prevalidata tramite comando fisico indipendente; PFD e Blackbox
+  non comanderanno posizioni servo.
+- Il registro hardware esterno al repository identifica AP-SERVO-01 come
+  TruTrak DSB-B 8100-006, ma pinout definitivo, drive, coppia e prove al banco
+  mancano. AP-SERVO-02 non ha ancora modello/P/N identificati. Entrambi sono
+  quindi bloccati per l'attuazione.
+- Emergency Glide automatico/Autoland resta fuori scope V1: rollio e
+  beccheggio, da soli, non costituiscono un sistema capace di atterraggio
+  automatico.
 
 ### RPi5 PFD — deployment completo 2026-09-07
 
