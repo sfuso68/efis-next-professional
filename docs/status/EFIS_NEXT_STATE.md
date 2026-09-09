@@ -403,8 +403,17 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   assegnava `text`. È stato eseguito un secondo rollback a `12b4697`.
 - La correzione usa ora l'alias `text`, conserva `logs/` tramite `.gitkeep` e
   comprime l'editor affinché pulsante successivo e nota di sicurezza rientrino
-  nel pannello 1024x600. Build e smoke offscreen Windows sono PASS, ma questa
-  versione corretta non è ancora dichiarata verificata su hardware.
+  nel pannello 1024x600. Build e smoke offscreen Windows sono PASS.
+- Il commit correttivo `74a85f9` è stato estratto in una nuova release,
+  compilato ARM64 con 302/302 step e 17/17 CTest PASS e attivato con switch
+  atomico. Il processo corretto è attivo, imagery è `OFFLINE_READY` e DDP è
+  rimasto `LIVE`; il log non contiene errori QML.
+- Nel campione successivo di 45 secondi gli snapshot DDP accettati sono passati
+  da 1.817 a 2.718 con zero reject, gap ed errori socket. Frame rate finale
+  24,2 fps, temperatura 52,7 °C e `throttled=0x0`.
+- Una cattura reale Wayland 1024x600 dimostra il renderer PFD della nuova
+  release. Non mostra però le pagine Setup: ergonomia touch, tastiera,
+  scorrimento e leggibilità del workflow restano esplicitamente aperti.
 
 ### Blackbox `efisblackbox` — 192.168.1.47
 

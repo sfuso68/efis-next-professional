@@ -52,21 +52,30 @@ ID di controllo: `CFG-001`, `PFD-001`, `EMS-002`.
   `text`. La release è stata nuovamente riportata a `12b4697`, attiva e LIVE.
 - La correzione dell'alias e la compressione verticale dell'editor hanno
   superato rebuild, smoke offscreen senza errori QML e controllo visivo del
-  layout software. Non sono ancora verificate sul pannello reale.
+  layout software.
+- La correzione è stata pubblicata come `74a85f9`, compilata da una nuova
+  release ARM64 con 302/302 step e 17/17 CTest PASS e attivata sul PFD. Il
+  runtime ha caricato il catalogo, imagery `OFFLINE_READY` e DDP `LIVE` senza
+  errori QML. In 45 secondi gli snapshot accettati sono saliti da 1.817 a
+  2.718 con zero reject, gap o errori socket; 24,2 fps finali, 52,7 °C e
+  `throttled=0x0`.
+- Una cattura Wayland reale 1024x600 conferma il renderer PFD completo della
+  nuova release. Le quattro pagine non sono state aperte nella cattura: touch,
+  tastiera e leggibilità del workflow restano quindi non verificati.
 
 ## Non verificato
 
-- La release iniziale è stata installata e poi ritirata dal PFD; la correzione
-  successiva non è ancora installata né provata via touch su RPi5/RPi4.
+- La correzione è installata e stabile sul PFD, ma non ancora provata via touch;
+  nessuna installazione della stessa revisione è stata eseguita sul RPi4 EMS.
 - Nessuna acceptance visiva a 1024x600 o 800x480.
 - Nessuna validazione di documenti dell'aeromobile reale.
 - Nessun workflow di firma, review a quattro occhi, rilascio o attivazione.
 
 ## Punto di ripresa
 
-1. Installare una release separata e reversibile prima sul PFD.
-2. Verificare Overview, scorrimento domini, tastiera e coda problemi a
+1. Verificare sul PFD Overview, scorrimento domini, tastiera e coda problemi a
    1024x600.
-3. Ripetere sul display EMS RPi4, con particolare attenzione a 800x480.
-4. Acquisire catture e tempi di risposta con bozza vuota e con 447 campi SIM.
-5. Solo dopo l'acceptance progettare review, firma e release immutabile.
+2. Solo dopo questo gate installare la stessa revisione sul display EMS RPi4,
+   con particolare attenzione a 800x480.
+3. Acquisire catture e tempi di risposta con bozza vuota e con 447 campi SIM.
+4. Solo dopo l'acceptance progettare review, firma e release immutabile.
