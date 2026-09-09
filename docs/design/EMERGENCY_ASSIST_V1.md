@@ -224,8 +224,9 @@ La stabilizzazione resta bloccata se uno solo dei seguenti elementi è aperto:
 
 ## 12. Decisioni da prendere con il proprietario
 
-1. prima emergenza da sviluppare: **perdita potenza motore** (raccomandata) o
-   disorientamento/assetto anomalo;
+1. **deciso il 2026-09-09:** la prima emergenza sviluppata sarà la perdita di
+   potenza motore; specifica funzionale in
+   `EMERGENCY_ASSIST_ENGINE_POWER_LOSS_V1.md`;
 2. funzione del pulsante: apertura sola pagina V1 oppure predisposizione futura
    a pressione prolungata per richiesta di stabilizzazione;
 3. posizione fisica di `AP MASTER`, `AP DISCONNECT` e pulsante Emergency;

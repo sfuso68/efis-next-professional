@@ -566,6 +566,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   flap, velocità e diversi limiti motore non hanno ancora una fonte controllata;
   il valore CHT massimo di 230 °C è anomalo. Nessun valore è stato promosso o
   cambiato senza evidenza dell'esemplare.
+- La perdita di potenza motore è stata congelata come primo scenario. La
+  specifica `docs/design/EMERGENCY_ASSIST_ENGINE_POWER_LOSS_V1.md` definisce
+  attivazione, macchina a stati, footprint conservativo, ranking aeroporti,
+  stati degradati, log e piano di test. È solo design: nessuna checklist
+  operativa, soglia motore, best-glide o funzione di comando è implementata.
 
 ### RPi5 PFD — deployment completo 2026-09-07
 
