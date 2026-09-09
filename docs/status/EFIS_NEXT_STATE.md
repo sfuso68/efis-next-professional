@@ -556,6 +556,16 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Emergency Glide automatico/Autoland resta fuori scope V1: rollio e
   beccheggio, da soli, non costituiscono un sistema capace di atterraggio
   automatico.
+- Il punto di acquisizione POH/checklist è stato avviato con
+  `docs/safety/EMERGENCY_PROCEDURE_SOURCE_AUDIT.md` e registry JSON. Le fonti
+  pubbliche Asso/Pioneer sono state classificate come riferimenti non
+  operativi; il manuale Asso pubblico contiene campi non compilati e non prova
+  l'applicabilità all'esemplare. La libreria Rotax ufficiale e la famiglia
+  `OM-912` sono identificate, ma mancano seriale motore e revisione applicabile.
+- L'audit ha rilevato differenze importanti nel profilo simulato: geometria,
+  flap, velocità e diversi limiti motore non hanno ancora una fonte controllata;
+  il valore CHT massimo di 230 °C è anomalo. Nessun valore è stato promosso o
+  cambiato senza evidenza dell'esemplare.
 
 ### RPi5 PFD — deployment completo 2026-09-07
 
