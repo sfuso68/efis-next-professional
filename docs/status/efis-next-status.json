@@ -54,7 +54,7 @@
     },
     "PAN": {
       "items": 4,
-      "progress": 0.0
+      "progress": 12.5
     },
     "PFD": {
       "items": 3,
@@ -94,12 +94,12 @@
     "BLOCKED": 2,
     "DONE": 6,
     "LEGACY": 2,
-    "PARTIAL": 36,
-    "TODO": 15,
+    "PARTIAL": 37,
+    "TODO": 14,
     "VERIFY-HW": 1
   },
   "verify_hw": [
     "INST-001"
   ],
-  "weighted_progress": 43.1
+  "weighted_progress": 44.0
 }

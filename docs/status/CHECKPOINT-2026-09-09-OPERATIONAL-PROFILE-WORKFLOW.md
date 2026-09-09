@@ -79,3 +79,10 @@ ID di controllo: `CFG-001`, `PFD-001`, `EMS-002`.
    con particolare attenzione a 800x480.
 3. Acquisire catture e tempi di risposta con bozza vuota e con 447 campi SIM.
 4. Solo dopo l'acceptance progettare review, firma e release immutabile.
+
+## Pausa operatore — 2026-09-09
+
+Il proprietario ha chiesto di fissare qui il punto e verificherà il workflow al
+proprio rientro. La release PFD `74a85f9` resta installata e stabile; la prova
+touch delle quattro pagine resta **PENDING OPERATOR ACCEPTANCE**. Non si porta
+il workflow sull'EMS RPi4 e non lo si dichiara accettato prima di tale verifica.

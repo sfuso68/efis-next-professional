@@ -4,12 +4,13 @@ Aggiornamento: 2026-09-09
 
 Branch di lavoro: `work/avionics-ethernet-v1`
 
-Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-010.
+Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-012.
 
-Checkpoint corrente: `CHECKPOINT-2026-09-09-PIXHAWK-ETHERNET.md`. Il concept
-consultivo `Emergency Assist / Panic V1` è fissato in
-`docs/design/EMERGENCY_ASSIST_V1.md`; non esiste ancora codice della funzione e
-non è stata concessa autorità di comando al sistema EFIS.
+Checkpoint corrente:
+`CHECKPOINT-2026-09-09-EMERGENCY-ASSIST-SOFTWARE-V1.md`. Il PFD operativo resta
+alla release hardware `74a85f9`; il nuovo Emergency Assist non è ancora
+installato sul nodo reale. Non è stata concessa autorità di comando al sistema
+EFIS.
 
 Il workflow del profilo operativo è fissato separatamente in
 `CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`.
@@ -269,7 +270,47 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   simulazione ed evidenza mancante e può al massimo dichiarare
   `READY_FOR_INDEPENDENT_REVIEW`; `activation_allowed` resta sempre falso.
 
+### Emergency Assist consultivo Software V1 — 2026-09-09
+
+- Aggiunto un core C++20 indipendente da Qt per otto famiglie di emergenza,
+  macchina a stati, conferme pilota, gate di degradazione, modello di planata,
+  ranking candidati, procedure versionate ed eventi deterministici.
+- Il rilevatore perdita potenza richiede due segnali, persistenza e
+  configurazione approvata; nel runtime installato resta inerte e può soltanto
+  proporre `SUSPECTED`, mai aprire una checklist o comandare il volo.
+- Best glide, planata e `REACHABLE` sono fail-closed. Un modello o input SIM
+  produce soltanto `SIM_ESTIMATE`; senza AGL/vento/terrain/ostacoli/polare
+  validi il PFD mostra `NOT AVAILABLE`.
+- Una checklist richiede ID, revisione, fonte, hash, approvazione e passi. Il
+  package reale non esiste; lo scenario software contiene soltanto passaggi di
+  test esplicitamente SIM.
+- Aggiunta pagina PFD FLY/NAVIGATE/COMMUNICATE/MANAGE, selezione delle otto
+  famiglie, accesso touch prolungato, F12 di banco e comandi DONE/SKIP/REPEAT,
+  recupero e monitoraggio.
+- Gli eventi sono scritti nello spool locale JSONL V1. Non sono ancora
+  consegnati alla Blackbox centrale e la UI lo dichiara `LOCAL SPOOL`.
+- ADR-012 congela l'assenza di qualunque API verso Pixhawk, modi ArduPilot,
+  servi, radio, transponder, flap, carrello o altri attuatori.
+
 ## Verificato solo software
+
+### Emergency Assist Software V1
+
+- Build MSVC 19.51 del core e del PFD Qt 6.11, inclusa compilazione QML AOT:
+  PASS.
+- `efis_emergency_assist_tests`: PASS. Copre attivazione/conferma, dati
+  mancanti, best glide bloccata, planata SIM non autorevole, ranking ed
+  esclusione candidati, package incompleto, step/skip e detector a due segnali
+  con dwell; un detector non approvato resta inerte.
+- PFD avviato offscreen con `--emergency-preview`, exit code 0 e cattura
+  1024×600 prodotta. La geometria dei pannelli è renderizzata; il font viene
+  sostituito dal backend Windows, quindi la cattura non vale come acceptance di
+  leggibilità.
+- La build completa di tutti i target Windows è riuscita. La suite CTest
+  completa non è dichiarata PASS: Windows Application Control ha impedito
+  l'avvio di cinque eseguibili e il launcher è rimasto in attesa sul test
+  successivo fino al timeout. Il nuovo test Emergency è stato sia avviato da
+  CTest sia eseguito direttamente con esito PASS.
 
 ### Catalogo operativo aeromobile V2
 
@@ -719,9 +760,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 ### Emergency Assist e servi autopilota — concept 2026-09-09
 
-- È documentata una V1 consultiva: procedure ordinate, voce, navigazione di
-  emergenza, glide footprint conservativo e registrazione Blackbox. Non è
-  implementata né verificata software/hardware.
+- La V1 consultiva core/UI è implementata e verificata soltanto software. Non è
+  installata né verificata sul PFD reale; input fisico, audio e Blackbox
+  centrale non sono implementati.
 - Il percorso critico sarà deterministico e basato su procedure POH/AFM
   versionate; un sistema AI generativo non potrà decidere comandi, velocità,
   assetto o modalità di volo.
@@ -745,11 +786,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   flap, velocità e diversi limiti motore non hanno ancora una fonte controllata;
   il valore CHT massimo di 230 °C è anomalo. Nessun valore è stato promosso o
   cambiato senza evidenza dell'esemplare.
-- La perdita di potenza motore è stata congelata come primo scenario. La
-  specifica `docs/design/EMERGENCY_ASSIST_ENGINE_POWER_LOSS_V1.md` definisce
-  attivazione, macchina a stati, footprint conservativo, ranking aeroporti,
-  stati degradati, log e piano di test. È solo design: nessuna checklist
-  operativa, soglia motore, best-glide o funzione di comando è implementata.
+- La perdita di potenza motore è il primo scenario. Macchina a stati, detector
+  configurabile, gate planata/ranking e log locale sono implementati; nessuna
+  soglia reale, checklist operativa, best-glide dell'esemplare o funzione di
+  comando è attiva.
 
 ### RPi5 PFD — deployment completo 2026-09-07
 

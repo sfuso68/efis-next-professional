@@ -8,14 +8,17 @@
 #include "efis/core/engine_runtime.hpp"
 #include "efis/providers/engine_simulation_source.hpp"
 #include "efis/simulation/system_simulator.hpp"
+#include "efis/emergency/emergency_assist.hpp"
 #include "../../setup/operational_profile_model.hpp"
 
 #include <memory>
+#include <cstddef>
 
 #include <QObject>
 #include <QTimer>
 #include <QVariantList>
 #include <QVariantMap>
+#include <QStringList>
 
 class PfdController final : public QObject {
     Q_OBJECT
@@ -170,6 +173,24 @@ class PfdController final : public QObject {
     Q_PROPERTY(QVariantMap centralBlackBoxMaintenance READ centralBlackBoxMaintenance NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantList centralBlackBoxArchives READ centralBlackBoxArchives NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantMap centralBlackBoxArchiveSummary READ centralBlackBoxArchiveSummary NOTIFY snapshotChanged)
+    Q_PROPERTY(bool emergencyAssistActive READ emergencyAssistActive NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyAssistState READ emergencyAssistState NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyAssistKind READ emergencyAssistKind NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyAssistHeadline READ emergencyAssistHeadline NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyFlyAdvisory READ emergencyFlyAdvisory NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyNavigationAdvisory READ emergencyNavigationAdvisory NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyCommunicationDraft READ emergencyCommunicationDraft NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyVoiceCue READ emergencyVoiceCue NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyDataQuality READ emergencyDataQuality NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(bool emergencySimulationOnly READ emergencySimulationOnly NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(bool emergencyProcedureAvailable READ emergencyProcedureAvailable NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyTargetSpeed READ emergencyTargetSpeed NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyGlideRange READ emergencyGlideRange NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QStringList emergencyDegradationReasons READ emergencyDegradationReasons NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QVariantList emergencyRankedAirports READ emergencyRankedAirports NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QVariantMap emergencyCurrentStep READ emergencyCurrentStep NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyEventSinkState READ emergencyEventSinkState NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(int emergencyElapsedSeconds READ emergencyElapsedSeconds NOTIFY emergencyAssistChanged)
 
 public:
     explicit PfdController(QObject* parent = nullptr);
@@ -378,6 +399,34 @@ public:
     Q_INVOKABLE bool clearFuelCalibration(const QString& tank);
     Q_INVOKABLE bool requestCentralBlackBoxAction(const QString& action);
     Q_INVOKABLE void resetFuelUsed();
+    [[nodiscard]] bool emergencyAssistActive() const;
+    [[nodiscard]] QString emergencyAssistState() const;
+    [[nodiscard]] QString emergencyAssistKind() const;
+    [[nodiscard]] QString emergencyAssistHeadline() const;
+    [[nodiscard]] QString emergencyFlyAdvisory() const;
+    [[nodiscard]] QString emergencyNavigationAdvisory() const;
+    [[nodiscard]] QString emergencyCommunicationDraft() const;
+    [[nodiscard]] QString emergencyVoiceCue() const;
+    [[nodiscard]] QString emergencyDataQuality() const;
+    [[nodiscard]] bool emergencySimulationOnly() const;
+    [[nodiscard]] bool emergencyProcedureAvailable() const;
+    [[nodiscard]] QString emergencyTargetSpeed() const;
+    [[nodiscard]] QString emergencyGlideRange() const;
+    [[nodiscard]] QStringList emergencyDegradationReasons() const;
+    [[nodiscard]] QVariantList emergencyRankedAirports() const;
+    [[nodiscard]] QVariantMap emergencyCurrentStep() const;
+    [[nodiscard]] QString emergencyEventSinkState() const { return emergency_event_sink_state_; }
+    [[nodiscard]] int emergencyElapsedSeconds() const;
+    Q_INVOKABLE void activateEmergencyAssist(const QString& kind, const QString& trigger);
+    Q_INVOKABLE void confirmEmergencyAssist(const QString& kind);
+    Q_INVOKABLE void dismissEmergencySuspicion();
+    Q_INVOKABLE void acknowledgeEmergencyFly();
+    Q_INVOKABLE void completeEmergencyStep();
+    Q_INVOKABLE void skipEmergencyStep();
+    Q_INVOKABLE void repeatEmergencyCue();
+    Q_INVOKABLE void reportEmergencyPowerRecovered();
+    Q_INVOKABLE void continueEmergencyMonitoring();
+    Q_INVOKABLE void cancelEmergencyAssist(const QString& reason);
 
 signals:
     void snapshotChanged();
@@ -390,6 +439,7 @@ signals:
     void electricalTestChanged();
     void maintenanceChanged();
     void fuelComputerChanged();
+    void emergencyAssistChanged();
 
 private slots:
     void updateSnapshot();
@@ -408,6 +458,8 @@ private:
     void loadFuelEventHistory();
     void recordFuelEvent(const QString& state);
     void loadCentralBlackBoxCache();
+    void updateEmergencyAssist(efis::MonoTime now);
+    void flushEmergencyEvents();
     void updateNearestAirports();
     [[nodiscard]] QString activeProfilePath() const;
     [[nodiscard]] QString stagingProfilePath() const;
@@ -529,4 +581,10 @@ private:
     efis::MonoTime last_fuel_save_{};
     efis::MonoTime last_fuel_notify_{};
     int calibration_revision_{};
+    efis::emergency::EmergencyAssist emergency_assist_{};
+    QString emergency_event_log_path_;
+    QString emergency_event_sink_state_{QStringLiteral("LOCAL SPOOL")};
+    std::size_t emergency_event_cursor_{};
+    efis::MonoTime emergency_activated_at_{};
+    int emergency_notify_ticks_{};
 };

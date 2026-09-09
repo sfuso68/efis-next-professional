@@ -14,7 +14,8 @@ ApplicationWindow {
     onClosing: function(close) { if (efisKiosk) close.accepted = false }
     property bool maintenanceVisible: Qt.application.arguments.indexOf("--setup-preview") >= 0 || Qt.application.arguments.indexOf("--setup-aircraft-preview") >= 0 || Qt.application.arguments.indexOf("--setup-catalog-preview") >= 0 || Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0 || Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0 || Qt.application.arguments.indexOf("--setup-airport-preview") >= 0 || Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0 || Qt.application.arguments.indexOf("--setup-bench-preview") >= 0
     property bool simulatorVisible: Qt.application.arguments.indexOf("--simulator-preview") >= 0
-    Component.onCompleted: { if (Qt.application.arguments.indexOf("--setup-bench-preview") >= 0) bench.startReplay(bench.defaultSource); if (Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0) pfd.stageAircraft(1); if (Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.stageEngine(1); if (Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.startEngineSensorTest("RPM",true); if (Qt.application.arguments.indexOf("--simulator-preview") >= 0) pfd.startSystemSimulation("full-flight") }
+    property bool emergencyPreview: Qt.application.arguments.indexOf("--emergency-preview") >= 0
+    Component.onCompleted: { if (Qt.application.arguments.indexOf("--setup-bench-preview") >= 0) bench.startReplay(bench.defaultSource); if (Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0) pfd.stageAircraft(1); if (Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.stageEngine(1); if (Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.startEngineSensorTest("RPM",true); if (Qt.application.arguments.indexOf("--simulator-preview") >= 0) pfd.startSystemSimulation("full-flight"); if (root.emergencyPreview) { pfd.startSystemSimulation("engine-emergency"); pfd.activateEmergencyAssist("ENGINE_POWER_LOSS", "preview argument"); pfd.confirmEmergencyAssist("ENGINE_POWER_LOSS") } }
 
     AdaptiveShell { id: adaptiveShell; anchors.fill: parent; controller: pfd; initialPage: startupPage }
     Shortcut { sequence: "Ctrl+1"; onActivated: adaptiveShell.currentPage = "PFD" }
@@ -23,6 +24,16 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+4"; onActivated: adaptiveShell.currentPage = "EMS" }
     Shortcut { sequence: "Ctrl+5"; onActivated: adaptiveShell.currentPage = "NAV" }
     Shortcut { sequence: "Ctrl+6"; onActivated: root.simulatorVisible = !root.simulatorVisible }
+    Shortcut { sequence: "F12"; onActivated: { pfd.activateEmergencyAssist("ENGINE_POWER_LOSS", "keyboard test input"); adaptiveShell.currentPage = "EMERGENCY" } }
+
+    Rectangle {
+        visible: adaptiveShell.currentPage !== "EMERGENCY" && !root.maintenanceVisible && !root.simulatorVisible
+        anchors { right: parent.right; bottom: parent.bottom; rightMargin: 10*Math.min(root.width/1024,root.height/600); bottomMargin: 158*Math.min(root.width/1024,root.height/600) }
+        width: 106*Math.min(root.width/1024,root.height/600); height: 39*Math.min(root.width/1024,root.height/600); z: 90
+        radius: 4*Math.min(root.width/1024,root.height/600); color: "#4A130F"; border.color: "#FF3B30"; border.width: 1
+        Text { anchors.centerIn: parent; text: "HOLD EMERGENCY"; color: "white"; font.pixelSize: 8*Math.min(root.width/1024,root.height/600); font.bold: true }
+        TapHandler { longPressThreshold: 1.2; onLongPressed: { pfd.activateEmergencyAssist("ENGINE_POWER_LOSS", "touch long press"); adaptiveShell.currentPage = "EMERGENCY" } }
+    }
 
     MouseArea {
         anchors { left: parent.left; top: parent.top }

@@ -1,6 +1,6 @@
 # EFIS NEXT — Emergency Assist / “Panic” V1
 
-Stato: **CONCEPT / NON IMPLEMENTATO / NESSUNA AUTORITÀ DI VOLO**
+Stato: **SOFTWARE V1 PARZIALE / SIMULATION-ONLY / NESSUNA AUTORITÀ DI VOLO**
 
 Data: 2026-09-09
 
@@ -244,3 +244,26 @@ La stabilizzazione resta bloccata se uno solo dei seguenti elementi è aperto:
 - ArduPilot Plane, Failsafe: https://ardupilot.org/plane/docs/apms-failsafe-function.html
 - Garmin Smart Glide (riferimento funzionale, non equivalenza di qualifica):
   https://www.garmin.com/en-US/autonomi/smart-glide/
+
+## 14. Stato implementazione 2026-09-09
+
+Implementati nel core C++20: otto tipi di emergenza selezionabili, macchina a
+stati, conferma manuale, rilevatore multi-segnale configurabile e disabilitato
+senza approvazione, gate dati degradati, modello di planata fail-closed,
+ranking candidati, package procedure versionato, avanzamento/skip/repeat e
+sequenza eventi deterministica.
+
+Implementati nel PFD: accesso touch a pressione prolungata, scorciatoia di
+banco F12, pagina 1024×600 FLY/NAVIGATE/COMMUNICATE/MANAGE, selezione scenario,
+stato SIM/degradato, opzioni di atterraggio, checklist gated, cue vocale
+testuale e spool eventi locale.
+
+Il simulatore esercita ranking e checklist con soli passaggi di test espliciti
+`SIM`; non contiene istruzioni operative. Il runtime normale non calcola una
+planata perché AGL, clearance terreno/ostacoli, vento e polar approvata non sono
+ancora disponibili end-to-end.
+
+Non implementati: pulsante fisico, riproduzione audio, inoltro eventi alla
+Blackbox centrale, package POH approvato, calcolo terrain-route reale,
+procedure per i singoli scenari e qualunque autorità di comando. ADR-012 rende
+questo confine obbligatorio.

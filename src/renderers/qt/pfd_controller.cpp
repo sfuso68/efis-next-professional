@@ -28,6 +28,20 @@
 using namespace std::chrono_literals;
 
 namespace {
+efis::emergency::EmergencyKind emergencyKind(const QString& value) {
+    const auto normalized = value.trimmed().toUpper();
+    using Kind = efis::emergency::EmergencyKind;
+    if (normalized == QStringLiteral("ENGINE_POWER_LOSS")) return Kind::engine_power_loss;
+    if (normalized == QStringLiteral("ABNORMAL_ATTITUDE")) return Kind::abnormal_attitude;
+    if (normalized == QStringLiteral("UNSAFE_AIRSPEED")) return Kind::unsafe_airspeed;
+    if (normalized == QStringLiteral("ELECTRICAL_FAILURE")) return Kind::electrical_failure;
+    if (normalized == QStringLiteral("SMOKE_OR_FIRE")) return Kind::smoke_or_fire;
+    if (normalized == QStringLiteral("WEATHER_OR_TERRAIN")) return Kind::weather_or_terrain;
+    if (normalized == QStringLiteral("SENSOR_OR_PFD_LOSS")) return Kind::sensor_or_pfd_loss;
+    if (normalized == QStringLiteral("PILOT_INCAPACITATION")) return Kind::pilot_incapacitation;
+    return Kind::none;
+}
+
 double calibratedFuel(double raw, const QVariantList& curve) {
     if (curve.size() < 5) return qMax(0.0, raw);
     std::vector<std::pair<double,double>> points;
@@ -98,6 +112,8 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
     loadFuelEventHistory();
     central_blackbox_cache_path_=qEnvironmentVariable("EFIS_CENTRAL_BLACKBOX_CACHE",QStringLiteral("/var/lib/efis/fuel-central-cache.json"));
     central_blackbox_request_path_=qEnvironmentVariable("EFIS_CENTRAL_BLACKBOX_REQUEST",QStringLiteral("/var/lib/efis/fuel-maintenance-request.jsonl"));
+    emergency_event_log_path_ = qEnvironmentVariable(
+        "EFIS_EMERGENCY_EVENT_LOG", QStringLiteral("state/emergency-assist-events.jsonl"));
     loadCatalogIndex();
     loadNavigationIndex();
     loadRadionavigationIndex();
@@ -1446,5 +1462,242 @@ void PfdController::updateSnapshot() {
         navigation_update_ticks_ = 0;
         updateNearestAirports();
     }
+    updateEmergencyAssist(now);
     emit snapshotChanged();
+}
+
+bool PfdController::emergencyAssistActive() const {
+    using State = efis::emergency::AssistState;
+    const auto state = emergency_assist_.output().state;
+    return state != State::idle && state != State::dismissed && state != State::cancelled;
+}
+
+QString PfdController::emergencyAssistState() const {
+    return QString::fromLatin1(efis::emergency::state_name(emergency_assist_.output().state));
+}
+
+QString PfdController::emergencyAssistKind() const {
+    return QString::fromLatin1(efis::emergency::kind_name(emergency_assist_.output().kind));
+}
+
+QString PfdController::emergencyAssistHeadline() const {
+    return QString::fromStdString(emergency_assist_.output().headline);
+}
+
+QString PfdController::emergencyFlyAdvisory() const {
+    return QString::fromStdString(emergency_assist_.output().fly_advisory);
+}
+
+QString PfdController::emergencyNavigationAdvisory() const {
+    return QString::fromStdString(emergency_assist_.output().navigation_advisory);
+}
+
+QString PfdController::emergencyCommunicationDraft() const {
+    return QString::fromStdString(emergency_assist_.output().communication_draft);
+}
+
+QString PfdController::emergencyVoiceCue() const {
+    return QString::fromStdString(emergency_assist_.output().voice_cue);
+}
+
+QString PfdController::emergencyDataQuality() const {
+    const auto& output = emergency_assist_.output();
+    if (output.simulation_only) return QStringLiteral("SIMULATION ONLY");
+    if (!output.degradation_reasons.empty()) return QStringLiteral("DEGRADED");
+    return QStringLiteral("VALIDATED INPUTS");
+}
+
+bool PfdController::emergencySimulationOnly() const {
+    return emergency_assist_.output().simulation_only;
+}
+
+bool PfdController::emergencyProcedureAvailable() const {
+    return emergency_assist_.output().procedure_available;
+}
+
+QString PfdController::emergencyTargetSpeed() const {
+    const auto value = emergency_assist_.output().target_speed_kt;
+    return value ? QStringLiteral("%1 KT").arg(*value, 0, 'f', 0)
+                 : QStringLiteral("NOT APPROVED");
+}
+
+QString PfdController::emergencyGlideRange() const {
+    const auto value = emergency_assist_.output().conservative_range_nm;
+    if (!value) return QStringLiteral("NOT AVAILABLE");
+    const auto prefix = emergency_assist_.output().authoritative_reachability
+        ? QString{} : QStringLiteral("SIM ");
+    return prefix + QStringLiteral("%1 NM").arg(*value, 0, 'f', 1);
+}
+
+QStringList PfdController::emergencyDegradationReasons() const {
+    QStringList values;
+    for (const auto& reason : emergency_assist_.output().degradation_reasons)
+        values << QString::fromStdString(reason);
+    return values;
+}
+
+QVariantList PfdController::emergencyRankedAirports() const {
+    QVariantList values;
+    for (const auto& ranked : emergency_assist_.output().ranked_airports) {
+        values << QVariantMap{
+            {QStringLiteral("icao"), QString::fromStdString(ranked.airport.identifier)},
+            {QStringLiteral("name"), QString::fromStdString(ranked.airport.name)},
+            {QStringLiteral("distance_nm"), ranked.airport.distance_nm},
+            {QStringLiteral("bearing_deg"), ranked.airport.bearing_deg},
+            {QStringLiteral("assessment"), QString::fromLatin1(
+                efis::emergency::assessment_name(ranked.assessment))},
+            {QStringLiteral("arrival_margin_ft"), ranked.estimated_arrival_margin_ft},
+            {QStringLiteral("reason"), QString::fromStdString(ranked.reason)}};
+    }
+    return values;
+}
+
+QVariantMap PfdController::emergencyCurrentStep() const {
+    const auto& step = emergency_assist_.output().current_step;
+    if (!step) return {};
+    return {{QStringLiteral("id"), QString::fromStdString(step->id)},
+            {QStringLiteral("phase"), QString::fromStdString(step->phase)},
+            {QStringLiteral("text"), QString::fromStdString(step->text)},
+            {QStringLiteral("confirmation_required"), step->confirmation_required}};
+}
+
+int PfdController::emergencyElapsedSeconds() const {
+    if (emergency_activated_at_ == efis::MonoTime{}) return 0;
+    return static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(
+        efis::MonoClock::now() - emergency_activated_at_).count());
+}
+
+void PfdController::activateEmergencyAssist(const QString& kind, const QString& trigger) {
+    const auto now = efis::MonoClock::now();
+    emergency_activated_at_ = now;
+    emergency_assist_.activate_manual(emergencyKind(kind), trigger.toStdString(), now);
+    flushEmergencyEvents();
+    emit emergencyAssistChanged();
+}
+
+void PfdController::confirmEmergencyAssist(const QString& kind) {
+    emergency_assist_.confirm(emergencyKind(kind), efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::dismissEmergencySuspicion() {
+    emergency_assist_.dismiss_suspicion(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::acknowledgeEmergencyFly() {
+    emergency_assist_.acknowledge_fly(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::completeEmergencyStep() {
+    emergency_assist_.complete_step(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::skipEmergencyStep() {
+    emergency_assist_.skip_step(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::repeatEmergencyCue() {
+    emergency_assist_.repeat_cue(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::reportEmergencyPowerRecovered() {
+    emergency_assist_.report_power_recovered(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::continueEmergencyMonitoring() {
+    emergency_assist_.continue_monitoring(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::cancelEmergencyAssist(const QString& reason) {
+    emergency_assist_.cancel(reason.toStdString(), efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::updateEmergencyAssist(efis::MonoTime now) {
+    efis::emergency::AssistInput input{};
+    input.flight = snapshot_;
+    input.engine = engine_snapshot_;
+    input.environment.position_valid = snapshot_.position.latitude_deg.usable() &&
+                                       snapshot_.position.longitude_deg.usable();
+    input.environment.in_flight_known = snapshot_.position.ground_speed_kt.usable();
+    input.environment.in_flight = input.environment.in_flight_known &&
+                                  snapshot_.position.ground_speed_kt.value > 35.0;
+    input.environment.blackbox_link_valid = black_box_state_ != QStringLiteral("OFFLINE") &&
+                                            black_box_state_ != QStringLiteral("STALE");
+    input.environment.airport_database_valid = !airport_catalog_.isEmpty();
+
+    // Solo lo scenario esplicito puo' usare assunzioni sintetiche. Nel runtime
+    // normale AGL, vento, terrain-route clearance e polar restano fail-closed.
+    if (system_simulation_active_) {
+        input.environment.agl_ft = qMax(0.0, altitude() - 300.0);
+        input.environment.agl_valid = true;
+        input.environment.terrain_valid = true;
+        input.environment.obstacles_valid = true;
+        input.environment.wind_valid = true;
+        input.environment.weather_valid = true;
+        input.environment.wind_range_factor = 0.82;
+        input.performance.approved = true;
+        input.performance.simulated = true;
+        input.performance.best_glide_kt = aircraft_speed_profile_.value("bestGlide").toDouble();
+        input.performance.conservative_glide_ratio = 8.0;
+        input.performance.terrain_clearance_reserve_ft = 500.0;
+        input.performance.manoeuvre_loss_ft = 300.0;
+        input.performance.model_uncertainty_ft = 300.0;
+        input.performance.final_approach_reserve_ft = 500.0;
+        input.procedure = {"SIM-EMERGENCY-UI", "1", "EFIS SOFTWARE TEST VECTOR",
+            "SIM-NOT-FOR-FLIGHT", true,
+            {{"SIM-1", "FLY", "SIM TEST - CONFIRM FLY PANEL REVIEWED", true},
+             {"SIM-2", "NAVIGATE", "SIM TEST - CONFIRM LANDING OPTIONS REVIEWED", true},
+             {"SIM-3", "COMMUNICATE", "SIM TEST - CONFIRM COMMUNICATION DRAFT REVIEWED", true}}};
+        for (const auto& entry : nearest_airports_.mid(0, 6)) {
+            const auto airport = entry.toMap();
+            input.airports.push_back({airport.value("icao").toString().toStdString(),
+                airport.value("name").toString().toStdString(),
+                airport.value("distance_nm").toDouble(), 0.0,
+                airport.value("elevation_ft").toDouble(), 800.0, 20.0, 0.0,
+                true, true, true});
+        }
+    }
+
+    (void)emergency_assist_.update(input, now);
+    flushEmergencyEvents();
+    if (++emergency_notify_ticks_ >= 12) {
+        emergency_notify_ticks_ = 0;
+        emit emergencyAssistChanged();
+    }
+}
+
+void PfdController::flushEmergencyEvents() {
+    const auto& events = emergency_assist_.events();
+    if (emergency_event_cursor_ >= events.size()) return;
+    QDir{}.mkpath(QFileInfo{emergency_event_log_path_}.absolutePath());
+    QFile file{emergency_event_log_path_};
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+        emergency_event_sink_state_ = QStringLiteral("UNAVAILABLE");
+        return;
+    }
+    for (; emergency_event_cursor_ < events.size(); ++emergency_event_cursor_) {
+        const auto& event = events[emergency_event_cursor_];
+        const QJsonObject object{
+            {"schema", QStringLiteral("efis-next.emergency-event.v1")},
+            {"event_sequence", static_cast<qint64>(event.sequence)},
+            {"written_utc", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},
+            {"code", QString::fromStdString(event.code)},
+            {"detail", QString::fromStdString(event.detail)},
+            {"assist_state", emergencyAssistState()},
+            {"emergency_kind", emergencyAssistKind()},
+            {"simulation", emergencySimulationOnly()},
+            {"blackbox_state", black_box_state_}};
+        file.write(QJsonDocument{object}.toJson(QJsonDocument::Compact));
+        file.write("\n");
+    }
+    file.flush();
+    emergency_event_sink_state_ = QStringLiteral("LOCAL SPOOL");
 }

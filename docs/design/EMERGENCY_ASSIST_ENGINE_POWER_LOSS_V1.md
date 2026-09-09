@@ -1,6 +1,6 @@
 # EFIS NEXT — Emergency Assist: perdita di potenza motore V1
 
-Stato: **FUNCTIONAL DESIGN / NON IMPLEMENTATO / NON OPERATIVO**
+Stato: **SOFTWARE V1 PARZIALE / PROCEDURA OPERATIVA BLOCCATA / NON OPERATIVO**
 
 Data: 2026-09-09
 
@@ -331,3 +331,17 @@ Solo dopo i test software:
   https://ardupilot.org/plane/docs/airspeed-parameters-setup.html
 - ArduPilot soaring/speed-to-fly, riferimento algoritmico non operativo:
   https://ardupilot.org/plane/docs/soaring-speed-to-fly.html
+
+## 15. Evidenza Software V1
+
+`efis::emergency::EmergencyAssist` implementa la parte deterministica della
+macchina a stati e i gate descritti in questo documento. I test coprono
+attivazione manuale, dati primari mancanti, mancata esposizione di best glide
+non approvata, planata SIM non autorevole, esclusione per pista/rotta/raggio,
+package checklist incompleto, avanzamento/skip e sospetto automatico con due
+segnali e dwell.
+
+Nel PFD reale l'auto-detection resta disabilitata: non esistono ancora soglie
+approvate per l'esemplare. Nello scenario software `engine-emergency` sono
+abilitati soltanto dati e passaggi sintetici, marcati `SIMULATION • TEST DATA •
+NOT FOR FLIGHT`. Nessun numero sintetico viene promosso nel profilo operativo.

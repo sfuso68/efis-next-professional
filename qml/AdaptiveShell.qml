@@ -13,11 +13,14 @@ Item {
     AdaptiveNavigationView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "NAV" }
     AdaptiveEmsView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "EMS" }
     AdaptiveFpvView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "FPV"; onAutoRevertRequested: shell.currentPage = "PFD" }
+    EmergencyAssistView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "EMERGENCY"; onCloseRequested: shell.currentPage = "PFD" }
     PageSelector {
         anchors { right: parent.right; top: parent.top;
             rightMargin: ((shell.currentPage === "PFD" || shell.currentPage === "CANVAS") ? 198 : 8)*shell.uiScale;
             topMargin: ((shell.currentPage === "PFD" || shell.currentPage === "CANVAS") ? 12 : 62)*shell.uiScale }
         z: 80; uiScale: shell.uiScale; currentPage: shell.currentPage
         onPageRequested: page => shell.currentPage = page
+        visible: shell.currentPage !== "EMERGENCY"
     }
+    Connections { target: shell.controller; function onEmergencyAssistChanged() { if (shell.controller.emergencyAssistActive) shell.currentPage = "EMERGENCY" } }
 }

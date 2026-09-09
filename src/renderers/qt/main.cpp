@@ -11,6 +11,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QElapsedTimer>
+#include <QFileInfo>
+#include <QImage>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QWindow>
@@ -88,6 +90,21 @@ int main(int argc, char* argv[]) {
             *frames = 0;
         });
         metrics->start();
+
+        const QString capturePath = qEnvironmentVariable("EFIS_CAPTURE");
+        if (!capturePath.isEmpty()) {
+            const int configuredDelay = qEnvironmentVariableIntValue("EFIS_CAPTURE_DELAY_MS");
+            const int delay = configuredDelay > 0 ? configuredDelay : 2000;
+            QTimer::singleShot(delay, window, [window, capturePath] {
+                QDir{}.mkpath(QFileInfo{capturePath}.absolutePath());
+                const QImage image = window->grabWindow();
+                const bool saved = !image.isNull() && image.save(capturePath);
+                qInfo().noquote() << "event=pfd_capture path=" << capturePath
+                                  << "saved=" << saved << "size=" << image.size();
+                if (qEnvironmentVariableIntValue("EFIS_CAPTURE_EXIT") > 0)
+                    QCoreApplication::quit();
+            });
+        }
     }
 
     if (kioskMode) {
