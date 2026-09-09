@@ -119,6 +119,8 @@ if(EFIS_BUILD_QT_RENDERER)
             src/renderers/qt/weather_service.hpp
             src/renderers/qt/sensor_bench_controller.cpp
             src/renderers/qt/sensor_bench_controller.hpp
+            src/setup/operational_profile_model.cpp
+            src/setup/operational_profile_model.hpp
         )
         qt_add_qml_module(efis-pfd-qt
             URI EfisNext
@@ -145,6 +147,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/AdaptiveShell.qml
                 qml/AdaptiveEmsView.qml
                 qml/EmsSetupOverlay.qml
+                qml/OperationalProfileSetup.qml
                 qml/Theme.qml
                 qml/GpuMapSurface.qml
                 qml/WeatherRadarOverlay.qml
@@ -331,6 +334,8 @@ if(EFIS_BUILD_EMS_NODE)
             src/nodes/ems/capture_request.hpp
             src/renderers/qt/circular_gauge_item.cpp
             src/renderers/qt/circular_gauge_item.hpp
+            src/setup/operational_profile_model.cpp
+            src/setup/operational_profile_model.hpp
         )
         qt_add_qml_module(efis-ems-qt
             URI EfisNextEms
@@ -344,6 +349,7 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/EngineTemperatureBars.qml
                 qml/EmsVectorIcon.qml
                 qml/EmsSetupOverlay.qml
+                qml/OperationalProfileSetup.qml
                 qml/Theme.qml
         )
         target_include_directories(efis-ems-qt PRIVATE
@@ -376,4 +382,16 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_engine_runtime_store_tests tests/engine_runtime_store_tests.cpp)
     target_link_libraries(efis_engine_runtime_store_tests PRIVATE efis_core)
     add_test(NAME efis_engine_runtime_store_tests COMMAND efis_engine_runtime_store_tests)
+
+    if(TARGET Qt6::Core)
+        add_executable(efis_operational_profile_model_tests
+            tests/operational_profile_model_tests.cpp
+            src/setup/operational_profile_model.cpp
+            src/setup/operational_profile_model.hpp)
+        target_include_directories(efis_operational_profile_model_tests PRIVATE src/setup)
+        target_link_libraries(efis_operational_profile_model_tests PRIVATE Qt6::Core)
+        target_compile_definitions(efis_operational_profile_model_tests PRIVATE
+            EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+        add_test(NAME efis_operational_profile_model_tests COMMAND efis_operational_profile_model_tests)
+    endif()
 endif()

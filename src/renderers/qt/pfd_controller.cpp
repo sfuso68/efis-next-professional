@@ -379,6 +379,9 @@ void PfdController::loadCatalogIndex() {
         const auto root = document.object();
         aircraft_catalog_ = root.value("aircraft").toArray().toVariantList();
         engine_catalog_ = root.value("engines").toArray().toVariantList();
+        const auto draftPath = qEnvironmentVariable("EFIS_OPERATIONAL_PROFILE_DRAFT",
+            QDir::current().filePath("config/staging/operational-profile-draft.json"));
+        operational_profile_model_.load(path, draftPath);
         if (catalog_version_ == QStringLiteral("UNAVAILABLE"))
             catalog_version_ = root.value("catalog_version").toString(QStringLiteral("UNKNOWN"));
         qInfo().noquote() << "event=catalog_index_loaded aircraft=" << aircraft_catalog_.size()
@@ -386,6 +389,48 @@ void PfdController::loadCatalogIndex() {
         return;
     }
     qWarning().noquote() << "event=catalog_index_unavailable";
+}
+
+bool PfdController::selectOperationalProfile(const QString& profileKey) {
+    const bool result = operational_profile_model_.selectProfile(profileKey);
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::selectOperationalDomain(const QString& domain) {
+    const bool result = operational_profile_model_.selectDomain(domain);
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::selectOperationalField(const QString& parameterKey) {
+    const bool result = operational_profile_model_.selectField(parameterKey);
+    emit setupChanged();
+    return result;
+}
+
+void PfdController::filterOperationalFields(const QString& filter) {
+    operational_profile_model_.setFilter(filter);
+    emit setupChanged();
+}
+
+bool PfdController::stageOperationalField(const QString& disposition, const QString& valueText,
+    const QString& rationale, const QString& sourceDocument,
+    const QString& sourceRevision, const QString& sourcePage) {
+    const bool result = operational_profile_model_.stageSelectedField(disposition, valueText,
+        rationale, sourceDocument, sourceRevision, sourcePage);
+    appendSetupAudit(QStringLiteral("OPERATIONAL_FIELD_STAGE"), result ? QStringLiteral("SAVED") : QStringLiteral("REJECTED"),
+        operational_profile_model_.selectedField().value("key").toString());
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::discardOperationalDraft() {
+    const bool result = operational_profile_model_.discardDraft();
+    appendSetupAudit(QStringLiteral("OPERATIONAL_DRAFT_DISCARD"), result ? QStringLiteral("SUCCESS") : QStringLiteral("REJECTED"),
+        operational_profile_model_.selectedProfileKey());
+    emit setupChanged();
+    return result;
 }
 
 bool PfdController::stageAircraft(int catalogId) {

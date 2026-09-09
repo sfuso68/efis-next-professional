@@ -12,6 +12,7 @@
 #include "efis/providers/edp_udp.hpp"
 #include "efis/core/engine_runtime.hpp"
 #include "efis/core/engine_runtime_store.hpp"
+#include "../../setup/operational_profile_model.hpp"
 
 #include <QObject>
 #include <QString>
@@ -98,6 +99,14 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantMap centralBlackBoxMaintenance READ centralBlackBoxMaintenance NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantList centralBlackBoxArchives READ centralBlackBoxArchives NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantMap centralBlackBoxArchiveSummary READ centralBlackBoxArchiveSummary NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList operationalProfiles READ operationalProfiles NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QVariantList operationalDomains READ operationalDomains NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QVariantList operationalFields READ operationalFields NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QVariantMap operationalSummary READ operationalSummary NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QVariantMap operationalSelectedField READ operationalSelectedField NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QString operationalSelectedProfile READ operationalSelectedProfile NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QString operationalSelectedDomain READ operationalSelectedDomain NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QString operationalCatalogStatus READ operationalCatalogStatus NOTIFY operationalProfileChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -178,6 +187,14 @@ public:
     [[nodiscard]] QVariantMap centralBlackBoxMaintenance() const { return central_blackbox_maintenance_; }
     [[nodiscard]] QVariantList centralBlackBoxArchives() const { return central_blackbox_archives_; }
     [[nodiscard]] QVariantMap centralBlackBoxArchiveSummary() const { return central_blackbox_archive_summary_; }
+    [[nodiscard]] QVariantList operationalProfiles() const { return operational_profile_model_.profiles(); }
+    [[nodiscard]] QVariantList operationalDomains() const { return operational_profile_model_.domains(); }
+    [[nodiscard]] QVariantList operationalFields() const { return operational_profile_model_.fields(); }
+    [[nodiscard]] QVariantMap operationalSummary() const { return operational_profile_model_.summary(); }
+    [[nodiscard]] QVariantMap operationalSelectedField() const { return operational_profile_model_.selectedField(); }
+    [[nodiscard]] QString operationalSelectedProfile() const { return operational_profile_model_.selectedProfileKey(); }
+    [[nodiscard]] QString operationalSelectedDomain() const { return operational_profile_model_.selectedDomain(); }
+    [[nodiscard]] QString operationalCatalogStatus() const { return operational_profile_model_.status(); }
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
@@ -197,6 +214,14 @@ public:
     Q_INVOKABLE bool clearFuelCalibration(const QString& tank);
     Q_INVOKABLE bool requestCentralBlackBoxAction(const QString& action);
     Q_INVOKABLE void resetFuelUsed();
+    Q_INVOKABLE bool selectOperationalProfile(const QString& profileKey);
+    Q_INVOKABLE bool selectOperationalDomain(const QString& domain);
+    Q_INVOKABLE bool selectOperationalField(const QString& parameterKey);
+    Q_INVOKABLE void filterOperationalFields(const QString& filter);
+    Q_INVOKABLE bool stageOperationalField(const QString& disposition, const QString& valueText,
+        const QString& rationale, const QString& sourceDocument,
+        const QString& sourceRevision, const QString& sourcePage);
+    Q_INVOKABLE bool discardOperationalDraft();
 
 signals:
     void snapshotChanged();
@@ -206,6 +231,7 @@ signals:
     void electricalTestChanged();
     void maintenanceChanged();
     void fuelComputerChanged();
+    void operationalProfileChanged();
 
 private:
     void updateSnapshot();
@@ -220,6 +246,7 @@ private:
     void loadFuelEventHistory();
     void recordFuelEvent(const QString& state);
     void loadCentralBlackBoxCache();
+    void loadOperationalCatalog();
 
     QTimer timer_;
     efis::EngineSimulationProvider engine_provider_{84};
@@ -298,4 +325,5 @@ private:
     efis::MonoTime last_fuel_update_{};
     efis::MonoTime last_fuel_save_{};
     efis::MonoTime last_fuel_notify_{};
+    OperationalProfileModel operational_profile_model_;
 };

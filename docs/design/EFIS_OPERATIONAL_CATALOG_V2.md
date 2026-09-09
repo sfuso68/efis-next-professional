@@ -89,6 +89,19 @@ a software completeness gate, not a certification claim.
   builder.
 - `tests/catalog_tool_tests.py`: completeness, rejection and database tests.
 
+## Setup editor and draft boundary
+
+PFD and standalone EMS expose the same `OperationalProfileSetup.qml` page and
+the same C++ staging model. The editor can browse all domains and fields, show
+resolved inheritance and safety blockers, and stage typed values with document,
+revision, page and rationale metadata.
+
+Edits are written atomically to `efis-next.operational-profile-draft.v2`. This
+artifact always contains `activation_allowed=false`; it is deliberately not an
+active-profile format and the flight runtime has no loader for it. The editor
+has no activation control. Promotion requires a separate future review,
+validation, immutable release, signature and rollback workflow.
+
 ## Build and validation
 
 ```bash

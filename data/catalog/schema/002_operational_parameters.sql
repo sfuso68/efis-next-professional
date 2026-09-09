@@ -3,9 +3,15 @@ PRAGMA foreign_keys = ON;
 -- EFIS Catalog V2 operational layer.  The V1 aircraft/engine catalogue remains
 -- intact; these tables add complete, field-level model/variant/airframe data.
 
+CREATE TABLE operational_domains (
+    id TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    sort_order INTEGER NOT NULL UNIQUE
+);
+
 CREATE TABLE operational_parameter_definitions (
     key TEXT PRIMARY KEY,
-    domain TEXT NOT NULL,
+    domain TEXT NOT NULL REFERENCES operational_domains(id),
     label TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
     value_type TEXT NOT NULL CHECK(value_type IN (
@@ -107,4 +113,3 @@ CREATE INDEX operational_value_status_idx
     ON operational_parameter_values(profile_id, disposition, approval_status);
 CREATE INDEX operational_release_profile_idx
     ON operational_profile_releases(profile_id, release_number);
-

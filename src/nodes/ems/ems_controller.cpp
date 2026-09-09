@@ -60,6 +60,7 @@ EmsController::EmsController(QObject* parent) : QObject(parent) {
     }
     loadUnitSystem();
     loadAircraftProfile();
+    loadOperationalCatalog();
     loadMaintenance();
     loadFuelComputer();
     fuel_event_log_path_=qEnvironmentVariable("EFIS_BLACKBOX_FUEL_EVENTS","state/blackbox-fuel-events.jsonl");
@@ -284,6 +285,67 @@ void EmsController::loadAircraftProfile() {
     for (const auto item : electrical.value("sources").toArray()) electrical_sources_ << item.toObject().toVariantMap();
     for (const auto item : electrical.value("loads").toArray())
         electrical_loads_ << item.toObject().toVariantMap();
+}
+
+void EmsController::loadOperationalCatalog() {
+    const QString configured = qEnvironmentVariable("EFIS_CATALOG_INDEX");
+    const QDir app{QCoreApplication::applicationDirPath()};
+    const QStringList candidates = configured.isEmpty()
+        ? QStringList{QDir::current().filePath("data/catalog/efis-catalog-index.json"),
+                      app.filePath("../../data/catalog/efis-catalog-index.json")}
+        : QStringList{configured};
+    const auto draftPath = qEnvironmentVariable("EFIS_OPERATIONAL_PROFILE_DRAFT",
+        QDir::homePath() + QStringLiteral("/.local/state/efis/operational-profile-draft.json"));
+    for (const auto& path : candidates) {
+        if (!QFileInfo::exists(path)) continue;
+        if (operational_profile_model_.load(path, draftPath)) {
+            qInfo().noquote() << "event=operational_catalog_loaded profiles="
+                              << operational_profile_model_.profiles().size()
+                              << "fields=" << operational_profile_model_.summary().value("total").toInt();
+            emit operationalProfileChanged();
+            return;
+        }
+    }
+    qWarning().noquote() << "event=operational_catalog_unavailable status="
+                         << operational_profile_model_.status();
+}
+
+bool EmsController::selectOperationalProfile(const QString& profileKey) {
+    const bool result = operational_profile_model_.selectProfile(profileKey);
+    emit operationalProfileChanged();
+    return result;
+}
+
+bool EmsController::selectOperationalDomain(const QString& domain) {
+    const bool result = operational_profile_model_.selectDomain(domain);
+    emit operationalProfileChanged();
+    return result;
+}
+
+bool EmsController::selectOperationalField(const QString& parameterKey) {
+    const bool result = operational_profile_model_.selectField(parameterKey);
+    emit operationalProfileChanged();
+    return result;
+}
+
+void EmsController::filterOperationalFields(const QString& filter) {
+    operational_profile_model_.setFilter(filter);
+    emit operationalProfileChanged();
+}
+
+bool EmsController::stageOperationalField(const QString& disposition, const QString& valueText,
+    const QString& rationale, const QString& sourceDocument,
+    const QString& sourceRevision, const QString& sourcePage) {
+    const bool result = operational_profile_model_.stageSelectedField(disposition, valueText,
+        rationale, sourceDocument, sourceRevision, sourcePage);
+    emit operationalProfileChanged();
+    return result;
+}
+
+bool EmsController::discardOperationalDraft() {
+    const bool result = operational_profile_model_.discardDraft();
+    emit operationalProfileChanged();
+    return result;
 }
 
 bool EmsController::sensorCalibrationReady() const {

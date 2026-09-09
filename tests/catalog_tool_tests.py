@@ -119,6 +119,7 @@ class CatalogTests(unittest.TestCase):
                 dictionary_path=ROOT / "data/catalog/operational-parameter-dictionary-v2.json",
                 operational_seed_path=ROOT / "data/catalog/seed/operational-seed-v2.json",
             )
+            index_path = MODULE.write_catalog_index(output)
             db = sqlite3.connect(output)
             try:
                 self.assertEqual("ok", db.execute("PRAGMA integrity_check").fetchone()[0])
@@ -130,6 +131,15 @@ class CatalogTests(unittest.TestCase):
                 self.assertEqual(1, db.execute("SELECT count(*) FROM operational_parameter_values v JOIN operational_profiles p ON p.id=v.profile_id WHERE p.profile_key='aircraft.asso-v-jolly-owner' AND v.parameter_key='identity.registration' AND v.disposition='UNKNOWN'").fetchone()[0])
             finally:
                 db.close()
+            index = json.loads(index_path.read_text(encoding="utf-8"))
+            self.assertEqual(28, len(index["operational_domains"]))
+            self.assertEqual(len(definitions), len(index["operational_parameters"]))
+            self.assertEqual(2, len(index["operational_profiles"]))
+            self.assertTrue(all(len(profile["parameters"]) == len(definitions) for profile in index["operational_profiles"]))
+            installed = next(profile for profile in index["operational_profiles"] if profile["profile_key"] == "aircraft.asso-v-jolly-owner")
+            registration = next(value for value in installed["parameters"] if value["parameter_key"] == "identity.registration")
+            self.assertEqual("UNKNOWN", registration["effective_disposition"])
+            self.assertFalse(installed["validation"]["release_ready"])
 
     def test_failed_v2_build_preserves_previous_catalog(self):
         dictionary = json.loads((ROOT / "data/catalog/operational-parameter-dictionary-v2.json").read_text(encoding="utf-8"))

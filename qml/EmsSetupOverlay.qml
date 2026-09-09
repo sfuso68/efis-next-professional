@@ -34,8 +34,8 @@ Rectangle {
     }
     Rectangle { id:rail; anchors { left:parent.left; top:top.bottom; bottom:footer.top } width:184*setup.uiScale; color:"#09151D"; border.color:setup.line
         Column { anchors.fill:parent
-            Repeater { model:["ENGINE","HOURS","SENSORS","ELECTRICAL","LOG & SERVICE"]
-                delegate:Rectangle { required property string modelData; required property int index; width:rail.width; height:rail.height/5; color:setup.section===index?"#15303C":"transparent"; border.color:setup.line
+            Repeater { model:["ENGINE","HOURS","SENSORS","ELECTRICAL","LOG & SERVICE","AIRCRAFT DATA"]
+                delegate:Rectangle { required property string modelData; required property int index; width:rail.width; height:rail.height/6; color:setup.section===index?"#15303C":"transparent"; border.color:setup.line
                     Rectangle { visible:setup.section===index; width:5*setup.uiScale; height:parent.height; color:setup.cyan }
                     Text { x:22*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:modelData; color:setup.section===index?setup.cyan:"#AAB6BC"; font.pixelSize:11*setup.uiScale; font.bold:true }
                     TapHandler { onTapped:setup.section=index }
@@ -44,8 +44,8 @@ Rectangle {
         }
     }
     Item { id:content; anchors { left:rail.right; right:parent.right; top:top.bottom; bottom:footer.top; margins:14*setup.uiScale }
-        Text { text:["ENGINE INSTALLATION","RUNTIME COUNTERS","PROBE CONFIGURATION","ELECTRICAL ARCHITECTURE","LOGGING & MAINTENANCE"][setup.section]; color:"white"; font.pixelSize:18*setup.uiScale; font.bold:true }
-        Text { y:29*setup.uiScale; text:"LIMIT AUTHORITY • "+String((controller.engineLimits||{}).status||"NOT CONFIGURED")+" • verify against installed-engine documentation"; color:String((controller.engineLimits||{}).status||"").indexOf("VERIFIED")===0?setup.green:setup.amber; font.pixelSize:8*setup.uiScale }
+        Text { text:["ENGINE INSTALLATION","RUNTIME COUNTERS","PROBE CONFIGURATION","ELECTRICAL ARCHITECTURE","LOGGING & MAINTENANCE","AIRCRAFT OPERATIONAL DATA"][setup.section]; color:"white"; font.pixelSize:18*setup.uiScale; font.bold:true }
+        Text { visible:setup.section!==5; y:29*setup.uiScale; text:"LIMIT AUTHORITY • "+String((controller.engineLimits||{}).status||"NOT CONFIGURED")+" • verify against installed-engine documentation"; color:String((controller.engineLimits||{}).status||"").indexOf("VERIFIED")===0?setup.green:setup.amber; font.pixelSize:8*setup.uiScale }
 
         Grid { visible:setup.section===0; y:58*setup.uiScale; columns:2; spacing:12*setup.uiScale
             Repeater { model:[
@@ -167,6 +167,7 @@ Rectangle {
                 }
             }
         }
+        OperationalProfileSetup { visible:setup.section===5; y:34*setup.uiScale; width:parent.width; height:parent.height-34*setup.uiScale; controller:setup.controller; uiScale:setup.uiScale }
         Item { visible:setup.section===4; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale
             Rectangle { anchors { left:parent.left; right:parent.right; top:parent.top } height:46*setup.uiScale; color:"#10232D"; border.color:setup.line
                 Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"ROTAX 912 UL • MAINTENANCE PROGRAM"; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }

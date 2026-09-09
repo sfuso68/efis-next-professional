@@ -209,6 +209,22 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   mancanti. Registra inoltre un report di validazione strutturale per ciascun
   profilo e distingue esplicitamente `release_ready=false`.
 
+### Editor Setup del catalogo operativo V2 — 2026-09-09
+
+- L'indice generato espone ora i 28 domini, le 447 definizioni tipizzate e, per
+  ciascun profilo, valore grezzo, valore effettivo risolto lungo l'eredità,
+  disposizione, provenienza e riepilogo dei blocker.
+- PFD ed EMS condividono lo stesso modello C++ e la stessa pagina QML
+  `OperationalProfileSetup`: ricerca, selezione per dominio, confronto dello
+  stato, modifica tipizzata e riferimenti a documento/revisione/pagina.
+- Ogni modifica viene salvata atomicamente nel formato separato
+  `efis-next.operational-profile-draft.v2`. Il file dichiara
+  `activation_allowed=false` e non è leggibile dal runtime come profilo attivo.
+- Non esiste nella pagina un comando di attivazione. I campi `UNKNOWN` e i
+  blocker safety-critical restano visibili; `release_ready` è forzato a falso.
+  Un profilo radice non può usare `INHERIT` e N/A/non installato richiedono una
+  motivazione.
+
 ## Verificato solo software
 
 ### Catalogo operativo aeromobile V2
@@ -224,6 +240,19 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   blocker safety-critical e 429 campi `UNKNOWN`; l'esemplare aggiunge sei
   override `UNKNOWN`. Nessuna verifica su hardware reale è stata eseguita per
   questo catalogo.
+- Build MSVC 19.51/Qt 6.11 completata per PFD ed EMS con compilazione AOT della
+  nuova pagina QML. Il test `efis_operational_profile_model_tests` passa e
+  verifica selezione profilo, isolamento della bozza, tipizzazione, motivazione
+  obbligatoria, divieto di eredità sul profilo radice, scrittura atomica,
+  `activation_allowed=false`, filtro e cancellazione della sola bozza.
+- Smoke test EMS con backend Qt offscreen concluso con exit code 0. È una prova
+  di caricamento software, non un'accettazione visiva sul pannello reale.
+- La build completa Windows del branch è riuscita. Nel tentativo CTest completo
+  14 test preesistenti sono passati; Windows Application Control ha bloccato
+  prima dell'avvio `efis_safety_tests.exe` e il run non ha completato il test
+  successivo entro il timeout. Il nuovo test Setup è stato quindi rieseguito
+  separatamente con CTest ed è passato. I test non avviati non sono dichiarati
+  superati da questa sessione.
 
 - Build MSVC 19.51 del codec e del nuovo eseguibile di test completata.
 - Round-trip snapshot, preservazione provenienza/unità/simulazione, CRC32C con
@@ -575,11 +604,15 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   inventario avionica/sensori/servi e registri di calibrazione/manutenzione.
 - Risolvere o motivare tutti i 447 campi; nessun dato safety-critical può
   diventare `VERIFIED` senza fonte, documento, revisione e pagina.
-- Integrare selezione, modifica, confronto, firma e rollback del profilo nelle
-  pagine Setup; collegare poi il profilo approvato al runtime senza leggere
-  direttamente righe non rilasciate del catalogo.
+- Selezione e modifica controllata in bozza sono integrate nelle pagine Setup;
+  restano da implementare confronto revisioni, revisione a quattro occhi,
+  firma, release immutabile e rollback. Solo una release approvata potrà essere
+  collegata al runtime, senza leggere direttamente bozze o righe non rilasciate.
 - Verificare su hardware reale caricamento, rollback, separazione SIM/LIVE e
   comportamento fail-closed con profilo mancante, incompleto o corrotto.
+- Installare la build su RPi5 e RPi4 e acquisire evidenza visiva della pagina a
+  1024x600 e 800x480; ergonomia touch e leggibilità non sono ancora verificate
+  su hardware reale.
 
 ### Emergency Assist e servi autopilota — concept 2026-09-09
 

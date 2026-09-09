@@ -8,6 +8,7 @@
 #include "efis/core/engine_runtime.hpp"
 #include "efis/providers/engine_simulation_source.hpp"
 #include "efis/simulation/system_simulator.hpp"
+#include "../../setup/operational_profile_model.hpp"
 
 #include <memory>
 
@@ -110,6 +111,14 @@ class PfdController final : public QObject {
     Q_PROPERTY(QVariantMap stagedAircraftProfile READ stagedAircraftProfile NOTIFY setupChanged)
     Q_PROPERTY(QString stagingStatus READ stagingStatus NOTIFY setupChanged)
     Q_PROPERTY(QString setupMessage READ setupMessage NOTIFY setupChanged)
+    Q_PROPERTY(QVariantList operationalProfiles READ operationalProfiles NOTIFY setupChanged)
+    Q_PROPERTY(QVariantList operationalDomains READ operationalDomains NOTIFY setupChanged)
+    Q_PROPERTY(QVariantList operationalFields READ operationalFields NOTIFY setupChanged)
+    Q_PROPERTY(QVariantMap operationalSummary READ operationalSummary NOTIFY setupChanged)
+    Q_PROPERTY(QVariantMap operationalSelectedField READ operationalSelectedField NOTIFY setupChanged)
+    Q_PROPERTY(QString operationalSelectedProfile READ operationalSelectedProfile NOTIFY setupChanged)
+    Q_PROPERTY(QString operationalSelectedDomain READ operationalSelectedDomain NOTIFY setupChanged)
+    Q_PROPERTY(QString operationalCatalogStatus READ operationalCatalogStatus NOTIFY setupChanged)
     Q_PROPERTY(QVariantMap stagedEngineProfile READ stagedEngineProfile NOTIFY setupChanged)
     Q_PROPERTY(QString engineStagingStatus READ engineStagingStatus NOTIFY setupChanged)
     Q_PROPERTY(QVariantList engineSensorMappings READ engineSensorMappings NOTIFY setupChanged)
@@ -261,6 +270,22 @@ public:
                                           bool weightsConfirmed, bool engineConfirmed);
     Q_INVOKABLE bool applyStagedAircraft();
     Q_INVOKABLE bool rollbackAircraftProfile();
+    [[nodiscard]] QVariantList operationalProfiles() const { return operational_profile_model_.profiles(); }
+    [[nodiscard]] QVariantList operationalDomains() const { return operational_profile_model_.domains(); }
+    [[nodiscard]] QVariantList operationalFields() const { return operational_profile_model_.fields(); }
+    [[nodiscard]] QVariantMap operationalSummary() const { return operational_profile_model_.summary(); }
+    [[nodiscard]] QVariantMap operationalSelectedField() const { return operational_profile_model_.selectedField(); }
+    [[nodiscard]] QString operationalSelectedProfile() const { return operational_profile_model_.selectedProfileKey(); }
+    [[nodiscard]] QString operationalSelectedDomain() const { return operational_profile_model_.selectedDomain(); }
+    [[nodiscard]] QString operationalCatalogStatus() const { return operational_profile_model_.status(); }
+    Q_INVOKABLE bool selectOperationalProfile(const QString& profileKey);
+    Q_INVOKABLE bool selectOperationalDomain(const QString& domain);
+    Q_INVOKABLE bool selectOperationalField(const QString& parameterKey);
+    Q_INVOKABLE void filterOperationalFields(const QString& filter);
+    Q_INVOKABLE bool stageOperationalField(const QString& disposition, const QString& valueText,
+        const QString& rationale, const QString& sourceDocument,
+        const QString& sourceRevision, const QString& sourcePage);
+    Q_INVOKABLE bool discardOperationalDraft();
     [[nodiscard]] QVariantMap stagedEngineProfile() const { return staged_engine_profile_; }
     [[nodiscard]] QString engineStagingStatus() const { return engine_staging_status_; }
     Q_INVOKABLE bool stageEngine(int catalogId);
@@ -423,6 +448,7 @@ private:
     QString staging_status_{QStringLiteral("NO_SELECTION")};
     QString setup_message_{QStringLiteral("Select an aircraft from the catalog")};
     QString latest_backup_path_;
+    OperationalProfileModel operational_profile_model_;
     QVariantMap staged_engine_profile_;
     QString engine_staging_status_{QStringLiteral("NO_SELECTION")};
     QVariantList engine_sensor_mappings_;

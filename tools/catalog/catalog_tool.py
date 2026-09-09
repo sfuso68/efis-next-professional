@@ -421,6 +421,11 @@ def build_catalog(
                 raise ValueError("invalid operational dictionary: " + "; ".join(definition_errors))
             db.execute("UPDATE catalog_meta SET value='2' WHERE key='schema_version'")
             db.execute("INSERT INTO catalog_meta(key,value) VALUES('operational_dictionary_version',?)", (dictionary["version"],))
+            for order, domain in enumerate(dictionary["domains"]):
+                db.execute(
+                    "INSERT INTO operational_domains(id,label,sort_order) VALUES(?,?,?)",
+                    (domain["id"], domain["label"], order),
+                )
             for definition in definitions:
                 db.execute(
                     "INSERT INTO operational_parameter_definitions(key,domain,label,description,value_type,canonical_unit,requirement,criticality,enum_values_json,applicability_text,sort_order) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
@@ -499,20 +504,76 @@ def write_catalog_index(database: Path) -> Path:
             aircraft.append(item)
         engines = [dict(row) for row in db.execute("SELECT e.id,m.name AS manufacturer,e.family,e.model,e.variant,e.cylinders,e.power_hp,e.rpm_max,e.fuel_type,e.status FROM engines e JOIN manufacturers m ON m.id=e.manufacturer_id ORDER BY m.name,e.model,e.variant")]
         operational = []
+        operational_domains = []
+        operational_parameters = []
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         if "operational_profiles" in tables:
-            for row in db.execute("SELECT p.profile_key,p.scope_type,p.scope_ref,p.title,p.revision,p.lifecycle_state,parent.profile_key AS parent_profile FROM operational_profiles p LEFT JOIN operational_profiles parent ON parent.id=p.parent_id ORDER BY p.profile_key"):
-                item = dict(row)
-                counts = db.execute("SELECT disposition,count(*) AS count FROM operational_parameter_values v JOIN operational_profiles p ON p.id=v.profile_id WHERE p.profile_key=? GROUP BY disposition", (item["profile_key"],)).fetchall()
+            operational_domains = [dict(row) for row in db.execute(
+                "SELECT d.id,d.label,d.sort_order,count(p.key) AS parameter_count FROM operational_domains d LEFT JOIN operational_parameter_definitions p ON p.domain=d.id GROUP BY d.id,d.label,d.sort_order ORDER BY d.sort_order"
+            )]
+            operational_parameters = [dict(row) for row in db.execute(
+                "SELECT key,domain,label,description,value_type,canonical_unit,requirement,criticality,enum_values_json,applicability_text,sort_order FROM operational_parameter_definitions WHERE active=1 ORDER BY sort_order,key"
+            )]
+            for definition in operational_parameters:
+                enum_values_json = definition.pop("enum_values_json")
+                definition["enum_values"] = json.loads(enum_values_json) if enum_values_json else []
+            profile_rows = list(db.execute(
+                "SELECT p.id,p.parent_id,p.profile_key,p.scope_type,p.scope_ref,p.title,p.revision,p.lifecycle_state,parent.profile_key AS parent_profile FROM operational_profiles p LEFT JOIN operational_profiles parent ON parent.id=p.parent_id ORDER BY p.profile_key"
+            ))
+            values_by_profile: dict[int, dict[str, dict]] = {}
+            for profile_row in profile_rows:
+                profile_id = int(profile_row["id"])
+                value_rows: dict[str, dict] = {}
+                for value_row in db.execute(
+                    "SELECT v.parameter_key,v.disposition,v.value_json,v.unit,v.approval_status,s.title AS source_title,v.source_document,v.source_revision,v.source_page,v.applicability,v.condition_json,v.uncertainty_json,v.rationale,v.reviewed_by,v.reviewed_at FROM operational_parameter_values v LEFT JOIN sources s ON s.id=v.source_id WHERE v.profile_id=? ORDER BY v.parameter_key",
+                    (profile_id,),
+                ):
+                    value = dict(value_row)
+                    for name in ("value_json", "condition_json", "uncertainty_json"):
+                        if value[name] is not None:
+                            value[name[:-5]] = json.loads(value[name])
+                        del value[name]
+                    value_rows[value["parameter_key"]] = value
+                values_by_profile[profile_id] = value_rows
+
+            profiles_by_id = {int(row["id"]): row for row in profile_rows}
+
+            def effective_value(profile_id: int, parameter_key: str) -> tuple[dict, int]:
+                visited: set[int] = set()
+                current_id = profile_id
+                while current_id and current_id not in visited:
+                    visited.add(current_id)
+                    value = values_by_profile[current_id][parameter_key]
+                    if value["disposition"] != "INHERIT":
+                        return value, current_id
+                    current_id = int(profiles_by_id[current_id]["parent_id"] or 0)
+                return {"disposition": "UNKNOWN", "rationale": "Unresolved inheritance"}, profile_id
+
+            for row in profile_rows:
+                profile_id = int(row["id"])
+                item = {key: row[key] for key in row.keys() if key not in {"id", "parent_id"}}
+                counts = db.execute("SELECT disposition,count(*) AS count FROM operational_parameter_values WHERE profile_id=? GROUP BY disposition", (profile_id,)).fetchall()
                 item["parameter_counts"] = {count["disposition"]: count["count"] for count in counts}
-                validation = db.execute("SELECT result,required_total,required_resolved,conditional_unresolved,safety_blockers,report_json FROM operational_validation_runs v JOIN operational_profiles p ON p.id=v.profile_id WHERE p.profile_key=? ORDER BY v.id DESC LIMIT 1", (item["profile_key"],)).fetchone()
+                validation = db.execute("SELECT result,required_total,required_resolved,conditional_unresolved,safety_blockers,report_json FROM operational_validation_runs WHERE profile_id=? ORDER BY id DESC LIMIT 1", (profile_id,)).fetchone()
                 if validation:
                     item["validation"] = {key: validation[key] for key in ("result", "required_total", "required_resolved", "conditional_unresolved", "safety_blockers")}
                     item["validation"]["release_ready"] = bool(json.loads(validation["report_json"])["release_ready"])
+                parameters = []
+                for definition in operational_parameters:
+                    key = definition["key"]
+                    raw = dict(values_by_profile[profile_id][key])
+                    effective, origin_id = effective_value(profile_id, key)
+                    raw["effective_disposition"] = effective["disposition"]
+                    if "value" in effective:
+                        raw["effective_value"] = effective["value"]
+                    raw["effective_approval_status"] = effective.get("approval_status", "INDICATIVE")
+                    raw["origin_profile"] = profiles_by_id[origin_id]["profile_key"]
+                    parameters.append(raw)
+                item["parameters"] = parameters
                 operational.append(item)
     finally:
         db.close()
-    index_path.write_text(json.dumps({"schema_version": 2 if operational else 1, "catalog_version": version, "aircraft": aircraft, "engines": engines, "operational_profiles": operational}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    index_path.write_text(json.dumps({"schema_version": 2 if operational else 1, "catalog_version": version, "aircraft": aircraft, "engines": engines, "operational_domains": operational_domains, "operational_parameters": operational_parameters, "operational_profiles": operational}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return index_path
 
 
