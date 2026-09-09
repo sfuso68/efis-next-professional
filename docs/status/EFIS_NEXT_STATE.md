@@ -193,7 +193,37 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - I controller EMS e PFD espongono `centralBlackBoxArchiveSummary`.
 - La pagina setup Blackbox è predisposta a mostrare conteggio CAN, pacchetti firmati e stato manifesto.
 
+### Catalogo operativo aeromobile V2 — 2026-09-09
+
+- Aggiunto un dizionario controllato di 447 parametri in 28 domini per modello,
+  variante ed esemplare installato. Ogni parametro viene materializzato con
+  `VALUE`, `INHERIT`, `NOT_APPLICABLE`, `NOT_INSTALLED` oppure `UNKNOWN`; non
+  esiste omissione silenziosa.
+- Aggiunti schema SQLite V2, provenance campo per campo, revisioni/rilasci,
+  risultati di validazione, tipizzazione e gate per dati safety-critical.
+- Aggiunti un modello Asso V Jolly/Rotax 912 UL e il relativo overlay di
+  esemplare. Entrambi restano `SIMULATION`: i dati noti sono indicativi e i
+  numeri legacy non documentati non sono stati promossi.
+- Il database generato conserva 70 aeromobili e 24 motori del catalogo V1 e
+  aggiunge 2 profili, 447 definizioni e 894 valori materializzati, senza campi
+  mancanti. Registra inoltre un report di validazione strutturale per ciascun
+  profilo e distingue esplicitamente `release_ready=false`.
+
 ## Verificato solo software
+
+### Catalogo operativo aeromobile V2
+
+- `tests/catalog_tool_tests.py`: 11/11 test PASS con Python 3.12; coperti
+  dizionario, unicità, materializzazione completa, eredità, rifiuto di chiavi
+  sconosciute, obbligo della motivazione per N/A/non installato, build SQLite e
+  conservazione atomica del catalogo precedente quando la rigenerazione fallisce;
+  il registro Markdown contiene tutti e 447 gli identificativi.
+- `PRAGMA integrity_check=ok`; 447 definizioni, 2 profili, 894 valori e zero
+  coppie profilo/parametro mancanti. Validazione del seed: struttura PASS.
+- La struttura PASS non significa pronta al volo: il modello segnala 309
+  blocker safety-critical e 429 campi `UNKNOWN`; l'esemplare aggiunge sei
+  override `UNKNOWN`. Nessuna verifica su hardware reale è stata eseguita per
+  questo catalogo.
 
 - Build MSVC 19.51 del codec e del nuovo eseguibile di test completata.
 - Round-trip snapshot, preservazione provenienza/unità/simulazione, CRC32C con
@@ -537,6 +567,19 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   nodi e una cattura Ethernet/WLAN correlata restano gate separati.
 
 ## Aperto — non dichiarare DONE
+
+### Catalogo operativo aeromobile V2
+
+- Acquisire i documenti controllati dell'esemplare: AFM/POH e supplementi,
+  targhette, weight-and-balance, manuali motore/elica, configurazione elettrica,
+  inventario avionica/sensori/servi e registri di calibrazione/manutenzione.
+- Risolvere o motivare tutti i 447 campi; nessun dato safety-critical può
+  diventare `VERIFIED` senza fonte, documento, revisione e pagina.
+- Integrare selezione, modifica, confronto, firma e rollback del profilo nelle
+  pagine Setup; collegare poi il profilo approvato al runtime senza leggere
+  direttamente righe non rilasciate del catalogo.
+- Verificare su hardware reale caricamento, rollback, separazione SIM/LIVE e
+  comportamento fail-closed con profilo mancante, incompleto o corrotto.
 
 ### Emergency Assist e servi autopilota — concept 2026-09-09
 

@@ -1,5 +1,5 @@
 {
-  "catalog_version": "1.0.0-seed",
+  "catalog_version": "2.0.0-seed",
   "generated_from": "EFIS NEXT controlled seed",
   "sources": [
     {
@@ -8,6 +8,22 @@
       "publisher": "Fuso Avionics",
       "document_ref": "AircraftDB.h / EngineDB.h",
       "source_class": "LEGACY"
+    },
+    {
+      "key": "owner-declaration-2026-09-09",
+      "title": "Asso V Jolly installed-aircraft owner declaration",
+      "publisher": "Aircraft owner",
+      "document_ref": "EFIS NEXT configuration interview",
+      "revision": "2026-09-09",
+      "retrieved_at": "2026-09-09",
+      "source_class": "OWNER"
+    },
+    {
+      "key": "rotax-912-ul-manual-pending",
+      "title": "ROTAX 912 UL operating and installation documents",
+      "publisher": "BRP-Rotax",
+      "document_ref": "Exact current document/revision/page set required before VERIFIED",
+      "source_class": "OFFICIAL"
     }
   ],
   "engines": [

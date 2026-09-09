@@ -8,6 +8,10 @@
       "items": 4,
       "progress": 50.0
     },
+    "CFG": {
+      "items": 1,
+      "progress": 50.0
+    },
     "CORE": {
       "items": 4,
       "progress": 87.5
@@ -85,17 +89,17 @@
     "PAN-002",
     "PAN-003"
   ],
-  "requirements": 61,
+  "requirements": 62,
   "status_counts": {
     "BLOCKED": 2,
     "DONE": 6,
     "LEGACY": 2,
-    "PARTIAL": 35,
+    "PARTIAL": 36,
     "TODO": 15,
     "VERIFY-HW": 1
   },
   "verify_hw": [
     "INST-001"
   ],
-  "weighted_progress": 43.0
+  "weighted_progress": 43.1
 }

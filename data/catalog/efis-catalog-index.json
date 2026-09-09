@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "catalog_version": "1.0.0-seed",
+  "schema_version": 2,
+  "catalog_version": "2.0.0-seed",
   "aircraft": [
     {
       "id": 24,
@@ -1783,7 +1783,7 @@
       "status": "INDICATIVE"
     },
     {
-      "id": 2,
+      "id": 3,
       "manufacturer": "Rotax",
       "family": "582",
       "model": "582 UL",
@@ -1807,7 +1807,7 @@
       "status": "INDICATIVE"
     },
     {
-      "id": 3,
+      "id": 1,
       "manufacturer": "Rotax",
       "family": "912",
       "model": "912 UL",
@@ -1815,11 +1815,11 @@
       "cylinders": 4,
       "power_hp": 80.0,
       "rpm_max": 5800.0,
-      "fuel_type": "MOGAS 95 / AVGAS",
+      "fuel_type": "MOGAS/AVGAS",
       "status": "INDICATIVE"
     },
     {
-      "id": 1,
+      "id": 2,
       "manufacturer": "Rotax",
       "family": "912",
       "model": "912 ULS",
@@ -1901,6 +1901,50 @@
       "rpm_max": 3400.0,
       "fuel_type": null,
       "status": "INDICATIVE"
+    }
+  ],
+  "operational_profiles": [
+    {
+      "profile_key": "aircraft.asso-v-jolly-owner",
+      "scope_type": "INSTALLED_AIRCRAFT",
+      "scope_ref": "REGISTRATION_PENDING|CONSTRUCTION_NUMBER_PENDING",
+      "title": "Installed Asso V Jolly — configuration pending survey",
+      "revision": 1,
+      "lifecycle_state": "SIMULATION",
+      "parent_profile": "model.asso-v-jolly-912-ul",
+      "parameter_counts": {
+        "INHERIT": 441,
+        "UNKNOWN": 6
+      },
+      "validation": {
+        "result": "PASS",
+        "required_total": 297,
+        "required_resolved": 16,
+        "conditional_unresolved": 137,
+        "safety_blockers": 309,
+        "release_ready": false
+      }
+    },
+    {
+      "profile_key": "model.asso-v-jolly-912-ul",
+      "scope_type": "MODEL",
+      "scope_ref": "Vidor|Asso V Jolly|Rotax 912 UL",
+      "title": "Asso V Jolly / Rotax 912 UL — controlled simulation baseline",
+      "revision": 1,
+      "lifecycle_state": "SIMULATION",
+      "parent_profile": null,
+      "parameter_counts": {
+        "UNKNOWN": 429,
+        "VALUE": 18
+      },
+      "validation": {
+        "result": "PASS",
+        "required_total": 297,
+        "required_resolved": 16,
+        "conditional_unresolved": 137,
+        "safety_blockers": 309,
+        "release_ready": false
+      }
     }
   ]
 }

@@ -1,5 +1,10 @@
 # EFIS Catalog V1
 
+> Catalog V1 remains the searchable aircraft/engine directory. The controlled,
+> field-complete operational layer is specified in
+> `docs/design/EFIS_OPERATIONAL_CATALOG_V2.md` and schema migration
+> `data/catalog/schema/002_operational_parameters.sql`.
+
 EFIS Catalog is an updateable reference database. It never changes the active
 aircraft profile automatically.
 
