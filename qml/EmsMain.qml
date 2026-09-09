@@ -18,8 +18,13 @@ ApplicationWindow {
         controller: ems
         Component.onCompleted: {
             var blackboxPreview = Qt.application.arguments.indexOf("--setup-blackbox-preview") >= 0
-            setupVisible = Qt.application.arguments.indexOf("--setup-preview") >= 0 || blackboxPreview
+            var operationalPreview = Qt.application.arguments.indexOf("--setup-operational-preview") >= 0 ||
+                Qt.application.arguments.indexOf("--setup-operational-entry-preview") >= 0 ||
+                Qt.application.arguments.indexOf("--setup-operational-load-preview") >= 0 ||
+                Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0
             if (blackboxPreview) setupSection = 4
+            if (operationalPreview) setupSection = 5
+            setupVisible = Qt.application.arguments.indexOf("--setup-preview") >= 0 || blackboxPreview || operationalPreview
         }
     }
 

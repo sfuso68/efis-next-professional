@@ -11,6 +11,9 @@ consultivo `Emergency Assist / Panic V1` è fissato in
 `docs/design/EMERGENCY_ASSIST_V1.md`; non esiste ancora codice della funzione e
 non è stata concessa autorità di comando al sistema EFIS.
 
+Il workflow del profilo operativo è fissato separatamente in
+`CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`.
+
 Questo documento non esisteva nel repository al momento dell'intervento ed è stato creato come stato operativo autorevole. Le parole **implementato**, **verificato software** e **verificato su hardware reale** indicano livelli di evidenza diversi. Una funzione non è considerata conclusa se manca la verifica pertinente.
 
 ## Implementato in questo branch
@@ -241,6 +244,31 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   installato reale resta quello selezionato inizialmente e conserva i propri
   blocker senza ricevere valori dal profilo sintetico.
 
+### Workflow guidato di caricamento, inserimento e controllo — 2026-09-09
+
+- La pagina condivisa `OperationalProfileSetup` espone quattro fasi coerenti
+  su PFD e EMS: `Overview`, `Guided Entry`, `Load / Prefill` e
+  `Check & Review`.
+- L'Overview mostra i tre profili e il completamento di tutti i 28 domini senza
+  confondere il profilo installato con lo scenario completo SIM. Ogni sezione
+  apre direttamente l'inserimento dei relativi campi.
+- L'inserimento guidato conserva tipizzazione e provenienza già presenti e
+  aggiunge l'avanzamento al primo problema ordinato per priorità:
+  safety-critical non risolto, obbligatorio non risolto, simulato, evidenza
+  documentale mancante.
+- L'importatore accetta soltanto bozze V2 fino a 4 MiB con profilo e revisione
+  corrispondenti. Rifiuta senza sostituire la bozza corrente JSON/schema errati,
+  campi sconosciuti, tipi/unità/disposizioni non validi, metadati non ammessi e
+  qualsiasi `activation_allowed=true`; rifiuta anche `INHERIT` su un profilo
+  radice, che non avrebbe una sorgente effettiva.
+- Il prefill completo richiede una pressione prolungata, copia i 447 valori
+  analoghi esclusivamente nella bozza e mantiene ogni campo `simulated=true`.
+  Il controllo restituisce quindi `BLOCKED_SIMULATION`, non una falsa
+  completezza operativa.
+- `Check & Review` calcola una coda deterministica, distingue incompletezza,
+  simulazione ed evidenza mancante e può al massimo dichiarare
+  `READY_FOR_INDEPENDENT_REVIEW`; `activation_allowed` resta sempre falso.
+
 ## Verificato solo software
 
 ### Catalogo operativo aeromobile V2
@@ -270,6 +298,22 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   compilato e linkato, ma Windows Application Control ne ha impedito l'avvio
   (`BAD_COMMAND`): le nuove asserzioni UI/modello non sono quindi dichiarate
   eseguite. La compilazione AOT QML di PFD ed EMS è invece riuscita.
+- Per il workflow guidato successivo lo stesso eseguibile Qt è stato compilato
+  e avviato direttamente con esito PASS. Verifica 28 domini/447 campi, coda
+  problemi, prefill completo con 447 marker SIM, stato `BLOCKED_SIMULATION`,
+  importazione di una bozza corrispondente e rifiuto fail-closed di una bozza
+  con `activation_allowed=true`, preservando la bozza valida precedente; copre
+  inoltre il rigetto di `INHERIT` su un profilo radice.
+- La build MSVC/Qt 6.11 di `efis-pfd-qt`, `efis-ems-qt` e del test è riuscita;
+  la cache QML AOT della pagina condivisa è stata generata per entrambi i
+  target. Il comando CTest è rimasto in attesa fino al timeout sul test, mentre
+  l'esecuzione diretta dello stesso file è terminata in circa 13 secondi con
+  exit code 0: l'anomalia del launcher resta distinta dall'esito del test.
+- Le pagine `Load / Prefill` e `Check & Review` sono state aperte e catturate
+  con backend Qt offscreen a 1024x600; struttura e geometria non mostrano
+  sovrapposizioni evidenti. Il backend Windows non ha caricato il font e ha
+  sostituito i glifi: la cattura non vale come verifica di leggibilità né come
+  acceptance sul pannello reale.
 - Smoke test EMS con backend Qt offscreen concluso con exit code 0. È una prova
   di caricamento software, non un'accettazione visiva sul pannello reale.
 - La build completa Windows del branch è riuscita. Nel tentativo CTest completo
@@ -642,6 +686,9 @@ questa sessione.
 - Installare la build su RPi5 e RPi4 e acquisire evidenza visiva della pagina a
   1024x600 e 800x480; ergonomia touch e leggibilità non sono ancora verificate
   su hardware reale.
+- Provare sui due pannelli il nuovo workflow a quattro fasi, inclusi pressione
+  prolungata, tastiera per il percorso di importazione, scorrimento dei 28
+  domini/coda problemi e tempi di risposta con una bozza da 447 campi.
 
 ### Emergency Assist e servi autopilota — concept 2026-09-09
 

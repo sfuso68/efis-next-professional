@@ -102,11 +102,15 @@ class EmsController : public QObject {
     Q_PROPERTY(QVariantList operationalProfiles READ operationalProfiles NOTIFY operationalProfileChanged)
     Q_PROPERTY(QVariantList operationalDomains READ operationalDomains NOTIFY operationalProfileChanged)
     Q_PROPERTY(QVariantList operationalFields READ operationalFields NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QVariantList operationalDomainSummaries READ operationalDomainSummaries NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QVariantList operationalValidationIssues READ operationalValidationIssues NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QVariantMap operationalValidationReport READ operationalValidationReport NOTIFY operationalProfileChanged)
     Q_PROPERTY(QVariantMap operationalSummary READ operationalSummary NOTIFY operationalProfileChanged)
     Q_PROPERTY(QVariantMap operationalSelectedField READ operationalSelectedField NOTIFY operationalProfileChanged)
     Q_PROPERTY(QString operationalSelectedProfile READ operationalSelectedProfile NOTIFY operationalProfileChanged)
     Q_PROPERTY(QString operationalSelectedDomain READ operationalSelectedDomain NOTIFY operationalProfileChanged)
     Q_PROPERTY(QString operationalCatalogStatus READ operationalCatalogStatus NOTIFY operationalProfileChanged)
+    Q_PROPERTY(QString operationalDraftPath READ operationalDraftPath NOTIFY operationalProfileChanged)
 
 public:
     explicit EmsController(QObject* parent = nullptr);
@@ -190,11 +194,15 @@ public:
     [[nodiscard]] QVariantList operationalProfiles() const { return operational_profile_model_.profiles(); }
     [[nodiscard]] QVariantList operationalDomains() const { return operational_profile_model_.domains(); }
     [[nodiscard]] QVariantList operationalFields() const { return operational_profile_model_.fields(); }
+    [[nodiscard]] QVariantList operationalDomainSummaries() const { return operational_profile_model_.domainSummaries(); }
+    [[nodiscard]] QVariantList operationalValidationIssues() const { return operational_profile_model_.validationIssues(); }
+    [[nodiscard]] QVariantMap operationalValidationReport() const { return operational_profile_model_.validationReport(); }
     [[nodiscard]] QVariantMap operationalSummary() const { return operational_profile_model_.summary(); }
     [[nodiscard]] QVariantMap operationalSelectedField() const { return operational_profile_model_.selectedField(); }
     [[nodiscard]] QString operationalSelectedProfile() const { return operational_profile_model_.selectedProfileKey(); }
     [[nodiscard]] QString operationalSelectedDomain() const { return operational_profile_model_.selectedDomain(); }
     [[nodiscard]] QString operationalCatalogStatus() const { return operational_profile_model_.status(); }
+    [[nodiscard]] QString operationalDraftPath() const { return operational_profile_model_.draftPath(); }
 
     Q_INVOKABLE void cycleEngineFault();
     Q_INVOKABLE bool setUnitSystem(const QString& system);
@@ -221,6 +229,10 @@ public:
     Q_INVOKABLE bool stageOperationalField(const QString& disposition, const QString& valueText,
         const QString& rationale, const QString& sourceDocument,
         const QString& sourceRevision, const QString& sourcePage);
+    Q_INVOKABLE bool selectNextOperationalIssue();
+    Q_INVOKABLE bool preloadOperationalSimulation(const QString& profileKey);
+    Q_INVOKABLE bool importOperationalDraft(const QString& path);
+    Q_INVOKABLE bool validateOperationalDraft();
     Q_INVOKABLE bool discardOperationalDraft();
 
 signals:

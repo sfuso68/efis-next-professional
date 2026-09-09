@@ -7,8 +7,12 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QSaveFile>
 #include <QSet>
+
+#include <algorithm>
+#include <cmath>
 
 namespace {
 QString displayValue(const QVariant& value) {
@@ -20,6 +24,21 @@ QString displayValue(const QVariant& value) {
     if (value.canConvert<QVariantMap>())
         return QString::fromUtf8(QJsonDocument{QJsonObject::fromVariantMap(value.toMap())}.toJson(QJsonDocument::Compact));
     return value.toString();
+}
+
+bool importedValueMatches(const QVariant& value, const QVariantMap& definition) {
+    const auto json = QJsonValue::fromVariant(value);
+    const auto kind = definition.value("value_type").toString();
+    if (kind == QStringLiteral("NUMBER") || kind == QStringLiteral("DURATION")) return json.isDouble();
+    if (kind == QStringLiteral("INTEGER"))
+        return json.isDouble() && std::floor(json.toDouble()) == json.toDouble();
+    if (kind == QStringLiteral("BOOLEAN")) return json.isBool();
+    if (kind == QStringLiteral("TEXT") || kind == QStringLiteral("DATE"))
+        return json.isString() && !json.toString().trimmed().isEmpty();
+    if (kind == QStringLiteral("ENUM"))
+        return json.isString() && definition.value("enum_values").toList().contains(json.toString());
+    if (kind == QStringLiteral("TABLE") || kind == QStringLiteral("CURVE")) return json.isArray();
+    return !json.isUndefined();
 }
 }
 
@@ -233,6 +252,116 @@ QVariantMap OperationalProfileModel::selectedField() const {
     return {};
 }
 
+QVariantMap OperationalProfileModel::selectedProfile() const {
+    for (const auto& profileValue : profiles_) {
+        const auto profile = profileValue.toMap();
+        if (profile.value("profile_key").toString() == selected_profile_key_) return profile;
+    }
+    return {};
+}
+
+QVariantList OperationalProfileModel::domainSummaries() const {
+    QVariantMap rawByKey;
+    for (const auto& raw : selected_parameters_)
+        rawByKey.insert(raw.toMap().value("parameter_key").toString(), raw);
+    QVariantList summaries;
+    for (const auto& domainValue : domains_) {
+        auto domain = domainValue.toMap();
+        int total = 0;
+        int resolved = 0;
+        int unresolved = 0;
+        int blockers = 0;
+        int simulated = 0;
+        int edited = 0;
+        for (const auto& definitionValue : definitions_) {
+            const auto definition = definitionValue.toMap();
+            if (definition.value("domain") != domain.value("id")) continue;
+            const auto field = mergedField(definition, rawByKey.value(definition.value("key").toString()).toMap());
+            ++total;
+            resolved += field.value("unresolved").toBool() ? 0 : 1;
+            unresolved += field.value("unresolved").toBool() ? 1 : 0;
+            blockers += field.value("blocker").toBool() ? 1 : 0;
+            simulated += field.value("effective_simulated").toBool() ? 1 : 0;
+            edited += field.value("edited").toBool() ? 1 : 0;
+        }
+        domain.insert("total", total);
+        domain.insert("resolved", resolved);
+        domain.insert("unresolved", unresolved);
+        domain.insert("blockers", blockers);
+        domain.insert("simulated", simulated);
+        domain.insert("edited", edited);
+        domain.insert("completion_percent", total == 0 ? 0 : (resolved * 100) / total);
+        summaries.append(domain);
+    }
+    return summaries;
+}
+
+QVariantList OperationalProfileModel::validationIssues() const {
+    QVariantMap rawByKey;
+    for (const auto& raw : selected_parameters_)
+        rawByKey.insert(raw.toMap().value("parameter_key").toString(), raw);
+    QVariantList issues;
+    for (const auto& definitionValue : definitions_) {
+        const auto definition = definitionValue.toMap();
+        const auto key = definition.value("key").toString();
+        const auto field = mergedField(definition, rawByKey.value(key).toMap());
+        QString code;
+        QString message;
+        int priority = 0;
+        if (field.value("unresolved").toBool() && field.value("criticality").toString() == QStringLiteral("SAFETY_CRITICAL")) {
+            code = QStringLiteral("SAFETY_BLOCKER");
+            message = QStringLiteral("Safety-critical value is unresolved");
+            priority = 4;
+        } else if (field.value("unresolved").toBool() && field.value("requirement").toString() == QStringLiteral("REQUIRED")) {
+            code = QStringLiteral("REQUIRED_UNKNOWN");
+            message = QStringLiteral("Required value is unresolved");
+            priority = 3;
+        } else if (field.value("effective_simulated").toBool()) {
+            code = QStringLiteral("SIMULATED_VALUE");
+            message = QStringLiteral("Replace simulated value with applicable aircraft evidence");
+            priority = 2;
+        } else if (field.value("effective_disposition").toString() == QStringLiteral("VALUE") &&
+                   field.value("criticality").toString() == QStringLiteral("SAFETY_CRITICAL") &&
+                   (field.value("source_document").toString().trimmed().isEmpty() ||
+                    field.value("source_revision").toString().trimmed().isEmpty() ||
+                    field.value("source_page").toString().trimmed().isEmpty())) {
+            code = QStringLiteral("MISSING_EVIDENCE");
+            message = QStringLiteral("Document, revision and page are required");
+            priority = 1;
+        }
+        if (code.isEmpty()) continue;
+        issues.append(QVariantMap{{"key", key}, {"domain", definition.value("domain")},
+            {"label", definition.value("label")}, {"code", code},
+            {"message", message}, {"priority", priority}});
+    }
+    std::sort(issues.begin(), issues.end(), [](const QVariant& left, const QVariant& right) {
+        const auto a = left.toMap();
+        const auto b = right.toMap();
+        if (a.value("priority").toInt() != b.value("priority").toInt())
+            return a.value("priority").toInt() > b.value("priority").toInt();
+        return a.value("key").toString() < b.value("key").toString();
+    });
+    return issues;
+}
+
+QVariantMap OperationalProfileModel::validationReport() const {
+    const auto overall = summary();
+    const auto issues = validationIssues();
+    int missingEvidence = 0;
+    for (const auto& issue : issues)
+        missingEvidence += issue.toMap().value("code").toString() == QStringLiteral("MISSING_EVIDENCE") ? 1 : 0;
+    QString state = QStringLiteral("READY_FOR_INDEPENDENT_REVIEW");
+    if (overall.value("unresolved").toInt() > 0) state = QStringLiteral("BLOCKED_INCOMPLETE");
+    else if (overall.value("simulated").toInt() > 0) state = QStringLiteral("BLOCKED_SIMULATION");
+    else if (missingEvidence > 0) state = QStringLiteral("BLOCKED_EVIDENCE");
+    return {{"state", state}, {"issue_count", issues.size()},
+        {"unresolved", overall.value("unresolved")},
+        {"safety_blockers", overall.value("safety_blockers")},
+        {"simulated", overall.value("simulated")}, {"missing_evidence", missingEvidence},
+        {"ready_for_review", state == QStringLiteral("READY_FOR_INDEPENDENT_REVIEW")},
+        {"activation_allowed", false}, {"checked_profile", selected_profile_key_}};
+}
+
 QVariantMap OperationalProfileModel::summary() const {
     int unresolved = 0;
     int safetyBlockers = 0;
@@ -363,6 +492,166 @@ bool OperationalProfileModel::stageSelectedField(const QString& disposition,
     if (!saveDraft()) return false;
     status_ = QStringLiteral("DRAFT SAVED • NOT ACTIVE");
     return true;
+}
+
+bool OperationalProfileModel::selectNextIssue() {
+    const auto issues = validationIssues();
+    if (issues.isEmpty()) {
+        status_ = QStringLiteral("NO STRUCTURAL ISSUE • INDEPENDENT REVIEW STILL REQUIRED");
+        return false;
+    }
+    const auto issue = issues.front().toMap();
+    filter_.clear();
+    selected_domain_ = issue.value("domain").toString();
+    refreshSelection();
+    selected_field_key_ = issue.value("key").toString();
+    status_ = issue.value("code").toString() + QStringLiteral(" • DRAFT ONLY");
+    return true;
+}
+
+bool OperationalProfileModel::preloadSimulationProfile(const QString& profileKey) {
+    if (!profileKey.startsWith(QStringLiteral("simulation.")) ||
+        selected_profile_key_.startsWith(QStringLiteral("simulation."))) {
+        status_ = QStringLiteral("SIMULATION PRELOAD REJECTED");
+        return false;
+    }
+    QVariantList sourceParameters;
+    for (const auto& profileValue : profiles_) {
+        const auto profile = profileValue.toMap();
+        if (profile.value("profile_key").toString() == profileKey) {
+            sourceParameters = profile.value("parameters").toList();
+            break;
+        }
+    }
+    if (sourceParameters.size() != definitions_.size()) {
+        status_ = QStringLiteral("SIMULATION TEMPLATE INCOMPLETE");
+        return false;
+    }
+    const auto previous = staged_values_;
+    QVariantMap imported;
+    for (const auto& parameterValue : sourceParameters) {
+        const auto parameter = parameterValue.toMap();
+        if (parameter.value("effective_disposition").toString() != QStringLiteral("VALUE") ||
+            !parameter.value("effective_simulated").toBool() || !parameter.contains("effective_value")) {
+            staged_values_ = previous;
+            status_ = QStringLiteral("SIMULATION TEMPLATE INVALID");
+            return false;
+        }
+        QVariantMap entry{{"disposition", QStringLiteral("VALUE")},
+            {"value", parameter.value("effective_value")}, {"simulated", true},
+            {"approval_status", QStringLiteral("INDICATIVE")},
+            {"source_document", QStringLiteral("EFIS NEXT Simulation Dataset V1")},
+            {"source_revision", QStringLiteral("1")}, {"source_page", QStringLiteral("GENERATED")},
+            {"rationale", QStringLiteral("SIMULATION PRELOAD — replace with evidence applicable to the installed aircraft.")}};
+        if (!parameter.value("canonical_unit").toString().isEmpty())
+            entry.insert("unit", parameter.value("canonical_unit"));
+        imported.insert(parameter.value("parameter_key").toString(), entry);
+    }
+    staged_values_ = imported;
+    if (!saveDraft()) {
+        staged_values_ = previous;
+        return false;
+    }
+    status_ = QStringLiteral("SIMULATION TEMPLATE LOADED • 447 VALUES • NOT FOR FLIGHT");
+    return true;
+}
+
+bool OperationalProfileModel::importDraft(const QString& path) {
+    QFile file{path.trimmed()};
+    if (!file.open(QIODevice::ReadOnly) || file.size() > 4 * 1024 * 1024) {
+        status_ = QStringLiteral("DRAFT IMPORT READ ERROR");
+        return false;
+    }
+    QJsonParseError error{};
+    const auto document = QJsonDocument::fromJson(file.readAll(), &error);
+    if (error.error != QJsonParseError::NoError || !document.isObject()) {
+        status_ = QStringLiteral("DRAFT IMPORT INVALID JSON");
+        return false;
+    }
+    const auto root = document.object();
+    const auto profile = selectedProfile();
+    if (root.value("schema").toString() != QStringLiteral("efis-next.operational-profile-draft.v2") ||
+        root.value("base_profile_key").toString() != selected_profile_key_ ||
+        root.value("base_revision").toInt(-1) != profile.value("revision").toInt() ||
+        !root.contains("activation_allowed") || root.value("activation_allowed").toBool(true) ||
+        !root.value("edited_values").isObject()) {
+        status_ = QStringLiteral("DRAFT IMPORT SAFETY CHECK FAILED");
+        return false;
+    }
+    QVariantMap definitionsByKey;
+    for (const auto& definitionValue : definitions_) {
+        const auto definition = definitionValue.toMap();
+        definitionsByKey.insert(definition.value("key").toString(), definition);
+    }
+    const QSet<QString> dispositions{QStringLiteral("VALUE"), QStringLiteral("UNKNOWN"),
+        QStringLiteral("NOT_APPLICABLE"), QStringLiteral("NOT_INSTALLED"), QStringLiteral("INHERIT")};
+    const QSet<QString> allowedKeys{QStringLiteral("disposition"), QStringLiteral("value"),
+        QStringLiteral("unit"), QStringLiteral("simulated"), QStringLiteral("approval_status"),
+        QStringLiteral("rationale"), QStringLiteral("source_document"),
+        QStringLiteral("source_revision"), QStringLiteral("source_page")};
+    QVariantMap imported;
+    const auto edited = root.value("edited_values").toObject();
+    for (auto it = edited.begin(); it != edited.end(); ++it) {
+        if (!definitionsByKey.contains(it.key()) || !it.value().isObject()) {
+            status_ = QStringLiteral("DRAFT IMPORT UNKNOWN FIELD • ") + it.key();
+            return false;
+        }
+        const auto object = it.value().toObject();
+        for (auto entryIt = object.begin(); entryIt != object.end(); ++entryIt) {
+            if (!allowedKeys.contains(entryIt.key())) {
+                status_ = QStringLiteral("DRAFT IMPORT UNSUPPORTED METADATA • ") + it.key();
+                return false;
+            }
+        }
+        auto entry = object.toVariantMap();
+        const auto disposition = entry.value("disposition").toString();
+        const auto definition = definitionsByKey.value(it.key()).toMap();
+        if (!dispositions.contains(disposition) ||
+            (!entry.value("approval_status").toString().isEmpty() &&
+             entry.value("approval_status").toString() != QStringLiteral("INDICATIVE")) ||
+            (entry.contains("simulated") && entry.value("simulated").metaType().id() != QMetaType::Bool) ||
+            (!entry.value("unit").toString().isEmpty() &&
+             entry.value("unit").toString() != definition.value("canonical_unit").toString())) {
+            status_ = QStringLiteral("DRAFT IMPORT INVALID FIELD • ") + it.key();
+            return false;
+        }
+        if (disposition == QStringLiteral("INHERIT") &&
+            profile.value("parent_profile").toString().trimmed().isEmpty()) {
+            status_ = QStringLiteral("DRAFT IMPORT ROOT INHERIT FORBIDDEN • ") + it.key();
+            return false;
+        }
+        if (disposition == QStringLiteral("VALUE")) {
+            if (!entry.contains("value") || !importedValueMatches(entry.value("value"), definition)) {
+                status_ = QStringLiteral("DRAFT IMPORT TYPE ERROR • ") + it.key();
+                return false;
+            }
+        } else if (entry.contains("value")) {
+            status_ = QStringLiteral("DRAFT IMPORT UNEXPECTED VALUE • ") + it.key();
+            return false;
+        }
+        if ((disposition == QStringLiteral("NOT_APPLICABLE") || disposition == QStringLiteral("NOT_INSTALLED")) &&
+            entry.value("rationale").toString().trimmed().isEmpty()) {
+            status_ = QStringLiteral("DRAFT IMPORT RATIONALE REQUIRED • ") + it.key();
+            return false;
+        }
+        entry.insert("approval_status", QStringLiteral("INDICATIVE"));
+        imported.insert(it.key(), entry);
+    }
+    const auto previous = staged_values_;
+    staged_values_ = imported;
+    if (!saveDraft()) {
+        staged_values_ = previous;
+        return false;
+    }
+    refreshSelection();
+    status_ = QStringLiteral("DRAFT IMPORTED • STRUCTURAL CHECK PASS • NOT ACTIVE");
+    return true;
+}
+
+bool OperationalProfileModel::validateDraft() {
+    const auto report = validationReport();
+    status_ = report.value("state").toString() + QStringLiteral(" • CHECK ONLY • NOT ACTIVE");
+    return report.value("ready_for_review").toBool();
 }
 
 bool OperationalProfileModel::saveDraft() {

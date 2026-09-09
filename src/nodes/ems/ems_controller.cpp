@@ -342,6 +342,30 @@ bool EmsController::stageOperationalField(const QString& disposition, const QStr
     return result;
 }
 
+bool EmsController::selectNextOperationalIssue() {
+    const bool result = operational_profile_model_.selectNextIssue();
+    emit operationalProfileChanged();
+    return result;
+}
+
+bool EmsController::preloadOperationalSimulation(const QString& profileKey) {
+    const bool result = operational_profile_model_.preloadSimulationProfile(profileKey);
+    emit operationalProfileChanged();
+    return result;
+}
+
+bool EmsController::importOperationalDraft(const QString& path) {
+    const bool result = operational_profile_model_.importDraft(path);
+    emit operationalProfileChanged();
+    return result;
+}
+
+bool EmsController::validateOperationalDraft() {
+    const bool result = operational_profile_model_.validateDraft();
+    emit operationalProfileChanged();
+    return result;
+}
+
 bool EmsController::discardOperationalDraft() {
     const bool result = operational_profile_model_.discardDraft();
     emit operationalProfileChanged();

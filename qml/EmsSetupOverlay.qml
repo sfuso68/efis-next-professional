@@ -9,6 +9,9 @@ Rectangle {
     property int monitorSensor: -1
     property bool showFuelHistory: Qt.application.arguments.indexOf("--setup-blackbox-preview") >= 0
     property bool showArchiveInventory: Qt.application.arguments.indexOf("--setup-blackbox-preview") >= 0
+    property int operationalPreviewPage: Qt.application.arguments.indexOf("--setup-operational-entry-preview") >= 0 ? 1 :
+        Qt.application.arguments.indexOf("--setup-operational-load-preview") >= 0 ? 2 :
+        Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0 ? 3 : 0
     onVisibleChanged: if(visible)section=requestedSection
     signal closed()
     z: 200; color: "#F0051018"; border.color: "#28D9F4"
@@ -167,7 +170,7 @@ Rectangle {
                 }
             }
         }
-        OperationalProfileSetup { visible:setup.section===5; y:34*setup.uiScale; width:parent.width; height:parent.height-34*setup.uiScale; controller:setup.controller; uiScale:setup.uiScale }
+        OperationalProfileSetup { visible:setup.section===5; y:34*setup.uiScale; width:parent.width; height:parent.height-34*setup.uiScale; controller:setup.controller; uiScale:setup.uiScale; workflowPage:setup.operationalPreviewPage }
         Item { visible:setup.section===4; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale
             Rectangle { anchors { left:parent.left; right:parent.right; top:parent.top } height:46*setup.uiScale; color:"#10232D"; border.color:setup.line
                 Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"ROTAX 912 UL • MAINTENANCE PROGRAM"; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }

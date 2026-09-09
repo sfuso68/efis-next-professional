@@ -425,6 +425,34 @@ bool PfdController::stageOperationalField(const QString& disposition, const QStr
     return result;
 }
 
+bool PfdController::selectNextOperationalIssue() {
+    const bool result = operational_profile_model_.selectNextIssue();
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::preloadOperationalSimulation(const QString& profileKey) {
+    const bool result = operational_profile_model_.preloadSimulationProfile(profileKey);
+    appendSetupAudit(QStringLiteral("OPERATIONAL_SIM_PRELOAD"), result ? QStringLiteral("SAVED") : QStringLiteral("REJECTED"), profileKey);
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::importOperationalDraft(const QString& path) {
+    const bool result = operational_profile_model_.importDraft(path);
+    appendSetupAudit(QStringLiteral("OPERATIONAL_DRAFT_IMPORT"), result ? QStringLiteral("IMPORTED") : QStringLiteral("REJECTED"), path);
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::validateOperationalDraft() {
+    const bool result = operational_profile_model_.validateDraft();
+    appendSetupAudit(QStringLiteral("OPERATIONAL_DRAFT_CHECK"), result ? QStringLiteral("REVIEW_READY") : QStringLiteral("BLOCKED"),
+        operational_profile_model_.validationReport().value("state").toString());
+    emit setupChanged();
+    return result;
+}
+
 bool PfdController::discardOperationalDraft() {
     const bool result = operational_profile_model_.discardDraft();
     appendSetupAudit(QStringLiteral("OPERATIONAL_DRAFT_DISCARD"), result ? QStringLiteral("SUCCESS") : QStringLiteral("REJECTED"),

@@ -13,12 +13,16 @@ public:
     [[nodiscard]] QVariantList profiles() const { return profiles_; }
     [[nodiscard]] QVariantList domains() const { return domains_; }
     [[nodiscard]] QVariantList fields() const;
+    [[nodiscard]] QVariantList domainSummaries() const;
+    [[nodiscard]] QVariantList validationIssues() const;
+    [[nodiscard]] QVariantMap validationReport() const;
     [[nodiscard]] QVariantMap summary() const;
     [[nodiscard]] QVariantMap selectedField() const;
     [[nodiscard]] QString selectedProfileKey() const { return selected_profile_key_; }
     [[nodiscard]] QString selectedDomain() const { return selected_domain_; }
     [[nodiscard]] QString filter() const { return filter_; }
     [[nodiscard]] QString status() const { return status_; }
+    [[nodiscard]] QString draftPath() const { return draft_path_; }
 
     bool selectProfile(const QString& profileKey);
     bool selectDomain(const QString& domain);
@@ -27,6 +31,10 @@ public:
     bool stageSelectedField(const QString& disposition, const QString& valueText,
                             const QString& rationale, const QString& sourceDocument,
                             const QString& sourceRevision, const QString& sourcePage);
+    bool selectNextIssue();
+    bool preloadSimulationProfile(const QString& profileKey);
+    bool importDraft(const QString& path);
+    bool validateDraft();
     bool discardDraft();
 
 private:
@@ -35,6 +43,7 @@ private:
     [[nodiscard]] QVariantMap inheritedParameter(const QString& parameterKey) const;
     [[nodiscard]] QVariant parseValue(const QVariantMap& definition,
                                       const QString& text, bool& ok) const;
+    [[nodiscard]] QVariantMap selectedProfile() const;
     [[nodiscard]] bool saveDraft();
     void loadDraft();
     void refreshSelection();

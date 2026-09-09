@@ -126,6 +126,31 @@ active-profile format and the flight runtime has no loader for it. The editor
 has no activation control. Promotion requires a separate future review,
 validation, immutable release, signature and rollback workflow.
 
+### Guided loading and validation workflow
+
+The shared PFD/EMS page is divided into four explicit stages:
+
+1. **Overview** selects the working profile and shows completion, unresolved
+   fields and safety blockers for all 28 domains.
+2. **Guided entry** edits one typed field at a time and can advance directly to
+   the highest-priority unresolved issue.
+3. **Load / prefill** imports a matching V2 draft or deliberately copies the
+   complete analogue simulation into the selected draft.
+4. **Check & review** runs a deterministic completeness/provenance check and
+   presents an ordered correction queue.
+
+Draft import is strict: schema, base profile, base revision, field identifiers,
+types, units, dispositions and supported metadata must match. A file containing
+`activation_allowed=true`, release metadata, unknown fields or incompatible
+values is rejected without replacing the current draft. Input size is limited
+to 4 MiB.
+
+Simulation prefill requires a long press. It copies all 447 fields only into
+the staging artifact and preserves `simulated=true` on every value. The review
+check therefore returns `BLOCKED_SIMULATION` until each analogue value is
+replaced with applicable evidence. Completeness is not approval: even
+`READY_FOR_INDEPENDENT_REVIEW` keeps `activation_allowed=false`.
+
 ## Build and validation
 
 ```bash
