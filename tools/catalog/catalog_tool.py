@@ -25,6 +25,18 @@ def read_json(path: Path) -> dict:
         return json.load(stream)
 
 
+def read_operational_seed(path: Path) -> dict:
+    """Load the seed and its explicit profile files without hidden defaults."""
+    seed = read_json(path)
+    profiles = list(seed.get("profiles", []))
+    for relative in seed.get("profile_files", []):
+        profile = read_json(path.parent / relative)
+        if profile.get("schema") != "efis-next.operational-profile.v2":
+            raise ValueError(f"invalid included operational profile: {relative}")
+        profiles.append(profile)
+    return {**seed, "profiles": profiles}
+
+
 def flatten_parameter_dictionary(dictionary: dict) -> tuple[list[dict], list[str]]:
     """Validate and flatten the authoritative operational field dictionary."""
     errors: list[str] = []
@@ -149,6 +161,12 @@ def validate_operational_profile(dictionary: dict, profile: dict, parent: dict |
     disposition_counts = {name: 0 for name in sorted(DISPOSITIONS)}
     blockers: list[str] = []
     release_state = profile.get("lifecycle_state") in {"VERIFIED", "APPROVED"}
+    simulation_profile = (
+        profile.get("simulation_only") is True
+        or str(profile.get("profile_key", "")).startswith("simulation.")
+    )
+    if release_state and simulation_profile:
+        errors.append(f"simulation-only profile cannot enter {profile.get('lifecycle_state')}")
     for key, entry in materialized.items():
         definition = known[key]
         disposition = entry.get("disposition")
@@ -167,6 +185,8 @@ def validate_operational_profile(dictionary: dict, profile: dict, parent: dict |
             canonical_unit = definition.get("unit")
             if canonical_unit and entry.get("unit", canonical_unit) != canonical_unit:
                 errors.append(f"{key}: unit must be canonical {canonical_unit}")
+            if release_state and entry.get("simulated") is True:
+                errors.append(f"{key}: simulated value cannot enter {profile.get('lifecycle_state')}")
         elif "value" in entry:
             errors.append(f"{key}: {disposition} must not contain value")
         if disposition in {"NOT_APPLICABLE", "NOT_INSTALLED"} and not entry.get("rationale"):
@@ -200,6 +220,10 @@ def validate_operational_profile(dictionary: dict, profile: dict, parent: dict |
         "required_resolved": required_resolved,
         "conditional_unresolved": conditional_unresolved,
         "safety_blockers": safety_blockers,
+        "simulated_values": sum(
+            1 for entry in materialized.values()
+            if entry.get("disposition") == "VALUE" and entry.get("simulated") is True
+        ),
         "blocker_keys": blockers,
         "result": "PASS" if not errors else "FAIL",
         "release_ready": bool(
@@ -431,7 +455,7 @@ def build_catalog(
                     "INSERT INTO operational_parameter_definitions(key,domain,label,description,value_type,canonical_unit,requirement,criticality,enum_values_json,applicability_text,sort_order) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                     (definition["key"], definition["domain"], definition["label"], definition.get("description", ""), definition["type"], definition.get("unit"), definition["requirement"], definition["criticality"], json.dumps(definition.get("enum"), ensure_ascii=False) if definition.get("enum") else None, definition.get("applicability", ""), definition["sort_order"]),
                 )
-            operational_seed = read_json(operational_seed_path)
+            operational_seed = read_operational_seed(operational_seed_path)
             seed_errors, _ = validate_operational_seed(dictionary, operational_seed)
             if seed_errors:
                 raise ValueError("invalid operational seed: " + "; ".join(seed_errors))
@@ -462,8 +486,8 @@ def build_catalog(
                         if source_key and source_key not in source_ids:
                             raise ValueError(f"{profile['profile_key']}:{key}: unknown source key {source_key}")
                         db.execute(
-                            "INSERT INTO operational_parameter_values(profile_id,parameter_key,disposition,value_json,unit,approval_status,source_id,source_document,source_revision,source_page,applicability,condition_json,uncertainty_json,rationale,reviewed_by,reviewed_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                            (profile_id, key, entry["disposition"], json.dumps(entry.get("value"), ensure_ascii=False, sort_keys=True) if entry["disposition"] == "VALUE" else None, entry.get("unit"), entry.get("approval_status", profile.get("default_approval_status", "INDICATIVE")), source_ids.get(source_key), entry.get("source_document"), entry.get("source_revision"), entry.get("source_page"), entry.get("applicability", ""), json.dumps(entry.get("condition"), ensure_ascii=False, sort_keys=True) if "condition" in entry else None, json.dumps(entry.get("uncertainty"), ensure_ascii=False, sort_keys=True) if "uncertainty" in entry else None, entry.get("rationale", ""), entry.get("reviewed_by"), entry.get("reviewed_at")),
+                            "INSERT INTO operational_parameter_values(profile_id,parameter_key,disposition,value_json,unit,is_simulated,approval_status,source_id,source_document,source_revision,source_page,applicability,condition_json,uncertainty_json,rationale,reviewed_by,reviewed_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                            (profile_id, key, entry["disposition"], json.dumps(entry.get("value"), ensure_ascii=False, sort_keys=True) if entry["disposition"] == "VALUE" else None, entry.get("unit"), int(entry.get("simulated") is True), entry.get("approval_status", profile.get("default_approval_status", "INDICATIVE")), source_ids.get(source_key), entry.get("source_document"), entry.get("source_revision"), entry.get("source_page"), entry.get("applicability", ""), json.dumps(entry.get("condition"), ensure_ascii=False, sort_keys=True) if "condition" in entry else None, json.dumps(entry.get("uncertainty"), ensure_ascii=False, sort_keys=True) if "uncertainty" in entry else None, entry.get("rationale", ""), entry.get("reviewed_by"), entry.get("reviewed_at")),
                         )
                     db.execute(
                         "INSERT INTO operational_validation_runs(profile_id,run_at,validator_version,result,required_total,required_resolved,conditional_unresolved,safety_blockers,report_json) VALUES(?,?,?,?,?,?,?,?,?)",
@@ -525,7 +549,7 @@ def write_catalog_index(database: Path) -> Path:
                 profile_id = int(profile_row["id"])
                 value_rows: dict[str, dict] = {}
                 for value_row in db.execute(
-                    "SELECT v.parameter_key,v.disposition,v.value_json,v.unit,v.approval_status,s.title AS source_title,v.source_document,v.source_revision,v.source_page,v.applicability,v.condition_json,v.uncertainty_json,v.rationale,v.reviewed_by,v.reviewed_at FROM operational_parameter_values v LEFT JOIN sources s ON s.id=v.source_id WHERE v.profile_id=? ORDER BY v.parameter_key",
+                    "SELECT v.parameter_key,v.disposition,v.value_json,v.unit,v.is_simulated AS simulated,v.approval_status,s.title AS source_title,v.source_document,v.source_revision,v.source_page,v.applicability,v.condition_json,v.uncertainty_json,v.rationale,v.reviewed_by,v.reviewed_at FROM operational_parameter_values v LEFT JOIN sources s ON s.id=v.source_id WHERE v.profile_id=? ORDER BY v.parameter_key",
                     (profile_id,),
                 ):
                     value = dict(value_row)
@@ -556,8 +580,10 @@ def write_catalog_index(database: Path) -> Path:
                 item["parameter_counts"] = {count["disposition"]: count["count"] for count in counts}
                 validation = db.execute("SELECT result,required_total,required_resolved,conditional_unresolved,safety_blockers,report_json FROM operational_validation_runs WHERE profile_id=? ORDER BY id DESC LIMIT 1", (profile_id,)).fetchone()
                 if validation:
+                    report = json.loads(validation["report_json"])
                     item["validation"] = {key: validation[key] for key in ("result", "required_total", "required_resolved", "conditional_unresolved", "safety_blockers")}
-                    item["validation"]["release_ready"] = bool(json.loads(validation["report_json"])["release_ready"])
+                    item["validation"]["simulated_values"] = int(report.get("simulated_values", 0))
+                    item["validation"]["release_ready"] = bool(report["release_ready"])
                 parameters = []
                 for definition in operational_parameters:
                     key = definition["key"]
@@ -567,6 +593,7 @@ def write_catalog_index(database: Path) -> Path:
                     if "value" in effective:
                         raw["effective_value"] = effective["value"]
                     raw["effective_approval_status"] = effective.get("approval_status", "INDICATIVE")
+                    raw["effective_simulated"] = bool(effective.get("simulated"))
                     raw["origin_profile"] = profiles_by_id[origin_id]["profile_key"]
                     parameters.append(raw)
                 item["parameters"] = parameters
@@ -625,7 +652,7 @@ def main() -> int:
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
         return 1 if errors else 0
     if args.command == "validate-operational-seed":
-        errors, reports = validate_operational_seed(read_json(args.dictionary), read_json(args.seed))
+        errors, reports = validate_operational_seed(read_json(args.dictionary), read_operational_seed(args.seed))
         result = {"result": "PASS" if not errors else "FAIL", "profiles": reports, "errors": errors}
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
         return 1 if errors else 0

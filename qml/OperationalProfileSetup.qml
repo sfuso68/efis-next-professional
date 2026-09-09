@@ -51,7 +51,7 @@ Item {
     Rectangle { anchors.fill:parent; color:"transparent"
         Rectangle { id:summaryBar; anchors { left:parent.left; right:parent.right; top:parent.top } height:58*root.uiScale; color:root.panel; border.color:root.line
             Text { x:10*root.uiScale; y:7*root.uiScale; text:"CONTROLLED AIRCRAFT PROFILE"; color:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
-            Text { x:10*root.uiScale; y:25*root.uiScale; width:430*root.uiScale; elide:Text.ElideRight; text:String(controller.operationalSelectedProfile||"NO PROFILE")+"  ›"; color:"white"; font.pixelSize:11*root.uiScale; font.bold:true
+            Text { x:10*root.uiScale; y:25*root.uiScale; width:365*root.uiScale; elide:Text.ElideRight; text:String(controller.operationalSelectedProfile||"NO PROFILE")+"  ›"; color:"white"; font.pixelSize:11*root.uiScale; font.bold:true
                 TapHandler { onTapped:root.cycleProfile() }
             }
             Row { anchors { right:parent.right; rightMargin:10*root.uiScale; verticalCenter:parent.verticalCenter } spacing:7*root.uiScale
@@ -59,8 +59,9 @@ Item {
                     {k:"FIELDS",v:Number(root.summary.total||0),c:root.cyan},
                     {k:"UNKNOWN",v:Number(root.summary.unresolved||0),c:root.amber},
                     {k:"SAFETY BLOCK",v:Number(root.summary.safety_blockers||0),c:root.red},
+                    {k:"SIMULATED",v:Number(root.summary.simulated||0),c:root.red},
                     {k:"EDITED",v:Number(root.summary.edited||0),c:root.green}]
-                    delegate:Rectangle { required property var modelData; width:78*root.uiScale; height:42*root.uiScale; radius:3*root.uiScale; color:"#102630"; border.color:modelData.c
+                    delegate:Rectangle { required property var modelData; width:69*root.uiScale; height:42*root.uiScale; radius:3*root.uiScale; color:"#102630"; border.color:modelData.c
                         Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:modelData.k; color:modelData.c; font.pixelSize:5.5*root.uiScale; font.bold:true }
                         Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:modelData.v; color:"white"; font.pixelSize:14*root.uiScale; font.bold:true }
                     }
@@ -89,7 +90,10 @@ Item {
                     Rectangle { width:4*root.uiScale; height:parent.height; color:modelData.blocker?root.red:(modelData.edited?root.green:"transparent") }
                     Text { x:9*root.uiScale; y:5*root.uiScale; width:parent.width-18*root.uiScale; elide:Text.ElideRight; text:String(modelData.label||""); color:"white"; font.pixelSize:7*root.uiScale; font.bold:true }
                     Text { x:9*root.uiScale; y:22*root.uiScale; width:parent.width-92*root.uiScale; elide:Text.ElideRight; text:String(modelData.display_value||"—")+(modelData.canonical_unit?" "+String(modelData.canonical_unit):""); color:modelData.unresolved?root.amber:root.cyan; font.pixelSize:7*root.uiScale }
-                    Text { anchors { right:parent.right; rightMargin:6*root.uiScale; bottom:parent.bottom; bottomMargin:6*root.uiScale } text:String(modelData.criticality)==="SAFETY_CRITICAL"?"SAFETY":""; color:root.red; font.pixelSize:5.5*root.uiScale; font.bold:true }
+                    Row { anchors { right:parent.right; rightMargin:6*root.uiScale; bottom:parent.bottom; bottomMargin:6*root.uiScale } spacing:4*root.uiScale
+                        Text { text:modelData.effective_simulated?"SIM":""; color:root.red; font.pixelSize:5.5*root.uiScale; font.bold:true }
+                        Text { text:String(modelData.criticality)==="SAFETY_CRITICAL"?"SAFETY":""; color:root.red; font.pixelSize:5.5*root.uiScale; font.bold:true }
+                    }
                     TapHandler { onTapped:root.chooseField(modelData) }
                 }
             }
@@ -99,6 +103,9 @@ Item {
             Text { x:10*root.uiScale; y:8*root.uiScale; width:parent.width-20*root.uiScale; elide:Text.ElideRight; text:String(root.selected.label||"SELECT A FIELD"); color:"white"; font.pixelSize:10*root.uiScale; font.bold:true }
             Text { x:10*root.uiScale; y:27*root.uiScale; width:parent.width-20*root.uiScale; elide:Text.ElideMiddle; text:String(root.selected.key||""); color:root.cyan; font.pixelSize:6*root.uiScale }
             Text { x:10*root.uiScale; y:43*root.uiScale; text:String(root.selected.value_type||"—")+(root.selected.canonical_unit?" • "+String(root.selected.canonical_unit):"")+" • "+String(root.selected.requirement||""); color:"#AAB6BC"; font.pixelSize:6*root.uiScale }
+            Rectangle { visible:root.selected.effective_simulated===true; anchors { right:parent.right; rightMargin:10*root.uiScale; top:parent.top; topMargin:8*root.uiScale } width:96*root.uiScale; height:25*root.uiScale; radius:2*root.uiScale; color:"#4A1117"; border.color:root.red
+                Text { anchors.centerIn:parent; text:"SIMULATED"; color:"white"; font.pixelSize:6.5*root.uiScale; font.bold:true }
+            }
 
             Grid { x:10*root.uiScale; y:62*root.uiScale; columns:3; spacing:4*root.uiScale
                 Repeater { model:[{l:"VALUE",v:"VALUE"},{l:"UNKNOWN",v:"UNKNOWN"},{l:"INHERIT",v:"INHERIT"},{l:"N/A",v:"NOT_APPLICABLE"},{l:"NOT INST.",v:"NOT_INSTALLED"}]
@@ -136,7 +143,7 @@ Item {
         }
 
         Rectangle { id:statusBar; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:31*root.uiScale; color:"#301015"; border.color:root.red
-            Text { x:9*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"⛔  DRAFT ONLY • RELEASE READY = NO"; color:root.red; font.pixelSize:7*root.uiScale; font.bold:true }
+            Text { x:9*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:root.summary.simulation_profile?"⛔  SIMULATION DATA • NOT FOR FLIGHT • RELEASE READY = NO":"⛔  DRAFT ONLY • RELEASE READY = NO"; color:root.red; font.pixelSize:7*root.uiScale; font.bold:true }
             Text { anchors { right:parent.right; rightMargin:9*root.uiScale; verticalCenter:parent.verticalCenter } width:420*root.uiScale; horizontalAlignment:Text.AlignRight; elide:Text.ElideLeft; text:String(controller.operationalCatalogStatus||"NOT LOADED"); color:root.amber; font.pixelSize:6.5*root.uiScale; font.bold:true }
         }
     }

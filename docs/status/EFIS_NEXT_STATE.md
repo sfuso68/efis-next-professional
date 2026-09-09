@@ -225,26 +225,51 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   Un profilo radice non può usare `INHERIT` e N/A/non installato richiedono una
   motivazione.
 
+### Profilo completo di simulazione separato — 2026-09-09
+
+- Aggiunto `simulation.asso-v-jolly-912-ul`, profilo separato dall'esemplare
+  reale e generato deterministicamente da tutti i 447 campi del dizionario.
+- I valori sono sintetici o analoghi e servono esclusivamente a simulatore,
+  layout, allarmi, logging e replay. Ogni campo è `VALUE`, `INDICATIVE` e porta
+  il marcatore persistente `simulated=true`; nessun numero è dichiarato
+  applicabile all'aereo reale.
+- Schema SQLite e indice espongono il marcatore per campo. Il validatore rifiuta
+  qualsiasi valore simulato se un profilo viene posto in `VERIFIED` o
+  `APPROVED`, anche quando tutti i campi risultano compilati.
+- La pagina Setup condivisa PFD/EMS mostra conteggio `SIMULATED`, badge `SIM`
+  sui campi e fascia rossa `SIMULATION DATA • NOT FOR FLIGHT`. Il profilo
+  installato reale resta quello selezionato inizialmente e conserva i propri
+  blocker senza ricevere valori dal profilo sintetico.
+
 ## Verificato solo software
 
 ### Catalogo operativo aeromobile V2
 
-- `tests/catalog_tool_tests.py`: 11/11 test PASS con Python 3.12; coperti
+- `tests/catalog_tool_tests.py`: 12/12 test PASS con Python 3.12; coperti
   dizionario, unicità, materializzazione completa, eredità, rifiuto di chiavi
   sconosciute, obbligo della motivazione per N/A/non installato, build SQLite e
   conservazione atomica del catalogo precedente quando la rigenerazione fallisce;
   il registro Markdown contiene tutti e 447 gli identificativi.
-- `PRAGMA integrity_check=ok`; 447 definizioni, 2 profili, 894 valori e zero
+- `PRAGMA integrity_check=ok`; 447 definizioni, 3 profili, 1.341 valori e zero
   coppie profilo/parametro mancanti. Validazione del seed: struttura PASS.
+- Il profilo sintetico contiene 447/447 valori marcati simulati, zero campi
+  irrisolti e zero blocker strutturali, ma resta correttamente
+  `release_ready=false`. Un test dedicato dimostra che il tentativo di
+  promozione a `VERIFIED` viene rifiutato per la presenza dei marcatori SIM.
 - La struttura PASS non significa pronta al volo: il modello segnala 309
   blocker safety-critical e 429 campi `UNKNOWN`; l'esemplare aggiunge sei
   override `UNKNOWN`. Nessuna verifica su hardware reale è stata eseguita per
   questo catalogo.
 - Build MSVC 19.51/Qt 6.11 completata per PFD ed EMS con compilazione AOT della
-  nuova pagina QML. Il test `efis_operational_profile_model_tests` passa e
-  verifica selezione profilo, isolamento della bozza, tipizzazione, motivazione
-  obbligatoria, divieto di eredità sul profilo radice, scrittura atomica,
+  nuova pagina QML. Nella revisione precedente il test
+  `efis_operational_profile_model_tests` era passato verificando selezione
+  profilo, isolamento della bozza, tipizzazione, motivazione obbligatoria,
+  divieto di eredità sul profilo radice, scrittura atomica,
   `activation_allowed=false`, filtro e cancellazione della sola bozza.
+- In questa sessione l'eseguibile aggiornato del test modello Qt è stato
+  compilato e linkato, ma Windows Application Control ne ha impedito l'avvio
+  (`BAD_COMMAND`): le nuove asserzioni UI/modello non sono quindi dichiarate
+  eseguite. La compilazione AOT QML di PFD ed EMS è invece riuscita.
 - Smoke test EMS con backend Qt offscreen concluso con exit code 0. È una prova
   di caricamento software, non un'accettazione visiva sul pannello reale.
 - La build completa Windows del branch è riuscita. Nel tentativo CTest completo
@@ -314,6 +339,10 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 - Il link finale del nuovo binario PFD **non è verificato**: la copia sorgente sul target ha un drift precedente e il suo `CMakeLists.txt` non include implementazioni già richieste da `pfd_controller.cpp` (`EngineSourceRouter`, runtime motore e simulatore di sistema). Non è stato installato alcun binario UI parziale.
 
 ## Verificato su hardware reale
+
+Il profilo completo di simulazione, il nuovo marcatore campo per campo e la
+relativa presentazione Setup non sono stati verificati su RPi4/RPi5 reale in
+questa sessione.
 
 ### Blackbox `efisblackbox` — 192.168.1.47
 

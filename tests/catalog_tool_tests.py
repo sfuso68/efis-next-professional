@@ -61,7 +61,7 @@ class CatalogTests(unittest.TestCase):
 
     def test_operational_profiles_never_silently_omit_parameters(self):
         dictionary = json.loads((ROOT / "data/catalog/operational-parameter-dictionary-v2.json").read_text(encoding="utf-8"))
-        seed = json.loads((ROOT / "data/catalog/seed/operational-seed-v2.json").read_text(encoding="utf-8"))
+        seed = MODULE.read_operational_seed(ROOT / "data/catalog/seed/operational-seed-v2.json")
         definitions, _ = MODULE.flatten_parameter_dictionary(dictionary)
         root = seed["profiles"][0]
         child = seed["profiles"][1]
@@ -87,7 +87,7 @@ class CatalogTests(unittest.TestCase):
 
     def test_operational_profile_rejects_unknown_key_and_bad_na(self):
         dictionary = json.loads((ROOT / "data/catalog/operational-parameter-dictionary-v2.json").read_text(encoding="utf-8"))
-        seed = json.loads((ROOT / "data/catalog/seed/operational-seed-v2.json").read_text(encoding="utf-8"))
+        seed = MODULE.read_operational_seed(ROOT / "data/catalog/seed/operational-seed-v2.json")
         profile = json.loads(json.dumps(seed["profiles"][0]))
         profile["values"]["invented.unsafe"] = {"disposition": "VALUE", "value": 1}
         profile["values"]["flaps.installed"] = {"disposition": "NOT_INSTALLED"}
@@ -98,12 +98,33 @@ class CatalogTests(unittest.TestCase):
 
     def test_simulation_profile_cannot_be_promoted_with_unresolved_limits(self):
         dictionary = json.loads((ROOT / "data/catalog/operational-parameter-dictionary-v2.json").read_text(encoding="utf-8"))
-        seed = json.loads((ROOT / "data/catalog/seed/operational-seed-v2.json").read_text(encoding="utf-8"))
+        seed = MODULE.read_operational_seed(ROOT / "data/catalog/seed/operational-seed-v2.json")
         profile = json.loads(json.dumps(seed["profiles"][0]))
         profile["lifecycle_state"] = "VERIFIED"
         errors, report = MODULE.validate_operational_profile(dictionary, profile)
         self.assertTrue(any("unresolved required parameter" in error for error in errors))
         self.assertGreater(report["safety_blockers"], 0)
+        self.assertFalse(report["release_ready"])
+
+    def test_complete_simulation_profile_is_explicit_and_cannot_be_promoted(self):
+        dictionary = json.loads((ROOT / "data/catalog/operational-parameter-dictionary-v2.json").read_text(encoding="utf-8"))
+        definitions, _ = MODULE.flatten_parameter_dictionary(dictionary)
+        seed = MODULE.read_operational_seed(ROOT / "data/catalog/seed/operational-seed-v2.json")
+        profile = next(item for item in seed["profiles"] if item["profile_key"] == "simulation.asso-v-jolly-912-ul")
+        self.assertEqual({item["key"] for item in definitions}, set(profile["values"]))
+        self.assertTrue(all(item["disposition"] == "VALUE" for item in profile["values"].values()))
+        self.assertTrue(all(item["simulated"] is True for item in profile["values"].values()))
+        self.assertTrue(all(item["approval_status"] == "INDICATIVE" for item in profile["values"].values()))
+        errors, report = MODULE.validate_operational_profile(dictionary, profile, seed["profiles"][0])
+        self.assertEqual([], errors)
+        self.assertEqual(len(definitions), report["simulated_values"])
+        self.assertEqual(0, report["safety_blockers"])
+        self.assertFalse(report["release_ready"])
+        promoted = json.loads(json.dumps(profile))
+        promoted["lifecycle_state"] = "VERIFIED"
+        errors, report = MODULE.validate_operational_profile(dictionary, promoted, seed["profiles"][0])
+        self.assertIn("simulation-only profile cannot enter VERIFIED", errors)
+        self.assertTrue(any("simulated value cannot enter VERIFIED" in error for error in errors))
         self.assertFalse(report["release_ready"])
 
     def test_v2_build_materializes_every_profile_field(self):
@@ -124,22 +145,27 @@ class CatalogTests(unittest.TestCase):
             try:
                 self.assertEqual("ok", db.execute("PRAGMA integrity_check").fetchone()[0])
                 self.assertEqual(len(definitions), db.execute("SELECT count(*) FROM operational_parameter_definitions").fetchone()[0])
-                self.assertEqual(2, db.execute("SELECT count(*) FROM operational_profiles").fetchone()[0])
-                self.assertEqual(2 * len(definitions), db.execute("SELECT count(*) FROM operational_parameter_values").fetchone()[0])
-                self.assertEqual(2, db.execute("SELECT count(*) FROM operational_validation_runs WHERE result='PASS'").fetchone()[0])
-                self.assertEqual(0, db.execute("SELECT count(*) FROM operational_validation_runs WHERE safety_blockers=0").fetchone()[0])
+                self.assertEqual(3, db.execute("SELECT count(*) FROM operational_profiles").fetchone()[0])
+                self.assertEqual(3 * len(definitions), db.execute("SELECT count(*) FROM operational_parameter_values").fetchone()[0])
+                self.assertEqual(3, db.execute("SELECT count(*) FROM operational_validation_runs WHERE result='PASS'").fetchone()[0])
+                self.assertEqual(1, db.execute("SELECT count(*) FROM operational_validation_runs WHERE safety_blockers=0").fetchone()[0])
+                self.assertEqual(len(definitions), db.execute("SELECT count(*) FROM operational_parameter_values WHERE is_simulated=1").fetchone()[0])
                 self.assertEqual(1, db.execute("SELECT count(*) FROM operational_parameter_values v JOIN operational_profiles p ON p.id=v.profile_id WHERE p.profile_key='aircraft.asso-v-jolly-owner' AND v.parameter_key='identity.registration' AND v.disposition='UNKNOWN'").fetchone()[0])
             finally:
                 db.close()
             index = json.loads(index_path.read_text(encoding="utf-8"))
             self.assertEqual(28, len(index["operational_domains"]))
             self.assertEqual(len(definitions), len(index["operational_parameters"]))
-            self.assertEqual(2, len(index["operational_profiles"]))
+            self.assertEqual(3, len(index["operational_profiles"]))
             self.assertTrue(all(len(profile["parameters"]) == len(definitions) for profile in index["operational_profiles"]))
             installed = next(profile for profile in index["operational_profiles"] if profile["profile_key"] == "aircraft.asso-v-jolly-owner")
             registration = next(value for value in installed["parameters"] if value["parameter_key"] == "identity.registration")
             self.assertEqual("UNKNOWN", registration["effective_disposition"])
             self.assertFalse(installed["validation"]["release_ready"])
+            simulation = next(profile for profile in index["operational_profiles"] if profile["profile_key"] == "simulation.asso-v-jolly-912-ul")
+            self.assertEqual(len(definitions), simulation["validation"]["simulated_values"])
+            self.assertTrue(all(value["effective_simulated"] for value in simulation["parameters"]))
+            self.assertFalse(simulation["validation"]["release_ready"])
 
     def test_failed_v2_build_preserves_previous_catalog(self):
         dictionary = json.loads((ROOT / "data/catalog/operational-parameter-dictionary-v2.json").read_text(encoding="utf-8"))

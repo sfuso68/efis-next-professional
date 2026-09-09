@@ -12,6 +12,26 @@ legacy source, owner statement or similar-aircraft profile remains indicative.
 Only the documents applicable to the individual aircraft, engine, propeller and
 installed equipment can support a `VERIFIED` or `APPROVED` release.
 
+## Complete simulation profile
+
+`simulation.asso-v-jolly-912-ul` is a complete 447-field software test
+scenario. It uses synthetic values and non-applicable analogue cues for an Asso
+V Jolly / Rotax 912 UL configuration. The Pioneer 300 similarity and public
+Rotax product figures are context for simulator behaviour only; neither source
+establishes the limits, procedures or installed configuration of the actual
+aircraft.
+
+Every field in this profile is explicit `VALUE`, `INDICATIVE` and
+`simulated=true`. The profile remains `SIMULATION` and `release_ready=false`
+even though it has no unresolved fields. The validator rejects every simulated
+value if the lifecycle is changed to `VERIFIED` or `APPROVED`. This prevents a
+complete simulator dataset from satisfying an operational release gate.
+
+The generator is deterministic and versioned. New dictionary fields cannot be
+silently inherited or omitted: regeneration must explicitly add the field to
+the profile. The generated values are suitable for screen layout, alert-state,
+logging, replay and integration tests, never for flight planning or operation.
+
 ## No-silent-omission rule
 
 The controlled dictionary contains 447 fields in 28 domains. When a profile is
@@ -84,7 +104,11 @@ a software completeness gate, not a certification claim.
 - `data/catalog/schema/002_operational_parameters.sql`: normalized SQLite V2
   layer.
 - `data/catalog/seed/operational-seed-v2.json`: initial model and installed-
-  aircraft overlays, intentionally `SIMULATION`.
+  aircraft overlays plus the explicit simulation-profile include.
+- `data/catalog/seed/simulation-profile-v2.json`: generated complete synthetic
+  profile; every value carries the simulation marker.
+- `tools/catalog/generate_simulation_profile.py`: deterministic simulation
+  profile generator.
 - `tools/catalog/catalog_tool.py`: dictionary/profile validators and database
   builder.
 - `tests/catalog_tool_tests.py`: completeness, rejection and database tests.

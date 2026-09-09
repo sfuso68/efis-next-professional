@@ -1,5 +1,6 @@
 {
   "schema": "efis-next.operational-seed.v2",
+  "profile_files": ["simulation-profile-v2.json"],
   "profiles": [
     {
       "schema": "efis-next.operational-profile.v2",

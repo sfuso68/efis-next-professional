@@ -55,6 +55,7 @@ CREATE TABLE operational_parameter_values (
     )),
     value_json TEXT,
     unit TEXT,
+    is_simulated INTEGER NOT NULL DEFAULT 0 CHECK(is_simulated IN (0,1)),
     approval_status TEXT NOT NULL CHECK(approval_status IN (
         'INDICATIVE','DOCUMENTED','VERIFIED','APPROVED','OWNER_OVERRIDE'
     )),

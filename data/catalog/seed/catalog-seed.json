@@ -24,6 +24,16 @@
       "publisher": "BRP-Rotax",
       "document_ref": "Exact current document/revision/page set required before VERIFIED",
       "source_class": "OFFICIAL"
+    },
+    {
+      "key": "simulation-analogue-2026-09-09",
+      "title": "EFIS NEXT synthetic Asso V Jolly simulation dataset",
+      "publisher": "EFIS NEXT project",
+      "document_ref": "Generated simulation scenario using non-applicable analogue cues; never valid for flight",
+      "revision": "1",
+      "url": "https://www.alpiaviation.com/en/airplane/pioneer-300/",
+      "retrieved_at": "2026-09-09",
+      "source_class": "SECONDARY"
     }
   ],
   "engines": [

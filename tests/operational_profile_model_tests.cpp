@@ -27,11 +27,26 @@ int main(int argc, char** argv) {
 
         OperationalProfileModel model;
         require(model.load(index, draft), "V2 catalog index must load");
-        require(model.profiles().size() == 2, "two controlled profiles must be exposed");
+        require(model.profiles().size() == 3, "three controlled profiles must be exposed");
         require(model.domains().size() == 28, "all operational domains must be exposed");
         require(model.summary().value("total").toInt() == 447, "all fields must be exposed");
         require(!model.summary().value("release_ready").toBool(), "setup drafts must never be release-ready");
         require(model.status().contains(QStringLiteral("NOT ACTIVE")), "draft safety state must be visible");
+        require(model.selectedProfileKey() == QStringLiteral("aircraft.asso-v-jolly-owner"),
+                "the real installed-aircraft draft must remain the default selection");
+        require(!model.summary().value("simulation_profile").toBool(),
+                "the default installed-aircraft draft must not be labelled as the synthetic scenario");
+
+        require(model.selectProfile(QStringLiteral("simulation.asso-v-jolly-912-ul")),
+                "complete simulation profile must be selectable");
+        require(model.summary().value("simulation_profile").toBool(),
+                "simulation profile must be unambiguously identified");
+        require(model.summary().value("simulated").toInt() == 447,
+                "every simulation field must retain its simulated marker");
+        require(model.summary().value("safety_blockers").toInt() == 0,
+                "complete synthetic profile must exercise every safety field");
+        require(!model.summary().value("release_ready").toBool(),
+                "complete synthetic data must still be prohibited from release");
 
         require(model.selectProfile(QStringLiteral("model.asso-v-jolly-912-ul")), "model profile must be selectable");
         require(model.selectedProfileKey() == QStringLiteral("model.asso-v-jolly-912-ul"),

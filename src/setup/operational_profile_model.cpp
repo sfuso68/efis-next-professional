@@ -169,6 +169,7 @@ QVariantMap OperationalProfileModel::mergedField(const QVariantMap& definition,
         // metadata from the underlying catalog make a new draft value appear
         // documented when the operator did not enter that evidence.
         static const QStringList replacedKeys{QStringLiteral("value"), QStringLiteral("unit"),
+            QStringLiteral("simulated"), QStringLiteral("effective_simulated"),
             QStringLiteral("source_title"), QStringLiteral("source_document"),
             QStringLiteral("source_revision"), QStringLiteral("source_page"),
             QStringLiteral("rationale"), QStringLiteral("reviewed_by"),
@@ -179,10 +180,12 @@ QVariantMap OperationalProfileModel::mergedField(const QVariantMap& definition,
         value.insert("effective_disposition", value.value("disposition"));
         if (value.value("disposition").toString() == QStringLiteral("VALUE")) {
             value.insert("effective_value", value.value("value"));
+            value.insert("effective_simulated", value.value("simulated", false));
         } else if (value.value("disposition").toString() == QStringLiteral("INHERIT")) {
             const auto inherited = inheritedParameter(key);
             value.insert("effective_disposition", inherited.value("effective_disposition", QStringLiteral("UNKNOWN")));
             value.insert("effective_approval_status", inherited.value("effective_approval_status", QStringLiteral("INDICATIVE")));
+            value.insert("effective_simulated", inherited.value("effective_simulated", false));
             value.insert("origin_profile", inherited.value("origin_profile"));
             if (inherited.contains("effective_value"))
                 value.insert("effective_value", inherited.value("effective_value"));
@@ -234,6 +237,15 @@ QVariantMap OperationalProfileModel::summary() const {
     int unresolved = 0;
     int safetyBlockers = 0;
     int values = 0;
+    int simulated = 0;
+    QVariantMap selectedProfile;
+    for (const auto& profileValue : profiles_) {
+        const auto profile = profileValue.toMap();
+        if (profile.value("profile_key").toString() == selected_profile_key_) {
+            selectedProfile = profile;
+            break;
+        }
+    }
     for (const auto& definitionValue : definitions_) {
         const auto definition = definitionValue.toMap();
         QVariantMap raw;
@@ -247,10 +259,15 @@ QVariantMap OperationalProfileModel::summary() const {
         unresolved += field.value("unresolved").toBool() ? 1 : 0;
         safetyBlockers += field.value("blocker").toBool() ? 1 : 0;
         values += field.value("effective_disposition").toString() == QStringLiteral("VALUE") ? 1 : 0;
+        simulated += field.value("effective_simulated").toBool() ? 1 : 0;
     }
     return {{"total", definitions_.size()}, {"values", values}, {"unresolved", unresolved},
             {"safety_blockers", safetyBlockers}, {"edited", staged_values_.size()},
-            {"release_ready", false}, {"profile_key", selected_profile_key_}};
+            {"simulated", simulated}, {"release_ready", false},
+            {"profile_key", selected_profile_key_},
+            {"profile_title", selectedProfile.value("title")},
+            {"lifecycle_state", selectedProfile.value("lifecycle_state")},
+            {"simulation_profile", selected_profile_key_.startsWith(QStringLiteral("simulation."))}};
 }
 
 QVariant OperationalProfileModel::parseValue(const QVariantMap& definition,
@@ -332,6 +349,7 @@ bool OperationalProfileModel::stageSelectedField(const QString& disposition,
             return false;
         }
         staged.insert("value", parsed);
+        staged.insert("simulated", selected_profile_key_.startsWith(QStringLiteral("simulation.")));
         if (!definition.value("canonical_unit").toString().isEmpty())
             staged.insert("unit", definition.value("canonical_unit"));
         if (!sourceDocument.trimmed().isEmpty()) staged.insert("source_document", sourceDocument.trimmed());
