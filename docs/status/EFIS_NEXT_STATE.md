@@ -826,6 +826,41 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   touch, resa/qualita' terrain, corretta visualizzazione delle unita' imperiali
   e acceptance dell'operatore restano aperti. La release e' operativa sul banco,
   ma non e' dichiarata pronta al volo.
+- Test hardware grafico del 2026-09-12: PFD, Canvas, NAV, Mission, EMS e Setup
+  sono stati caricati uno alla volta sul display EGLFS reale e catturati a
+  1024x600 con uscita controllata. Tutte le sei catture hanno `exit code 0` e i
+  log non contengono `TypeError`, `ReferenceError`, moduli mancanti o fallimenti
+  QML. Il servizio Canvas e' stato ripristinato dopo ogni gruppo di prove.
+- La verifica visiva non chiude l'acceptance: PFD e Canvas mostrano il valore
+  ALT e la cella VS troppo vicini, fino a sembrare un unico riquadro; la texture
+  terrain nel primo piano e' stirata/sfocata e non raggiunge la qualita' target.
+  NAV e Mission dichiarano `BLACK BOX OFFLINE` mentre il ricevitore DDP e'
+  `LIVE`, perche' `blackBoxState` legge ancora uno status recorder locale che
+  non esiste sul display. La pagina EMS del MFD dichiara `BLACKBOX LINK LOST`
+  perche' EDP V1 e' destinato al solo RPi4 EMS. Questi stati non devono essere
+  confusi con la ricezione DDP di volo, che durante le prove era regolare.
+- Il Setup si apre e viene renderizzato, ma presenta valori statici errati per
+  questo nodo (`RPi5 • PFD-01`, `PRIMARY DISPLAY`, `NODE: PFD-01`). Le stringhe
+  risultano codificate direttamente in `MaintenanceOverlay.qml`; il profilo MFD
+  non e' quindi ancora propagato nel modello Setup.
+- Il profilo imperiale e' visibile nelle catture: KT/FT sui nastri e IN HG,
+  GPH, °F, PSI e GAL nella strumentazione motore. Il caricamento del file unita'
+  e' verificato; resta necessaria la conferma umana di leggibilita' sul pannello.
+- Il test touch non e' eseguibile nella configurazione corrente: `lsusb` mostra
+  soltanto i quattro root hub e `libinput` non elenca alcun dispositivo touch.
+  Non e' stata simulata un'interazione per non trasformarla impropriamente in
+  evidenza hardware.
+- Soak preliminare completato per cinque minuti: 30/30 campioni con servizio
+  `active`, zero restart, `ExecMainStatus=0`, temperatura 55,4–60,9 °C e
+  `get_throttled=0x0`. Il campione finale riportava DDP `LIVE` a 20,0 Hz, 7970
+  pacchetti accettati e zero reject, gap o errori socket; Ethernet aveva zero
+  errori RX/TX e `UdpInErrors/UdpRcvbufErrors/UdpInCsumErrors=0`.
+- Il soak di acceptance da 60 minuti e' stato avviato come unita' transiente
+  `efis-next-mfd-soak-60.service` alle 22:29:50 CEST, invocation
+  `f6ee9251ae1d47dbaf5a735628e160b0`. Produce
+  `/home/pi/efis-next-test-evidence/soak-60min.csv` e il riepilogo omonimo; e'
+  ancora in corso e non costituisce evidenza PASS finche' il riepilogo non e'
+  stato letto e validato.
 
 ### Ground Station `Port-hp` — 192.168.1.39 / Pixhawk 6X
 
