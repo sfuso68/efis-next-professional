@@ -7,13 +7,30 @@ Item {
     property string currentPage: initialPage
     property real uiScale: Math.min(width/1024, height/600)
 
-    AdaptivePfd { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "PFD"; onNavigationRequested: shell.currentPage = "NAV" }
-    AdaptiveCanvasView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "CANVAS" }
-    AdaptiveMissionView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "MISSION" }
-    AdaptiveNavigationView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "NAV" }
-    AdaptiveEmsView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "EMS" }
-    AdaptiveFpvView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "FPV"; onAutoRevertRequested: shell.currentPage = "PFD" }
-    EmergencyAssistView { anchors.fill: parent; controller: shell.controller; visible: shell.currentPage === "EMERGENCY"; onCloseRequested: shell.currentPage = "PFD" }
+    // Una pagina nascosta non deve continuare a rivalutare centinaia di binding
+    // avionici. Il Loader sincrono mantiene il cambio pagina immediato, ma
+    // istanzia soltanto la vista realmente presentata.
+    Loader {
+        id: pageLoader
+        anchors.fill: parent
+        asynchronous: false
+        sourceComponent: shell.currentPage === "PFD" ? pfdPage
+                       : shell.currentPage === "CANVAS" ? canvasPage
+                       : shell.currentPage === "MISSION" ? missionPage
+                       : shell.currentPage === "NAV" ? navigationPage
+                       : shell.currentPage === "EMS" ? emsPage
+                       : shell.currentPage === "FPV" ? fpvPage
+                       : shell.currentPage === "EMERGENCY" ? emergencyPage
+                       : pfdPage
+    }
+
+    Component { id: pfdPage; AdaptivePfd { controller: shell.controller; onNavigationRequested: shell.currentPage = "NAV" } }
+    Component { id: canvasPage; AdaptiveCanvasView { controller: shell.controller } }
+    Component { id: missionPage; AdaptiveMissionView { controller: shell.controller } }
+    Component { id: navigationPage; AdaptiveNavigationView { controller: shell.controller } }
+    Component { id: emsPage; AdaptiveEmsView { controller: shell.controller } }
+    Component { id: fpvPage; AdaptiveFpvView { controller: shell.controller; onAutoRevertRequested: shell.currentPage = "PFD" } }
+    Component { id: emergencyPage; EmergencyAssistView { controller: shell.controller; onCloseRequested: shell.currentPage = "PFD" } }
     PageSelector {
         anchors { right: parent.right; top: parent.top;
             rightMargin: ((shell.currentPage === "PFD" || shell.currentPage === "CANVAS") ? 198 : 8)*shell.uiScale;

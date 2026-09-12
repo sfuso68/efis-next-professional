@@ -325,6 +325,26 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   `get_throttled=0x0`. Questa non è una prova termica o di alimentazione
   prolungata.
 
+### Composizione grafica a pagina attiva — 2026-09-12
+
+- `AdaptiveShell` non mantiene più contemporaneamente istanziate PFD, Canvas,
+  Mission, Navigation, EMS, FPV ed Emergency Assist. Un loader sincrono crea
+  soltanto la pagina corrente; il selettore e le transizioni restano nel guscio
+  comune. La qualità e le impostazioni del renderer di ogni pagina non sono
+  state ridotte.
+- Anche Maintenance/Setup e System Simulator vengono creati soltanto quando
+  sono aperti. In precedenza i loro binding restavano attivi dietro alla pagina
+  di volo, compreso il workflow operativo da 447 campi.
+- Verifica software Windows: compilazione QML AOT riuscita; PFD, Canvas,
+  Mission, Navigation, EMS, FPV, Emergency Assist e System Simulator sono stati
+  caricati e catturati separatamente, sempre con exit code 0. È stata inoltre
+  catturata la pagina Setup del profilo operativo. Le catture offscreen provano
+  caricamento e geometria, non resa GL o prestazioni del Raspberry.
+- Verifica hardware ancora aperta per questa ottimizzazione: compilazione ARM,
+  test, confronto `snapshot_hz` prima/dopo e cambio pagina touch sui due RPi5.
+  Nessun incremento prestazionale è dichiarato finché non viene misurato sul
+  pannello reale.
+
 ### Emergency Assist consultivo Software V1 — 2026-09-09
 
 - Aggiunto un core C++20 indipendente da Qt per otto famiglie di emergenza,

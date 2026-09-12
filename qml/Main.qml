@@ -43,25 +43,44 @@ ApplicationWindow {
         pressAndHoldInterval: 1200
         onPressAndHold: root.maintenanceVisible = true
     }
-    MaintenanceOverlay {
-        anchors.fill: parent; z: 100; visible: root.maintenanceVisible
-        sectionIndex: Qt.application.arguments.indexOf("--setup-bench-preview") >= 0 ? 3 : (Qt.application.arguments.indexOf("--setup-airport-preview") >= 0 || Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0 ? 5 : (Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0 ? 6 : (Qt.application.arguments.indexOf("--setup-aircraft-preview") >= 0 || Qt.application.arguments.indexOf("--setup-catalog-preview") >= 0 || Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0 || root.operationalProfilePreview ? 2 : 0)))
-        operationalProfileVisible: root.operationalProfilePreview
-        operationalPreviewPage: Qt.application.arguments.indexOf("--setup-operational-entry-preview") >= 0 || Qt.application.arguments.indexOf("--setup-operational-keyboard-preview") >= 0 ? 1 : (Qt.application.arguments.indexOf("--setup-operational-load-preview") >= 0 ? 2 : (Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0 ? 3 : 0))
-        catalogVisible: Qt.application.arguments.indexOf("--setup-catalog-preview") >= 0
-        reviewVisible: Qt.application.arguments.indexOf("--setup-review-preview") >= 0
-        verificationVisible: Qt.application.arguments.indexOf("--setup-verify-preview") >= 0
-        engineReviewVisible: Qt.application.arguments.indexOf("--setup-engine-preview") >= 0
-        sensorMappingVisible: Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0
-        benchVisible: Qt.application.arguments.indexOf("--setup-bench-preview") >= 0
-        channelTestVisible: Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0
-        airportSelectorVisible: Qt.application.arguments.indexOf("--setup-airport-preview") >= 0 || Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0
-        airportNearestOnly: Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0
-        controller: pfd; uiScale: Math.min(root.width/1024, root.height/600)
-        onCloseRequested: root.maintenanceVisible = false
+    Loader {
+        anchors.fill: parent
+        z: 100
+        active: root.maintenanceVisible
+        asynchronous: false
+        sourceComponent: maintenanceComponent
     }
-    SystemSimulatorOverlay {
-        anchors.fill:parent; visible:root.simulatorVisible; controller:pfd
-        onCloseRequested:root.simulatorVisible=false
+    Component {
+        id: maintenanceComponent
+        MaintenanceOverlay {
+            sectionIndex: Qt.application.arguments.indexOf("--setup-bench-preview") >= 0 ? 3 : (Qt.application.arguments.indexOf("--setup-airport-preview") >= 0 || Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0 ? 5 : (Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0 ? 6 : (Qt.application.arguments.indexOf("--setup-aircraft-preview") >= 0 || Qt.application.arguments.indexOf("--setup-catalog-preview") >= 0 || Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0 || root.operationalProfilePreview ? 2 : 0)))
+            operationalProfileVisible: root.operationalProfilePreview
+            operationalPreviewPage: Qt.application.arguments.indexOf("--setup-operational-entry-preview") >= 0 || Qt.application.arguments.indexOf("--setup-operational-keyboard-preview") >= 0 ? 1 : (Qt.application.arguments.indexOf("--setup-operational-load-preview") >= 0 ? 2 : (Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0 ? 3 : 0))
+            catalogVisible: Qt.application.arguments.indexOf("--setup-catalog-preview") >= 0
+            reviewVisible: Qt.application.arguments.indexOf("--setup-review-preview") >= 0
+            verificationVisible: Qt.application.arguments.indexOf("--setup-verify-preview") >= 0
+            engineReviewVisible: Qt.application.arguments.indexOf("--setup-engine-preview") >= 0
+            sensorMappingVisible: Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0
+            benchVisible: Qt.application.arguments.indexOf("--setup-bench-preview") >= 0
+            channelTestVisible: Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0
+            airportSelectorVisible: Qt.application.arguments.indexOf("--setup-airport-preview") >= 0 || Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0
+            airportNearestOnly: Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0
+            controller: pfd
+            uiScale: Math.min(root.width/1024, root.height/600)
+            onCloseRequested: root.maintenanceVisible = false
+        }
+    }
+    Loader {
+        anchors.fill: parent
+        active: root.simulatorVisible
+        asynchronous: false
+        sourceComponent: simulatorComponent
+    }
+    Component {
+        id: simulatorComponent
+        SystemSimulatorOverlay {
+            controller: pfd
+            onCloseRequested: root.simulatorVisible = false
+        }
     }
 }
