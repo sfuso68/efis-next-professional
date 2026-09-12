@@ -107,7 +107,7 @@ Rectangle {
             Repeater { model: overlay.items(overlay.sectionIndex); delegate: Rectangle { required property var modelData; width: 258*overlay.uiScale; height: 112*overlay.uiScale; radius: 4*overlay.uiScale; color: "#C90A1721"; border.color: theme.border
                 Rectangle { anchors { left: parent.left; top: parent.top; bottom: parent.bottom } width: 4*overlay.uiScale; color: modelData.c }
                 Text { x: 14*overlay.uiScale; y: 12*overlay.uiScale; text: modelData.t; color: theme.secondary; font.pixelSize: 8*overlay.uiScale; font.bold: true }
-                Text { x: 14*overlay.uiScale; y: 39*overlay.uiScale; width: parent.width-25*overlay.uiScale; text: modelData.v; color: modelData.c; font.pixelSize: 17*overlay.uiScale; font.bold: true; elide: Text.ElideRight }
+                Text { x: 14*overlay.uiScale; y: 39*overlay.uiScale; width: parent.width-25*overlay.uiScale; text: modelData.v; color: modelData.c; font.pixelSize: (modelData.t === "ROLE" ? 14 : 17)*overlay.uiScale; font.bold: true; elide: Text.ElideRight }
                 Text { x: 14*overlay.uiScale; anchors { bottom: parent.bottom; bottomMargin: 12*overlay.uiScale } text: modelData.s; color: theme.secondary; font.pixelSize: 7*overlay.uiScale; font.bold: true }
                 MouseArea { anchors.fill: parent; enabled: modelData.a !== undefined; onClicked: { if (modelData.a === "airport") overlay.airportSelectorVisible=true; else if (modelData.a === "bench") overlay.benchVisible=true; else if (modelData.a === "connectivity") overlay.connectivityVisible=true; else if (modelData.a === "operational") overlay.operationalProfileVisible=true; else { overlay.catalogMode=modelData.a; overlay.catalogVisible=true } } }
             } }

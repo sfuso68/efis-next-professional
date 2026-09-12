@@ -99,8 +99,8 @@ Item {
         Text { x: 13*root.uiScale; y: 10*root.uiScale; text: "3  COMMUNICATE / MANAGE"; color: root.amber; font.pixelSize: 14*root.uiScale; font.bold: true }
         Text { x: 13*root.uiScale; y: 45*root.uiScale; width: parent.width-26*root.uiScale; text: root.controller.emergencyCommunicationDraft; color: "white"; font.pixelSize: 10*root.uiScale; wrapMode: Text.WordWrap }
         Rectangle { x:13*root.uiScale; y:111*root.uiScale; width:parent.width-26*root.uiScale; height:91*root.uiScale; radius:4*root.uiScale; color:"#091621"; border.color:root.controller.emergencyProcedureAvailable?root.green:root.amber
-            Text { x:9*root.uiScale; y:7*root.uiScale; text:root.controller.emergencyProcedureAvailable?"APPROVED PROCEDURE":"CHECKLIST BLOCKED"; color:root.controller.emergencyProcedureAvailable?root.green:root.amber; font.pixelSize:9*root.uiScale; font.bold:true }
-            Text { x:9*root.uiScale; y:31*root.uiScale; width:parent.width-18*root.uiScale; text:root.controller.emergencyCurrentStep.text || "No POH/AFM procedure approved for this installed aircraft."; color:"white"; font.pixelSize:9*root.uiScale; wrapMode:Text.WordWrap }
+            Text { x:9*root.uiScale; y:7*root.uiScale; text:root.controller.emergencyProcedureAvailable?(root.controller.emergencySimulationOnly?"SIM TEST PROCEDURE":"APPROVED PROCEDURE"):"CHECKLIST BLOCKED"; color:root.controller.emergencyProcedureAvailable?root.green:root.amber; font.pixelSize:9*root.uiScale; font.bold:true }
+            Text { x:9*root.uiScale; y:31*root.uiScale; width:parent.width-18*root.uiScale; text:root.controller.emergencyCurrentStep.text || (root.controller.emergencyProcedureAvailable ? "Available after FLY acknowledgement." : "No POH/AFM procedure approved for this installed aircraft."); color:"white"; font.pixelSize:9*root.uiScale; wrapMode:Text.WordWrap }
         }
         Row { x:13*root.uiScale; y:212*root.uiScale; spacing:7*root.uiScale
             Repeater { model:[{t:"DONE",a:"done"},{t:"SKIP",a:"skip"},{t:"REPEAT",a:"repeat"}]
