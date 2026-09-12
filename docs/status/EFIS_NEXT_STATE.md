@@ -340,10 +340,23 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   caricati e catturati separatamente, sempre con exit code 0. È stata inoltre
   catturata la pagina Setup del profilo operativo. Le catture offscreen provano
   caricamento e geometria, non resa GL o prestazioni del Raspberry.
-- Verifica hardware ancora aperta per questa ottimizzazione: compilazione ARM,
-  test, confronto `snapshot_hz` prima/dopo e cambio pagina touch sui due RPi5.
-  Nessun incremento prestazionale è dichiarato finché non viene misurato sul
-  pannello reale.
+- Verifica hardware sul secondo RPi5 `.49`: release `1d25e62` compilata in
+  313/313 step e 18/18 test PASS. Due sessioni EGLFS reali con cattura e uscita
+  automatica hanno ottenuto exit code 0, zero errori QML, DDP senza gap,
+  rifiuti o errori socket e `get_throttled=0x0`.
+- Sullo stesso nodo e con lo stesso display, il PFD è passato da circa 13,6 a
+  34,5 `snapshot_hz`; Navigation ha raggiunto 49,6 `snapshot_hz` e 50,6
+  `presentation_hz`. L'ottimizzazione è quindi efficace sul Raspberry e non è
+  ottenuta riducendo qualità grafica o dati.
+- `/home/pi/efis-next-current` seleziona atomicamente `1d25e62`, ma il servizio
+  Next resta disabilitato e `fuso-sv3d.service` resta attivo: è staging, non
+  promozione operativa. Cambio pagina touch, Setup touch, terrain e soak
+  restano aperti.
+- Sul PFD principale `.45` la release intermedia `23cd411` è attiva dopo
+  313/313 build e 18/18 test ARM64; DDP è `LIVE` a 20 Hz, senza gap/rifiuti o
+  errori socket, con 24,4 `presentation_hz`, 12,2 `snapshot_hz`, zero errori
+  QML, 52,7 °C e `get_throttled=0x0`. Il trasferimento di `1d25e62` è in attesa
+  di autorizzazione esplicita dell'operatore per l'egress verso `.45`.
 
 ### Emergency Assist consultivo Software V1 — 2026-09-09
 
