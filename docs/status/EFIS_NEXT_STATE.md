@@ -8,10 +8,11 @@ Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md
 
 Checkpoint corrente:
 `CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`. Il PFD operativo usa la
-release immutabile `9c5c0f1`; la release precedente `74a85f9` è conservata come
-rollback. Emergency Assist è incluso nel binario installato, ma la funzione non
-ha ancora acceptance dell'operatore sul pannello reale. Non è stata concessa
-autorità di comando al sistema EFIS.
+release immutabile `1d25e62`; la release precedente `23cd411` è conservata come
+rollback immediato e le release `9c5c0f1`/`74a85f9` restano disponibili. Emergency
+Assist è incluso nel binario installato, ma la funzione non ha ancora acceptance
+dell'operatore sul pannello reale. Non è stata concessa autorità di comando al
+sistema EFIS.
 
 Il workflow del profilo operativo è fissato separatamente in
 `CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`.
@@ -352,11 +353,16 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   Next resta disabilitato e `fuso-sv3d.service` resta attivo: è staging, non
   promozione operativa. Cambio pagina touch, Setup touch, terrain e soak
   restano aperti.
-- Sul PFD principale `.45` la release intermedia `23cd411` è attiva dopo
-  313/313 build e 18/18 test ARM64; DDP è `LIVE` a 20 Hz, senza gap/rifiuti o
-  errori socket, con 24,4 `presentation_hz`, 12,2 `snapshot_hz`, zero errori
-  QML, 52,7 °C e `get_throttled=0x0`. Il trasferimento di `1d25e62` è in attesa
-  di autorizzazione esplicita dell'operatore per l'egress verso `.45`.
+- Sul PFD principale `.45` la release `1d25e62` è stata trasferita con consenso
+  esplicito, verificata tramite SHA-256, compilata nativamente in 313/313 step e
+  ha superato 18/18 test ARM64. Lo switch atomico da `23cd411` è riuscito e la
+  release precedente resta il rollback immediato.
+- Nella verifica post-switch il servizio è rimasto `active`, DDP è `LIVE` a
+  20,0–20,1 Hz con zero gap, rifiuti ed errori socket, `presentation_hz` è
+  rimasto fra 34,0 e 38,0 e `snapshot_hz` fra 34,2 e 34,8. Il log contiene zero
+  `TypeError`, `ReferenceError` o componenti non caricati; temperatura 54,3 °C
+  e `get_throttled=0x0`. Cambio pagina, Setup e tastiera touch, resa terrain e
+  soak continuativo di 60 minuti restano aperti e non sono dichiarati verificati.
 
 ### Emergency Assist consultivo Software V1 — 2026-09-09
 
@@ -641,6 +647,19 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   PFD, terreno ed EMS; in assenza DDP espone correttamente
   `SIMULATION ACTIVE`. Durante il link DDP il renderer ha mantenuto circa
   24 fps. Temperatura finale 52,7 °C e `get_throttled=0x0`.
+- Il 2026-09-12 è stata installata senza sovrascrivere le release precedenti la
+  release immutabile `/home/efis/efis-next-avionics-1d25e62`. L'archivio ha
+  SHA-256
+  `9d3e40e40731ccc10ac61ef4ea6f060d25751c4a5eb804bb5ea052fc649a8f5e`;
+  build ARM64 313/313 e 18/18 CTest sono PASS.
+- Lo switch atomico da `23cd411` ha superato i gate automatici e non ha
+  richiesto rollback. Due campioni runtime hanno mostrato servizio `active`,
+  DDP `LIVE` 20,0–20,1 Hz, zero reject/gap/errori socket, zero errori QML,
+  `presentation_hz` 34,0–38,0 e `snapshot_hz` 34,2–35,2. Temperatura massima
+  osservata 54,9 °C e `get_throttled=0x0`.
+- Questa prova verifica installazione, test nativi, avvio, continuità DDP e
+  prestazioni brevi su hardware reale. Non verifica ancora interazione touch,
+  qualità visiva di ogni pagina/terrain, reboot completo o soak di 60 minuti.
 
 ### RPi5 storico `pi5` — WLAN 192.168.1.49
 
