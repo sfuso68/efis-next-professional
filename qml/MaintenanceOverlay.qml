@@ -36,8 +36,8 @@ Rectangle {
     function items(index) {
         switch(index) {
         case 0: return [
-            {t:"COMPUTE NODE",v:"RPi5 • PFD-01",s:"ACTIVE",c:theme.green}, {t:"SYSTEM PROFILE",v:"PROFESSIONAL",s:"STANDARD READY",c:theme.cyan},
-            {t:"CORE",v:"EFIS CORE V2",s:"SIMULATION",c:theme.amber}, {t:"ROLE",v:"PRIMARY DISPLAY",s:"REDUNDANCY READY",c:theme.cyan},
+            {t:"COMPUTE NODE",v:controller.nodePlatform+" • "+controller.nodeId,s:"ACTIVE",c:theme.green}, {t:"SYSTEM PROFILE",v:controller.systemProfile,s:"STANDARD READY",c:theme.cyan},
+            {t:"CORE",v:"EFIS CORE V2",s:"SIMULATION",c:theme.amber}, {t:"ROLE",v:controller.nodeRole,s:"REDUNDANCY READY",c:theme.cyan},
             {t:"TIME SOURCE",v:"SYSTEM / GPS",s:"UTC",c:theme.primary}, {t:"SOFTWARE",v:"EFIS NEXT",s:"LOCAL BUILD",c:theme.primary}]
         case 1: return [
             {t:"DISPLAY",v:"MPI7002",s:"1024 × 600 @ 60",c:theme.green}, {t:"TOUCH",v:"QDTECH MPI7003",s:"CONNECTED",c:theme.green},
@@ -102,7 +102,7 @@ Rectangle {
     }
     Item { anchors { left: sidebar.right; right: parent.right; top: header.bottom; bottom: footer.top; margins: 12*overlay.uiScale }
         Text { id: pageTitle; text: overlay.sections[overlay.sectionIndex]; color: theme.primary; font.pixelSize: 18*overlay.uiScale; font.bold: true }
-        Text { anchors { right: parent.right; baseline: pageTitle.baseline } text: "PROFILE: PROFESSIONAL • NODE: PFD-01"; color: theme.secondary; font.pixelSize: 8*overlay.uiScale; font.bold: true }
+        Text { anchors { right: parent.right; baseline: pageTitle.baseline } text: "PROFILE: "+controller.systemProfile+" • NODE: "+controller.nodeId; color: theme.secondary; font.pixelSize: 8*overlay.uiScale; font.bold: true }
         Grid { anchors { left: parent.left; right: parent.right; top: pageTitle.bottom; topMargin: 12*overlay.uiScale } columns: 3; columnSpacing: 8*overlay.uiScale; rowSpacing: 8*overlay.uiScale
             Repeater { model: overlay.items(overlay.sectionIndex); delegate: Rectangle { required property var modelData; width: 258*overlay.uiScale; height: 112*overlay.uiScale; radius: 4*overlay.uiScale; color: "#C90A1721"; border.color: theme.border
                 Rectangle { anchors { left: parent.left; top: parent.top; bottom: parent.bottom } width: 4*overlay.uiScale; color: modelData.c }

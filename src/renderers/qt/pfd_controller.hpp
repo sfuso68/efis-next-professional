@@ -59,6 +59,10 @@ class PfdController final : public QObject {
     Q_PROPERTY(qulonglong ddpRejected READ ddpRejected NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong ddpSequenceGaps READ ddpSequenceGaps NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong ddpSocketErrors READ ddpSocketErrors NOTIFY snapshotChanged)
+    Q_PROPERTY(QString nodeId READ nodeId CONSTANT)
+    Q_PROPERTY(QString nodePlatform READ nodePlatform CONSTANT)
+    Q_PROPERTY(QString nodeRole READ nodeRole CONSTANT)
+    Q_PROPERTY(QString systemProfile READ systemProfile CONSTANT)
     Q_PROPERTY(QString engineDataState READ engineDataState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
@@ -233,6 +237,10 @@ public:
     [[nodiscard]] qulonglong ddpRejected() const;
     [[nodiscard]] qulonglong ddpSequenceGaps() const;
     [[nodiscard]] qulonglong ddpSocketErrors() const;
+    [[nodiscard]] QString nodeId() const;
+    [[nodiscard]] QString nodePlatform() const;
+    [[nodiscard]] QString nodeRole() const;
+    [[nodiscard]] QString systemProfile() const;
     [[nodiscard]] QString engineDataState() const;
     Q_INVOKABLE void cycleSimulationRole();
     [[nodiscard]] qulonglong sequence() const;

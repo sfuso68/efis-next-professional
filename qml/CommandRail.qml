@@ -43,7 +43,7 @@ Rectangle {
                 { tag: "ALT SELECT", value: Math.round(rail.selectedAltitude) + " FT", color: "#19C3E6" },
                 { tag: "DATA SOURCE", value: rail.dataSourceState, color: rail.stateColor(rail.dataSourceState) },
                 { tag: "PIXHAWK 6X", value: rail.sensorNodeState, color: rail.stateColor(rail.sensorNodeState) },
-                { tag: "BLACK BOX", value: rail.blackBoxState === "RECORDING" ? "REC " + Math.round(rail.blackBoxRecords) : rail.blackBoxState, color: rail.blackBoxState === "RECORDING" ? "#62D347" : rail.blackBoxState === "STOPPED" ? "#19C3E6" : "#E6A72E" }
+                { tag: "BLACK BOX", value: rail.blackBoxState === "RECORDING" ? "REC " + Math.round(rail.blackBoxRecords) : rail.blackBoxState, color: rail.blackBoxState === "RECORDING" ? "#62D347" : (rail.blackBoxState === "LINK LIVE" || rail.blackBoxState === "STOPPED") ? "#19C3E6" : "#E6A72E" }
             ]
             delegate: Item {
                 required property var modelData

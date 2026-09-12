@@ -1183,6 +1183,22 @@ qulonglong PfdController::ddpSocketErrors() const {
     return ddp_source_ ? ddp_source_->socket_errors() : 0;
 }
 
+QString PfdController::nodeId() const {
+    return qEnvironmentVariable("EFIS_NODE_ID", "PFD-01");
+}
+
+QString PfdController::nodePlatform() const {
+    return qEnvironmentVariable("EFIS_NODE_PLATFORM", "RPi5");
+}
+
+QString PfdController::nodeRole() const {
+    return qEnvironmentVariable("EFIS_NODE_ROLE", "PRIMARY DISPLAY");
+}
+
+QString PfdController::systemProfile() const {
+    return qEnvironmentVariable("EFIS_SYSTEM_PROFILE", "PROFESSIONAL");
+}
+
 // Il ruolo vale per volo e motore insieme: e' una sola scelta dell'operatore, e
 // due catene che potessero divergere darebbero un quadro meta' simulato e meta'
 // no senza che nessuno l'abbia deciso.
@@ -1232,7 +1248,25 @@ void PfdController::cycleFault() {
     qInfo().noquote() << "event=fault_injection mode=" << faultMode();
 }
 qulonglong PfdController::sequence() const { return snapshot_.sequence; }
-QString PfdController::blackBoxState() const { return black_box_state_; }
+QString PfdController::blackBoxState() const {
+    // Un display remoto non possiede il file di stato del recorder. Quando il
+    // profilo sceglie DDP_LINK mostriamo quindi soltanto lo stato verificabile
+    // del collegamento col broker, senza chiamarlo impropriamente RECORDING.
+    if (qEnvironmentVariable("EFIS_BLACKBOX_STATUS_MODE").trimmed().toUpper() ==
+            QStringLiteral("DDP_LINK") && ddp_source_) {
+        switch (ddp_source_->link_state(efis::MonoClock::now())) {
+            case efis::protocol::ddp::LinkState::waiting:
+                return QStringLiteral("WAITING");
+            case efis::protocol::ddp::LinkState::live:
+                return QStringLiteral("LINK LIVE");
+            case efis::protocol::ddp::LinkState::stale:
+                return QStringLiteral("STALE");
+            case efis::protocol::ddp::LinkState::lost:
+                return QStringLiteral("LOST");
+        }
+    }
+    return black_box_state_;
+}
 qulonglong PfdController::blackBoxRecords() const { return black_box_records_; }
 double PfdController::engineRpm() const { return engine_snapshot_.rpm.value; }
 double PfdController::manifoldPressure() const { return engine_snapshot_.manifold_pressure_inhg.value; }
@@ -1647,8 +1681,11 @@ void PfdController::updateEmergencyAssist(efis::MonoTime now) {
     input.environment.in_flight_known = snapshot_.position.ground_speed_kt.usable();
     input.environment.in_flight = input.environment.in_flight_known &&
                                   snapshot_.position.ground_speed_kt.value > 35.0;
-    input.environment.blackbox_link_valid = black_box_state_ != QStringLiteral("OFFLINE") &&
-                                            black_box_state_ != QStringLiteral("STALE");
+    const auto displayed_blackbox_state = blackBoxState();
+    input.environment.blackbox_link_valid =
+        displayed_blackbox_state == QStringLiteral("LINK LIVE") ||
+        displayed_blackbox_state == QStringLiteral("RECORDING") ||
+        displayed_blackbox_state == QStringLiteral("ONLINE");
     input.environment.airport_database_valid = !airport_catalog_.isEmpty();
 
     // Solo lo scenario esplicito puo' usare assunzioni sintetiche. Nel runtime
