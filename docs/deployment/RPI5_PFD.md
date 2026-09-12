@@ -69,6 +69,35 @@ sudo systemctl disable --now efis-next-pfd-direct.service
 sudo systemctl enable --now fuso-sv3d.service
 ```
 
+### Profilo MFD/Canvas del secondo RPi5
+
+Il nodo `mfd-rpi5-01` (`10.77.10.13`, WLAN manutentiva storica
+`192.168.1.49`) usa la stessa applicazione e la stessa codebase del PFD, ma
+parte dalla pagina `CANVAS`. Installare l'unità dedicata
+`deploy/systemd/efis-next-mfd-direct.service`; essa è in conflitto sia con il
+renderer legacy sia con il servizio PFD direct, così un solo processo può
+possedere il DRM master.
+
+Il profilo di unità del nodo è installato separatamente dal binario:
+
+```sh
+install -d -m 755 ~/.config/EFIS-NEXT
+install -m 600 deploy/rpi5/mfd-rpi5-01-units.ini \
+  ~/.config/EFIS-NEXT/ems-units.ini
+```
+
+`IMPERIAL` significa °F, PSI, pollici di mercurio, galloni e GPH nelle viste
+motore/sistemi. Le grandezze aeronautiche principali restano espresse secondo
+la simbologia delle rispettive pagine. Il file è configurazione del nodo e non
+deve essere sostituito durante l'aggiornamento di una release.
+
+La migrazione definitiva richiede questo ordine: compilare e testare una
+release immutabile, selezionarla con `/home/pi/efis-next-current`, installare il
+profilo unità, disabilitare i servizi legacy, abilitare il servizio MFD e
+riavviare. Conservare il legacy fuori dal percorso di avvio fino al collaudo;
+la sua cancellazione fisica non deve rimuovere `/home/pi/efis-data`, che è la
+radice dati persistente riutilizzata da EFIS Next.
+
 ## Ricezione DDP V2 dalla Blackbox
 
 Il servizio apre in sola ricezione UDP unicast la porta `49002` e accetta come
