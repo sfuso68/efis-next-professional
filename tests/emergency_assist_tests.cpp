@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
+#include <set>
 #include <string>
 
 using namespace std::chrono_literals;
@@ -214,6 +215,50 @@ void all_advisory_families_require_pilot_confirmation() {
     }
 }
 
+void all_advisory_families_have_distinct_fail_closed_guidance() {
+    using Kind = efis::emergency::EmergencyKind;
+    const Kind kinds[]{Kind::engine_power_loss, Kind::abnormal_attitude,
+        Kind::unsafe_airspeed, Kind::electrical_failure, Kind::smoke_or_fire,
+        Kind::weather_or_terrain, Kind::sensor_or_pfd_loss,
+        Kind::pilot_incapacitation};
+    std::set<std::string> fly_prompts;
+    std::set<std::string> navigation_prompts;
+    std::set<std::string> communication_prompts;
+    std::set<std::string> voice_prompts;
+    auto now = efis::MonoClock::now();
+    for (const auto kind : kinds) {
+        efis::emergency::EmergencyAssist assist;
+        auto input = complete_input(false);
+        assist.activate_manual(kind, "profile-test", now);
+        require(assist.output().state == efis::emergency::AssistState::pilot_activated,
+                "profile must not bypass pilot confirmation");
+        assist.confirm(kind, now + 1ms);
+        const auto& output = assist.update(input, now + 2ms);
+        require(!output.procedure_available,
+                "advisory profile must not create an unapproved procedure");
+        require(output.fly_advisory.find("APPROVED") != std::string::npos ||
+                    output.fly_advisory.find("CROSS-CHECK") != std::string::npos ||
+                    output.fly_advisory.find("VERIFY") != std::string::npos,
+                "generic guidance must remain bounded and non-procedural");
+        require(output.communication_draft.find("DRAFT") != std::string::npos &&
+                    output.communication_draft.find("VERIFY") != std::string::npos,
+                "communication output must remain a pilot-verified draft");
+        fly_prompts.insert(output.fly_advisory);
+        navigation_prompts.insert(output.navigation_advisory);
+        communication_prompts.insert(output.communication_draft);
+        voice_prompts.insert(output.voice_cue);
+        now += 10ms;
+    }
+    require(fly_prompts.size() == std::size(kinds),
+            "each emergency family must expose a distinct FLY advisory");
+    require(navigation_prompts.size() == std::size(kinds),
+            "each emergency family must expose a distinct navigation advisory");
+    require(communication_prompts.size() == std::size(kinds),
+            "each emergency family must expose a distinct communication draft");
+    require(voice_prompts.size() == std::size(kinds),
+            "each emergency family must expose a distinct voice cue");
+}
+
 void pilot_can_change_emergency_without_restarting_the_session() {
     efis::emergency::EmergencyAssist assist;
     auto input = complete_input(false);
@@ -241,6 +286,7 @@ int main() {
     automatic_detection_needs_approval_two_signals_and_dwell();
     unapproved_detector_cannot_trigger();
     all_advisory_families_require_pilot_confirmation();
+    all_advisory_families_have_distinct_fail_closed_guidance();
     pilot_can_change_emergency_without_restarting_the_session();
     if (failures == 0) std::cout << "Emergency Assist tests: PASS\n";
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;

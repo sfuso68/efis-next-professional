@@ -26,6 +26,67 @@ bool primary_flight_data_simulated(const FlightSnapshot& flight) {
            flight.air_data.pressure_altitude_ft.is_simulated();
 }
 
+struct AdvisoryProfile {
+    const char* fly;
+    const char* navigation;
+    const char* communication;
+    const char* voice;
+};
+
+// These are deliberately non-procedural prompts. Aircraft actions and numeric
+// targets are supplied only by an approved, provenance-checked procedure or
+// performance package; this table never substitutes for the POH/AFM.
+constexpr AdvisoryProfile advisory_profile(EmergencyKind kind) noexcept {
+    switch (kind) {
+        case EmergencyKind::engine_power_loss:
+            return {"MAINTAIN CONTROL - USE APPROVED POWER-LOSS PROCEDURE",
+                    "ASSESS LANDING OPTIONS ONLY WHEN ALL DATA GATES PASS",
+                    "MAYDAY DRAFT - ENGINE EVENT; VERIFY CALLSIGN, POSITION, ALTITUDE AND INTENTIONS",
+                    "Engine emergency. Maintain control. Verify data and approved procedure."};
+        case EmergencyKind::abnormal_attitude:
+            return {"MAINTAIN CONTROL - USE RELIABLE SOURCES AND APPROVED RECOVERY PROCEDURE",
+                    "NAVIGATION DEFERRED UNTIL ATTITUDE IS STABILISED",
+                    "MAYDAY DRAFT - CONTROL EVENT; VERIFY CALLSIGN, POSITION, ALTITUDE AND INTENTIONS",
+                    "Attitude emergency. Maintain control. Cross-check reliable sources."};
+        case EmergencyKind::unsafe_airspeed:
+            return {"MAINTAIN CONTROL - VERIFY IAS VALIDITY AND APPROVED ENVELOPE",
+                    "NAVIGATION DEFERRED UNTIL AIRSPEED IS STABILISED",
+                    "MAYDAY DRAFT - AIRSPEED EVENT; VERIFY CALLSIGN, POSITION, ALTITUDE AND INTENTIONS",
+                    "Airspeed emergency. Maintain control. Cross-check airspeed sources."};
+        case EmergencyKind::electrical_failure:
+            return {"MAINTAIN CONTROL - USE APPROVED ELECTRICAL FAILURE PROCEDURE",
+                    "ASSESS NAVIGATION AND DISPLAY AVAILABILITY",
+                    "PAN OR MAYDAY DRAFT - ELECTRICAL EVENT; VERIFY CALLSIGN, POSITION AND INTENTIONS",
+                    "Electrical emergency. Maintain control. Verify remaining systems."};
+        case EmergencyKind::smoke_or_fire:
+            return {"MAINTAIN CONTROL - USE APPROVED SMOKE OR FIRE PROCEDURE",
+                    "ASSESS LANDING OPTIONS; VERIFY TERRAIN AND WEATHER DATA",
+                    "MAYDAY DRAFT - SMOKE OR FIRE; VERIFY CALLSIGN, POSITION, ALTITUDE AND INTENTIONS",
+                    "Smoke or fire. Maintain control. Use the approved procedure."};
+        case EmergencyKind::weather_or_terrain:
+            return {"MAINTAIN A SAFE FLIGHT PATH - VERIFY TERRAIN AND WEATHER DATA",
+                    "REVIEW ESCAPE OPTIONS ONLY FROM CURRENT VALIDATED DATA",
+                    "PAN OR MAYDAY DRAFT - WEATHER OR TERRAIN; VERIFY POSITION, ALTITUDE AND INTENTIONS",
+                    "Weather or terrain hazard. Maintain a safe flight path. Verify data."};
+        case EmergencyKind::sensor_or_pfd_loss:
+            return {"MAINTAIN CONTROL - CROSS-CHECK INDEPENDENT INSTRUMENTS",
+                    "USE ONLY NAVIGATION SOURCES THAT REMAIN VALID",
+                    "PAN DRAFT - INSTRUMENT FAILURE; VERIFY CALLSIGN, POSITION, ALTITUDE AND INTENTIONS",
+                    "Instrument failure. Maintain control. Cross-check independent sources."};
+        case EmergencyKind::pilot_incapacitation:
+            return {"MAINTAIN CONTROL - REQUEST ASSISTANCE AND USE APPROVED PROCEDURE",
+                    "ASSESS THE SIMPLEST SUITABLE LANDING OPTION FROM VALID DATA",
+                    "MAYDAY DRAFT - PILOT INCAPACITATION; VERIFY CALLSIGN, POSITION, ALTITUDE AND INTENTIONS",
+                    "Pilot incapacitation. Maintain control. Request assistance."};
+        case EmergencyKind::none:
+            break;
+    }
+    return {"FLY - USE THE APPROVED AIRCRAFT PROCEDURE",
+            "NAVIGATION OPTIONS NOT ASSESSED",
+            "EMERGENCY DRAFT - VERIFY CALLSIGN, POSITION, ALTITUDE AND INTENTIONS",
+            "Emergency assist ready."};
+}
+
 }  // namespace
 
 EmergencyAssist::EmergencyAssist(DetectionConfig detection) : detection_(detection) {}
@@ -168,16 +229,17 @@ void EmergencyAssist::evaluate_detection(const AssistInput& input, MonoTime now)
 }
 
 void EmergencyAssist::rebuild_output(const AssistInput& input, MonoTime now) {
+    const auto profile = advisory_profile(output_.kind);
     output_.headline = output_.state == AssistState::suspected
         ? "ENGINE POWER? - CONFIRM"
         : output_.state == AssistState::idle ? "EMERGENCY ASSIST READY"
                                              : kind_name(output_.kind);
-    output_.fly_advisory = "FLY - USE THE APPROVED AIRCRAFT PROCEDURE";
-    output_.navigation_advisory = "NAVIGATION OPTIONS NOT ASSESSED";
-    output_.communication_draft = "MAYDAY DRAFT - VERIFY CALLSIGN, POSITION, ALTITUDE AND INTENTIONS";
+    output_.fly_advisory = profile.fly;
+    output_.navigation_advisory = profile.navigation;
+    output_.communication_draft = profile.communication;
     output_.voice_cue = output_.state == AssistState::suspected
         ? "Engine power. Confirm."
-        : "Emergency assist. Fly the aircraft. Verify all data.";
+        : profile.voice;
     output_.procedure_available = input.procedure.approved &&
         !input.procedure.package_id.empty() && !input.procedure.revision.empty() &&
         !input.procedure.source_reference.empty() && !input.procedure.content_hash.empty() &&

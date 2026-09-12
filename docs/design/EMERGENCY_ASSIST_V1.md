@@ -267,3 +267,28 @@ Non implementati: pulsante fisico, riproduzione audio, inoltro eventi alla
 Blackbox centrale, package POH approvato, calcolo terrain-route reale,
 procedure per i singoli scenari e qualunque autorità di comando. ADR-012 rende
 questo confine obbligatorio.
+
+## 15. Profili consultivi deterministici — incremento 2026-09-12
+
+Le otto famiglie dispongono ora di profili distinti e deterministici per i tre
+blocchi `FLY`, `NAVIGATE` e `COMMUNICATE`, oltre a un cue vocale testuale
+specifico. Questi profili servono a classificare il problema e a ridurre il
+carico cognitivo, ma sono intenzionalmente **non procedurali**:
+
+- non contengono valori numerici, posizioni di interruttori o sequenze di
+  configurazione inventate;
+- richiamano sempre il controllo dell'aeromobile, la verifica delle sorgenti e
+  l'uso della procedura approvata applicabile;
+- ogni messaggio radio resta marcato `DRAFT` e `VERIFY`; non viene trasmesso;
+- la selezione manuale si ferma in `PILOT_ACTIVATED` finché il pilota non
+  conferma il tipo di emergenza;
+- la presenza di un profilo consultivo non rende disponibile una checklist:
+  restano obbligatori package ID, revisione, fonte, hash, approvazione e passi;
+- nessun profilo genera comandi o richieste verso Pixhawk, ArduPilot, servi,
+  radio, transponder, flap o carrello.
+
+I test software attraversano tutte le famiglie e verificano conferma pilota,
+testi distinti, bozza radio esplicitamente verificabile e rifiuto della
+checklist priva di package approvato. I testi sono quindi un fallback UI sicuro,
+non una sostituzione del POH/AFM. Le procedure operative per Asso V
+Jolly/Pioneer 300 e Rotax 912 UL restano bloccate dall'audit delle fonti.
