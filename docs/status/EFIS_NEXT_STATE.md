@@ -700,8 +700,20 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   senza gap di sequenza. Gli altri test non-Qt avviabili su Windows sono
   passati; tre eseguibili della suite completa sono stati bloccati o sono andati
   in timeout nell'ambiente Windows e non costituiscono un risultato positivo.
-  La release attiva sul PFD resta `1d25e62`: build/test ARM64, reboot reale e
-  verifica dell'assenza di nuovi `RcvbufErrors` non sono ancora stati eseguiti.
+  Il commit `93bbe44` è stato poi compilato sul PFD in due build separate,
+  entrambe complete 313/313; i 18 test ARM64 sono passati in entrambe.
+- La release immutabile `/home/efis/efis-next-avionics-93bbe44` è stata attivata
+  con rollback immediato a `1d25e62`. Lo switch a caldo ha mostrato buffer DDP
+  effettivo di 8 MiB, DDP 19,9–21,0 Hz, zero gap e 33,8–36,0 presentazioni/s.
+  Dopo reboot il contatore kernel è ripartito da zero e non ha registrato
+  `RcvbufErrors`; anche il consumer DDP è rimasto a zero gap.
+- La prova reboot non chiude però il difetto grafico: il servizio ha avviato un
+  primo processo prima della disponibilità del socket Wayland; quel processo ha
+  attivato il portal GTK senza display. I successivi timeout hanno ancora
+  prodotto una finestra a 4,9 presentazioni/s, pur senza perdere DDP grazie al
+  nuovo buffer. È stato aggiunto un gate systemd `ExecStartPre` sul socket
+  `%t/wayland-0` per impedire a Qt di partire durante questa race. Il gate è
+  implementato ma non ancora installato né verificato con un secondo reboot.
 
 ### RPi5 storico `pi5` — WLAN 192.168.1.49
 

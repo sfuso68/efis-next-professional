@@ -9,6 +9,10 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 WorkingDirectory=/home/efis/efis-next
+# default.target can be reached before the compositor creates its socket.
+# Reject that early attempt before Qt can start a portal activation without a
+# display; Restart=always retries against the real Wayland session.
+ExecStartPre=/usr/bin/test -S %t/wayland-0
 Environment=EFIS_KIOSK=1
 # The kiosk does not use desktop dialogs. Selecting the installed local Qt
 # theme prevents synchronous xdg-desktop-portal fallback during session boot.
