@@ -14,6 +14,15 @@ class PlanError(ValueError):
     pass
 
 
+SPECIAL_PLATFORM_POLICY = {
+    "ems": "rpi4",
+    "fpv": "rpi4",
+    "flight-control": "pixhawk-6x",
+    "maintenance": "ground-computer",
+    "camera": "ip-camera",
+}
+
+
 def validate(plan: dict) -> dict:
     if plan.get("schema") != "efis-next.avionics-network.v1":
         raise PlanError("unsupported network-plan schema")
@@ -36,11 +45,25 @@ def validate(plan: dict) -> dict:
         raise PlanError("V1 requires exactly flight-data and video segments")
 
     nodes = {}
+    physical_hosts: dict[str, list[str]] = {}
     occupied: dict[str, set[ipaddress.IPv4Address]] = {key: set() for key in segments}
     for node in plan.get("nodes", []):
         node_id = node.get("id")
         if not node_id or node_id in nodes:
             raise PlanError("node ids must be present and unique")
+        application = node.get("application")
+        platform = node.get("platform")
+        physical_host = node.get("physical_host")
+        if not application or not platform or not physical_host:
+            raise PlanError(
+                f"{node_id}: application, platform and physical_host are required"
+            )
+        required_platform = SPECIAL_PLATFORM_POLICY.get(application, "rpi5")
+        if platform != required_platform:
+            raise PlanError(
+                f"{node_id}: {application} must run on {required_platform}, not {platform}"
+            )
+        physical_hosts.setdefault(physical_host, []).append(application)
         addresses = node.get("addresses", {})
         if not addresses:
             raise PlanError(f"{node_id}: at least one address is required")
@@ -58,10 +81,17 @@ def validate(plan: dict) -> dict:
             raise PlanError(f"{node_id}: cameras must remain isolated on video")
         nodes[node_id] = node
 
+    for physical_host, applications in physical_hosts.items():
+        if "ems" in applications and "fpv" in applications:
+            raise PlanError(
+                f"{physical_host}: EMS and FPV require distinct physical RPi4 nodes"
+            )
+
     expected_flows = {
         ("pixhawk-6x", "blackbox", 14550),
         ("blackbox", "pfd-01", 49002),
-        ("blackbox", "ems-01", 49002),
+        ("blackbox", "mfd-01", 49002),
+        ("blackbox", "ems-01", 49003),
     }
     actual_flows = set()
     for flow in plan.get("flows", []):
@@ -109,6 +139,7 @@ def validate(plan: dict) -> dict:
         "schema": plan["schema"],
         "segments": len(segments),
         "nodes": len(nodes),
+        "physical_hosts": len(physical_hosts),
         "flows": len(actual_flows),
         "switches": len(switches),
         "status": "PASS",

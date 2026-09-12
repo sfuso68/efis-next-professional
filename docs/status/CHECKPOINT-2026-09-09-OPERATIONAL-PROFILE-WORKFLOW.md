@@ -134,3 +134,21 @@ reale e ogni voce di acceptance touch resta aperta.
    `Check & Review`, senza attivare dati simulati.
 5. Uscire dal Setup e confermare che il PFD resti fluido e la telemetria `LIVE`.
 6. Solo dopo questa acceptance portare la stessa revisione sull'EMS RPi4.
+
+## Secondo RPi5 MFD/SV — staging 2026-09-12
+
+La release `9c5c0f1` è stata compilata anche sul nodo `pi5` `.49` con 313/313
+step e 18/18 CTest PASS. Il puntatore atomico seleziona la nuova release, mentre
+il servizio Next resta disabilitato e il renderer legacy rimane attivo al boot.
+
+Una prova EGLFS temporanea ha aperto Overview e prodotto la cattura reale
+`docs/status/evidence/mfd-operational-profile-9c5c0f1.png`. DDP era `LIVE`, ma
+il renderer ha raggiunto soltanto 13,6–14,3 fps, ha contato 7 gap iniziali e il
+processo non si è chiuso automaticamente dopo la cattura. Il timeout di
+sicurezza e il cleanup hanno ripristinato il renderer legacy. Il nodo conserva
+inoltre `get_throttled=0x50000` come storia di alimentazione/throttling dal boot.
+
+Perciò il workflow è **installato e verificato graficamente in prova temporanea**
+sul secondo RPi5, ma non è promosso al boot e non ha acceptance touch. Servono
+alimentazione corretta, profiling, correzione dell'uscita cattura e nuovo test
+prima dell'attivazione permanente.

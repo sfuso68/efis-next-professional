@@ -12,6 +12,12 @@ Stato: procedura di banco reversibile, non approvata per il volo.
 | EMS `192.168.1.36` | `eth0` | `10.77.10.12/24`, 1000/full | WLAN attiva |
 | MFD/SV `192.168.1.49` | `eth0` | `10.77.10.13/24`, 1000/full | WLAN attiva |
 
+L'allocazione di piattaforma è vincolata da ADR-013: PFD, MFD/SV, setup e
+Blackbox usano RPi5; EMS usa RPi4; FPV/VIDEO-CORE usa un secondo RPi4 separato.
+I viewer RPi5 possono mostrare il flusso selezionato dal VIDEO-CORE, ma non
+ospitano il decoder primario delle quattro camere. L'RPi4 EMS non può essere
+riutilizzato come VIDEO-CORE.
+
 La targhetta fotografata ha confermato il modello Waveshare
 `Gigabit-Switch-5P (EU)`. Il 2026-09-07 Blackbox e PFD sono stati collegati allo
 switch e configurati sui profili NetworkManager `netplan-eth0`, senza gateway

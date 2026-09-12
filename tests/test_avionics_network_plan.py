@@ -31,6 +31,7 @@ class AvionicsNetworkPlanTests(unittest.TestCase):
         self.assertEqual(report["status"], "PASS")
         self.assertEqual(report["segments"], 2)
         self.assertEqual(report["nodes"], 11)
+        self.assertEqual(report["physical_hosts"], 11)
         self.assertEqual(report["switches"], 2)
 
     def test_duplicate_address_is_rejected(self) -> None:
@@ -55,6 +56,46 @@ class AvionicsNetworkPlanTests(unittest.TestCase):
         invalid = copy.deepcopy(self.plan)
         invalid["switches"][0]["minimum_operational_ports"] = 5
         with self.assertRaises(MODULE.PlanError):
+            MODULE.validate(invalid)
+
+    def test_ems_must_use_rpi4(self) -> None:
+        invalid = copy.deepcopy(self.plan)
+        invalid["nodes"][3]["platform"] = "rpi5"
+        with self.assertRaisesRegex(MODULE.PlanError, "ems must run on rpi4"):
+            MODULE.validate(invalid)
+
+    def test_fpv_must_use_rpi4(self) -> None:
+        invalid = copy.deepcopy(self.plan)
+        invalid["nodes"][5]["platform"] = "rpi5"
+        with self.assertRaisesRegex(MODULE.PlanError, "fpv must run on rpi4"):
+            MODULE.validate(invalid)
+
+    def test_ems_and_fpv_cannot_share_one_rpi4(self) -> None:
+        invalid = copy.deepcopy(self.plan)
+        invalid["nodes"][5]["physical_host"] = invalid["nodes"][3]["physical_host"]
+        with self.assertRaisesRegex(MODULE.PlanError, "distinct physical RPi4"):
+            MODULE.validate(invalid)
+
+    def test_general_display_must_use_rpi5(self) -> None:
+        invalid = copy.deepcopy(self.plan)
+        invalid["nodes"][4]["platform"] = "rpi4"
+        with self.assertRaisesRegex(MODULE.PlanError, "mfd must run on rpi5"):
+            MODULE.validate(invalid)
+
+    def test_unspecialized_application_defaults_to_rpi5(self) -> None:
+        invalid = copy.deepcopy(self.plan)
+        invalid["nodes"][4]["application"] = "navigation"
+        invalid["nodes"][4]["platform"] = "rpi4"
+        with self.assertRaisesRegex(MODULE.PlanError, "navigation must run on rpi5"):
+            MODULE.validate(invalid)
+
+    def test_engine_flow_must_use_edp_port(self) -> None:
+        invalid = copy.deepcopy(self.plan)
+        engine_flow = next(
+            flow for flow in invalid["flows"] if flow["destination"] == "ems-01"
+        )
+        engine_flow["port"] = 49002
+        with self.assertRaisesRegex(MODULE.PlanError, "required flows missing"):
             MODULE.validate(invalid)
 
 

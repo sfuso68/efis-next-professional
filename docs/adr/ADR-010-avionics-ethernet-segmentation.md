@@ -28,7 +28,8 @@ Blackbox 10.77.10.2 --DDP V2/UDP 49002--> PFD 10.77.10.11
 Blackbox 10.77.10.2 --EDP V1/UDP 49003--> EMS 10.77.10.12
 ```
 
-Il VIDEO-CORE è un processo e un computer separato dall'EMS. Aggrega, controlla
+Il VIDEO-CORE è un processo su RPi4 e un computer separato dall'RPi4 EMS.
+PFD/MFD e gli altri renderer generali usano RPi5, secondo ADR-013. VIDEO-CORE aggrega, controlla
 e registra le camere; pubblica ai display solo il flusso selezionato o il
 mosaico. Un carico o guasto video non deve sottrarre CPU, memoria, rete o
 alimentazione al PFD, all'EMS o alla Blackbox.

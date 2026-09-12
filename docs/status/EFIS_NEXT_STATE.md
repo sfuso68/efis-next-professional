@@ -4,7 +4,7 @@ Aggiornamento: 2026-09-12
 
 Branch di lavoro: `work/avionics-ethernet-v1`
 
-Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-012.
+Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-013.
 
 Checkpoint corrente:
 `CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`. Il PFD operativo usa la
@@ -109,6 +109,13 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
 
 ### Piano Ethernet avionico segmentato
 
+- ADR-013 fissa l'allocazione standard: EMS su RPi4 dedicato; FPV/VIDEO-CORE su
+  un secondo RPi4 fisicamente distinto; PFD, MFD/Canvas, navigazione, synthetic
+  vision, setup e applicazioni generali su RPi5; Blackbox su RPi5. Pixhawk,
+  ESP32-S3, camere e computer manutentivo restano classi esterne.
+- Il PFD/MFD RPi5 può visualizzare lo stream FPV selezionato e una fascia EMS,
+  ma non esegue il decoder video primario né sostituisce il nodo EMS. Questa
+  distinzione mantiene una sola codebase senza condividere failure mode.
 - Aggiunta ADR-010: la Blackbox resta broker applicativo e non diventa router o
   bridge IP. Pixhawk, Blackbox e display usano FLIGHT-DATA `10.77.10.0/24`;
   camere e VIDEO-CORE usano VIDEO `10.77.20.0/24`.
@@ -120,8 +127,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   accettato come switch unico per telemetria e quattro flussi video.
 - EMS e VIDEO-CORE restano computer distinti: il decoder/mosaico video non può
   condividere failure mode e carico con il nodo strumenti motore.
-- Aggiunti runbook di migrazione reversibile e validatore offline del piano. I
-  parametri `NET_*` del Pixhawk non vengono scritti da questo lavoro.
+- Aggiunti runbook di migrazione reversibile e validatore offline del piano. Il
+  validatore richiede piattaforma e host fisico, rifiuta assegnazioni RPi4/RPi5
+  errate e impedisce la co-locazione EMS/FPV. Undici test su undici sono PASS.
+  Il piano dichiara correttamente DDP/49002 verso PFD/MFD ed EDP/49003 verso
+  EMS. I parametri `NET_*` del Pixhawk non vengono scritti da questo lavoro.
 - Blackbox, PFD ed EMS reali sono collegati al Waveshare e configurati
   rispettivamente come `10.77.10.2/24`, `10.77.10.11/24` e
   `10.77.10.12/24`. Tutti hanno negoziato 1000 Mbit/s full duplex, MTU 1500 e
@@ -614,15 +624,31 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   di un secondo hanno risolto il problema. Nel secondo test il servizio Next e'
   rimasto `active` per 12 secondi, il legacy `inactive`, senza errori DRM; al
   termine Next e' tornato `inactive` e il legacy `active`.
-- `/home/pi/efis-next-current` punta alla release `3458552`, ma il servizio Next
-  resta disabilitato e il renderer legacy resta abilitato al boot. Prima dello
-  switch definitivo servono profiling fino al target e acceptance visiva.
+- La release `9c5c0f1` è stata installata separatamente e compilata sul nodo con
+  313/313 step; 18/18 CTest, controllo stato progetto e dipendenze dinamiche
+  sono PASS. `/home/pi/efis-next-current` la seleziona ora atomicamente, ma il
+  servizio Next resta disabilitato e il renderer legacy resta abilitato al
+  boot. La release precedente `3458552` non è stata rimossa.
+- Una prova temporanea EGLFS ha aperto realmente il workflow profilo a 1024x600;
+  la cattura è conservata in
+  `docs/status/evidence/mfd-operational-profile-9c5c0f1.png`. Profilo, catalogo,
+  navigazione e imagery `OFFLINE_READY` sono stati caricati e DDP è risultato
+  `LIVE`, fino a 392 snapshot accettati, zero reject/errori socket e 7 gap
+  iniziali. L'interazione touch non è stata provata.
+- La prova ha confermato soltanto 13,6–14,3 fps. Inoltre il comando di cattura
+  non ha chiuso il processo dopo il salvataggio e il timeout di sicurezza lo ha
+  terminato. Il cleanup ha ripristinato `fuso-sv3d.service` attivo, lasciando
+  `efis-next-pfd-direct.service` inattivo e disabilitato.
 - Dopo la correzione dichiarata e il reboot `get_throttled` era `0x0`, ma e'
   tornato a `0x50000` durante la compilazione. Nella prova display la CPU del
   processo era circa 102-105%, il clock ARM 2,4 GHz, il core 910 MHz, la
   temperatura massima osservata 54,9 °C e il renderer 13,8-14,6 FPS.
   Alimentatore/cavo non sono quindi ancora validati sotto carico e il frame
   rate non soddisfa il gate display; non abilitare Next al boot.
+- Dopo la nuova build e prova il registro `get_throttled=0x50000` resta presente
+  (evento storico dal boot, non flag corrente nei bit bassi); temperatura finale
+  54,3 °C. Alimentazione, frame rate, gap iniziali e uscita della cattura restano
+  gate aperti: la release è staged, non promossa a operativa permanente.
 
 ### Ground Station `Port-hp` — 192.168.1.39 / Pixhawk 6X
 
