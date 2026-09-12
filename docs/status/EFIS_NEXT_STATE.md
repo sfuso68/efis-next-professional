@@ -1174,6 +1174,92 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
     Servono un secondo switch video e, per la configurazione finale completa,
     almeno sei porte operative sul dominio FLIGHT-DATA.
 
+### MFD release 3432402 ed Emergency Assist profili consultivi — 2026-09-12
+
+#### Implementato
+
+- Il Setup non contiene più l'identità statica del PFD: `EFIS_NODE_ID`,
+  `EFIS_NODE_PLATFORM`, `EFIS_NODE_ROLE` ed `EFIS_SYSTEM_PROFILE` alimentano il
+  modello QML. Il profilo systemd MFD imposta `MFD-01`, `RPi5`,
+  `MULTIFUNCTION DISPLAY` e `PROFESSIONAL`.
+- Sul display remoto `EFIS_BLACKBOX_STATUS_MODE=DDP_LINK` deriva
+  `WAITING/LINK LIVE/STALE/LOST` dallo stato del consumer DDP. Non usa più il
+  file di stato di un recorder locale e, soprattutto, non dichiara
+  `RECORDING` quando ha verificato soltanto il collegamento dati.
+- Il nastro ALT è stato allontanato dalla cella VS, la fascia VS è stata
+  ristretta e separata da un divisore visivo. Questa modifica riguarda il MFD
+  provato; il PFD principale `.45` non è stato aggiornato in questo intervento.
+- Emergency Assist dispone ora di messaggi deterministici distinti per tutte
+  le otto famiglie: FLY, NAVIGATE, bozza COMMUNICATE e cue vocale testuale. I
+  testi sono non procedurali, richiedono verifica e procedura approvata e non
+  contengono valori o sequenze di comando inventate.
+- La pagina Emergency distingue `SIM TEST PROCEDURE`, procedura approvata reale
+  e checklist bloccata; prima dell'acknowledgement FLY una procedura disponibile
+  è descritta come tale senza mostrare un passo inesistente.
+- Il confine ADR-012 è invariato: nessuna API o trasmissione verso Pixhawk,
+  ArduPilot, servi, radio, transponder, flap o carrello è stata aggiunta.
+
+#### Verificato solo software
+
+- Commit funzionali: `7fe46a3` (identità MFD, stato link broker e separazione
+  ALT/VS), `1d02b84` (otto profili Emergency e test) e `3432402` (chiarezza UI
+  dopo ispezione hardware).
+- Windows MSVC/Qt: build completa riuscita; 17/17 test eseguiti escludendo il
+  noto blocco Windows di `efis_operational_profile_model_tests`, e test
+  Emergency dedicato PASS. Il test escluso non è stato modificato.
+- La release ARM64 isolata `1d02b84` ha compilato tutti i 313 step e superato
+  18/18 CTest, incluso il test del catalogo operativo e il nuovo attraversamento
+  delle otto famiglie Emergency.
+- La release finale `3432402`, che differisce solo per due correzioni QML, ha
+  compilato nativamente i target `efis-pfd-qt` ed
+  `efis_emergency_assist_tests`; il test Emergency è PASS e `ldd` non segnala
+  librerie mancanti. Non si attribuisce a `3432402` una nuova esecuzione
+  dell'intera suite 18/18.
+
+#### Verificato su hardware reale
+
+- Prima delle modifiche, il MFD `.49` con release `f27508a` ha concluso il soak
+  di 60 minuti: 60/60 campioni, temperatura 56,0–60,9 °C, zero riavvii, zero
+  throttling, servizio attivo e DDP 19,9 Hz con zero reject, gap ed errori
+  socket. È baseline hardware, non soak della release finale.
+- `3432402` è attiva su `pi5`/`.49` mediante switch atomico; `1d02b84` è il
+  rollback immediato e `f27508a` resta conservata. Il servizio è `active`, con
+  `NRestarts=0`, `ExecMainStatus=0`, DDP `LIVE` 19,9–20,1 Hz, oltre 1.100
+  pacchetti accettati e zero reject/gap/socket error nel controllo osservato.
+  Temperatura 59,3 °C e `get_throttled=0x0`.
+- Catture EGLFS reali 1024×600 hanno verificato: Setup con `RPi5 • MFD-01` e
+  `MULTIFUNCTION DISPLAY` leggibili; PFD con ALT e VS visivamente distinti e
+  stato `LINK LIVE`; scenario motore Emergency con banner SIM, profilo FLY/NAV,
+  titolo `SIM TEST PROCEDURE` e dichiarazione esplicita di nessuna autorità di
+  volo. Le catture automatiche verificano rendering, non interazione touch né
+  acceptance dell'operatore.
+
+#### Aperto / non verificato
+
+- Il touchscreen non compare ancora in `lsusb`/libinput sul MFD: selezione
+  pagine, pressione prolungata Emergency e workflow Setup non sono verificati
+  fisicamente.
+- `3432402` non ha ancora reboot completo né soak di 60 minuti. La prova lunga
+  appartiene a `f27508a`; serve una nuova endurance con terrain e video al
+  carico peggiore.
+- Il terreno vicino resta stirato/sfocato. La correzione richiede lavoro
+  separato su LOD, proiezione e campionamento texture; non è stata dichiarata
+  risolta da una modifica ai nastri.
+- La pagina EMS sul MFD non riceve EDP V1 perché il publisher è destinato al
+  nodo EMS RPi4. Va definito un health riepilogativo o un secondo consumer senza
+  confondere il link DDP di volo con il link motore.
+- Emergency Assist è stato renderizzato su hardware soltanto nello scenario
+  perdita potenza simulato. Restano da verificare le altre sette famiglie,
+  input fisico con debounce/health, audio con priorità, inoltro autenticato alla
+  Blackbox con ack di persistenza, snapshot/replay e dati reali validati per
+  AGL/terrain/ostacoli/vento.
+- Le checklist operative restano bloccate: mancano POH/AFM controllato
+  dell'esemplare, revisione/applicabilità OM-912 legata al seriale e
+  documentazione dell'elica. Nessun testo consultivo introdotto in questo
+  incremento sostituisce tali fonti.
+- Stabilize Assist, Emergency Glide automatico e Autoland restano fuori dalla
+  V1 e bloccati dai gate hardware/HIL. Nessun servo è stato comandato.
+
 ## Vincoli architetturali mantenuti
 
 - Core C++20 indipendente da Qt e protocolli (ADR-001).
