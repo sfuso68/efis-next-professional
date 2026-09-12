@@ -677,10 +677,17 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `ddp_hz` 7,2), seguito da recupero a 33–37 presentazioni/s; durante il blocco
   il contatore ha registrato 146 gap DDP. Il valore è rimasto poi stabile ma
   il transitorio resta un difetto aperto da profilare.
-- Il soak fail-closed di 60 minuti è stato avviato alle 14:41:07 CEST usando
-  come baseline i 146 gap già osservati. Fallisce se aumentano gap, errori QML,
-  errori socket, restart o throttling. Finché non compare un risultato finale
-  `PASS`, il soak non è dichiarato verificato.
+- Il soak fail-closed di 60 minuti, dalle 14:41:07 alle 15:41:09 CEST, ha
+  terminato con `SOAK_RESULT=PASS`. Nei 61 campioni la release è rimasta
+  `1d25e62`, il servizio è rimasto `active` con `NRestarts=1`, DDP sempre
+  `LIVE` a 19,8–20,3 Hz, zero reject ed errori socket e nessun incremento oltre
+  la baseline di 146 gap. Errori QML e throttling sono rimasti a zero.
+- Durante il soak `presentation_hz` è rimasto fra 32,4 e 37,4,
+  `snapshot_hz` fra 32,0 e 34,2 e la temperatura fra 53,2 e 56,0 °C. Il report
+  completo resta sul nodo in
+  `/home/efis/efis-next-soak-1d25e62-20260912-v2.log`. Questa è evidenza
+  hardware positiva per il runtime continuativo successivo al transitorio;
+  non chiude il difetto dei 146 gap all'avvio né l'acceptance touch/visiva.
 
 ### RPi5 storico `pi5` — WLAN 192.168.1.49
 

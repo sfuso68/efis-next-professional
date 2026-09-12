@@ -78,7 +78,7 @@
     },
     "VER": {
       "items": 5,
-      "progress": 10.0
+      "progress": 20.0
     },
     "WX": {
       "items": 2,
@@ -94,12 +94,12 @@
     "BLOCKED": 2,
     "DONE": 6,
     "LEGACY": 2,
-    "PARTIAL": 37,
-    "TODO": 14,
+    "PARTIAL": 38,
+    "TODO": 13,
     "VERIFY-HW": 1
   },
   "verify_hw": [
     "INST-001"
   ],
-  "weighted_progress": 44.0
+  "weighted_progress": 44.8
 }
