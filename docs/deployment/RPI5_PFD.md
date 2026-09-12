@@ -20,6 +20,12 @@ systemctl --user daemon-reload
 systemctl --user enable --now efis-pfd.service
 ```
 
+L'unità è collegata a `default.target`, perché nelle sessioni Wayland Debian
+il target utente `graphical-session.target` può restare inattivo anche quando
+il compositor e il display sono operativi. `Restart=always` mantiene il
+tentativo di avvio durante il breve intervallo in cui il socket Wayland non è
+ancora disponibile.
+
 Manutenzione:
 
 ```sh

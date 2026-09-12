@@ -659,7 +659,28 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   osservata 54,9 °C e `get_throttled=0x0`.
 - Questa prova verifica installazione, test nativi, avvio, continuità DDP e
   prestazioni brevi su hardware reale. Non verifica ancora interazione touch,
-  qualità visiva di ogni pagina/terrain, reboot completo o soak di 60 minuti.
+  qualità visiva di ogni pagina/terrain o soak di 60 minuti.
+- Il primo reboot completo del 2026-09-12 ha conservato correttamente il
+  puntatore a `1d25e62`, ma ha rivelato che `efis-pfd.service`, pur abilitato,
+  non partiva: su questa sessione Debian/Wayland `graphical-session.target`
+  restava inattivo. Il log mostrato subito dopo il reboot era precedente al
+  boot e non è stato usato come evidenza positiva.
+- L'unità versionata ora è installata sotto `default.target`, senza
+  `PartOf=graphical-session.target`, e disabilita lo start limit affinché
+  `Restart=always` possa coprire il breve intervallo prima della disponibilità
+  di Wayland. La sintassi è stata verificata con `systemd-analyze --user
+  verify`; la precedente unità è conservata sul nodo come backup.
+- Un secondo reboot completo ha verificato l'avvio autonomo: boot alle
+  14:37:49 CEST, servizio `active` dalle 14:38:00, release `1d25e62`, DDP
+  `LIVE`, zero errori QML e `get_throttled=0x0`. È stato osservato un solo
+  blocco grafico iniziale di circa cinque secondi (`presentation_hz` 4,8 e
+  `ddp_hz` 7,2), seguito da recupero a 33–37 presentazioni/s; durante il blocco
+  il contatore ha registrato 146 gap DDP. Il valore è rimasto poi stabile ma
+  il transitorio resta un difetto aperto da profilare.
+- Il soak fail-closed di 60 minuti è stato avviato alle 14:41:07 CEST usando
+  come baseline i 146 gap già osservati. Fallisce se aumentano gap, errori QML,
+  errori socket, restart o throttling. Finché non compare un risultato finale
+  `PASS`, il soak non è dichiarato verificato.
 
 ### RPi5 storico `pi5` — WLAN 192.168.1.49
 
