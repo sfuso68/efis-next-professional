@@ -149,6 +149,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/AdaptiveEmsView.qml
                 qml/EmsSetupOverlay.qml
                 qml/OperationalProfileSetup.qml
+                qml/EfisTouchKeyboard.qml
                 qml/Theme.qml
                 qml/GpuMapSurface.qml
                 qml/WeatherRadarOverlay.qml
@@ -356,6 +357,7 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/EmsVectorIcon.qml
                 qml/EmsSetupOverlay.qml
                 qml/OperationalProfileSetup.qml
+                qml/EfisTouchKeyboard.qml
                 qml/Theme.qml
         )
         target_include_directories(efis-ems-qt PRIVATE

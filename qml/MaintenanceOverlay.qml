@@ -14,6 +14,8 @@ Rectangle {
     property bool channelTestVisible: false
     property bool airportSelectorVisible: false
     property bool airportNearestOnly: false
+    property bool operationalProfileVisible: false
+    property int operationalPreviewPage: 0
     property bool connectivityVisible: false
     property bool benchVisible: false
     property string airportQuery: ""
@@ -26,6 +28,7 @@ Rectangle {
     property string catalogMode: "aircraft"
     property string stagedSelection: ""
     signal closeRequested()
+    onSectionIndexChanged: if (sectionIndex !== 2) operationalProfileVisible = false
     Theme { id: theme }
 
     readonly property var sections: ["PLATFORM","DISPLAY","AIRCRAFT","SENSORS","NETWORK / CAN","NAV / RADIO","ENGINE","FPV / VIDEO","ALERTS / AUDIO","BLACK BOX","DIAGNOSTICS"]
@@ -41,9 +44,9 @@ Rectangle {
             {t:"BRIGHTNESS",v:"80 %",s:"AUTO READY",c:theme.cyan}, {t:"UI SCALE",v:"1.00",s:"ADAPTIVE",c:theme.cyan},
             {t:"THEME",v:"PRO NIGHT",s:"DAY / NIGHT",c:theme.primary}, {t:"ORIENTATION",v:"LANDSCAPE",s:"NORMAL",c:theme.primary}]
         case 2: return [
-            {t:"AIRCRAFT PROFILE",v:controller.aircraftProfileName,s:"TAP TO BROWSE • "+controller.aircraftProfileState,c:controller.aircraftProfileState === "APPROVED" ? theme.green : theme.amber,a:"aircraft"}, {t:"V-SPEEDS",v:"POH / AFM",s:"REVIEW REQUIRED",c:theme.amber},
+            {t:"AIRCRAFT PROFILE",v:controller.aircraftProfileName,s:"TAP • 28 DOMAINS / 447 FIELDS",c:controller.aircraftProfileState === "APPROVED" ? theme.green : theme.amber,a:"operational"}, {t:"V-SPEEDS",v:"POH / AFM",s:"REVIEW REQUIRED",c:theme.amber},
             {t:"UNITS",v:"KT • FT • INHG",s:"NORMALIZED",c:theme.green}, {t:"WEIGHT & BALANCE",v:"NOT CONFIGURED",s:"REQUIRED",c:theme.amber},
-            {t:"CATALOG",v:controller.catalogVersion,s:"ACTIVE SNAPSHOT",c:theme.cyan}, {t:"CALLSIGN",v:"EFIS TEST",s:"BENCH",c:theme.primary}]
+            {t:"CATALOG",v:controller.catalogVersion,s:"TAP TO BROWSE MODELS",c:theme.cyan,a:"aircraft"}, {t:"CALLSIGN",v:"EFIS TEST",s:"BENCH",c:theme.primary}]
         case 3: return [
             {t:"FLIGHT COMPUTER",v:"PIXHAWK 6X",s:"PLANNED",c:theme.amber}, {t:"GNSS",v:"M10",s:"PLANNED",c:theme.amber},
             {t:"AIRSPEED",v:"MATEK ASPD-DLVR",s:"PLANNED",c:theme.amber}, {t:"IMU PRIMARY",v:"PIXHAWK",s:"NOT CONNECTED",c:theme.secondary},
@@ -106,8 +109,19 @@ Rectangle {
                 Text { x: 14*overlay.uiScale; y: 12*overlay.uiScale; text: modelData.t; color: theme.secondary; font.pixelSize: 8*overlay.uiScale; font.bold: true }
                 Text { x: 14*overlay.uiScale; y: 39*overlay.uiScale; width: parent.width-25*overlay.uiScale; text: modelData.v; color: modelData.c; font.pixelSize: 17*overlay.uiScale; font.bold: true; elide: Text.ElideRight }
                 Text { x: 14*overlay.uiScale; anchors { bottom: parent.bottom; bottomMargin: 12*overlay.uiScale } text: modelData.s; color: theme.secondary; font.pixelSize: 7*overlay.uiScale; font.bold: true }
-                MouseArea { anchors.fill: parent; enabled: modelData.a !== undefined; onClicked: { if (modelData.a === "airport") overlay.airportSelectorVisible=true; else if (modelData.a === "bench") overlay.benchVisible=true; else if (modelData.a === "connectivity") overlay.connectivityVisible=true; else { overlay.catalogMode=modelData.a; overlay.catalogVisible=true } } }
+                MouseArea { anchors.fill: parent; enabled: modelData.a !== undefined; onClicked: { if (modelData.a === "airport") overlay.airportSelectorVisible=true; else if (modelData.a === "bench") overlay.benchVisible=true; else if (modelData.a === "connectivity") overlay.connectivityVisible=true; else if (modelData.a === "operational") overlay.operationalProfileVisible=true; else { overlay.catalogMode=modelData.a; overlay.catalogVisible=true } } }
             } }
+        }
+    }
+    Rectangle {
+        visible: overlay.operationalProfileVisible; z: 25
+        anchors { left: sidebar.right; right: parent.right; top: header.bottom; bottom: footer.top }
+        color: "#FD061018"; border.color: theme.cyan
+        OperationalProfileSetup {
+            anchors.fill: parent
+            controller: overlay.controller
+            uiScale: overlay.uiScale
+            workflowPage: overlay.operationalPreviewPage
         }
     }
     Rectangle {

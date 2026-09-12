@@ -21,7 +21,8 @@ ApplicationWindow {
             var operationalPreview = Qt.application.arguments.indexOf("--setup-operational-preview") >= 0 ||
                 Qt.application.arguments.indexOf("--setup-operational-entry-preview") >= 0 ||
                 Qt.application.arguments.indexOf("--setup-operational-load-preview") >= 0 ||
-                Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0
+                Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0 ||
+                Qt.application.arguments.indexOf("--setup-operational-keyboard-preview") >= 0
             if (blackboxPreview) setupSection = 4
             if (operationalPreview) setupSection = 5
             setupVisible = Qt.application.arguments.indexOf("--setup-preview") >= 0 || blackboxPreview || operationalPreview

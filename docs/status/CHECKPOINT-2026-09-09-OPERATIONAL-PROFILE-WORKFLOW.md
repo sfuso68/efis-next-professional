@@ -86,3 +86,23 @@ Il proprietario ha chiesto di fissare qui il punto e verificherà il workflow al
 proprio rientro. La release PFD `74a85f9` resta installata e stabile; la prova
 touch delle quattro pagine resta **PENDING OPERATOR ACCEPTANCE**. Non si porta
 il workflow sull'EMS RPi4 e non lo si dichiara accettato prima di tale verifica.
+
+## Rettifica dopo prova operatore — 2026-09-12
+
+La prova sul PFD ha avuto esito negativo. L'analisi indipendente ha mostrato che
+la pagina `OperationalProfileSetup` era inclusa e compilata nel target PFD, ma
+non era istanziata da `MaintenanceOverlay.qml`: il riquadro `AIRCRAFT PROFILE`
+continuava ad aprire il solo catalogo di staging. La frase «quattro pagine
+condivise da PFD ed EMS» descriveva quindi il componente e i controller, non la
+raggiungibilità effettiva dal PFD, ed era stata interpretata in modo troppo
+ampio.
+
+Sul nodo non risulta inoltre installato Qt Virtual Keyboard e la pagina non
+forniva una tastiera propria. Il requisito di inserimento touch non poteva
+essere considerato implementato sul PFD.
+
+Il branch contiene ora il collegamento esplicito dal riquadro AIRCRAFT PROFILE
+e una tastiera QML autonoma condivisa. Build PFD/EMS e compilazione QML AOT sono
+PASS; test modello diretto e tramite CTest 1/1 PASS; catture offscreen di
+Overview e tastiera prodotte. La correzione non è ancora installata sul nodo
+reale e ogni voce di acceptance touch resta aperta.

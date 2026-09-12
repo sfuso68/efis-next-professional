@@ -45,10 +45,12 @@ Item {
     onSelectedChanged: syncEditor(selected)
     Component.onCompleted: {
         var arguments = Qt.application.arguments
-        if (arguments.indexOf("--setup-operational-entry-preview") >= 0) workflowPage = 1
+        if (arguments.indexOf("--setup-operational-entry-preview") >= 0 || arguments.indexOf("--setup-operational-keyboard-preview") >= 0) workflowPage = 1
         else if (arguments.indexOf("--setup-operational-load-preview") >= 0) workflowPage = 2
         else if (arguments.indexOf("--setup-operational-check-preview") >= 0) workflowPage = 3
         syncEditor(selected)
+        if (arguments.indexOf("--setup-operational-keyboard-preview") >= 0)
+            Qt.callLater(function() { touchKeyboard.openFor(valueInput, valueInput.hint) })
     }
     function cycleProfile() {
         if (!profiles.length) return
@@ -103,7 +105,7 @@ Item {
 
         Rectangle { id:listPane; visible:root.workflowPage===1; anchors { left:domainPane.right; top:domainPane.top; bottom:domainPane.bottom; leftMargin:7*root.uiScale } width:292*root.uiScale; color:root.panel; border.color:root.line
             Rectangle { x:7*root.uiScale; y:7*root.uiScale; width:parent.width-14*root.uiScale; height:29*root.uiScale; radius:3*root.uiScale; color:"#102630"; border.color:root.line
-                TextInput { id:searchInput; anchors { fill:parent; margins:6*root.uiScale } color:"white"; font.pixelSize:7*root.uiScale; clip:true; selectByMouse:true; text:""; onTextEdited:controller.filterOperationalFields(text) }
+                TextInput { id:searchInput; anchors { fill:parent; margins:6*root.uiScale } color:"white"; font.pixelSize:7*root.uiScale; clip:true; selectByMouse:true; text:""; onTextEdited:controller.filterOperationalFields(text); onActiveFocusChanged:if(activeFocus)touchKeyboard.openFor(this,"SEARCH FIELD / IDENTIFIER") }
                 Text { visible:!searchInput.text.length; x:6*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"SEARCH FIELD / IDENTIFIER"; color:"#70838C"; font.pixelSize:7*root.uiScale }
             }
             ListView { anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; topMargin:43*root.uiScale; margins:6*root.uiScale } clip:true; spacing:3*root.uiScale; model:root.fields
@@ -141,7 +143,7 @@ Item {
                 property alias text: input.text
                 property string hint: ""
                 width:parent.width-20*root.uiScale; height:25*root.uiScale; radius:2*root.uiScale; color:"#0B1820"; border.color:root.line
-                TextInput { id:input; anchors { fill:parent; margins:5*root.uiScale } color:"white"; font.pixelSize:6.5*root.uiScale; clip:true; selectByMouse:true }
+                TextInput { id:input; anchors { fill:parent; margins:5*root.uiScale } color:"white"; font.pixelSize:6.5*root.uiScale; clip:true; selectByMouse:true; onActiveFocusChanged:if(activeFocus)touchKeyboard.openFor(this,parent.hint) }
                 Text { visible:!input.text.length; x:6*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:parent.hint; color:"#647881"; font.pixelSize:6*root.uiScale }
             }
             FieldBox { id:valueInput; x:10*root.uiScale; y:106*root.uiScale; hint:"VALUE • JSON FOR TABLE/CURVE" }
@@ -200,7 +202,7 @@ Item {
                     Text { x:14*root.uiScale; y:14*root.uiScale; text:"LOAD AN EXISTING DRAFT"; color:root.cyan; font.pixelSize:10*root.uiScale; font.bold:true }
                     Text { x:14*root.uiScale; y:40*root.uiScale; width:parent.width-28*root.uiScale; wrapMode:Text.WordWrap; text:"Only EFIS draft V2 files matching this profile and revision are accepted. APPROVED metadata and activation flags are rejected."; color:"#AAB6BC"; font.pixelSize:7*root.uiScale }
                     Rectangle { x:14*root.uiScale; y:106*root.uiScale; width:parent.width-28*root.uiScale; height:38*root.uiScale; radius:3*root.uiScale; color:"#091820"; border.color:root.line
-                        TextInput { id:importPath; anchors { fill:parent; margins:8*root.uiScale } color:"white"; font.pixelSize:7*root.uiScale; clip:true; selectByMouse:true; text:String(controller.operationalDraftPath||"") }
+                        TextInput { id:importPath; anchors { fill:parent; margins:8*root.uiScale } color:"white"; font.pixelSize:7*root.uiScale; clip:true; selectByMouse:true; text:String(controller.operationalDraftPath||""); onActiveFocusChanged:if(activeFocus)touchKeyboard.openFor(this,"DRAFT FILE PATH") }
                     }
                     Rectangle { x:14*root.uiScale; y:157*root.uiScale; width:parent.width-28*root.uiScale; height:42*root.uiScale; radius:3*root.uiScale; color:"#133C31"; border.color:root.green
                         Text { anchors.centerIn:parent; text:"IMPORT AND STRUCTURE-CHECK"; color:"white"; font.pixelSize:8*root.uiScale; font.bold:true }
@@ -259,5 +261,6 @@ Item {
             Text { x:9*root.uiScale; anchors.verticalCenter:parent.verticalCenter; text:root.summary.simulation_profile?"⛔  SIMULATION DATA • NOT FOR FLIGHT • RELEASE READY = NO":"⛔  DRAFT ONLY • RELEASE READY = NO"; color:root.red; font.pixelSize:7*root.uiScale; font.bold:true }
             Text { anchors { right:parent.right; rightMargin:9*root.uiScale; verticalCenter:parent.verticalCenter } width:420*root.uiScale; horizontalAlignment:Text.AlignRight; elide:Text.ElideLeft; text:String(controller.operationalCatalogStatus||"NOT LOADED"); color:root.amber; font.pixelSize:6.5*root.uiScale; font.bold:true }
         }
+        EfisTouchKeyboard { id:touchKeyboard; anchors.fill:parent; uiScale:root.uiScale }
     }
 }

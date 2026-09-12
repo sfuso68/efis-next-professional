@@ -9,7 +9,7 @@ Rectangle {
     property int monitorSensor: -1
     property bool showFuelHistory: Qt.application.arguments.indexOf("--setup-blackbox-preview") >= 0
     property bool showArchiveInventory: Qt.application.arguments.indexOf("--setup-blackbox-preview") >= 0
-    property int operationalPreviewPage: Qt.application.arguments.indexOf("--setup-operational-entry-preview") >= 0 ? 1 :
+    property int operationalPreviewPage: Qt.application.arguments.indexOf("--setup-operational-entry-preview") >= 0 || Qt.application.arguments.indexOf("--setup-operational-keyboard-preview") >= 0 ? 1 :
         Qt.application.arguments.indexOf("--setup-operational-load-preview") >= 0 ? 2 :
         Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0 ? 3 : 0
     onVisibleChanged: if(visible)section=requestedSection

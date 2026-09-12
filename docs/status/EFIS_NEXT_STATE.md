@@ -1,6 +1,6 @@
 # EFIS NEXT — stato verificato
 
-Aggiornamento: 2026-09-09
+Aggiornamento: 2026-09-12
 
 Branch di lavoro: `work/avionics-ethernet-v1`
 
@@ -270,6 +270,23 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   simulazione ed evidenza mancante e può al massimo dichiarare
   `READY_FOR_INDEPENDENT_REVIEW`; `activation_allowed` resta sempre falso.
 
+### Correzione accesso workflow operativo dal PFD — 2026-09-12
+
+- La prova dell'operatore ha smentito l'interpretazione del checkpoint del
+  2026-09-09: la pagina condivisa era compilata nel modulo PFD, ma
+  `MaintenanceOverlay` non la istanziava. Sul PFD il riquadro `AIRCRAFT
+  PROFILE` apriva quindi il catalogo di staging e non il workflow a quattro
+  fasi.
+- Il riquadro `AIRCRAFT PROFILE` apre ora `OperationalProfileSetup`; il
+  catalogo modelli rimane disponibile dal riquadro separato `CATALOG`.
+- Gli argomenti di anteprima del workflow sono ora gestiti anche da `Main.qml`,
+  rendendo verificabili Overview, Guided Entry, Load/Prefill e Check & Review
+  nel target PFD.
+- Aggiunta una tastiera touch QML interna e condivisa da PFD ed EMS. Si apre sui
+  campi del workflow, comprende lettere, numeri, simboli, maiuscole/minuscole,
+  spazio, cancellazione e chiusura e non dipende da una tastiera virtuale del
+  desktop.
+
 ### Emergency Assist consultivo Software V1 — 2026-09-09
 
 - Aggiunto un core C++20 indipendente da Qt per otto famiglie di emergenza,
@@ -363,6 +380,17 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   successivo entro il timeout. Il nuovo test Setup è stato quindi rieseguito
   separatamente con CTest ed è passato. I test non avviati non sono dichiarati
   superati da questa sessione.
+- Il 2026-09-12 la build MSVC/Qt 6.11 di `efis-pfd-qt` e `efis-ems-qt`, inclusa
+  la compilazione QML AOT di `MaintenanceOverlay`, `OperationalProfileSetup` e
+  `EfisTouchKeyboard`, è terminata con successo.
+- `efis_operational_profile_model_tests` è terminato con exit code 0 sia
+  avviato direttamente sia tramite CTest: 1/1 test pertinente PASS. Un primo
+  tentativo senza le DLL Qt nel `PATH` non aveva avviato il processo; ripetuto
+  nell'ambiente toolchain completo ha superato tutte le asserzioni.
+- Le catture offscreen 1024x600 mostrano la pagina Overview raggiunta dal PFD e
+  la tastiera interna sovrapposta a Guided Entry senza uscire dal pannello. La
+  sostituzione dei font del backend Windows resta presente; queste catture sono
+  prova di caricamento/geometria, non acceptance visiva o touch.
 
 - Build MSVC 19.51 del codec e del nuovo eseguibile di test completata.
 - Round-trip snapshot, preservazione provenienza/unità/simulazione, CRC32C con
@@ -455,6 +483,13 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Una cattura reale Wayland 1024x600 dimostra il renderer PFD della nuova
   release. Non mostra però le pagine Setup: ergonomia touch, tastiera,
   scorrimento e leggibilità del workflow restano esplicitamente aperti.
+- Il controllo in sola lettura del 2026-09-12 conferma che il PFD esegue ancora
+  `/home/efis/efis-next-avionics-74a85f9`, con `efis-pfd.service` attivo. Nella
+  release installata `OperationalProfileSetup` è referenziato soltanto da
+  `EmsSetupOverlay.qml`, non da `MaintenanceOverlay.qml`; non risultano inoltre
+  installati pacchetti Qt Virtual Keyboard. L'operatore ha confermato sul
+  pannello che il comportamento descritto non funziona. Questa è evidenza
+  hardware negativa, non una verifica positiva della correzione.
 
 ### Blackbox `efisblackbox` — 192.168.1.47
 
@@ -757,6 +792,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Provare sui due pannelli il nuovo workflow a quattro fasi, inclusi pressione
   prolungata, tastiera per il percorso di importazione, scorrimento dei 28
   domini/coda problemi e tempi di risposta con una bozza da 447 campi.
+- Installare la correzione del 2026-09-12 come nuova release immutabile sul PFD
+  senza sovrascrivere `74a85f9`; verificare sul touch reale apertura dal
+  riquadro `AIRCRAFT PROFILE`, tastiera, scorrimento, prefill prolungato,
+  controllo e ritorno al PFD `LIVE`. Nessuna di queste prove è ancora chiusa.
 
 ### Emergency Assist e servi autopilota — concept 2026-09-09
 
