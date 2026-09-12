@@ -111,8 +111,18 @@ Prova da banco, con dati dichiaratamente simulati inviati da un altro host:
   --rate-hz 20 --seconds 60 --simulate
 ```
 
-Il journal del PFD riporta `ddp_state`, pacchetti accettati/rifiutati, gap di
-sequenza ed errori socket nel record periodico `render_health`. Il publisher da
+Il journal del PFD riporta nel record periodico `render_health`:
+
+- `presentation_hz` e `presentation_interval_ms`, cioè quante immagini sono
+  state realmente presentate. Non sono una misura del tempo impiegato dalla GPU;
+- `snapshot_hz`, cioè la cadenza degli snapshot consumati dal controller;
+- `ddp_hz`, `ddp_state`, pacchetti accettati/rifiutati, gap di sequenza ed
+  errori socket.
+
+Un valore basso di `presentation_hz` può significare che la scena non richiede
+un nuovo frame; non dimostra da solo una saturazione grafica. Per profilare il
+tempo reale del render thread usare temporaneamente `QSG_RENDER_TIMING=1` e
+confrontare `syncAndRender` con il budget di 16,7 ms a 60 Hz. Il publisher da
 banco richiede sempre `--simulate`: non è il processo di ingestione reale della
 Blackbox e non deve essere installato come servizio di volo.
 

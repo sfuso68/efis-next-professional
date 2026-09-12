@@ -298,6 +298,33 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   spazio, cancellazione e chiusura e non dipende da una tastiera virtuale del
   desktop.
 
+### Telemetria grafica non ambigua — 2026-09-12
+
+- Il precedente record `render_health` chiamava `fps` il numero di segnali
+  `frameSwapped` e derivava da quello `frame_ms`. La seconda grandezza era
+  soltanto l'intervallo medio fra presentazioni, non il tempo di rendering; la
+  denominazione poteva quindi produrre una diagnosi falsa di saturazione GPU.
+- PFD e nodo EMS registrano ora separatamente `presentation_hz`,
+  `presentation_interval_ms` e `snapshot_hz`; il PFD aggiunge `ddp_hz`. Restano
+  presenti sequenza, stato DDP e contatori cumulativi di accettazione, rifiuto,
+  gap ed errori socket.
+- Il percorso di cattura PFD legge `EFIS_CAPTURE_EXIT` prima della callback,
+  registra l'intenzione nel log e usa un'uscita esplicita con codice 0 dopo un
+  salvataggio riuscito oppure 2 dopo un salvataggio fallito.
+- Verifica software Windows: target PFD ed EMS compilati; una cattura PFD
+  offscreen ha prodotto il PNG ed è terminata con exit code 0. I test 1–16 della
+  suite sono PASS. I test 17 e 18 non sono dichiarati PASS su Windows: il primo
+  è andato in timeout e il secondo non ha caricato una DLL Qt nell'ambiente
+  CTest locale. La release ARM e la cattura EGLFS devono quindi essere provate
+  sui target prima della promozione.
+- Verifica diagnostica su RPi5 `.49`, ancora con release `9c5c0f1`: PFD, NAV,
+  EMS e Setup hanno presentato 13,7–15,0 frame/s, ma `QSG_RENDER_TIMING=1` ha
+  misurato `syncAndRender` circa 10–14 ms. Il render thread rientra quindi nel
+  budget di 16,7 ms in questa prova breve; il valore di presentazione non prova
+  un collo di bottiglia GPU. Temperatura finale 53,8 °C e
+  `get_throttled=0x0`. Questa non è una prova termica o di alimentazione
+  prolungata.
+
 ### Emergency Assist consultivo Software V1 — 2026-09-09
 
 - Aggiunto un core C++20 indipendente da Qt per otto famiglie di emergenza,
@@ -635,20 +662,24 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   navigazione e imagery `OFFLINE_READY` sono stati caricati e DDP è risultato
   `LIVE`, fino a 392 snapshot accettati, zero reject/errori socket e 7 gap
   iniziali. L'interazione touch non è stata provata.
-- La prova ha confermato soltanto 13,6–14,3 fps. Inoltre il comando di cattura
-  non ha chiuso il processo dopo il salvataggio e il timeout di sicurezza lo ha
-  terminato. Il cleanup ha ripristinato `fuso-sv3d.service` attivo, lasciando
-  `efis-next-pfd-direct.service` inattivo e disabilitato.
+- La prova iniziale ha presentato 13,6–14,3 frame/s. Il comando di cattura della
+  release `9c5c0f1` non ha chiuso il processo dopo il salvataggio e il timeout
+  di sicurezza lo ha terminato. Il cleanup ha ripristinato
+  `fuso-sv3d.service` attivo, lasciando `efis-next-pfd-direct.service` inattivo
+  e disabilitato. La correzione dell'uscita è implementata nel branch, ma non è
+  ancora verificata su EGLFS reale.
 - Dopo la correzione dichiarata e il reboot `get_throttled` era `0x0`, ma e'
   tornato a `0x50000` durante la compilazione. Nella prova display la CPU del
   processo era circa 102-105%, il clock ARM 2,4 GHz, il core 910 MHz, la
   temperatura massima osservata 54,9 °C e il renderer 13,8-14,6 FPS.
   Alimentatore/cavo non sono quindi ancora validati sotto carico e il frame
   rate non soddisfa il gate display; non abilitare Next al boot.
-- Dopo la nuova build e prova il registro `get_throttled=0x50000` resta presente
-  (evento storico dal boot, non flag corrente nei bit bassi); temperatura finale
-  54,3 °C. Alimentazione, frame rate, gap iniziali e uscita della cattura restano
-  gate aperti: la release è staged, non promossa a operativa permanente.
+- Il profilo successivo delle quattro pagine si è concluso con
+  `get_throttled=0x0`, 53,2 °C; una seconda prova con timing del scene graph si
+  è conclusa a 53,8 °C e ancora `0x0`. Questo elimina il flag storico per quel
+  boot, ma non sostituisce il soak: stabilità alimentazione, touch, gap iniziali
+  e uscita della nuova cattura restano gate aperti. La release è staged, non
+  promossa a operativa permanente.
 
 ### Ground Station `Port-hp` — 192.168.1.39 / Pixhawk 6X
 

@@ -50,22 +50,35 @@ int main(int argc, char* argv[]) {
     // altrimenti un fermo immagine e un valore stabile si somigliano troppo.
     if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().front())) {
         auto frames = std::make_shared<quint64>(0);
+        auto snapshotEvents = std::make_shared<quint64>(0);
         auto elapsed = std::make_shared<QElapsedTimer>();
         elapsed->start();
         QObject::connect(window, &QQuickWindow::frameSwapped, window,
                          [frames] { ++(*frames); });
+        QObject::connect(&controller, &EmsController::snapshotChanged, window,
+                         [snapshotEvents] { ++(*snapshotEvents); });
         auto* metrics = new QTimer(window);
         metrics->setInterval(5000);
-        QObject::connect(metrics, &QTimer::timeout, window, [frames, elapsed, &controller] {
+        QObject::connect(metrics, &QTimer::timeout, window,
+                         [frames, snapshotEvents, elapsed, &controller] {
             const auto milliseconds = elapsed->restart();
-            const double fps = milliseconds > 0
+            const double presentationHz = milliseconds > 0
                 ? static_cast<double>(*frames) * 1000.0 / static_cast<double>(milliseconds)
                 : 0.0;
-            qInfo().noquote() << "event=render_health node=ems fps="
-                              << QString::number(fps, 'f', 1)
-                              << "frame_ms=" << QString::number(fps > 0.0 ? 1000.0 / fps : 0.0, 'f', 2)
-                              << "sequence=" << controller.sequence();
+            const quint64 sequence = controller.sequence();
+            const double snapshotHz = milliseconds > 0
+                ? static_cast<double>(*snapshotEvents) * 1000.0
+                    / static_cast<double>(milliseconds)
+                : 0.0;
+            qInfo().noquote() << "event=render_health node=ems presentation_hz="
+                              << QString::number(presentationHz, 'f', 1)
+                              << "presentation_interval_ms="
+                              << QString::number(presentationHz > 0.0
+                                      ? 1000.0 / presentationHz : 0.0, 'f', 2)
+                              << "snapshot_hz=" << QString::number(snapshotHz, 'f', 1)
+                              << "sequence=" << sequence;
             *frames = 0;
+            *snapshotEvents = 0;
         });
         metrics->start();
     }

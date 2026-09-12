@@ -68,26 +68,49 @@ int main(int argc, char* argv[]) {
 
     if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().front())) {
         auto frames = std::make_shared<quint64>(0);
+        auto snapshotEvents = std::make_shared<quint64>(0);
         auto elapsed = std::make_shared<QElapsedTimer>();
+        auto previousAccepted = std::make_shared<quint64>(controller.ddpAccepted());
         elapsed->start();
         QObject::connect(window, &QQuickWindow::frameSwapped, window,
                          [frames] { ++(*frames); });
+        QObject::connect(&controller, &PfdController::snapshotChanged, window,
+                         [snapshotEvents] { ++(*snapshotEvents); });
         auto* metrics = new QTimer(window);
         metrics->setInterval(5000);
-        QObject::connect(metrics, &QTimer::timeout, window, [frames, elapsed, &controller] {
+        QObject::connect(metrics, &QTimer::timeout, window,
+                         [frames, snapshotEvents, elapsed, previousAccepted, &controller] {
             const auto milliseconds = elapsed->restart();
-            const double fps = milliseconds > 0
+            const double presentationHz = milliseconds > 0
                 ? static_cast<double>(*frames) * 1000.0 / static_cast<double>(milliseconds)
                 : 0.0;
-            qInfo().noquote() << "event=render_health fps=" << QString::number(fps, 'f', 1)
-                              << "frame_ms=" << QString::number(fps > 0.0 ? 1000.0 / fps : 0.0, 'f', 2)
-                              << "sequence=" << controller.sequence()
+            const quint64 sequence = controller.sequence();
+            const quint64 accepted = controller.ddpAccepted();
+            const quint64 acceptedDelta = accepted >= *previousAccepted
+                ? accepted - *previousAccepted : 0;
+            const double snapshotHz = milliseconds > 0
+                ? static_cast<double>(*snapshotEvents) * 1000.0
+                    / static_cast<double>(milliseconds)
+                : 0.0;
+            const double ddpHz = milliseconds > 0
+                ? static_cast<double>(acceptedDelta) * 1000.0 / static_cast<double>(milliseconds)
+                : 0.0;
+            qInfo().noquote() << "event=render_health presentation_hz="
+                              << QString::number(presentationHz, 'f', 1)
+                              << "presentation_interval_ms="
+                              << QString::number(presentationHz > 0.0
+                                      ? 1000.0 / presentationHz : 0.0, 'f', 2)
+                              << "snapshot_hz=" << QString::number(snapshotHz, 'f', 1)
+                              << "sequence=" << sequence
                               << "ddp_state=" << controller.ddpLinkState()
-                              << "ddp_accepted=" << controller.ddpAccepted()
+                              << "ddp_hz=" << QString::number(ddpHz, 'f', 1)
+                              << "ddp_accepted=" << accepted
                               << "ddp_rejected=" << controller.ddpRejected()
                               << "ddp_gaps=" << controller.ddpSequenceGaps()
                               << "ddp_socket_errors=" << controller.ddpSocketErrors();
             *frames = 0;
+            *snapshotEvents = 0;
+            *previousAccepted = accepted;
         });
         metrics->start();
 
@@ -95,14 +118,16 @@ int main(int argc, char* argv[]) {
         if (!capturePath.isEmpty()) {
             const int configuredDelay = qEnvironmentVariableIntValue("EFIS_CAPTURE_DELAY_MS");
             const int delay = configuredDelay > 0 ? configuredDelay : 2000;
-            QTimer::singleShot(delay, window, [window, capturePath] {
+            const bool exitAfterCapture = qEnvironmentVariableIntValue("EFIS_CAPTURE_EXIT") > 0;
+            QTimer::singleShot(delay, window, [window, capturePath, exitAfterCapture] {
                 QDir{}.mkpath(QFileInfo{capturePath}.absolutePath());
                 const QImage image = window->grabWindow();
                 const bool saved = !image.isNull() && image.save(capturePath);
                 qInfo().noquote() << "event=pfd_capture path=" << capturePath
-                                  << "saved=" << saved << "size=" << image.size();
-                if (qEnvironmentVariableIntValue("EFIS_CAPTURE_EXIT") > 0)
-                    QCoreApplication::quit();
+                                  << "saved=" << saved << "size=" << image.size()
+                                  << "exit_after_capture=" << exitAfterCapture;
+                if (exitAfterCapture)
+                    QGuiApplication::exit(saved ? 0 : 2);
             });
         }
     }

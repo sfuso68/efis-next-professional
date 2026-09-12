@@ -125,8 +125,12 @@ Ritmo di rendering, in `logs/ems.log`:
 grep render_health ~/efis-next/logs/ems.log | tail -5
 ```
 
-Il nodo aggiorna il motore a 20 Hz e non ha terreno da disegnare: `fps` molto
-sotto 20 è un risultato da indagare, non da accettare.
+Il nodo aggiorna il motore a 20 Hz. `snapshot_hz` misura questa cadenza;
+`presentation_hz` conta invece soltanto le immagini effettivamente presentate
+dal scene graph e può essere inferiore quando i valori visibili non richiedono
+un ridisegno. Non usare `presentation_hz` come misura del tempo GPU. Per
+profilare il render thread usare temporaneamente `QSG_RENDER_TIMING=1` e
+controllare `syncAndRender`.
 
 ## Cattura della pagina
 
