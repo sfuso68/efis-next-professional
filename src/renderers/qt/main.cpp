@@ -39,6 +39,10 @@ int main(int argc, char* argv[]) {
     QObject::connect(&controller, &PfdController::snapshotChanged, &weather, [&controller, &weather] {
         weather.updatePosition(controller.latitude(), controller.longitude());
     });
+    // Tutti gli oggetti esposti al QML devono vivere piu' a lungo dell'engine.
+    // In particolare il pannello bench puo' essere ancora valutato durante lo
+    // smontaggio della scena dopo una cattura automatica.
+    SensorBenchController sensorBench;
     QQmlApplicationEngine engine;
     const auto directoryUrl = [](const char* environmentName, const QString& fallback) {
         const QString configured = qEnvironmentVariable(environmentName);
@@ -56,7 +60,6 @@ int main(int argc, char* argv[]) {
         "efisImageryTextureRoot",
         directoryUrl("EFIS_IMAGERY_TEXTURE_ROOT",
                      QDir::current().filePath("output/imagery/active-textures")));
-    SensorBenchController sensorBench;
     engine.rootContext()->setContextProperty("bench", &sensorBench);
     engine.rootContext()->setContextProperty(
         "startupPage", qEnvironmentVariable("EFIS_START_PAGE", "PFD"));
