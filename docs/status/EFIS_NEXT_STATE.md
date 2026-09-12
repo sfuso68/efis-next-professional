@@ -12,7 +12,10 @@ release immutabile `1d25e62`; la release precedente `23cd411` è conservata come
 rollback immediato e le release `9c5c0f1`/`74a85f9` restano disponibili. Emergency
 Assist è incluso nel binario installato, ma la funzione non ha ancora acceptance
 dell'operatore sul pannello reale. Non è stata concessa autorità di comando al
-sistema EFIS.
+sistema EFIS. Il secondo RPi5 MFD `pi5` usa invece la release immutabile
+`f27508a`, avviata direttamente in EGLFS sulla pagina Canvas con profilo unita'
+imperiali; il renderer storico è stato rimosso dal percorso operativo e
+conservato in quarantena recuperabile.
 
 Il workflow del profilo operativo è fissato separatamente in
 `CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`.
@@ -349,10 +352,11 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   34,5 `snapshot_hz`; Navigation ha raggiunto 49,6 `snapshot_hz` e 50,6
   `presentation_hz`. L'ottimizzazione è quindi efficace sul Raspberry e non è
   ottenuta riducendo qualità grafica o dati.
-- `/home/pi/efis-next-current` seleziona atomicamente `1d25e62`, ma il servizio
-  Next resta disabilitato e `fuso-sv3d.service` resta attivo: è staging, non
-  promozione operativa. Cambio pagina touch, Setup touch, terrain e soak
-  restano aperti.
+- Questa misura su `.49` era stata eseguita con `/home/pi/efis-next-current`
+  puntato a `1d25e62` e con il renderer storico ancora operativo. La successiva
+  promozione MFD permanente e' descritta nella sezione hardware dedicata;
+  cambio pagina touch, Setup touch, resa terrain e soak prolungato restano
+  comunque aperti.
 - Sul PFD principale `.45` la release `1d25e62` è stata trasferita con consenso
   esplicito, verificata tramite SHA-256, compilata nativamente in 313/313 step e
   ha superato 18/18 test ARM64. Lo switch atomico da `23cd411` è riuscito e la
@@ -764,21 +768,32 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   ARM64, 8 GiB RAM e root filesystem su microSD da 53 GiB con circa 34 GiB
   liberi. `can1` e' attivo. `eth0` e' ora collegata allo switch, usa
   `10.77.10.13/24` senza gateway/DNS e negozia 1000/full.
-- Il software esistente `/home/pi/efis`, branch `sv3d-fondamenta`, resta
-  invariato. `fuso-sv3d.service` continua ad avviare il renderer GLES diretto
-  con CAN; `/home/pi/efis2` e i suoi circa 4,9 GiB di dati HGT/nav non sono
-  stati modificati.
-- Installata la toolchain Qt 6.8.2/CMake 3.31.6 necessaria. Dopo lo staging
-  iniziale `ab0429e`, il commit `3458552` con radici terrain portabili e broker
-  multi-display e' stato caricato nella release separata
-  `/home/pi/efis-next-avionics-3458552` e compilato nativamente in Release:
-  core, PFD, EMS, strumenti, broker e simulatori sono stati prodotti; 16/16
-  CTest sono passati e `generate_status.py --check` ha restituito zero.
-- Verifica hardware grafica: la selezione EGLFS automatica fallisce perche'
-  sceglie `/dev/dri/card0` (V3D senza connettori). Con il nuovo profilo KMS
-  esplicito `/dev/dri/card1` il PFD ha occupato correttamente il display reale
-  per una prova limitata a 15 secondi. Terminata la prova, il servizio legacy e'
-  tornato `active`; il rollback e' quindi verificato sul nodo.
+- Implementato nel repository il profilo di deployment dedicato MFD
+  `efis-next-mfd-direct.service`: accesso direct-DRM/EGLFS con KMS esplicito su
+  `/dev/dri/card1`, pagina iniziale `CANVAS`, consumer DDP V2 su UDP 49002 e
+  radici terrain/imagery persistenti sotto `/home/pi/efis-data`. Il profilo
+  installato in `~/.config/EFIS-NEXT/ems-units.ini` seleziona `IMPERIAL`, quindi
+  °F, PSI, IN HG, GAL e GPH secondo il modello di unita' comune del progetto.
+- Verifica software sul target: la release immutabile
+  `/home/pi/efis-next-avionics-f27508a` e' stata compilata nativamente con Qt
+  6.8.2, CMake 3.31.6 e Ninja in 313/313 step; 18/18 CTest ARM64 sono passati,
+  `systemd-analyze verify` non ha segnalato errori e `ldd` non ha rilevato
+  librerie mancanti.
+- Verifica hardware reale: switch atomico di `/home/pi/efis-next-current` a
+  `f27508a`, avvio a caldo e due reboot completi riusciti. Dopo entrambi i reboot
+  `efis-next-mfd-direct.service` era `active/enabled`, `lightdm` inattivo,
+  `NRestarts=0`, `ExecMainStatus=0` e il runtime riportava `platform=eglfs`.
+  DDP e' rimasto `LIVE` a circa 20 Hz: nella prima finestra sono stati accettati
+  oltre 1300 pacchetti e nella prova successiva 1061, sempre con zero reject,
+  gap ed errori socket. Il renderer ha misurato circa 34 presentazioni/s nella
+  finestra stabilizzata; dopo il reboot finale il primo campione era 27,8/s.
+- Il renderer precedente non e' piu' operativo: `fuso-sv3d.service` e
+  `fuso-sv3d-sim.service` sono stati disabilitati, arrestati e rimossi da
+  `/etc/systemd/system`; `/home/pi/efis` e `/home/pi/efis2` sono stati spostati
+  in `/home/pi/legacy-disabled-20260912/`. La quarantena e' intenzionalmente
+  recuperabile fino all'acceptance dell'operatore. `/home/pi/efis-data`, gli
+  asset terrain GPU e il manifesto imagery sono stati preservati e caricati dal
+  nuovo runtime (`OFFLINE_READY`, 1326 tile, 27 gap dichiarati).
 - EEE e' disabilitato e il guard egress fail-closed e' attivo. Dopo il primo
   transitorio di attivazione, tre prove da 50 pacchetti verso Blackbox, PFD ed
   EMS hanno ottenuto 0% perdita, massimi rispettivamente 0,219/0,398/0,382 ms
@@ -794,41 +809,23 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   manifesto `OFFLINE_READY`, 1326 tile e 27 gap di copertura, senza errori di
   percorso osservati. Non e' stata acquisita una cattura hardware che dimostri
   la qualita' visiva del terrain.
-- Aggiunti e installati una configurazione KMS versionata e un servizio systemd
-  direct-DRM. Un primo test dell'unita' ha rilevato una corsa nel rilascio del
-  DRM (`page flip: Permission denied`); l'ordine `After/Conflicts` e una pausa
-  di un secondo hanno risolto il problema. Nel secondo test il servizio Next e'
-  rimasto `active` per 12 secondi, il legacy `inactive`, senza errori DRM; al
-  termine Next e' tornato `inactive` e il legacy `active`.
-- La release `9c5c0f1` è stata installata separatamente e compilata sul nodo con
-  313/313 step; 18/18 CTest, controllo stato progetto e dipendenze dinamiche
-  sono PASS. `/home/pi/efis-next-current` la seleziona ora atomicamente, ma il
-  servizio Next resta disabilitato e il renderer legacy resta abilitato al
-  boot. La release precedente `3458552` non è stata rimossa.
-- Una prova temporanea EGLFS ha aperto realmente il workflow profilo a 1024x600;
+- Le prove di staging precedenti avevano rilevato una corsa nel rilascio DRM
+  (`page flip: Permission denied`), corretta con `After/Conflicts` e una pausa
+  di un secondo; la promozione permanente `f27508a` non ha riprodotto l'errore.
+  Le release Next precedenti restano disponibili come rollback software.
+- Una prova temporanea EGLFS precedente aveva aperto realmente il workflow
+  profilo a 1024x600;
   la cattura è conservata in
   `docs/status/evidence/mfd-operational-profile-9c5c0f1.png`. Profilo, catalogo,
   navigazione e imagery `OFFLINE_READY` sono stati caricati e DDP è risultato
   `LIVE`, fino a 392 snapshot accettati, zero reject/errori socket e 7 gap
   iniziali. L'interazione touch non è stata provata.
-- La prova iniziale ha presentato 13,6–14,3 frame/s. Il comando di cattura della
-  release `9c5c0f1` non ha chiuso il processo dopo il salvataggio e il timeout
-  di sicurezza lo ha terminato. Il cleanup ha ripristinato
-  `fuso-sv3d.service` attivo, lasciando `efis-next-pfd-direct.service` inattivo
-  e disabilitato. La correzione dell'uscita è implementata nel branch, ma non è
-  ancora verificata su EGLFS reale.
-- Dopo la correzione dichiarata e il reboot `get_throttled` era `0x0`, ma e'
-  tornato a `0x50000` durante la compilazione. Nella prova display la CPU del
-  processo era circa 102-105%, il clock ARM 2,4 GHz, il core 910 MHz, la
-  temperatura massima osservata 54,9 °C e il renderer 13,8-14,6 FPS.
-  Alimentatore/cavo non sono quindi ancora validati sotto carico e il frame
-  rate non soddisfa il gate display; non abilitare Next al boot.
-- Il profilo successivo delle quattro pagine si è concluso con
-  `get_throttled=0x0`, 53,2 °C; una seconda prova con timing del scene graph si
-  è conclusa a 53,8 °C e ancora `0x0`. Questo elimina il flag storico per quel
-  boot, ma non sostituisce il soak: stabilità alimentazione, touch, gap iniziali
-  e uscita della nuova cattura restano gate aperti. La release è staged, non
-  promossa a operativa permanente.
+- Nelle due verifiche della promozione permanente `get_throttled=0x0`; le
+  temperature finali erano 59,3 °C e 58,7 °C. Questo non sostituisce il soak a
+  carico combinato: stabilita' alimentazione prolungata, cambio pagina e Setup
+  touch, resa/qualita' terrain, corretta visualizzazione delle unita' imperiali
+  e acceptance dell'operatore restano aperti. La release e' operativa sul banco,
+  ma non e' dichiarata pronta al volo.
 
 ### Ground Station `Port-hp` — 192.168.1.39 / Pixhawk 6X
 
