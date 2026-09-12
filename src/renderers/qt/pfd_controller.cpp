@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QSaveFile>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QTextStream>
 #include <QSet>
 #include <QSettings>
@@ -1338,6 +1339,8 @@ void PfdController::setSystemSimulationSpeed(double speed) {
 }
 
 void PfdController::updateSnapshot() {
+    QElapsedTimer callbackElapsed;
+    callbackElapsed.start();
     const auto now = efis::MonoClock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - started_at_);
     // Il display non sceglie piu' la sorgente: consuma cio' che il router
@@ -1466,6 +1469,12 @@ void PfdController::updateSnapshot() {
     }
     updateEmergencyAssist(now);
     emit snapshotChanged();
+    const auto callbackMilliseconds = callbackElapsed.elapsed();
+    if (callbackMilliseconds >= 100) {
+        qWarning().noquote()
+            << "event=callback_stall callback=pfd_update_snapshot duration_ms="
+            << callbackMilliseconds;
+    }
 }
 
 bool PfdController::emergencyAssistActive() const {

@@ -712,8 +712,22 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   attivato il portal GTK senza display. I successivi timeout hanno ancora
   prodotto una finestra a 4,9 presentazioni/s, pur senza perdere DDP grazie al
   nuovo buffer. È stato aggiunto un gate systemd `ExecStartPre` sul socket
-  `%t/wayland-0` per impedire a Qt di partire durante questa race. Il gate è
-  implementato ma non ancora installato né verificato con un secondo reboot.
+  `%t/wayland-0` per impedire a Qt di partire durante questa race.
+- Il gate è stato installato e verificato con un secondo reboot: il primo
+  `ExecStartPre` è stato respinto, Qt è partito soltanto quando il socket era
+  disponibile e non ha più prodotto l'errore QPA iniziale. DDP e kernel sono
+  rimasti a zero gap/`RcvbufErrors`. È rimasto però un singolo intervallo di
+  event loop bloccato per circa 8,7 s, quindi il difetto grafico non è chiuso.
+- Una traccia DBus con riavvio controllato dei portal e del solo PFD ha mostrato
+  che il client interroga `org.freedesktop.portal.Screenshot` e che il portal
+  raggiunge lo stato operativo in circa 0,22 s. Nei successivi 12 campioni da
+  cinque secondi il renderer è rimasto tra 32,7 e 37,2 presentazioni/s, con DDP
+  19,4–20,6 Hz e zero gap. La correlazione iniziale con il portal non è quindi
+  sufficiente a spiegare lo stall residuo specifico del boot.
+- Implementata telemetria diagnostica con timestamp millisecondi, watchdog
+  dell'event loop e misura dei callback `pfd_update_snapshot` e
+  `weather_simulation`. Questa strumentazione è solo software finché non viene
+  compilata e osservata durante un nuovo reboot sul PFD.
 
 ### RPi5 storico `pi5` — WLAN 192.168.1.49
 

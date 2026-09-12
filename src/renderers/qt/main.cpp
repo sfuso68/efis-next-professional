@@ -24,6 +24,8 @@
 #include <memory>
 
 int main(int argc, char* argv[]) {
+    qSetMessagePattern(QStringLiteral(
+        "%{time yyyy-MM-ddTHH:mm:ss.zzz} %{message}"));
     QGuiApplication app(argc, argv);
     QGuiApplication::setApplicationName("EFIS Next PFD");
     const bool kioskMode = qEnvironmentVariableIntValue("EFIS_KIOSK") > 0;
@@ -116,6 +118,21 @@ int main(int argc, char* argv[]) {
             *previousAccepted = accepted;
         });
         metrics->start();
+
+        auto eventLoopElapsed = std::make_shared<QElapsedTimer>();
+        eventLoopElapsed->start();
+        auto* eventLoopWatchdog = new QTimer(window);
+        eventLoopWatchdog->setTimerType(Qt::PreciseTimer);
+        eventLoopWatchdog->setInterval(100);
+        QObject::connect(eventLoopWatchdog, &QTimer::timeout, window,
+                         [eventLoopElapsed] {
+            const auto milliseconds = eventLoopElapsed->restart();
+            if (milliseconds >= 250) {
+                qWarning().noquote()
+                    << "event=event_loop_stall duration_ms=" << milliseconds;
+            }
+        });
+        eventLoopWatchdog->start();
 
         const QString capturePath = qEnvironmentVariable("EFIS_CAPTURE");
         if (!capturePath.isEmpty()) {
