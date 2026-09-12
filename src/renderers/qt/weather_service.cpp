@@ -24,6 +24,14 @@ QNetworkRequest weatherRequest(const QUrl& url) {
     request.setTransferTimeout(12000);
     return request;
 }
+
+QString simulationPath(const QString& name) {
+    auto root = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    if (root.isEmpty()) root = QDir::tempPath();
+    root += QStringLiteral("/efis-next/weather-simulation");
+    QDir().mkpath(root);
+    return root + QLatin1Char('/') + name;
+}
 }
 
 WeatherService::WeatherService(QObject* parent) : QObject(parent) {
@@ -167,10 +175,11 @@ void WeatherService::generateSimulation() {
     drawCell(QPoint(205-drift/3,196),28,cappi?QColor(80,100,220,120):QColor(30,200,80,115),QColor(255,170,20,185));
     painter.end();
     const auto filename = QStringLiteral("radar-sim-%1.png").arg(radar_product_.toLower());
-    QSaveFile file(cachePath(filename));
+    const auto framePath = simulationPath(filename);
+    QSaveFile file(framePath);
     if (file.open(QIODevice::WriteOnly) && image.save(&file,"PNG") && file.commit()) {
         radar_time_ = QDateTime::currentDateTimeUtc();
-        radar_source_ = QUrl::fromLocalFile(cachePath(filename)).toString()+QStringLiteral("?v=")+QString::number(++simulation_phase_);
+        radar_source_ = QUrl::fromLocalFile(framePath).toString()+QStringLiteral("?v=")+QString::number(++simulation_phase_);
         radar_state_ = QStringLiteral("SIMULATED");
         radar_message_ = QStringLiteral("Animated training weather • not observed data");
     }

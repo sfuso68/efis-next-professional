@@ -558,6 +558,7 @@ private:
     double fuel_reserve_gallons_{5.0};
     double fuel_on_board_gallons_{};
     bool fuel_on_board_initialized_{};
+    bool fuel_persistence_dirty_{};
     QVariantList fuel_calibration_left_;
     QVariantList fuel_calibration_right_;
     QString fuel_leak_state_{QStringLiteral("INITIALIZING")};

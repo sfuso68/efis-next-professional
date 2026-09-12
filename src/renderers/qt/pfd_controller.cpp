@@ -1385,14 +1385,17 @@ void PfdController::updateSnapshot() {
     if (!fuel_on_board_initialized_) {
         fuel_on_board_gallons_ = fuelLeft() + fuelRight();
         fuel_on_board_initialized_ = true;
-        persistFuelComputer(); emit fuelComputerChanged();
+        emit fuelComputerChanged();
     }
     if (last_fuel_update_ != efis::MonoTime{}) {
         const auto seconds = std::chrono::duration<double>(now - last_fuel_update_).count();
         if (engine_snapshot_.rpm.value > 400.0 && engine_snapshot_.fuel_flow_gph.value > 0.0) {
             const double consumed = engine_snapshot_.fuel_flow_gph.value * seconds / 3600.0;
             if (engine_snapshot_.fuel_flow_gph.is_simulated()) simulated_fuel_used_gallons_ += consumed;
-            else fuel_used_gallons_ += consumed;
+            else {
+                fuel_used_gallons_ += consumed;
+                fuel_persistence_dirty_ = true;
+            }
             if (last_fuel_notify_ == efis::MonoTime{} || now - last_fuel_notify_ >= 1s) {
                 last_fuel_notify_ = now; emit fuelComputerChanged();
             }
@@ -1401,8 +1404,12 @@ void PfdController::updateSnapshot() {
     last_fuel_update_ = now;
     updateFuelLeakMonitor(now);
     if(last_central_blackbox_check_==efis::MonoTime{}||now-last_central_blackbox_check_>=1s){last_central_blackbox_check_=now;loadCentralBlackBoxCache();}
-    if (last_fuel_save_ == efis::MonoTime{} || now - last_fuel_save_ >= 10s) {
-        last_fuel_save_ = now; persistFuelComputer();
+    if (last_fuel_save_ == efis::MonoTime{}) {
+        last_fuel_save_ = now;
+    } else if (fuel_persistence_dirty_ && now - last_fuel_save_ >= 10s) {
+        last_fuel_save_ = now;
+        persistFuelComputer();
+        fuel_persistence_dirty_ = false;
     }
     if (trend_initialized_) {
         const auto six_second_projection = (snapshot_.air_data.indicated_airspeed_kt.value -

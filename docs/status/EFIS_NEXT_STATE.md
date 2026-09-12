@@ -726,8 +726,21 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   sufficiente a spiegare lo stall residuo specifico del boot.
 - Implementata telemetria diagnostica con timestamp millisecondi, watchdog
   dell'event loop e misura dei callback `pfd_update_snapshot` e
-  `weather_simulation`. Questa strumentazione è solo software finché non viene
-  compilata e osservata durante un nuovo reboot sul PFD.
+  `weather_simulation`. Il commit `cdf5645` è stato compilato integralmente sul
+  PFD (313/313 target, 18/18 CTest ARM64) e osservato durante un reboot reale.
+  La misura ha identificato due blocchi consecutivi del thread grafico:
+  `weather_simulation` per 4126 ms e `pfd_update_snapshot` per 4480 ms, per un
+  unico stall dell'event loop di 8650 ms. Nello stesso intervallo DDP è rimasto
+  senza gap e il kernel senza `RcvbufErrors`, confermando che il difetto residuo
+  è I/O sincrono nel renderer e non perdita Ethernet.
+- Implementato, ma per ora verificato soltanto via build MSVC/Qt e test DDP
+  loopback, il candidato di correzione successivo: i frame radar simulati sono
+  scritti nel runtime filesystem volatile invece che nella cache persistente;
+  il fuel computer PFD non esegue più un `QSettings::sync()` incondizionato al
+  primo callback e ogni dieci secondi quando i dati sono simulati. La
+  persistenza periodica rimane attiva, con dirty flag, solo quando il consumo
+  reale cambia; le modifiche esplicite del pilota e il flush all'uscita restano
+  invariati. Mancano build/test ARM64, installazione e reboot di verifica.
 
 ### RPi5 storico `pi5` — WLAN 192.168.1.49
 
