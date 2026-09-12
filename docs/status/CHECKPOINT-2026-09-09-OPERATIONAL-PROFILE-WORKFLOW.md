@@ -106,3 +106,31 @@ e una tastiera QML autonoma condivisa. Build PFD/EMS e compilazione QML AOT sono
 PASS; test modello diretto e tramite CTest 1/1 PASS; catture offscreen di
 Overview e tastiera prodotte. La correzione non è ancora installata sul nodo
 reale e ogni voce di acceptance touch resta aperta.
+
+## Deployment della correzione — 2026-09-12
+
+- Commit `9c5c0f1`, release immutabile
+  `/home/efis/efis-next-avionics-9c5c0f1` sul PFD `.45`.
+- Build nativa ARM64 completa: 313/313 step. CTest: 18/18 PASS. Controllo stato
+  progetto PASS, binario eseguibile e nessuna libreria mancante rilevata.
+- Switch atomico riuscito; il servizio esegue il nuovo binario, è `active` con
+  zero restart e la precedente release `74a85f9` resta disponibile per rollback.
+- Log senza errori QML; imagery `OFFLINE_READY`, DDP `LIVE`, almeno 1.323
+  snapshot accettati nel campione con zero reject, gap ed errori socket.
+  Prestazioni osservate 22,2–24,7 fps, temperatura finale 51,0 °C,
+  `throttled=0x0`.
+- Questi dati verificano installazione e continuità del runtime sul Raspberry Pi
+  5, non l'interazione utente. Apertura delle quattro pagine, tastiera,
+  scorrimento, pressione prolungata, controllo finale e leggibilità devono
+  ancora essere provati dall'operatore sul touch reale.
+
+## Nuovo punto di ripresa
+
+1. Sul PFD, pressione prolungata del logo e apertura `AIRCRAFT`.
+2. Toccare `AIRCRAFT PROFILE`: deve aprirsi `Overview`, non il catalogo.
+3. Aprire `Guided Entry`, toccare un campo e verificare la tastiera interna,
+   incluso `DONE` e il ritorno al campo.
+4. Verificare scorrimento, `Load / Prefill` con pressione prolungata e
+   `Check & Review`, senza attivare dati simulati.
+5. Uscire dal Setup e confermare che il PFD resti fluido e la telemetria `LIVE`.
+6. Solo dopo questa acceptance portare la stessa revisione sull'EMS RPi4.

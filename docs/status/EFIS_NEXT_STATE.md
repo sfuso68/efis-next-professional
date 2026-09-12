@@ -7,10 +7,11 @@ Branch di lavoro: `work/avionics-ethernet-v1`
 Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-012.
 
 Checkpoint corrente:
-`CHECKPOINT-2026-09-09-EMERGENCY-ASSIST-SOFTWARE-V1.md`. Il PFD operativo resta
-alla release hardware `74a85f9`; il nuovo Emergency Assist non è ancora
-installato sul nodo reale. Non è stata concessa autorità di comando al sistema
-EFIS.
+`CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`. Il PFD operativo usa la
+release immutabile `9c5c0f1`; la release precedente `74a85f9` è conservata come
+rollback. Emergency Assist è incluso nel binario installato, ma la funzione non
+ha ancora acceptance dell'operatore sul pannello reale. Non è stata concessa
+autorità di comando al sistema EFIS.
 
 Il workflow del profilo operativo è fissato separatamente in
 `CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`.
@@ -391,6 +392,10 @@ Questo documento non esisteva nel repository al momento dell'intervento ed è st
   la tastiera interna sovrapposta a Guided Entry senza uscire dal pannello. La
   sostituzione dei font del backend Windows resta presente; queste catture sono
   prova di caricamento/geometria, non acceptance visiva o touch.
+- La release `9c5c0f1` è stata compilata nativamente sul Raspberry Pi 5 ARM64:
+  313/313 step completati. La suite CTest del target ha superato 18/18 test,
+  inclusi profilo operativo ed Emergency Assist; il controllo stato progetto è
+  PASS, il binario PFD è eseguibile e `ldd` non riporta librerie mancanti.
 
 - Build MSVC 19.51 del codec e del nuovo eseguibile di test completata.
 - Round-trip snapshot, preservazione provenienza/unità/simulazione, CRC32C con
@@ -490,6 +495,20 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   installati pacchetti Qt Virtual Keyboard. L'operatore ha confermato sul
   pannello che il comportamento descritto non funziona. Questa è evidenza
   hardware negativa, non una verifica positiva della correzione.
+- La correzione è stata quindi installata come release immutabile separata
+  `/home/efis/efis-next-avionics-9c5c0f1` e attivata con switch atomico; la
+  release `74a85f9` non è stata sovrascritta ed è il rollback disponibile.
+- Il servizio esegue il binario della nuova release, è rimasto `active` con
+  `NRestarts=0` e il log non contiene errori QML. Il runtime ha caricato profilo,
+  catalogo, navigazione e imagery `OFFLINE_READY`; DDP è `LIVE` con contatore
+  accepted crescente fino ad almeno 1.323 e zero reject, gap ed errori socket.
+- Nel campione post-switch il frame rate è rimasto fra 22,2 e 24,7 fps;
+  temperatura finale 51,0 °C e `throttled=0x0`. Queste sono evidenze hardware di
+  deployment e continuità runtime, non acceptance touch del workflow.
+- Restano da provare personalmente sul pannello: apertura di `AIRCRAFT PROFILE`,
+  quattro pagine, tastiera interna, scorrimento, pressione prolungata del
+  prefill, coda di controllo e ritorno al PFD. Nessuna di queste voci è ancora
+  dichiarata verificata.
 
 ### Blackbox `efisblackbox` — 192.168.1.47
 
@@ -786,22 +805,23 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   collegata al runtime, senza leggere direttamente bozze o righe non rilasciate.
 - Verificare su hardware reale caricamento, rollback, separazione SIM/LIVE e
   comportamento fail-closed con profilo mancante, incompleto o corrotto.
-- Installare la build su RPi5 e RPi4 e acquisire evidenza visiva della pagina a
-  1024x600 e 800x480; ergonomia touch e leggibilità non sono ancora verificate
-  su hardware reale.
+- La build è installata sul PFD RPi5; resta da installare sull'EMS RPi4 e da
+  acquisire evidenza visiva delle pagine a 1024x600 e 800x480. Ergonomia touch e
+  leggibilità non sono ancora accettate dall'operatore.
 - Provare sui due pannelli il nuovo workflow a quattro fasi, inclusi pressione
   prolungata, tastiera per il percorso di importazione, scorrimento dei 28
   domini/coda problemi e tempi di risposta con una bozza da 447 campi.
-- Installare la correzione del 2026-09-12 come nuova release immutabile sul PFD
-  senza sovrascrivere `74a85f9`; verificare sul touch reale apertura dal
+- La correzione del 2026-09-12 è installata come release immutabile `9c5c0f1`
+  senza sovrascrivere `74a85f9`. Verificare ora sul touch reale apertura dal
   riquadro `AIRCRAFT PROFILE`, tastiera, scorrimento, prefill prolungato,
-  controllo e ritorno al PFD `LIVE`. Nessuna di queste prove è ancora chiusa.
+  controllo e ritorno al PFD `LIVE`; queste prove di interazione restano aperte.
 
 ### Emergency Assist e servi autopilota — concept 2026-09-09
 
-- La V1 consultiva core/UI è implementata e verificata soltanto software. Non è
-  installata né verificata sul PFD reale; input fisico, audio e Blackbox
-  centrale non sono implementati.
+- La V1 consultiva core/UI è implementata, verificata software e inclusa nella
+  release PFD `9c5c0f1`. Il corretto avvio generale del binario è verificato su
+  hardware, ma la funzione Emergency Assist non ha acceptance dell'operatore;
+  input fisico, audio e Blackbox centrale non sono implementati.
 - Il percorso critico sarà deterministico e basato su procedure POH/AFM
   versionate; un sistema AI generativo non potrà decidere comandi, velocità,
   assetto o modalità di volo.
