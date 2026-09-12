@@ -99,6 +99,8 @@ int main() {
     efis::DdpUdpFlightSource source{source_config};
     require(source.local_endpoint().port != 0,
             "an ephemeral receiver must expose its assigned port");
+    require(source.receive_buffer_bytes() >= 64U * 1024U,
+            "the DDP receiver must expose a non-trivial kernel backlog");
 
     efis::DdpUdpPublisher publisher{{
         {"127.0.0.1", source.local_endpoint().port},
@@ -126,10 +128,27 @@ int main() {
     require(source.metrics().accepted == 1 && source.socket_errors() == 0,
             "the consumer must expose a clean accepted packet");
 
-    const auto stale = source.poll(now + 51ms, 10s);
+    // The renderer may be briefly unavailable while the scene graph or the
+    // desktop session settles. The kernel backlog must retain a bounded burst
+    // so the next poll can drain it without manufacturing a sequence gap.
+    constexpr std::uint64_t backlog_datagrams = 128;
+    for (std::uint64_t index = 0; index < backlog_datagrams; ++index) {
+        publisher.publish(sent, now + 10ms);
+    }
+    for (int attempt = 0; attempt < 8; ++attempt) {
+        (void)source.poll(now + 20ms, 10s);
+        if (source.metrics().accepted == backlog_datagrams + 1) break;
+        std::this_thread::sleep_for(1ms);
+    }
+    require(source.metrics().accepted == backlog_datagrams + 1,
+            "the DDP receiver must drain a bounded startup backlog");
+    require(source.metrics().sequence_gaps == 0,
+            "the retained startup backlog must preserve sequence continuity");
+
+    const auto stale = source.poll(now + 71ms, 10s);
     require(stale.attitude.roll_deg.validity == efis::Validity::stale,
             "a late network snapshot must not remain usable and green");
-    const auto lost = source.poll(now + 151ms, 10s);
+    const auto lost = source.poll(now + 171ms, 10s);
     require(lost.attitude.roll_deg.validity == efis::Validity::unavailable,
             "a lost network source must explicitly invalidate its values");
 

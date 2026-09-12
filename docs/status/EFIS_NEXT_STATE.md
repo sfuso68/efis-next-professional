@@ -688,6 +688,20 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `/home/efis/efis-next-soak-1d25e62-20260912-v2.log`. Questa è evidenza
   hardware positiva per il runtime continuativo successivo al transitorio;
   non chiude il difetto dei 146 gap all'avvio né l'acceptance touch/visiva.
+- L'analisi del transitorio ha correlato il blocco del renderer ai timeout del
+  portale desktop GTK durante l'avvio Wayland. Nello stesso intervallo il kernel
+  ha registrato esattamente 146 `Udp: RcvbufErrors`; link Ethernet e driver non
+  hanno mostrato errori. È stato quindi implementato un candidato di correzione
+  a due livelli: il servizio kiosk seleziona esplicitamente il tema Qt `qt6ct`
+  per non dipendere dal portale desktop e il receiver DDP richiede 4 MiB di
+  `SO_RCVBUF`, espone la dimensione effettiva e la registra all'avvio.
+- Verifica esclusivamente software del candidato: build MSVC/Qt completata e
+  test UDP loopback superato anche con 128 snapshot accumulati prima del drain,
+  senza gap di sequenza. Gli altri test non-Qt avviabili su Windows sono
+  passati; tre eseguibili della suite completa sono stati bloccati o sono andati
+  in timeout nell'ambiente Windows e non costituiscono un risultato positivo.
+  La release attiva sul PFD resta `1d25e62`: build/test ARM64, reboot reale e
+  verifica dell'assenza di nuovi `RcvbufErrors` non sono ancora stati eseguiti.
 
 ### RPi5 storico `pi5` — WLAN 192.168.1.49
 

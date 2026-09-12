@@ -10,6 +10,9 @@ StartLimitIntervalSec=0
 Type=simple
 WorkingDirectory=/home/efis/efis-next
 Environment=EFIS_KIOSK=1
+# The kiosk does not use desktop dialogs. Selecting the installed local Qt
+# theme prevents synchronous xdg-desktop-portal fallback during session boot.
+Environment=QT_QPA_PLATFORMTHEME=qt6ct
 Environment=EFIS_DDP_BIND_ADDRESS=0.0.0.0
 Environment=EFIS_DDP_LISTEN_PORT=49002
 Environment=EFIS_DDP_SOURCE_NODE=47

@@ -17,7 +17,7 @@ void mark(Sample<T>& sample, Validity validity) noexcept {
 
 DdpUdpFlightSource::DdpUdpFlightSource(DdpUdpSourceConfig config)
     : config_(std::move(config)),
-      receiver_(config_.local),
+      receiver_(config_.local, config_.receive_buffer_bytes),
       consumer_(config_.consumer) {
     if (config_.max_datagrams_per_poll == 0) config_.max_datagrams_per_poll = 1;
 }

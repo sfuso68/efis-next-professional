@@ -87,7 +87,9 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
                                   << QString::fromStdString(config.local.address)
                                   << "port=" << ddpPort
                                   << "source_node="
-                                  << config.consumer.expected_source_node;
+                                  << config.consumer.expected_source_node
+                                  << "receive_buffer_bytes="
+                                  << ddp_source_->receive_buffer_bytes();
             } catch (const std::exception& error) {
                 qCritical().noquote()
                     << "event=ddp_receiver_failed reason=" << error.what();

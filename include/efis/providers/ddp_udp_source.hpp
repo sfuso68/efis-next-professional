@@ -12,6 +12,7 @@ struct DdpUdpSourceConfig final {
     io::UdpEndpoint local{"0.0.0.0", 49'002};
     protocol::ddp::ConsumerPolicy consumer{};
     std::size_t max_datagrams_per_poll{64};
+    std::size_t receive_buffer_bytes{4U * 1024U * 1024U};
 };
 
 // Adapter display read-only. Riceve esclusivamente snapshot DDP gia'
@@ -39,6 +40,9 @@ public:
     }
     [[nodiscard]] const io::UdpEndpoint& local_endpoint() const noexcept {
         return receiver_.local();
+    }
+    [[nodiscard]] std::size_t receive_buffer_bytes() const noexcept {
+        return receiver_.receive_buffer_bytes();
     }
 
 private:

@@ -118,9 +118,11 @@ const UdpEndpoint& UdpSender::destination() const noexcept { return impl_->endpo
 struct UdpReceiver::Impl final {
     UdpEndpoint endpoint;
     Socket socket{invalid_socket};
+    std::size_t receive_buffer_bytes{};
 };
 
-UdpReceiver::UdpReceiver(UdpEndpoint local) : impl_(std::make_unique<Impl>()) {
+UdpReceiver::UdpReceiver(UdpEndpoint local, std::size_t receive_buffer_bytes)
+    : impl_(std::make_unique<Impl>()) {
     impl_->endpoint = std::move(local);
     const auto address = address_for(impl_->endpoint, true);
     impl_->socket = make_socket();
@@ -131,6 +133,56 @@ UdpReceiver::UdpReceiver(UdpEndpoint local) : impl_(std::make_unique<Impl>()) {
 #else
     setsockopt(impl_->socket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 #endif
+    if (receive_buffer_bytes > 0) {
+        if (receive_buffer_bytes >
+            static_cast<std::size_t>(std::numeric_limits<int>::max())) {
+            close_socket(impl_->socket);
+            impl_->socket = invalid_socket;
+            throw std::length_error{"UDP receive buffer is too large"};
+        }
+        const int requested = static_cast<int>(receive_buffer_bytes);
+#if defined(_WIN32)
+        const int result = setsockopt(
+            impl_->socket, SOL_SOCKET, SO_RCVBUF,
+            reinterpret_cast<const char*>(&requested), sizeof(requested));
+#else
+        const int result = setsockopt(
+            impl_->socket, SOL_SOCKET, SO_RCVBUF, &requested, sizeof(requested));
+#endif
+        if (result != 0) {
+            const int error = last_error();
+            close_socket(impl_->socket);
+            impl_->socket = invalid_socket;
+            throw std::system_error{error, std::system_category(),
+                                    "UDP SO_RCVBUF"};
+        }
+    }
+    int actual_receive_buffer{};
+#if defined(_WIN32)
+    int receive_buffer_size = sizeof(actual_receive_buffer);
+    const int receive_buffer_result = getsockopt(
+        impl_->socket, SOL_SOCKET, SO_RCVBUF,
+        reinterpret_cast<char*>(&actual_receive_buffer), &receive_buffer_size);
+#else
+    socklen_t receive_buffer_size = sizeof(actual_receive_buffer);
+    const int receive_buffer_result = getsockopt(
+        impl_->socket, SOL_SOCKET, SO_RCVBUF,
+        &actual_receive_buffer, &receive_buffer_size);
+#endif
+    if (receive_buffer_result != 0) {
+        const int error = last_error();
+        close_socket(impl_->socket);
+        impl_->socket = invalid_socket;
+        throw std::system_error{error, std::system_category(),
+                                "UDP getsockopt SO_RCVBUF"};
+    }
+    if (actual_receive_buffer <= 0) {
+        close_socket(impl_->socket);
+        impl_->socket = invalid_socket;
+        throw std::runtime_error{"UDP SO_RCVBUF returned a non-positive size"};
+    }
+    impl_->receive_buffer_bytes =
+        static_cast<std::size_t>(actual_receive_buffer);
     if (::bind(impl_->socket, reinterpret_cast<const sockaddr*>(&address),
                sizeof(address)) != 0) {
         const int error = last_error();
@@ -180,5 +232,9 @@ DatagramResult UdpReceiver::receive(std::span<std::uint8_t> buffer) noexcept {
 }
 
 const UdpEndpoint& UdpReceiver::local() const noexcept { return impl_->endpoint; }
+
+std::size_t UdpReceiver::receive_buffer_bytes() const noexcept {
+    return impl_->receive_buffer_bytes;
+}
 
 }  // namespace efis::io

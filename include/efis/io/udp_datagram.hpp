@@ -45,13 +45,15 @@ private:
 
 class UdpReceiver final {
 public:
-    explicit UdpReceiver(UdpEndpoint local);
+    explicit UdpReceiver(UdpEndpoint local,
+                         std::size_t receive_buffer_bytes = 0);
     ~UdpReceiver();
     UdpReceiver(const UdpReceiver&) = delete;
     UdpReceiver& operator=(const UdpReceiver&) = delete;
 
     [[nodiscard]] DatagramResult receive(std::span<std::uint8_t> buffer) noexcept;
     [[nodiscard]] const UdpEndpoint& local() const noexcept;
+    [[nodiscard]] std::size_t receive_buffer_bytes() const noexcept;
 
 private:
     struct Impl;
