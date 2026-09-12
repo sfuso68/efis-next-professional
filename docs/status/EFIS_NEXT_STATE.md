@@ -733,14 +733,30 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   unico stall dell'event loop di 8650 ms. Nello stesso intervallo DDP è rimasto
   senza gap e il kernel senza `RcvbufErrors`, confermando che il difetto residuo
   è I/O sincrono nel renderer e non perdita Ethernet.
-- Implementato, ma per ora verificato soltanto via build MSVC/Qt e test DDP
-  loopback, il candidato di correzione successivo: i frame radar simulati sono
-  scritti nel runtime filesystem volatile invece che nella cache persistente;
-  il fuel computer PFD non esegue più un `QSettings::sync()` incondizionato al
-  primo callback e ogni dieci secondi quando i dati sono simulati. La
-  persistenza periodica rimane attiva, con dirty flag, solo quando il consumo
-  reale cambia; le modifiche esplicite del pilota e il flush all'uscita restano
-  invariati. Mancano build/test ARM64, installazione e reboot di verifica.
+- Il commit `e902973` sposta i frame radar simulati nel runtime filesystem
+  volatile e impedisce al fuel computer PFD di eseguire un
+  `QSettings::sync()` incondizionato al primo callback e ogni dieci secondi
+  quando i dati sono simulati. La persistenza periodica rimane attiva, con
+  dirty flag, solo quando il consumo reale cambia; le modifiche esplicite del
+  pilota e il flush all'uscita restano invariati.
+- Verifica software: build MSVC/Qt e test DDP loopback passati; build ARM64
+  completa 313/313 e 18/18 CTest passati sul PFD. La release immutabile
+  `/home/efis/efis-next-avionics-e902973` è attiva e `cdf5645` resta
+  disponibile per rollback.
+- Verifica su hardware reale: switch a caldo stabile a 33,4–37,5
+  presentazioni/s. Due reboot hanno mantenuto DDP `LIVE`, zero gap/reject/errori
+  socket e `UdpRcvbufErrors=0`; temperatura 53,8–54,3 °C e
+  `get_throttled=0x0`. Nel reboot pulito osservato per 112 s non sono comparsi
+  `callback_stall`; il file fuel persistente è rimasto invariato e il frame
+  radar è stato aggiornato in `/run/user/1000`. I precedenti blocchi mirati da
+  4126/4480 ms sono quindi eliminati nella prova eseguita.
+- Il gate PFD non è ancora chiuso: nel reboot pulito restano un transitorio di
+  avvio da 958 ms e un singolo stall generico da 590 ms, non associati ai due
+  callback corretti. Una prova precedente ha inoltre registrato 12607 ms in
+  coincidenza esatta con una sessione SSH di misura, senza callback lento e
+  senza perdita DDP; non è riprodotto nella finestra pulita e resta da
+  distinguere fra interferenza dell'osservazione e scheduling di sistema.
+  Mancano inoltre touch acceptance e verifica visiva delle pagine/terrain.
 
 ### RPi5 storico `pi5` — WLAN 192.168.1.49
 
