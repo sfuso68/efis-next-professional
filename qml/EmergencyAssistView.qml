@@ -110,7 +110,7 @@ Item {
                 }
             }
         }
-        Text { x:13*root.uiScale; y:263*root.uiScale; width:parent.width-26*root.uiScale; text:"EVENT LOG  "+root.controller.emergencyEventSinkState+"\nBLACKBOX  "+root.controller.blackBoxState+"\nVOICE  CUE QUEUED / AUDIO ADAPTER PENDING"; color:"#9FB0B8"; font.pixelSize:8*root.uiScale; lineHeight:1.35; elide:Text.ElideRight; maximumLineCount:3 }
+        Text { x:13*root.uiScale; y:263*root.uiScale; width:parent.width-26*root.uiScale; text:"EVENT LOG  "+root.controller.emergencyEventSinkState+"\nBLACKBOX  "+root.controller.blackBoxState+"\nVOICE  PRIORITY CORE READY / PLAYBACK ADAPTER PENDING"; color:"#9FB0B8"; font.pixelSize:8*root.uiScale; lineHeight:1.35; elide:Text.ElideRight; maximumLineCount:3 }
     }
 
     Rectangle { x:9*root.uiScale; y:472*root.uiScale; width:1006*root.uiScale; height:119*root.uiScale; radius:6*root.uiScale; color:"#0A151E"; border.color:"#445965"

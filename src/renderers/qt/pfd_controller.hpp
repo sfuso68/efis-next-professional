@@ -468,6 +468,7 @@ private:
     void loadCentralBlackBoxCache();
     void updateEmergencyAssist(efis::MonoTime now);
     void flushEmergencyEvents();
+    void updateEmergencyEventSinkState(efis::MonoTime now);
     void updateNearestAirports();
     [[nodiscard]] QString activeProfilePath() const;
     [[nodiscard]] QString stagingProfilePath() const;
@@ -592,8 +593,11 @@ private:
     int calibration_revision_{};
     efis::emergency::EmergencyAssist emergency_assist_{};
     QString emergency_event_log_path_;
+    QString emergency_forwarder_state_path_;
+    QString emergency_event_session_id_;
     QString emergency_event_sink_state_{QStringLiteral("LOCAL SPOOL")};
     std::size_t emergency_event_cursor_{};
     efis::MonoTime emergency_activated_at_{};
+    efis::MonoTime last_emergency_sink_check_{};
     int emergency_notify_ticks_{};
 };

@@ -19,6 +19,7 @@
 #include <QStringList>
 #include <QList>
 #include <QUrl>
+#include <QUuid>
 
 #include <utility>
 #include <chrono>
@@ -117,6 +118,10 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
     central_blackbox_request_path_=qEnvironmentVariable("EFIS_CENTRAL_BLACKBOX_REQUEST",QStringLiteral("/var/lib/efis/fuel-maintenance-request.jsonl"));
     emergency_event_log_path_ = qEnvironmentVariable(
         "EFIS_EMERGENCY_EVENT_LOG", QStringLiteral("state/emergency-assist-events.jsonl"));
+    emergency_forwarder_state_path_ = qEnvironmentVariable(
+        "EFIS_EMERGENCY_FORWARDER_STATE",
+        QStringLiteral("/var/lib/efis/emergency-forwarder-state.json"));
+    emergency_event_session_id_ = QUuid::createUuid().toString(QUuid::WithoutBraces);
     loadCatalogIndex();
     loadNavigationIndex();
     loadRadionavigationIndex();
@@ -1723,6 +1728,7 @@ void PfdController::updateEmergencyAssist(efis::MonoTime now) {
 
     (void)emergency_assist_.update(input, now);
     flushEmergencyEvents();
+    updateEmergencyEventSinkState(now);
     if (++emergency_notify_ticks_ >= 12) {
         emergency_notify_ticks_ = 0;
         emit emergencyAssistChanged();
@@ -1740,19 +1746,86 @@ void PfdController::flushEmergencyEvents() {
     }
     for (; emergency_event_cursor_ < events.size(); ++emergency_event_cursor_) {
         const auto& event = events[emergency_event_cursor_];
+        const auto sample = [](const efis::Sample<double>& value) {
+            return QJsonObject{{"value", value.value},
+                {"usable", efis::is_usable(value.validity)},
+                {"simulated", value.origin.simulated},
+                {"signal", QString::fromLatin1(efis::signal_name(value.origin.signal))}};
+        };
+        const QJsonObject decisionContext{
+            {"flight_snapshot_sequence", static_cast<qint64>(snapshot_.sequence)},
+            {"engine_snapshot_sequence", static_cast<qint64>(engine_snapshot_.sequence)},
+            {"roll_deg", sample(snapshot_.attitude.roll_deg)},
+            {"pitch_deg", sample(snapshot_.attitude.pitch_deg)},
+            {"heading_deg", sample(snapshot_.attitude.heading_deg)},
+            {"ias_kt", sample(snapshot_.air_data.indicated_airspeed_kt)},
+            {"pressure_altitude_ft", sample(snapshot_.air_data.pressure_altitude_ft)},
+            {"vertical_speed_fpm", sample(snapshot_.air_data.vertical_speed_fpm)},
+            {"latitude_deg", sample(snapshot_.position.latitude_deg)},
+            {"longitude_deg", sample(snapshot_.position.longitude_deg)},
+            {"engine_rpm", sample(engine_snapshot_.rpm)},
+            {"manifold_pressure_inhg", sample(engine_snapshot_.manifold_pressure_inhg)},
+            {"bus_voltage_v", sample(engine_snapshot_.bus_voltage_v)}};
+        const QJsonObject assistOutput{
+            {"headline", emergencyAssistHeadline()},
+            {"fly_advisory", emergencyFlyAdvisory()},
+            {"navigation_advisory", emergencyNavigationAdvisory()},
+            {"communication_draft", emergencyCommunicationDraft()},
+            {"voice_cue", emergencyVoiceCue()},
+            {"procedure_available", emergencyProcedureAvailable()},
+            {"data_quality", emergencyDataQuality()},
+            {"degradation_reasons",
+                QJsonArray::fromStringList(emergencyDegradationReasons())}};
         const QJsonObject object{
             {"schema", QStringLiteral("efis-next.emergency-event.v1")},
+            {"session_id", emergency_event_session_id_},
             {"event_sequence", static_cast<qint64>(event.sequence)},
+            {"event_mono_ns", static_cast<qint64>(
+                 std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     event.at.time_since_epoch()).count())},
             {"written_utc", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},
             {"code", QString::fromStdString(event.code)},
             {"detail", QString::fromStdString(event.detail)},
             {"assist_state", emergencyAssistState()},
             {"emergency_kind", emergencyAssistKind()},
             {"simulation", emergencySimulationOnly()},
-            {"blackbox_state", black_box_state_}};
+            {"source_node", nodeId()},
+            {"snapshot_sequence", static_cast<qint64>(sequence())},
+            {"ddp_state", ddpLinkState()},
+            {"engine_data_state", engineDataState()},
+            {"blackbox_state", black_box_state_},
+            {"decision_context", decisionContext},
+            {"assist_output", assistOutput}};
         file.write(QJsonDocument{object}.toJson(QJsonDocument::Compact));
         file.write("\n");
     }
     file.flush();
     emergency_event_sink_state_ = QStringLiteral("LOCAL SPOOL");
+}
+
+void PfdController::updateEmergencyEventSinkState(efis::MonoTime now) {
+    if (last_emergency_sink_check_ != efis::MonoTime{} &&
+        now - last_emergency_sink_check_ < 1s) return;
+    last_emergency_sink_check_ = now;
+    QFile file{emergency_forwarder_state_path_};
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+    const auto document = QJsonDocument::fromJson(file.readAll());
+    if (!document.isObject()) {
+        emergency_event_sink_state_ = QStringLiteral("FORWARDER STATE INVALID");
+        return;
+    }
+    const auto state = document.object();
+    if (state.value("schema").toString() !=
+        QStringLiteral("efis-next.emergency-forwarder-state.v1")) {
+        emergency_event_sink_state_ = QStringLiteral("FORWARDER STATE INVALID");
+        return;
+    }
+    const auto acknowledgedSession = state.value("last_session_id").toString();
+    const auto acknowledgedSequence = state.value("last_event_sequence").toInteger();
+    if (acknowledgedSession == emergency_event_session_id_ && acknowledgedSequence > 0) {
+        emergency_event_sink_state_ =
+            QStringLiteral("BLACKBOX ACK #%1").arg(acknowledgedSequence);
+    } else {
+        emergency_event_sink_state_ = QStringLiteral("LOCAL SPOOL • ACK PENDING");
+    }
 }

@@ -12,6 +12,8 @@ option(EFIS_REQUIRE_QT_RENDERER "Fail configuration if the Qt Quick PFD cannot b
 add_library(efis_core
     src/core/alert_engine.cpp
     src/emergency/emergency_assist.cpp
+    src/emergency/emergency_input.cpp
+    src/emergency/emergency_audio.cpp
     src/core/flight_model.cpp
     src/core/node_health.cpp
     src/core/snapshot_arbitrator.cpp
@@ -274,6 +276,16 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_emergency_assist_tests tests/emergency_assist_tests.cpp)
     target_link_libraries(efis_emergency_assist_tests PRIVATE efis_core)
     add_test(NAME efis_emergency_assist_tests COMMAND efis_emergency_assist_tests)
+
+    add_executable(efis_emergency_io_tests tests/emergency_io_tests.cpp)
+    target_link_libraries(efis_emergency_io_tests PRIVATE efis_core)
+    add_test(NAME efis_emergency_io_tests COMMAND efis_emergency_io_tests)
+
+    find_package(Python3 QUIET COMPONENTS Interpreter)
+    if(Python3_Interpreter_FOUND)
+        add_test(NAME efis_emergency_event_transport_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/blackbox/test_emergency_event_transport.py)
+    endif()
 
     add_executable(efis_ingest_tests tests/ingest_tests.cpp)
     target_link_libraries(efis_ingest_tests PRIVATE efis_core)

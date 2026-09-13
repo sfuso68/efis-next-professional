@@ -1058,8 +1058,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 - La V1 consultiva core/UI è implementata, verificata software e inclusa nella
   release PFD `9c5c0f1`. Il corretto avvio generale del binario è verificato su
-  hardware, ma la funzione Emergency Assist non ha acceptance dell'operatore;
-  input fisico, audio e Blackbox centrale non sono implementati.
+  hardware, ma la funzione Emergency Assist non ha acceptance dell'operatore.
+  Dal 2026-09-13 esistono core software per condizionamento input e priorità
+  audio e un trasporto eventi Blackbox con ack; adapter fisici, deployment e
+  prove hardware restano aperti.
 - Il percorso critico sarà deterministico e basato su procedure POH/AFM
   versionate; un sistema AI generativo non potrà decidere comandi, velocità,
   assetto o modalità di volo.
@@ -1249,16 +1251,93 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   nodo EMS RPi4. Va definito un health riepilogativo o un secondo consumer senza
   confondere il link DDP di volo con il link motore.
 - Emergency Assist è stato renderizzato su hardware soltanto nello scenario
-  perdita potenza simulato. Restano da verificare le altre sette famiglie,
-  input fisico con debounce/health, audio con priorità, inoltro autenticato alla
-  Blackbox con ack di persistenza, snapshot/replay e dati reali validati per
-  AGL/terrain/ostacoli/vento.
+  perdita potenza simulato. Le altre sette famiglie, input fisico reale, audio
+  reale e nuovo sink Blackbox restano da verificare su hardware. Debounce/health,
+  priorità audio, inoltro autenticato con ack e replay audit sono ora
+  implementati e testati soltanto in software; il replay completo dei bus e i
+  dati reali validati AGL/terrain/ostacoli/vento restano aperti.
 - Le checklist operative restano bloccate: mancano POH/AFM controllato
   dell'esemplare, revisione/applicabilità OM-912 legata al seriale e
   documentazione dell'elica. Nessun testo consultivo introdotto in questo
   incremento sostituisce tali fonti.
 - Stabilize Assist, Emergency Glide automatico e Autoland restano fuori dalla
   V1 e bloccati dai gate hardware/HIL. Nessun servo è stato comandato.
+
+### Emergency Assist I/O, audit e Blackbox — incremento software 2026-09-13
+
+#### Implementato
+
+- Aggiunti `EmergencyInputMonitor` e contratto `EMERGENCY_IO_V1`: debounce,
+  hold, riarmo dopo rilascio, health sorgente e diagnosi stuck sono
+  deterministici e fail-closed. Il componente non contiene un adapter GPIO,
+  evdev o CAN e produce soltanto un fronte di richiesta consultiva.
+- Aggiunto `EmergencyAudioArbiter`: quattro priorità, FIFO a parità, preemption
+  da priorità superiore, soppressione duplicati, repeat inhibit e mute limitato
+  ai cue non critici. Non riproduce audio e non prende il posto degli avvisi
+  primari certificabili.
+- Lo spool PFD include ora UUID di sessione, tempo monotono, identità nodo,
+  sequenze snapshot, stati DDP/motore, un contesto decisionale con validità e
+  marker SIM e l'output Emergency mostrato al pilota.
+- Aggiunti hub e forwarder Emergency separati dal dominio fuel. Il servizio
+  sulla porta 18094 autentica per nodo, valida schema/limiti, deduplica il
+  medesimo record e rifiuta con 409 il riuso di sessione/sequenza con payload
+  diverso. SQLite usa WAL e `synchronous=FULL`; il forwarder avanza l'offset
+  solo dopo verifica di digest, nodo, sessione, sequenza e `persisted=true`,
+  salvando lo stato atomicamente con fsync.
+- Il canale non espone endpoint di comando o maintenance. Health dichiara
+  `command_api=false`; ogni endpoint di comando è assente. Nessuna API
+  Pixhawk/MAVLink/servo/radio/transponder è stata introdotta.
+- Aggiunto un validatore replay consultivo che rileva gap e regressioni di
+  sequenza e riassume famiglie, sessioni, record SIM e copertura del contesto.
+  `Main.qml` accetta `--emergency-preview=<FAMIGLIA>` per tutte le otto famiglie.
+- Predisposte unità systemd con bind FLIGHT-DATA `10.77.10.2`, token separati e
+  sandbox filesystem; non sono state installate sui nodi reali.
+
+#### Verificato solo software
+
+- Build Windows MSVC/Qt completa riuscita dopo l'aggiunta dei due core e del
+  nuovo payload PFD. `efis_emergency_assist_tests` ed
+  `efis_emergency_io_tests` sono PASS.
+- `py_compile` è PASS per hub, forwarder, replay e test. Sette test end-to-end
+  stdlib su loopback sono PASS: ack stabile/persistente, deduplica, avanzamento
+  offset solo dopo ack verificato, nessun avanzamento su ack invalido, riapertura
+  database, rifiuto token errato, conflitto sequenza, assenza API comando e
+  rilevamento gap replay.
+- Prima dell'ultima ricompilazione sono stati avviati con exit code 0 e
+  catturati offscreen tutti gli otto argomenti preview. Questo verifica routing
+  e creazione scena, non leggibilità: l'ambiente Windows offscreen non caricava
+  i font e mostrava glifi sostitutivi.
+- Un tentativo successivo della suite generale ha eseguito 12/18 test PASS;
+  sei binari non sono stati avviati perché il criterio di controllo
+  applicazioni Windows li ha bloccati (`BAD_COMMAND`). Non sono fallimenti dei
+  test, ma non vengono conteggiati come verificati in questo incremento. La
+  suite ARM non è stata rieseguita.
+
+#### Verificato su hardware reale
+
+- Nessun nuovo componente di questo incremento è stato installato o provato su
+  PFD, MFD o Blackbox. Rimane valida soltanto l'evidenza precedente della pagina
+  engine-emergency SIM su MFD release `3432402`.
+
+#### Aperto / non dichiarare DONE
+
+- Scegliere ingresso, schema elettrico, livello attivo, pull-up/down,
+  ridondanza e adapter Linux; poi provare rimbalzo, stuck, cavo aperto/corto,
+  reboot e interazione touch sul pannello reale.
+- Implementare l'adapter audio e provare device-loss, preemption con stall/TAWS,
+  cuffie/altoparlante, intelligibilità e livelli. Il solo arbiter non dimostra
+  che un cue sia udibile.
+- Provisionare token 0600, firewall e servizi sui nodi; provare rete assente,
+  riconnessione, duplicati, riavvio, disco pieno, retention, TLS/isolamento e
+  perdita di alimentazione reale prima di accettare l'ack come robustezza del
+  registratore.
+- Il replay è di audit JSON, non replay temporale di CAN/MAVLink/DDP/EDP né
+  ricostruzione pixel-perfect. AGL, terreno, ostacoli e vento con provenienza
+  valida restano gate distinti.
+- POH/AFM dell'esemplare, applicabilità OM-912, elica e procedure approvate
+  restano bloccanti. Nessun testo è stato promosso a checklist operativa.
+- Stabilize Assist, Emergency Glide e Autoland restano fuori scope. Nessun
+  comando è stato inviato ai servi o al Pixhawk.
 
 ## Vincoli architetturali mantenuti
 
