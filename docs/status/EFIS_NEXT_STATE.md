@@ -1341,6 +1341,11 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   la Blackbox riporta 24 record persistiti e nessun warning del servizio. Il
   PFD operativo è poi ripartito e ha ricaricato profilo, cataloghi e imagery
   dal corretto working directory.
+- Dopo il primo controllo permessi, `UMask=0027` è stato applicato a hub e
+  forwarder e verificato da systemd. Database, WAL e SHM esistenti sono stati
+  portati a `blackbox:blackbox 0640`; la directory resta 0750. Dopo il riavvio
+  l'health via `eth0` conserva 24 record, entrambi i servizi hanno zero restart,
+  il PFD è `LIVE`, 54,9 °C e `get_throttled=0x0`.
 
 #### Aperto / non dichiarare DONE
 
@@ -1353,9 +1358,8 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Token e servizi sono provisionati sul banco e il bind FLIGHT-DATA è attivo;
   restano da provare rete assente/riconnessione, duplicati reali, riavvio,
   disco pieno, retention, TLS/isolamento e perdita di alimentazione prima di
-  accettare l'ack come robustezza del registratore. `UMask=0027` è predisposto
-  dopo avere osservato il database iniziale a 0644 dietro directory 0750; va
-  applicato e verificato sui due nodi.
+  accettare l'ack come robustezza del registratore. L'hardening permessi
+  `UMask=0027`/0640 è applicato, ma non sostituisce queste fault injection.
 - Il replay è di audit JSON, non replay temporale di CAN/MAVLink/DDP/EDP né
   ricostruzione pixel-perfect. AGL, terreno, ostacoli e vento con provenienza
   valida restano gate distinti.
