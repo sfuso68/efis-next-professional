@@ -1346,6 +1346,19 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   portati a `blackbox:blackbox 0640`; la directory resta 0750. Dopo il riavvio
   l'health via `eth0` conserva 24 record, entrambi i servizi hanno zero restart,
   il PFD è `LIVE`, 54,9 °C e `get_throttled=0x0`.
+- Fault di processo hub verificato con PFD operativo: dopo l'arresto Blackbox è
+  stato accodato un evento SIM di banco. L'offset è rimasto esattamente 51011
+  prima/durante il fault mentre il forwarder registrava `Connection refused`;
+  al riavvio è avanzato a 51325, l'ack riportava la sessione attesa e la
+  Blackbox è salita a 26 record. Non è stato perso né confermato prematuramente
+  alcun record nella prova. Il primo tentativo aveva consegnato correttamente
+  un evento, ma le letture offset erano invalide per quoting; non viene usato
+  come evidenza del comportamento durante il fault.
+- Il replay audit reale dei 26 record è `valid=true`, 10 sessioni, zero gap e
+  zero regressioni. Ventiquattro record UI contengono il contesto decisionale;
+  i due record artificiali di trasporto non lo contengono, quindi il rapporto
+  segnala correttamente `complete_decision_context=false`. Tutti i record sono
+  SIM e il replay dichiara `advisory_only=true`.
 
 #### Aperto / non dichiarare DONE
 
@@ -1356,8 +1369,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   cuffie/altoparlante, intelligibilità e livelli. Il solo arbiter non dimostra
   che un cue sia udibile.
 - Token e servizi sono provisionati sul banco e il bind FLIGHT-DATA è attivo;
-  restano da provare rete assente/riconnessione, duplicati reali, riavvio,
-  disco pieno, retention, TLS/isolamento e perdita di alimentazione prima di
+  arresto/ripristino del processo hub e retry dello spool sono verificati.
+  Restano da provare cavo/rete fisici, duplicati da reboot, disco pieno,
+  retention, TLS/isolamento e perdita di alimentazione prima di
   accettare l'ack come robustezza del registratore. L'hardening permessi
   `UMask=0027`/0640 è applicato, ma non sostituisce queste fault injection.
 - Il replay è di audit JSON, non replay temporale di CAN/MAVLink/DDP/EDP né
