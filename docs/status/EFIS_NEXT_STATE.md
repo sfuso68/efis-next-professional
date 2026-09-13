@@ -1406,6 +1406,13 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - All'apertura vengono impostati esplicitamente busy timeout, WAL,
   `synchronous=FULL` e checkpoint automatico; `PRAGMA quick_check` blocca
   l'avvio su un database che non supera il controllo d'integrità.
+- Aggiunto `tools/blackbox/test_emergency_storage_fault_hw.sh`: crea un ext4
+  loopback temporaneo da 32 MiB, avvia un hub separato solo su
+  `127.0.0.1:28094`, forza ENOSPC, libera spazio, ripete il record e verifica un
+  riavvio dopo `SIGKILL`. Il percorso, la porta e il database di produzione non
+  sono indirizzati. Il flag `--confirm-isolated-loopback` e la verifica del
+  prefisso `/var/tmp/efis-emergency-storage-fault.*` impediscono un avvio o una
+  pulizia a bersaglio ambiguo.
 
 #### Verificato solo software
 
@@ -1417,12 +1424,17 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Un processo secondario viene terminato con una transazione WAL aperta e non
   confermata. Alla riapertura il record incompleto non esiste e `quick_check`
   restituisce `ok`. È una prova di crash di processo, non una prova elettrica.
+- La sintassi Bash del nuovo harness è PASS su Git Bash. L'esecuzione richiede
+  Linux, root per il solo loop mount e l'account di servizio `blackbox`; questa
+  verifica sintattica non prova la sequenza hardware.
 
 #### Verificato su hardware reale
 
-- Nessuna nuova verifica hardware in questo incremento. Restano valide le
-  precedenti prove sul PFD e sulla Blackbox, ma non sono state ripetute né
-  estese al filesystem pieno.
+- Nessuna nuova verifica hardware in questo incremento. Il collegamento SSH a
+  `192.168.1.47` è raggiungibile ma rifiuta le credenziali disponibili sulla
+  workstation (`publickey,password`); quindi il nuovo harness non è stato
+  trasferito o eseguito. Restano valide le precedenti prove sul PFD e sulla
+  Blackbox, ma non sono state ripetute né estese al filesystem pieno.
 
 #### Aperto / non dichiarare DONE
 
