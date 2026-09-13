@@ -1391,6 +1391,50 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Stabilize Assist, Emergency Glide e Autoland restano fuori scope. Nessun
   comando è stato inviato ai servi o al Pixhawk.
 
+### Emergency/Blackbox — hardening fault storage software 2026-09-13
+
+#### Implementato
+
+- L'hub Emergency tratta ogni errore SQLite come mancata persistenza: esegue
+  rollback, non produce una ricevuta positiva e restituisce HTTP 507 con
+  `persisted=false`. Il codice di errore è normalizzato e non espone percorsi o
+  dettagli interni del filesystem.
+- La health espone `storage_ok`, ultimo errore normalizzato, scritture rifiutate
+  e ultimo commit riuscito. Dopo un errore resta HTTP 503 finché una nuova
+  scrittura non raggiunge davvero il commit; una semplice lettura non cancella
+  l'allarme.
+- All'apertura vengono impostati esplicitamente busy timeout, WAL,
+  `synchronous=FULL` e checkpoint automatico; `PRAGMA quick_check` blocca
+  l'avvio su un database che non supera il controllo d'integrità.
+
+#### Verificato solo software
+
+- `py_compile` è PASS per hub, forwarder, replay e test.
+- La suite trasporto passa da 7 a 9 test PASS. Un limite SQLite deterministico
+  forza `SQLITE_FULL`: l'hub restituisce 507, il forwarder non crea né avanza
+  lo stato, la health passa a 503 e lo stesso record viene consegnato una sola
+  volta dopo il ripristino della capacità.
+- Un processo secondario viene terminato con una transazione WAL aperta e non
+  confermata. Alla riapertura il record incompleto non esiste e `quick_check`
+  restituisce `ok`. È una prova di crash di processo, non una prova elettrica.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware in questo incremento. Restano valide le
+  precedenti prove sul PFD e sulla Blackbox, ma non sono state ripetute né
+  estese al filesystem pieno.
+
+#### Aperto / non dichiarare DONE
+
+- Provare sul nodo Blackbox reale filesystem pieno, inode esauriti, I/O error,
+  riavvio host e perdita alimentazione controllata, verificando database/WAL,
+  offset PFD, alert health e successiva consegna senza gap o duplicati.
+- Definire retention, quota riservata e allarme preventivo. Nessun record
+  Emergency viene eliminato automaticamente da questo incremento.
+- Touch, adapter pulsante, audio reale, replay temporale dei bus e fonti
+  operative approvate restano gate separati. Il confine consultivo ADR-012 è
+  invariato e non è stata aggiunta alcuna API di comando.
+
 ## Vincoli architetturali mantenuti
 
 - Core C++20 indipendente da Qt e protocolli (ADR-001).

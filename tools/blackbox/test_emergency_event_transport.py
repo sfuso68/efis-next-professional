@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import subprocess
 import sys
 import tempfile
 import threading
@@ -105,6 +106,65 @@ class EmergencyTransportTests(unittest.TestCase):
         try:
             self.assertEqual(reopened.count(), 1)
             self.assertEqual(reopened.recent(1)[0]["id"], digest)
+        finally:
+            reopened.close()
+
+    def test_disk_full_never_acknowledges_and_recovers_without_skipping(self):
+        root = Path(self.temporary.name)
+        journal = root / "disk-full.jsonl"
+        journal.write_text(json.dumps(event(detail="x" * 4096)) + "\n",
+                           encoding="utf-8")
+        state_path = root / "disk-full-state.json"
+        current_pages = self.hub.db.execute("PRAGMA page_count").fetchone()[0]
+        self.hub.db.execute("PRAGMA max_page_count=" + str(current_pages))
+
+        with self.assertRaises(urllib.error.HTTPError) as full:
+            forwarder.forward_once(
+                journal, state_path, self.url, "PFD-01", "secret")
+        self.assertEqual(full.exception.code, 507)
+        failure = json.loads(full.exception.read())
+        self.assertFalse(failure["persisted"])
+        self.assertEqual(failure["detail"], "sqlite_full")
+        self.assertFalse(state_path.exists())
+        self.assertEqual(self.hub.count(), 0)
+
+        with self.assertRaises(urllib.error.HTTPError) as unhealthy:
+            urllib.request.urlopen(self.url + "/health")
+        self.assertEqual(unhealthy.exception.code, 503)
+        health = json.loads(unhealthy.exception.read())
+        self.assertFalse(health["storage_ok"])
+        self.assertEqual(health["rejected_writes"], 1)
+
+        self.hub.db.execute("PRAGMA max_page_count=100")
+        sent, state = forwarder.forward_once(
+            journal, state_path, self.url, "PFD-01", "secret")
+        self.assertEqual(sent, 1)
+        self.assertEqual(state["offset"], journal.stat().st_size)
+        with urllib.request.urlopen(self.url + "/health") as response:
+            recovered = json.load(response)
+        self.assertTrue(recovered["storage_ok"])
+        self.assertEqual(recovered["records"], 1)
+        self.assertEqual(recovered["rejected_writes"], 1)
+
+    def test_uncommitted_record_is_removed_after_abrupt_process_exit(self):
+        database = Path(self.temporary.name) / "abrupt.sqlite3"
+        initialized = hub_module.EmergencyEventHub(database, {"PFD-01": "secret"})
+        initialized.close()
+        child = (
+            "import os,sqlite3,sys;"
+            "db=sqlite3.connect(sys.argv[1]);"
+            "db.execute('PRAGMA journal_mode=WAL');"
+            "db.execute('BEGIN IMMEDIATE');"
+            "db.execute(\"INSERT INTO emergency_events VALUES("
+            "'uncommitted','PFD-01','crash-session',1,'now','now','{}')\");"
+            "os._exit(0)"
+        )
+        subprocess.run([sys.executable, "-c", child, str(database)], check=True)
+        reopened = hub_module.EmergencyEventHub(database, {"PFD-01": "secret"})
+        try:
+            self.assertEqual(reopened.count(), 0)
+            self.assertEqual(reopened.integrity_report(),
+                             {"ok": True, "messages": ["ok"]})
         finally:
             reopened.close()
 

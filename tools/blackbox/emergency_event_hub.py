@@ -12,6 +12,7 @@ import json
 import sqlite3
 import threading
 import time
+from contextlib import suppress
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -58,15 +59,41 @@ class SequenceConflict(Exception):
     pass
 
 
+class StorageFailure(Exception):
+    """A durable acknowledgement cannot be issued for the current write."""
+
+
+def storage_error_code(error):
+    code = getattr(error, "sqlite_errorcode", None)
+    primary = (code & 0xff) if isinstance(code, int) else None
+    if primary == sqlite3.SQLITE_FULL:
+        return "sqlite_full"
+    if primary == sqlite3.SQLITE_CORRUPT:
+        return "sqlite_corrupt"
+    if primary == sqlite3.SQLITE_READONLY:
+        return "sqlite_readonly"
+    if primary == sqlite3.SQLITE_BUSY:
+        return "sqlite_busy"
+    if primary == sqlite3.SQLITE_IOERR:
+        return "sqlite_io_error"
+    return "sqlite_storage_error"
+
+
 class EmergencyEventHub:
     def __init__(self, database, tokens):
         self.tokens = tokens
         self.lock = threading.Lock()
+        self.storage_ok = True
+        self.last_storage_error = ""
+        self.rejected_writes = 0
+        self.last_successful_write_utc = ""
         Path(database).parent.mkdir(parents=True, exist_ok=True)
         self.database = database
         self.db = sqlite3.connect(database, check_same_thread=False)
+        self.db.execute("PRAGMA busy_timeout=5000")
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA synchronous=FULL")
+        self.db.execute("PRAGMA wal_autocheckpoint=1000")
         self.db.execute(
             "CREATE TABLE IF NOT EXISTS emergency_events("
             "id TEXT PRIMARY KEY, source TEXT NOT NULL, session_id TEXT NOT NULL, "
@@ -75,6 +102,9 @@ class EmergencyEventHub:
             "UNIQUE(source, session_id, event_sequence))"
         )
         self.db.commit()
+        if self._quick_check_locked() != ["ok"]:
+            self.db.close()
+            raise sqlite3.DatabaseError("emergency_event_database_integrity_check_failed")
 
     def close(self):
         with self.lock:
@@ -86,6 +116,49 @@ class EmergencyEventHub:
     def reader_authorized(self, token):
         return any(hmac.compare_digest(value, token) for value in self.tokens.values())
 
+    def _quick_check_locked(self):
+        return [row[0] for row in self.db.execute("PRAGMA quick_check").fetchall()]
+
+    def _mark_storage_failure_locked(self, error, rejected_write=False):
+        reason = storage_error_code(error)
+        self.storage_ok = False
+        self.last_storage_error = reason
+        if rejected_write:
+            self.rejected_writes += 1
+        return reason
+
+    def integrity_report(self):
+        with self.lock:
+            try:
+                messages = self._quick_check_locked()
+            except sqlite3.Error as exc:
+                reason = self._mark_storage_failure_locked(exc)
+                return {"ok": False, "messages": [reason]}
+            if messages != ["ok"]:
+                self.storage_ok = False
+                self.last_storage_error = "sqlite_integrity_check_failed"
+        return {"ok": messages == ["ok"], "messages": messages}
+
+    def health(self):
+        with self.lock:
+            try:
+                records = self.db.execute(
+                    "SELECT COUNT(*) FROM emergency_events"
+                ).fetchone()[0]
+            except sqlite3.Error as exc:
+                self._mark_storage_failure_locked(exc)
+                records = None
+            return {
+                "ok": self.storage_ok,
+                "schema": "efis-next.emergency-event-hub-health.v1",
+                "records": records,
+                "storage_ok": self.storage_ok,
+                "last_storage_error": self.last_storage_error,
+                "rejected_writes": self.rejected_writes,
+                "last_successful_write_utc": self.last_successful_write_utc,
+                "command_api": False,
+            }
+
     def insert(self, source, event):
         validate_event(event)
         digest = event_digest(source, event)
@@ -94,34 +167,56 @@ class EmergencyEventHub:
         received = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         payload = canonical(event)
         with self.lock:
-            previous = self.db.execute(
-                "SELECT id FROM emergency_events WHERE source=? AND session_id=? "
-                "AND event_sequence=?", (source, session_id, sequence)
-            ).fetchone()
-            if previous:
-                if previous[0] != digest:
-                    raise SequenceConflict("sequence_payload_mismatch")
-                return digest, False, received
-            self.db.execute(
-                "INSERT INTO emergency_events VALUES(?,?,?,?,?,?,?)",
-                (digest, source, session_id, sequence, received,
-                 event["written_utc"], payload),
-            )
-            # synchronous=FULL plus commit is the persistence boundary advertised
-            # by the acknowledgement. It is not an aircraft power-loss test.
-            self.db.commit()
+            try:
+                previous = self.db.execute(
+                    "SELECT id FROM emergency_events WHERE source=? AND session_id=? "
+                    "AND event_sequence=?", (source, session_id, sequence)
+                ).fetchone()
+                if previous:
+                    if previous[0] != digest:
+                        raise SequenceConflict("sequence_payload_mismatch")
+                    return digest, False, received
+                self.db.execute(
+                    "INSERT INTO emergency_events VALUES(?,?,?,?,?,?,?)",
+                    (digest, source, session_id, sequence, received,
+                     event["written_utc"], payload),
+                )
+                # synchronous=FULL plus commit is the persistence boundary
+                # advertised by the acknowledgement. It is not an aircraft
+                # power-loss test.
+                self.db.commit()
+            except SequenceConflict:
+                raise
+            except sqlite3.Error as exc:
+                with suppress(sqlite3.Error):
+                    self.db.rollback()
+                reason = self._mark_storage_failure_locked(exc, rejected_write=True)
+                raise StorageFailure(reason) from exc
+            self.storage_ok = True
+            self.last_storage_error = ""
+            self.last_successful_write_utc = received
         return digest, True, received
 
     def count(self):
         with self.lock:
-            return self.db.execute("SELECT COUNT(*) FROM emergency_events").fetchone()[0]
+            try:
+                return self.db.execute(
+                    "SELECT COUNT(*) FROM emergency_events"
+                ).fetchone()[0]
+            except sqlite3.Error as exc:
+                reason = self._mark_storage_failure_locked(exc)
+                raise StorageFailure(reason) from exc
 
     def recent(self, limit):
         with self.lock:
-            rows = self.db.execute(
-                "SELECT id,source,received_utc,payload FROM emergency_events "
-                "ORDER BY rowid DESC LIMIT ?", (limit,)
-            ).fetchall()
+            try:
+                rows = self.db.execute(
+                    "SELECT id,source,received_utc,payload FROM emergency_events "
+                    "ORDER BY rowid DESC LIMIT ?", (limit,)
+                ).fetchall()
+            except sqlite3.Error as exc:
+                reason = self._mark_storage_failure_locked(exc)
+                raise StorageFailure(reason) from exc
         return [
             {"id": row[0], "source": row[1], "received_utc": row[2],
              "event": json.loads(row[3])}
@@ -145,12 +240,8 @@ def make_handler(hub):
         def do_GET(self):
             parsed = urlparse(self.path)
             if parsed.path == "/health":
-                return self.reply(200, {
-                    "ok": True,
-                    "schema": "efis-next.emergency-event-hub-health.v1",
-                    "records": hub.count(),
-                    "command_api": False,
-                })
+                health = hub.health()
+                return self.reply(200 if health["ok"] else 503, health)
             if parsed.path == "/v1/emergency-events":
                 if not hub.reader_authorized(self.bearer()):
                     return self.reply(401, {"error": "unauthorized"})
@@ -158,7 +249,11 @@ def make_handler(hub):
                     limit = min(500, max(1, int(parse_qs(parsed.query).get("limit", [50])[0])))
                 except ValueError:
                     return self.reply(400, {"error": "invalid_limit"})
-                return self.reply(200, {"events": hub.recent(limit)})
+                try:
+                    return self.reply(200, {"events": hub.recent(limit)})
+                except StorageFailure as exc:
+                    return self.reply(503, {"error": "storage_unavailable",
+                                            "detail": str(exc)})
             return self.reply(404, {"error": "not_found"})
 
         def do_POST(self):
@@ -185,6 +280,12 @@ def make_handler(hub):
                 })
             except SequenceConflict as exc:
                 return self.reply(409, {"error": "sequence_conflict", "detail": str(exc)})
+            except StorageFailure as exc:
+                return self.reply(507, {
+                    "error": "storage_unavailable",
+                    "detail": str(exc),
+                    "persisted": False,
+                })
             except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 return self.reply(400, {"error": "bad_request", "detail": str(exc)})
 

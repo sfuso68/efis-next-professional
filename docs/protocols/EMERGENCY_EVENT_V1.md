@@ -2,7 +2,7 @@
 
 Stato: **SOFTWARE IMPLEMENTED AND TESTED / DEPLOYMENT E PROVE HW APERTI / NON OPERATIVO**
 
-Data: 2026-09-09
+Data: 2026-09-13
 
 ## Scopo
 
@@ -46,6 +46,20 @@ SQLite WAL con `synchronous=FULL`. Solo dopo il commit risponde con schema
 `persisted=true`. Il forwarder confronta digest, sorgente, sessione e sequenza
 prima di aggiornare atomicamente l'offset con flush e fsync.
 
+Se SQLite rifiuta una scrittura per spazio esaurito, database read-only,
+corruzione, contesa o altro errore di storage, l'hub esegue rollback e non
+emette mai una ricevuta positiva. Risponde `507` con `persisted=false`; il
+forwarder conserva l'offset precedente e ritenta lo stesso record. La health
+passa a `503`, espone un codice di errore normalizzato e il conteggio delle
+scritture rifiutate. Lo stato storage torna sano soltanto dopo una successiva
+scrittura e commit riusciti, non per il solo fatto che una lettura funzioni.
+
+All'apertura del database viene eseguito `PRAGMA quick_check`; WAL,
+`synchronous=FULL`, timeout di contesa e checkpoint automatico sono impostati
+esplicitamente. Queste misure e i test di uscita brusca del processo verificano
+il comportamento software, ma non equivalgono a una prova di perdita
+alimentazione sull'NVMe reale.
+
 Il servizio espone soltanto health, inserimento eventi e lettura autenticata.
 Qualsiasi endpoint di comando restituisce 404; non esistono payload di risposta
 che possano rappresentare MAVLink, modalità, servo, radio o attuatori.
@@ -70,7 +84,9 @@ dimostrano ancora:
 - tempo UTC GNSS affidabile e sincronizzazione completa con CAN/MAVLink;
 - ricostruzione pixel-perfect della schermata e audio effettivamente riprodotto.
 
-Prima dell'uso sul banco occorre generare token distinti con permessi 0600,
-installare le due unità systemd, limitare bind/firewall alla FLIGHT-DATA e
-provare rete assente, riavvio, duplicati, disco pieno e power-loss. Il protocollo
-resta separato da DDP/EDP e non autorizza alcun comando al Pixhawk.
+Sul banco token, unità systemd, bind FLIGHT-DATA, rete assente, riavvio del
+processo e duplicati sono già stati verificati. Il disco pieno è coperto da
+fault injection SQLite soltanto in software. Restano da provare sul nodo reale
+filesystem pieno, esaurimento inode, I/O error, riavvio macchina e power-loss.
+Il protocollo resta separato da DDP/EDP e non autorizza alcun comando al
+Pixhawk.
