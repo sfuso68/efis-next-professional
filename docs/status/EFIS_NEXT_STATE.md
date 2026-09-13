@@ -1359,6 +1359,12 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   i due record artificiali di trasporto non lo contengono, quindi il rapporto
   segnala correttamente `complete_decision_context=false`. Tutti i record sono
   SIM e il replay dichiara `advisory_only=true`.
+- Inventario I/O PFD eseguito senza modifiche: touchscreen QDtech MPI7003 su
+  `/dev/input/event4`; due device ALSA HDMI e sink PipeWire HDMI disponibile a
+  volume 0,40; `/dev/gpiochip0` e controller RP1 presenti; utente `efis` nei
+  gruppi `audio`, `gpio` e `input`. Questo prova che esistono interfacce
+  utilizzabili, non che il display abbia un altoparlante udibile né che esista
+  un pulsante Emergency cablato. Nessun tono o GPIO è stato attivato.
 
 #### Aperto / non dichiarare DONE
 
