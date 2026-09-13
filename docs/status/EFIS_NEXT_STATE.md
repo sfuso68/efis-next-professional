@@ -1310,14 +1310,37 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Un tentativo successivo della suite generale ha eseguito 12/18 test PASS;
   sei binari non sono stati avviati perché il criterio di controllo
   applicazioni Windows li ha bloccati (`BAD_COMMAND`). Non sono fallimenti dei
-  test, ma non vengono conteggiati come verificati in questo incremento. La
-  suite ARM non è stata rieseguita.
+  test e non vengono conteggiati come verificati dal run Windows; la successiva
+  suite ARM completa fornisce l'evidenza multipiattaforma mancante.
+
+- Successivamente la release immutabile `60b3526` è stata compilata nativamente
+  sul PFD ARM64: configurazione Qt 6.8.2/Ninja completata e build completa di
+  319 step riuscita. La suite ARM ha eseguito 20/20 CTest PASS, inclusi
+  Emergency Assist, Emergency I/O, i sette casi Python del trasporto e il test
+  del catalogo operativo. Questa evidenza supera il limite di esecuzione
+  Windows, ma resta verifica software eseguita sul target.
 
 #### Verificato su hardware reale
 
-- Nessun nuovo componente di questo incremento è stato installato o provato su
-  PFD, MFD o Blackbox. Rimane valida soltanto l'evidenza precedente della pagina
-  engine-emergency SIM su MFD release `3432402`.
+- Il PFD `efis-pfd-01` è passato atomicamente da `e902973` a `60b3526`; la
+  release precedente resta il rollback. Dopo lo switch il servizio è `active`,
+  `NRestarts=0`, `ExecMainStatus=0`, DDP `LIVE` 19,9–20,8 Hz con zero reject,
+  gap ed errori; rendering osservato 34–36 presentazioni/s.
+- Hub Emergency installato sulla Blackbox `efisblackbox` e vincolato soltanto a
+  `10.77.10.2:18094`; forwarder installato sul PFD. Sono stati generati token
+  dedicati senza esporli nei log. La health letta dal PFD via `eth0` dichiara
+  `command_api=false`.
+- Le otto famiglie sono state avviate una per volta sul renderer Wayland reale
+  e catturate a 1024×600, tutte con `saved=true`: engine, attitude, airspeed,
+  electrical, fire/smoke, weather/terrain, sensors e medical. Il comando di
+  banco non aveva working directory della release e ha quindi usato profilo e
+  cataloghi fallback; la pagina era comunque esplicitamente SIM. Queste sono
+  prove di rendering/route, non interazione touch né acceptance ergonomica.
+- Le otto sessioni hanno prodotto 24 transizioni JSONL (50.701 byte). Il
+  forwarder ha ricevuto ack per l'ultimo record e avanzato allo stesso offset;
+  la Blackbox riporta 24 record persistiti e nessun warning del servizio. Il
+  PFD operativo è poi ripartito e ha ricaricato profilo, cataloghi e imagery
+  dal corretto working directory.
 
 #### Aperto / non dichiarare DONE
 
@@ -1327,10 +1350,12 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Implementare l'adapter audio e provare device-loss, preemption con stall/TAWS,
   cuffie/altoparlante, intelligibilità e livelli. Il solo arbiter non dimostra
   che un cue sia udibile.
-- Provisionare token 0600, firewall e servizi sui nodi; provare rete assente,
-  riconnessione, duplicati, riavvio, disco pieno, retention, TLS/isolamento e
-  perdita di alimentazione reale prima di accettare l'ack come robustezza del
-  registratore.
+- Token e servizi sono provisionati sul banco e il bind FLIGHT-DATA è attivo;
+  restano da provare rete assente/riconnessione, duplicati reali, riavvio,
+  disco pieno, retention, TLS/isolamento e perdita di alimentazione prima di
+  accettare l'ack come robustezza del registratore. `UMask=0027` è predisposto
+  dopo avere osservato il database iniziale a 0644 dietro directory 0750; va
+  applicato e verificato sui due nodi.
 - Il replay è di audit JSON, non replay temporale di CAN/MAVLink/DDP/EDP né
   ricostruzione pixel-perfect. AGL, terreno, ostacoli e vento con provenienza
   valida restano gate distinti.

@@ -14,6 +14,7 @@ RestartSec=5
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=read-only
+UMask=0027
 ReadWritePaths=/var/lib/efis
 RestrictAddressFamilies=AF_UNIX AF_INET
 

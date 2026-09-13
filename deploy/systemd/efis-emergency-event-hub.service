@@ -13,6 +13,7 @@ NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
+UMask=0027
 ReadWritePaths=/var/lib/blackbox/emergency
 RestrictAddressFamilies=AF_UNIX AF_INET
 
