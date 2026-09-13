@@ -1335,7 +1335,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   electrical, fire/smoke, weather/terrain, sensors e medical. Il comando di
   banco non aveva working directory della release e ha quindi usato profilo e
   cataloghi fallback; la pagina era comunque esplicitamente SIM. Queste sono
-  prove di rendering/route, non interazione touch né acceptance ergonomica.
+  prove di rendering/route, non interazione touch né acceptance ergonomica. Le
+  otto immagini, i relativi hash e il perimetro esatto della prova sono ora
+  versionati in
+  `docs/status/evidence/emergency-assist-rpi5-60b3526/`.
 - Le otto sessioni hanno prodotto 24 transizioni JSONL (50.701 byte). Il
   forwarder ha ricevuto ack per l'ultimo record e avanzato allo stesso offset;
   la Blackbox riporta 24 record persistiti e nessun warning del servizio. Il
