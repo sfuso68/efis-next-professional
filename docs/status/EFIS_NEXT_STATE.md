@@ -1720,6 +1720,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   bloccato con exit 78, senza restart-loop, in presenza di USB ACM, bridge USB
   legacy attivo o UDP 14550 già occupata. L'AppImage viene estratta in AppDir
   per conservare `NoNewPrivileges` senza dipendere da FUSE/setuid.
+- Aggiunto `fault_laptop_wifi.sh`: arma nel system manager root il recupero
+  NetworkManager prima del distacco, valida connessione/interfaccia e limita il
+  fault a 20–180 secondi. È tooling di banco e non altera la configurazione
+  persistente di rete.
 
 #### Verificato solo software
 
@@ -1757,6 +1761,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   rilevazione seriale, bridge legacy, porta UDP libera/occupata, exit 78 e
   report privo di telemetria. `py_compile`, verifica unità systemd e
   `git diff --check` sono PASS.
+- Il nuovo harness fault Wi-Fi supera `/bin/sh -n`; la logica di rifiuto senza
+  privilegi è stata verificata. Il fault reale non è stato eseguito perché
+  NetworkManager richiede l'autorizzazione amministrativa interattiva locale.
 
 #### Verificato su hardware reale
 
@@ -1960,7 +1967,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Provare perdita della WLAN di servizio e del portatile intero senza effetti
   su ingestion, recorder, DDP/EDP o controllo di volo. I fault dei soli
   consumer server e QGC sono verificati; non equivalgono alla perdita completa
-  dei nodi o della rete.
+  dei nodi o della rete. L'harness con recupero temporizzato è installabile ma
+  richiede l'esecuzione locale con `sudo`; dopo il recupero verificare anche
+  QGC e l'avvio automatico della sessione grafica.
 - Eseguire soak con perdita, jitter, CPU, RAM e temperatura. UDP osservatori
   non è autenticato: i consumer devono trattarlo come telemetria non autorevole
   e filtrare la sorgente Blackbox.

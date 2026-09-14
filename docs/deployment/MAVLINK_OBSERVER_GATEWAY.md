@@ -285,6 +285,23 @@ Pixhawk. Contemporaneamente devono continuare a crescere recorder, DDP/EDP e
 Spegnere a turno QGroundControl, portatile, server e WLAN. Nessuna di queste
 perdite deve arrestare il broker o modificare il flusso Pixhawk→Blackbox.
 
+Per il fault controllato della sola rete Ground Station, copiare
+`tools/network/fault_laptop_wifi.sh` sul portatile ed eseguirlo dalla console
+locale, non via SSH:
+
+```bash
+sudo ./fault_laptop_wifi.sh wlo1 CASA 45
+```
+
+Lo script verifica interfaccia e connessione attive, accetta solo durate fra
+20 e 180 secondi e programma nel system manager root il comando di recupero
+prima di disconnettere il Wi-Fi. Il timer dedicato è
+`efis-wifi-recovery.timer`. Durante i 45 secondi acquisire dalla Blackbox la
+crescita di ingestion, recorder, DDP/EDP e fan-out server; sul server verificare
+sink `LIVE` e contatori crescenti. Dopo il recupero controllare indirizzo
+`192.168.1.39`, QGC ancora attivo e ricezione ripresa. Questa prova non
+sostituisce lo spegnimento fisico completo del portatile.
+
 ## Rollback
 
 Ripristinare il precedente binario immutabile e la precedente unità systemd,
