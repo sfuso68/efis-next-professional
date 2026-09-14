@@ -1825,9 +1825,17 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Sul server `Linger=yes` è stato abilitato e il servizio risulta ancora
   `enabled/active`; l'avvio automatico dopo un reboot reale non è stato ancora
   provato. La route verso la Blackbox usa `enp2s0`, sorgente
-  `192.168.1.6`. I file firewall sono stati copiati in staging nella home,
-  `/bin/sh -n` e `systemd-analyze verify` sono PASS, ma la regola non è stata
-  installata o attivata perché richiede la password amministrativa locale.
+  `192.168.1.6`. I file firewall sono stati copiati in staging nella home;
+  `/bin/sh -n` e `systemd-analyze verify` sono PASS.
+- L'installatore firewall è stato eseguito localmente con privilegi
+  amministrativi: `efis-mavlink-observer-firewall.service` risulta
+  `enabled/active`, `ExecMainStatus=0`, e la tabella installata contiene la sola
+  regola prevista su `192.168.1.6:14550`, inizialmente con contatore zero.
+  Dopo l'invio di un datagramma da un altro host, il sink è cresciuto da
+  13.493 a 14.327 frame autorizzati mentre `source_rejected` è rimasto zero;
+  sink e firewall sono rimasti attivi e il sink ha zero errori/riavvii. Questo
+  dimostra che il datagramma estraneo non ha raggiunto l'applicazione; la
+  lettura privilegiata del contatore nft dopo il test resta da acquisire.
 - Un singolo frame MAVLink2 strutturalmente valido inviato da un host diverso
   dalla Blackbox ha incrementato soltanto `source_rejected` a uno, senza
   incrementare i frame accettati. Una cattura simultanea di dieci secondi su
@@ -1859,9 +1867,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   definitivo.
 - Installare il filtro firewall host per UDP 14550 e verificare che ammetta
   soltanto `192.168.1.47`, senza interferire con Docker, Caddy o le altre reti
-  del server. File, unità e installatore sono in staging; attivazione e prova
-  drop richiedono ancora `sudo`. Il filtro applicativo è verificato ma non
-  sostituisce il firewall.
+  del server. Installazione e prova applicativa negativa sono riuscite; manca
+  la lettura privilegiata del contatore `drop` dopo il test e un reboot per
+  verificare la persistenza con Docker/Tailscale attivi.
 - Alimentare definitivamente Pixhawk tramite modulo regolato `POWER1`, quindi
   rimuovere l'USB Blackbox e ripetere presenza Ethernet, heartbeat, contatori e
   brownout test. L'attuale USB è ammessa solo per il banco.
