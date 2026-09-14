@@ -25,12 +25,16 @@ class PfdController final : public QObject {
     Q_PROPERTY(double roll READ roll NOTIFY snapshotChanged)
     Q_PROPERTY(double pitch READ pitch NOTIFY snapshotChanged)
     Q_PROPERTY(double heading READ heading NOTIFY snapshotChanged)
+    Q_PROPERTY(bool attitudeValid READ attitudeValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool headingValid READ headingValid NOTIFY snapshotChanged)
     Q_PROPERTY(double airspeed READ airspeed NOTIFY snapshotChanged)
     Q_PROPERTY(double altitude READ altitude NOTIFY snapshotChanged)
     Q_PROPERTY(double verticalSpeed READ verticalSpeed NOTIFY snapshotChanged)
+    Q_PROPERTY(bool verticalSpeedValid READ verticalSpeedValid NOTIFY snapshotChanged)
     Q_PROPERTY(double groundSpeed READ groundSpeed NOTIFY snapshotChanged)
     Q_PROPERTY(double latitude READ latitude NOTIFY snapshotChanged)
     Q_PROPERTY(double longitude READ longitude NOTIFY snapshotChanged)
+    Q_PROPERTY(bool positionValid READ positionValid NOTIFY snapshotChanged)
     Q_PROPERTY(double commandedRoll READ commandedRoll NOTIFY snapshotChanged)
     Q_PROPERTY(double commandedPitch READ commandedPitch NOTIFY snapshotChanged)
     Q_PROPERTY(double selectedAltitude READ selectedAltitude NOTIFY snapshotChanged)
@@ -202,12 +206,16 @@ public:
     [[nodiscard]] double roll() const;
     [[nodiscard]] double pitch() const;
     [[nodiscard]] double heading() const;
+    [[nodiscard]] bool attitudeValid() const;
+    [[nodiscard]] bool headingValid() const;
     [[nodiscard]] double airspeed() const;
     [[nodiscard]] double altitude() const;
     [[nodiscard]] double verticalSpeed() const;
+    [[nodiscard]] bool verticalSpeedValid() const;
     [[nodiscard]] double groundSpeed() const;
     [[nodiscard]] double latitude() const;
     [[nodiscard]] double longitude() const;
+    [[nodiscard]] bool positionValid() const;
     [[nodiscard]] double commandedRoll() const;
     [[nodiscard]] double commandedPitch() const;
     [[nodiscard]] double selectedAltitude() const;

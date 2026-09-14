@@ -167,6 +167,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/EmsVectorIcon.qml
                 qml/AdaptiveCanvasView.qml
                 qml/SystemSimulatorOverlay.qml
+                qml/EmergencyFlightSupport.qml
                 qml/EmergencyAssistView.qml
             RESOURCES
                 qml/shaders/terrain_taws.frag

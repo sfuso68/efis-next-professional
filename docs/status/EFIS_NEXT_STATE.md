@@ -1455,3 +1455,69 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Nessuna modifica alle protezioni stasis/cross-check o alle regole di arbitraggio (ADR-004/ADR-005).
 - EMS resta nodo dedicato con componenti QML condivisi (ADR-006).
 - Nessuna trasmissione introdotta sul CAN; il nodo resta listen-only (ADR-007).
+
+### Emergency Assist — Flight Support grafico software 2026-09-14
+
+#### Implementato
+
+- Ridisegnata la pagina Emergency Assist 1024x600 con gerarchia operativa
+  immediata: `FLY` a sinistra, supporto visivo centrale, `NAVIGATE` sotto la
+  vista e `COMMUNICATE / MANAGE` a destra.
+- Aggiunto `EmergencyFlightSupport.qml`: heading ribbon, scala di beccheggio,
+  riferimento aeromobile, roll/pitch, IAS, ALT e VS rimangono visibili durante
+  la consultazione della procedura.
+- La superficie Terrain 3D/Synthetic Vision viene riusata solo quando posizione,
+  quota, assetto e prua sono validi. Se un gate fallisce, il terreno scompare;
+  l'orizzonte artificiale resta disponibile soltanto con assetto valido, senza
+  inventare una scena, animare dati stale o dichiarare una raggiungibilità.
+- Il controller espone gate distinti per attitude, heading, vertical speed e
+  position; la UI mostra `INVALID` o trattini quando il relativo dato non è
+  utilizzabile.
+- Selettore delle otto famiglie, target e stato dati, massimo tre opzioni di
+  navigazione, checklist singolo passo, bozza radio, cue vocale testuale e stato
+  eventi/Blackbox sono stati ricomposti in pannelli touch più leggibili.
+- Il banner consultivo permanente ribadisce che non esistono comandi verso
+  Pixhawk, servi, radio o transponder. ADR-012 resta invariata.
+
+#### Verificato solo software
+
+- `qmllint` Qt 6.11.1 termina con exit code 0 e senza warning su
+  `EmergencyFlightSupport.qml` ed `EmergencyAssistView.qml`.
+- Build Windows Qt/MSVC completa: il target PFD compila 101/101 step e la build
+  complessiva termina con 60/60 step; entrambi gli AOT QML e il link sono PASS.
+- `efis_emergency_assist_tests`, `efis_emergency_io_tests` ed
+  `efis_emergency_event_transport_tests` sono 3/3 PASS.
+- Il PFD con `--emergency-preview=ENGINE_POWER_LOSS` ha prodotto una cattura
+  automatica offscreen preliminare 1024x600 ed è uscito con codice 0 prima
+  dell'ultimo affinamento dei gate. Il backend sostituisce i glifi dei font e,
+  dopo la ricompilazione finale, il controllo applicazioni Windows ha bloccato
+  l'eseguibile non firmato: la cattura non qualifica la versione finale.
+- La suite completa è stata avviata ma non viene dichiarata PASS: sei eseguibili
+  Windows non sono partiti perché lo stesso controllo applicazioni li ha
+  bloccati e
+  `efis_operational_profile_model_tests` è rimasto sospeso fino
+  all'interruzione. I tre test Emergency pertinenti, rilanciati isolatamente,
+  sono invece PASS.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware in questo incremento. Non sono stati eseguiti
+  deploy, cattura EGLFS/Wayland, touch acceptance o test di leggibilità sul
+  pannello RPi5.
+- Il checkpoint Blackbox fault-storage resta in attesa dell'esecuzione del
+  relativo harness sul nodo reale; non viene promosso a completato.
+
+#### Aperto / non dichiarare DONE
+
+- Compilare e distribuire sul RPi5, acquisire catture reali di tutte le otto
+  famiglie e verificare leggibilità, contrasto, dimensioni touch, transizioni e
+  comportamento con attitude/heading/position/altitude/VS invalidi o stale.
+- Validare AGL, terreno, ostacoli, vento, polar e aeroporti prima di mostrare
+  qualunque opzione come realmente raggiungibile.
+- Integrare e verificare pulsante fisico e audio con priorità stall/TAWS; oggi il
+  cue vocale resta testuale.
+- Approvare procedure POH/AFM applicabili all'esemplare. I profili SIM non sono
+  procedure operative e non autorizzano una checklist reale.
+- Diagnosticare separatamente gli eseguibili della suite Windows che non si
+  avviano e il test operativo sospeso; questo non viene mascherato dall'esito
+  positivo delle suite Emergency.

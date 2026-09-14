@@ -1046,12 +1046,26 @@ bool PfdController::captureSensorPoint(int index, const QString& point) {
 double PfdController::roll() const { return snapshot_.attitude.roll_deg.value; }
 double PfdController::pitch() const { return snapshot_.attitude.pitch_deg.value; }
 double PfdController::heading() const { return snapshot_.attitude.heading_deg.value; }
+bool PfdController::attitudeValid() const {
+    return snapshot_.attitude.roll_deg.usable() &&
+           snapshot_.attitude.pitch_deg.usable();
+}
+bool PfdController::headingValid() const {
+    return snapshot_.attitude.heading_deg.usable();
+}
 double PfdController::airspeed() const { return snapshot_.air_data.indicated_airspeed_kt.value; }
 double PfdController::altitude() const { return snapshot_.air_data.pressure_altitude_ft.value; }
 double PfdController::verticalSpeed() const { return snapshot_.air_data.vertical_speed_fpm.value; }
+bool PfdController::verticalSpeedValid() const {
+    return snapshot_.air_data.vertical_speed_fpm.usable();
+}
 double PfdController::groundSpeed() const { return snapshot_.position.ground_speed_kt.value; }
 double PfdController::latitude() const { return snapshot_.position.latitude_deg.value; }
 double PfdController::longitude() const { return snapshot_.position.longitude_deg.value; }
+bool PfdController::positionValid() const {
+    return snapshot_.position.latitude_deg.usable() &&
+           snapshot_.position.longitude_deg.usable();
+}
 double PfdController::commandedRoll() const { return snapshot_.guidance.commanded_roll_deg.value; }
 double PfdController::commandedPitch() const { return snapshot_.guidance.commanded_pitch_deg.value; }
 double PfdController::selectedAltitude() const { return snapshot_.guidance.selected_altitude_ft.value; }

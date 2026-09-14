@@ -292,3 +292,42 @@ testi distinti, bozza radio esplicitamente verificabile e rifiuto della
 checklist priva di package approvato. I testi sono quindi un fallback UI sicuro,
 non una sostituzione del POH/AFM. Le procedure operative per Asso V
 Jolly/Pioneer 300 e Rotax 912 UL restano bloccate dall'audit delle fonti.
+
+## 16. Flight Support grafico — incremento 2026-09-14
+
+La pagina Emergency Assist adotta una gerarchia visiva unica 1024x600, pensata
+per mantenere prima il controllo dell'aeromobile e solo dopo consultare la
+procedura:
+
+- `FLY` resta a sinistra con advisory primario, IAS corrente/target, quota,
+  variometro, assetto e qualità dei dati;
+- il centro è occupato da un nuovo `EmergencyFlightSupport`, con nastro prua,
+  scala di beccheggio, riferimento aeromobile, roll/pitch e riquadri IAS/ALT/VS;
+- quando posizione, quota, assetto e prua sono tutti validi, lo stesso riquadro
+  riusa la superficie Synthetic Vision/Terrain 3D già presente nel PFD;
+- quando uno dei gate fallisce, il terreno scompare; se l'assetto resta valido
+  viene mostrato soltanto l'orizzonte artificiale. Non viene inventato alcun
+  terreno né viene animata una scena con dati di assetto stale;
+- con attitude o heading non validi compaiono annunci espliciti `INVALID` e i
+  valori diventano trattini, senza mantenere indicazioni apparentemente valide;
+- `NAVIGATE` rimane sotto la vista di volo con massimo tre opzioni e conserva il
+  blocco fail-closed quando non esistono dati sufficienti per una dichiarazione
+  di raggiungibilità;
+- `COMMUNICATE / MANAGE` mostra una sola azione checklist per volta, bozza radio
+  da verificare e comandi touch grandi `DONE`, `SKIP`, `REPEAT`;
+- una fascia permanente ricorda che il sistema è consultivo e non invia
+  comandi a Pixhawk, servi, radio o transponder.
+
+Il componente non introduce un secondo modello di volo: legge esclusivamente
+lo snapshot già validato dal controller PFD. L'aspetto SkyView è quindi un
+supporto alla consapevolezza situazionale, non una guida di volo certificata e
+non modifica il confine di autorità definito da ADR-012.
+
+Verifica software eseguita: compilazione AOT QML e link del PFD con Qt 6/MSVC,
+`qmllint` senza errori o warning sui due componenti Emergency, tre suite
+Emergency PASS e cattura automatica offscreen preliminare 1024x600. La cattura
+offscreen Windows non costituisce acceptance grafica perché il backend non
+rende i font come il pannello reale; dopo l'ultima ricompilazione il controllo
+applicazioni Windows ha inoltre bloccato l'eseguibile non firmato. Restano
+obbligatorie build ARM64, cattura EGLFS/Wayland, touch e valutazione in cabina
+sul RPi5.
