@@ -1701,6 +1701,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   confini MAVLink2 inclusi frame multipli e firmati e pubblica atomically un
   documento health limitato ai contatori. Non conserva payload e il codice non
   contiene alcuna operazione di trasmissione o relay.
+- Il sink attende ora fino a 60 secondi esclusivamente l'assegnazione
+  dell'indirizzo locale (`EADDRNOTAVAIL`) senza uscire dal processo; altri
+  errori socket restano fail-closed. Espone `bind_retries`, aggiorna health ogni
+  cinque secondi e limita il log periodico a 60 secondi.
 - Predisposte due unità: servizio di sistema hardenizzato con `DynamicUser`,
   `StateDirectory`, filtro IP e sandbox; servizio utente di banco per verifiche
   senza privilegi amministrativi. La seconda non equivale alla distribuzione
@@ -1735,13 +1739,14 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Il test loopback C++ verifica copia identica verso due destinatari, metadata
   sorgente, metriche aggregate/per-target e rifiuto di duplicati, broadcast e
   multicast.
-- Sei test deterministici del sink server sono PASS: frame singolo/multiplo,
+- Otto test deterministici del sink server sono PASS: frame singolo/multiplo,
   frame firmato, rifiuto MAVLink1/troncato/flag incompatibile, health senza
-  payload e separazione dei contatori di sorgente e frame rifiutati. Anche
-  `py_compile` e `git diff --check` sono PASS.
+  payload, separazione dei contatori e retry selettivo del solo
+  `EADDRNOTAVAIL`; `EACCES` viene propagato immediatamente. Anche `py_compile`
+  e `git diff --check` sono PASS.
 - Il test policy aggiuntivo vincola il firewall server a tabella dedicata,
   indirizzi/porta esatti, drop della sorgente non autorizzata e assenza di
-  forward/output/NAT. La suite congiunta observer policy + sink è 12/12 PASS.
+  forward/output/NAT. La suite congiunta observer policy + sink è 14/14 PASS.
 
 #### Verificato su hardware reale
 
@@ -1838,6 +1843,25 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   lettura privilegiata successiva ha confermato sulla regola nftables
   `packets 1 bytes 40 drop`: il filtro kernel ha scartato esattamente il caso
   di prova prima del sink.
+- Il reboot controllato di `serverha` ha confermato `Linger=yes`, firewall
+  `enabled/active` dalle 23:08:16, sink automatico e ricezione continua fino a
+  22.406 frame/853 heartbeat. Tutti i 12 container inventariati sono tornati
+  `Up`; `mapapp` ha `RestartCount=0`, risponde 200 direttamente e Caddy
+  risponde 401 sull'endpoint protetto, come previsto senza credenziali.
+- Il reboot ha anche evidenziato una race reale: il primo avvio sink alle
+  23:08:18 è fallito una volta con `EADDRNOTAVAIL`; il retry systemd delle
+  23:08:21 ha recuperato (`NRestarts=1`). La correzione di attesa indirizzo è
+  stata distribuita sul server e verificata riavviando il solo servizio:
+  `NRestarts=0`, `bind_retries=0`, stato `LIVE`, 1.464 frame e 56 heartbeat al
+  campione, zero errori. Il log successivo conferma il nuovo intervallo di 60
+  secondi. Serve un secondo reboot per provare la correzione nella condizione
+  che aveva prodotto la race.
+- Il test firewall ripetuto dopo reboot non ha raggiunto il sink
+  (`source_rejected=0`) mentre i frame autorizzati continuavano a crescere. Il
+  contatore nft privilegiato post-reboot non è stato ancora acquisito. Durante
+  il controllo servizi è inoltre emerso che il trust store locale del server
+  non riconosce la CA Caddy: HTTPS col nome corretto funziona con verifica
+  disabilitata e restituisce 401, ma senza `-k` fallisce la validazione CA.
 - Un singolo frame MAVLink2 strutturalmente valido inviato da un host diverso
   dalla Blackbox ha incrementato soltanto `source_rejected` a uno, senza
   incrementare i frame accettati. Una cattura simultanea di dieci secondi su
@@ -1863,15 +1887,18 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Aperto / non dichiarare DONE
 
-- Eseguire un reboot controllato del server e verificare che il servizio utente
-  con `Linger=yes` ritorni automaticamente `LIVE`. La promozione futura
-  all'unità di sistema hardenizzata resta opzionale ma preferibile per il nodo
-  definitivo.
+- Eseguire un secondo reboot controllato del server e verificare che la nuova
+  attesa bind eviti restart di processo, torni automaticamente `LIVE` e
+  mantenga firewall e container. La promozione futura all'unità di sistema
+  hardenizzata resta opzionale ma preferibile per il nodo definitivo.
 - Installare il filtro firewall host per UDP 14550 e verificare che ammetta
   soltanto `192.168.1.47`, senza interferire con Docker, Caddy o le altre reti
   del server. Installazione, prova applicativa negativa e contatore drop sono
-  verificati; manca un reboot controllato per verificare la persistenza con
-  Docker/Tailscale attivi.
+  verificati; la persistenza al primo reboot è riuscita. Acquisire il contatore
+  drop post-reboot insieme alla seconda prova della correzione bind.
+- Installare la CA locale Caddy nel trust store del server, se servizi locali
+  devono consumare HTTPS senza bypass della validazione. Questo gap non ha
+  impedito il riavvio di Caddy/mapapp e non riguarda il trasporto MAVLink.
 - Alimentare definitivamente Pixhawk tramite modulo regolato `POWER1`, quindi
   rimuovere l'USB Blackbox e ripetere presenza Ethernet, heartbeat, contatori e
   brownout test. L'attuale USB è ammessa solo per il banco.

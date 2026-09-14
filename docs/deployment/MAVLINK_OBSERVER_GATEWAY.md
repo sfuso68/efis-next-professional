@@ -203,6 +203,13 @@ di `datagrams`/`frames`, heartbeat presenti e zero `source_rejected`,
 `malformed` e `socket_errors`. Il controllo è strutturale: la convalida CRC e
 semantica rimane responsabilità della pipeline Blackbox.
 
+Al boot il servizio tollera per un massimo di 60 secondi il solo errore
+`EADDRNOTAVAIL`, che si verifica quando systemd user parte prima
+dell'assegnazione di `192.168.1.6`. Il numero di tentativi resta visibile in
+`bind_retries`; ogni altro errore socket rimane immediatamente fatale. Il file
+health è aggiornato ogni cinque secondi, mentre il journal riceve un riepilogo
+ogni 60 secondi per evitare scritture continue non necessarie.
+
 ## Collaudo fail-closed
 
 Sulla Blackbox controllare:

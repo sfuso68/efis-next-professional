@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 %h/.local/lib/efis-next/mavlink_observer_sink.py --bind 192.168.1.6 --port 14550 --source 192.168.1.47 --health %h/.local/state/efis-next/mavlink-observer-health.json
+ExecStart=/usr/bin/python3 %h/.local/lib/efis-next/mavlink_observer_sink.py --bind 192.168.1.6 --port 14550 --source 192.168.1.47 --health %h/.local/state/efis-next/mavlink-observer-health.json --bind-wait 60 --health-interval 5 --log-interval 60
 Restart=always
 RestartSec=2
 NoNewPrivileges=true

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import errno
 import json
 from pathlib import Path
 import sys
@@ -81,6 +82,58 @@ class MavlinkObserverSinkTests(unittest.TestCase):
         self.assertEqual(health.source_rejected, 1)
         self.assertEqual(health.malformed, 1)
         self.assertEqual(health.datagrams, 0)
+
+    def test_bind_wait_retries_only_address_not_available(self) -> None:
+        class FakeSocket:
+            def __init__(self, bind_error: OSError | None = None) -> None:
+                self.bind_error = bind_error
+                self.closed = False
+
+            def bind(self, _endpoint: tuple[str, int]) -> None:
+                if self.bind_error:
+                    raise self.bind_error
+
+            def close(self) -> None:
+                self.closed = True
+
+        first = FakeSocket(OSError(errno.EADDRNOTAVAIL, "not assigned"))
+        second = FakeSocket()
+        sockets = iter((first, second))
+        ticks = iter((10.0, 10.1))
+        sleeps: list[float] = []
+
+        receiver, retries = MODULE.open_receiver(
+            "192.168.1.6",
+            14550,
+            60.0,
+            socket_factory=lambda *_args: next(sockets),
+            monotonic=lambda: next(ticks),
+            sleeper=sleeps.append,
+        )
+
+        self.assertIs(receiver, second)
+        self.assertTrue(first.closed)
+        self.assertEqual(retries, 1)
+        self.assertEqual(sleeps, [0.25])
+
+    def test_bind_wait_does_not_hide_other_socket_errors(self) -> None:
+        class DeniedSocket:
+            def bind(self, _endpoint: tuple[str, int]) -> None:
+                raise OSError(errno.EACCES, "denied")
+
+            def close(self) -> None:
+                pass
+
+        with self.assertRaises(OSError) as raised:
+            MODULE.open_receiver(
+                "192.168.1.6",
+                14550,
+                60.0,
+                socket_factory=lambda *_args: DeniedSocket(),
+                monotonic=lambda: 10.0,
+                sleeper=lambda _seconds: None,
+            )
+        self.assertEqual(raised.exception.errno, errno.EACCES)
 
 
 if __name__ == "__main__":

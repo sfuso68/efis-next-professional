@@ -9,7 +9,9 @@ health only; raw flight data is never persisted by this process.
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
+import errno
 import ipaddress
 import json
 import os
@@ -96,6 +98,7 @@ class ObserverHealth:
     malformed: int = 0
     source_rejected: int = 0
     socket_errors: int = 0
+    bind_retries: int = 0
     started_unix_ns: int = 0
     last_datagram_unix_ns: int = 0
     updated_unix_ns: int = 0
@@ -156,6 +159,32 @@ def validated_ipv4(value: str, label: str) -> str:
     return str(address)
 
 
+def open_receiver(
+    bind_address: str,
+    port: int,
+    wait_seconds: float,
+    *,
+    socket_factory: Callable[[int, int], socket.socket] = socket.socket,
+    monotonic: Callable[[], float] = time.monotonic,
+    sleeper: Callable[[float], None] = time.sleep,
+) -> tuple[socket.socket, int]:
+    """Bind once the configured local address exists, or fail at the deadline."""
+
+    deadline = monotonic() + wait_seconds
+    retries = 0
+    while True:
+        receiver = socket_factory(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            receiver.bind((bind_address, port))
+            return receiver, retries
+        except OSError as exc:
+            receiver.close()
+            if exc.errno != errno.EADDRNOTAVAIL or monotonic() >= deadline:
+                raise
+            retries += 1
+            sleeper(0.25)
+
+
 def run(args: argparse.Namespace) -> int:
     bind_address = validated_ipv4(args.bind, "bind")
     allowed_source = validated_ipv4(args.source, "source")
@@ -178,11 +207,13 @@ def run(args: argparse.Namespace) -> int:
     signal.signal(signal.SIGINT, request_stop)
     signal.signal(signal.SIGTERM, request_stop)
 
-    receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    receiver.settimeout(min(1.0, args.health_interval))
-    receiver.bind((bind_address, args.port))
-    next_health = time.monotonic()
     write_health(health_path, health)
+    receiver, health.bind_retries = open_receiver(
+        bind_address, args.port, args.bind_wait
+    )
+    receiver.settimeout(min(1.0, args.health_interval))
+    next_health = time.monotonic()
+    next_log = next_health
 
     try:
         while not stop_requested:
@@ -211,8 +242,10 @@ def run(args: argparse.Namespace) -> int:
             if now >= next_health:
                 health.refresh(args.stale_after)
                 write_health(health_path, health)
-                print(json.dumps(asdict(health), sort_keys=True), flush=True)
                 next_health = now + args.health_interval
+            if now >= next_log:
+                print(json.dumps(asdict(health), sort_keys=True), flush=True)
+                next_log = now + args.log_interval
     finally:
         receiver.close()
         health.refresh(args.stale_after)
@@ -229,7 +262,9 @@ def parser() -> argparse.ArgumentParser:
         "--health", default="/var/lib/efis-mavlink-observer/health.json"
     )
     result.add_argument("--health-interval", type=float, default=5.0)
+    result.add_argument("--log-interval", type=float, default=60.0)
     result.add_argument("--stale-after", type=float, default=3.0)
+    result.add_argument("--bind-wait", type=float, default=60.0)
     return result
 
 
@@ -237,8 +272,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     if not 1 <= args.port <= 65_535:
         raise SystemExit("port must be in range 1..65535")
-    if args.health_interval <= 0 or args.stale_after <= 0:
-        raise SystemExit("health intervals must be positive")
+    if (
+        args.health_interval <= 0
+        or args.log_interval <= 0
+        or args.stale_after <= 0
+        or args.bind_wait < 0
+    ):
+        raise SystemExit("intervals must be positive and bind wait non-negative")
     try:
         return run(args)
     except (OSError, ValueError, argparse.ArgumentTypeError) as exc:
