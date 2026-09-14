@@ -8,10 +8,9 @@ ConditionPathExists=%h/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64
 
 [Service]
 Type=simple
-ExecStartPre=/usr/bin/python3 %h/.local/lib/efis-next/qgc_monitor_preflight.py --report %h/.local/state/efis-next/qgc-monitor-preflight.json
+ExecCondition=/usr/bin/python3 %h/.local/lib/efis-next/qgc_monitor_preflight.py --report %h/.local/state/efis-next/qgc-monitor-preflight.json
 ExecStart=%h/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppDir/AppRun
 Restart=on-failure
-RestartPreventExitStatus=78
 RestartSec=3
 KillSignal=SIGINT
 TimeoutStopSec=8

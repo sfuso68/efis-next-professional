@@ -105,8 +105,8 @@ telemetria, ma le funzioni che richiedono risposte o scritture devono fallire:
 L'unità utente `efis-qgc-monitor.service` è legata a
 `graphical-session.target`; sul portatile `Linger=no` resta intenzionale, così
 l'applicazione grafica non parte senza login. Prima di ogni avvio il preflight
-`qgc_monitor_preflight.py` blocca QGC con exit 78 quando rileva almeno uno di
-questi casi:
+`qgc_monitor_preflight.py` è eseguito come `ExecCondition` e blocca QGC con
+exit 78 quando rileva almeno uno di questi casi:
 
 - qualsiasi `/dev/ttyACM*` o identità seriale Pixhawk/ArduPilot/PX4/FMU;
 - il vecchio `efis-mavlink-readonly-bridge.service` attivo;
@@ -117,6 +117,11 @@ Il risultato atomico viene scritto in
 connessioni e non invia MAVLink. Questi controlli evitano configurazioni locali
 ambigue; la garanzia di nessun ritorno verso Pixhawk resta strutturale nella
 Blackbox TX-only, non nell'etichetta dell'interfaccia QGC.
+
+Non spostare il gate in `ExecStartPre`: su systemd l'uscita 78 da un pre-start
+è una failure soggetta a `Restart=on-failure` e può generare un retry-loop.
+Come `ExecCondition`, invece, la stessa uscita produce `Result=exec-condition`,
+lascia l'unità inattiva e non incrementa `NRestarts`.
 
 Per conservare l'hardening `NoNewPrivileges`, QGC non viene avviato montando
 l'AppImage con FUSE. Estrarre una sola volta la versione approvata:
@@ -155,6 +160,11 @@ systemd forza perciò la chiusura dopo otto secondi. È un arresto limitato nel
 tempo ma non graceful e resta una limitazione aperta. Anche il plugin Qt
 `speechd` mancante è registrato come gap non bloccante; non nascondere il log e
 non confonderlo con la futura catena voce EFIS.
+
+Per provare il gate porta senza dipendere da quoting shell, usare
+`tools/network/udp_port_holder.py` come unico listener temporaneo. Il tool non
+trasmette datagrammi, accetta una durata massima di dieci minuti e deve essere
+terminato prima di riavviare QGC.
 
 Sul server, per una prova senza dipendenze aggiuntive:
 

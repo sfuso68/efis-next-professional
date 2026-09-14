@@ -1724,6 +1724,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   NetworkManager prima del distacco, valida connessione/interfaccia e limita il
   fault a 20–180 secondi. È tooling di banco e non altera la configurazione
   persistente di rete.
+- Aggiunto `udp_port_holder.py`, helper deterministico RX-only/no-transmit per
+  creare un conflitto controllato e temporaneo. Il preflight QGC è stato
+  spostato da `ExecStartPre` a `ExecCondition`: exit 78 ora salta l'avvio senza
+  essere trattato come crash soggetto a restart.
 
 #### Verificato solo software
 
@@ -1764,6 +1768,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Il nuovo harness fault Wi-Fi supera `/bin/sh -n`; la logica di rifiuto senza
   privilegi è stata verificata. Il fault reale non è stato eseguito perché
   NetworkManager richiede l'autorizzazione amministrativa interattiva locale.
+- Il test subprocess del port-holder è PASS e verifica bind esclusivo,
+  collisione e rilascio. Il test di regressione del preflight impone che
+  l'unità usi `ExecCondition` e non reintroduca `ExecStartPre`.
 
 #### Verificato su hardware reale
 
@@ -1917,11 +1924,11 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `06969c67ef58ea063def0a8271447a1cc385438c4a7df36813315b4475146737`;
   preflight, unità e launcher distribuiti hanno rispettivamente SHA-256
   `06dee66a14d3059fc4e8d93b7b4c02393bc9efc82063cc0addfeb919b977d60e`,
-  `f2927b754c5cbb9493a530dbea531eba58d5aa28535c49dcb8a2d4209feebe7a`
+  `412fc06c33f8c5875889d5f59206dfd17c4a253792dc750e661e0c1c4ec402dc`
   e `f2149da830b6bdd4b036aded1fb89cd8e18e360a7e592ff8b54a5f7e227b9cfd`.
 - Il test di arresto reale è durato 8,1 secondi: QGC 5.0.8 non ha reagito a
   SIGINT e systemd ha applicato SIGKILL al timeout. Il successivo avvio è
-  riuscito con preflight `PASS`, `RestartPreventExitStatus=78`, supporto
+  riuscito con preflight `PASS`, gate `ExecCondition`, supporto
   `AF_NETLINK`, servizio attivo e UDP 14550 occupata dal solo QGC. Lo shutdown
   è dunque bounded ma non graceful. Il warning `speechd` è ancora presente.
 - Nel controllo finale con QGC permanente attivo, il broker Blackbox è rimasto
@@ -1931,6 +1938,18 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `NRestarts=0`, a 49.455 frame/1.882 heartbeat e zero errori. Questa è
   evidenza di continuità del banco, non ancora un soak o una prova reboot del
   portatile.
+- Il gate porta è stato provato con un holder reale su `0.0.0.0:14550`. Il
+  preflight ha prodotto `BLOCKED` e `udp_listener_available=false`. La prima
+  unità basata su `ExecStartPre` è entrata in retry (`NRestarts=10`), rivelando
+  che `RestartPreventExitStatus` non si applicava al caso come previsto; il
+  servizio è stato arrestato e il difetto non viene nascosto.
+- Dopo il passaggio a `ExecCondition`, lo stesso conflitto ha prodotto
+  `Result=exec-condition`, `inactive/dead` e `NRestarts=0`. Durante il fault la
+  Blackbox è rimasta attiva: MAVLink 164.511→176.137, recorder e ciascun
+  display 155.296→164.147, zero errori/restart. Il sink server è rimasto
+  `LIVE`, passando 61.607→73.206 frame e 2.344→2.785 heartbeat, senza errori.
+  Rilasciata la porta, il preflight è tornato `PASS` e QGC è ripartito al primo
+  tentativo, PID 47330, unico bind 14550 e `NRestarts=0`.
 - Durante il primo tentativo di deployment una espansione PowerShell locale ha
   trasformato il percorso di backup e ha portato temporaneamente `/usr/bin` a
   modo `0750`, impedendo nuove shell SSH e il Wi-Fi dopo reboot. Non è stato
@@ -1961,7 +1980,8 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   permanente sono implementati e installati. La telemetria e il veicolo sono
   visibili, ma richieste di stream, parametri, missioni e comandi scadono per
   progetto. Resta da ottenere una chiusura graceful o qualificare formalmente
-  il SIGKILL dopo otto secondi; risolvere/disabilitare esplicitamente
+  il SIGKILL dopo otto secondi; il gate conflitto/no-retry è ora verificato.
+  Risolvere/disabilitare esplicitamente
   `speechd` senza confonderlo con la voce EFIS e provare un nuovo login/reboot
   grafico per confermare l'avvio automatico.
 - Provare perdita della WLAN di servizio e del portatile intero senza effetti

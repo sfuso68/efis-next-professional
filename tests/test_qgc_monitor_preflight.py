@@ -10,6 +10,7 @@ import unittest
 
 ROOT = Path(__file__).parents[1]
 SCRIPT = ROOT / "tools" / "groundstation" / "qgc_monitor_preflight.py"
+UNIT = ROOT / "deploy" / "systemd" / "efis-qgc-monitor.user.service"
 SPEC = importlib.util.spec_from_file_location("qgc_monitor_preflight", SCRIPT)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -18,6 +19,12 @@ SPEC.loader.exec_module(MODULE)
 
 
 class QgcMonitorPreflightTests(unittest.TestCase):
+    def test_systemd_uses_condition_not_restartable_prestart(self) -> None:
+        unit = UNIT.read_text(encoding="utf-8")
+        self.assertIn("ExecCondition=/usr/bin/python3", unit)
+        self.assertNotIn("ExecStartPre=", unit)
+        self.assertNotIn("RestartPreventExitStatus=", unit)
+
     def test_blocked_exit_is_non_transient_configuration_failure(self) -> None:
         self.assertEqual(MODULE.BLOCKED_EXIT, 78)
 
