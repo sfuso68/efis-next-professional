@@ -1,6 +1,6 @@
 # EFIS NEXT — gateway osservatori MAVLink sulla Blackbox
 
-Stato: **IMPLEMENTATO SOFTWARE / NON INSTALLATO / BENCH ONLY**
+Stato: **IMPLEMENTATO E PROVATO SU BANCO / NON FLIGHT APPROVED**
 
 Data: 2026-09-14
 
@@ -115,6 +115,53 @@ PY
 
 Un primo byte `0xfd` identifica MAVLink2. Questa osservazione non sostituisce
 la verifica CRC o l'audit del broker.
+
+### Consumer passivo persistente sul server
+
+Il consumer previsto per `serverha` è
+`tools/network/mavlink_observer_sink.py`. Accetta datagrammi esclusivamente da
+`192.168.1.47`, verifica i confini dei frame MAVLink2 e pubblica soltanto
+contatori aggregati in `health.json`. Non conserva payload, non possiede socket
+di trasmissione e non è un relay verso Pixhawk o altri client.
+
+Per il banco può essere installato come servizio utente:
+
+```bash
+install -d -m 0755 ~/.local/lib/efis-next ~/.config/systemd/user
+install -d -m 0700 ~/.local/state/efis-next
+install -m 0755 tools/network/mavlink_observer_sink.py \
+  ~/.local/lib/efis-next/mavlink_observer_sink.py
+install -m 0644 deploy/systemd/efis-mavlink-observer-sink.user.service \
+  ~/.config/systemd/user/efis-mavlink-observer-sink.service
+systemctl --user daemon-reload
+systemctl --user enable --now efis-mavlink-observer-sink.service
+```
+
+Questa variante sopravvive ai riavvii soltanto se la sessione utente viene
+avviata automaticamente oppure se l'amministratore abilita il linger:
+
+```bash
+sudo loginctl enable-linger sfuso
+```
+
+Per il servizio definitivo usare invece l'unità hardenizzata di sistema
+`deploy/systemd/efis-mavlink-observer-sink.service`, dopo avere distribuito il
+repository in `/opt/efis-next`. L'unità usa `DynamicUser`, directory di stato
+dedicata e filtro IP systemd. Verificare sempre prima che nessun altro processo
+usi `192.168.1.6:14550`.
+
+Controlli minimi:
+
+```bash
+systemctl --user status efis-mavlink-observer-sink.service --no-pager -l
+ss -lunp | grep ':14550'
+cat ~/.local/state/efis-next/mavlink-observer-health.json
+```
+
+Il risultato richiesto è `mode=RX_ONLY_NO_RETURN_PATH`, `status=LIVE`, aumento
+di `datagrams`/`frames`, heartbeat presenti e zero `source_rejected`,
+`malformed` e `socket_errors`. Il controllo è strutturale: la convalida CRC e
+semantica rimane responsabilità della pipeline Blackbox.
 
 ## Collaudo fail-closed
 

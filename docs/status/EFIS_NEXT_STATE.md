@@ -1696,6 +1696,15 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   una configurazione sysctl separata forza a zero forwarding IPv4 e IPv6.
   Il servizio broker, il drop-in multidisplay e il file ambiente includono i
   nuovi endpoint.
+- Aggiunto il consumer server `mavlink_observer_sink.py`: esegue bind su un
+  indirizzo IPv4 esplicito, accetta una sola sorgente configurata, verifica i
+  confini MAVLink2 inclusi frame multipli e firmati e pubblica atomically un
+  documento health limitato ai contatori. Non conserva payload e il codice non
+  contiene alcuna operazione di trasmissione o relay.
+- Predisposte due unità: servizio di sistema hardenizzato con `DynamicUser`,
+  `StateDirectory`, filtro IP e sandbox; servizio utente di banco per verifiche
+  senza privilegi amministrativi. La seconda non equivale alla distribuzione
+  persistente definitiva quando `Linger=no`.
 
 #### Verificato solo software
 
@@ -1721,6 +1730,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Il test loopback C++ verifica copia identica verso due destinatari, metadata
   sorgente, metriche aggregate/per-target e rifiuto di duplicati, broadcast e
   multicast.
+- Sei test deterministici del sink server sono PASS: frame singolo/multiplo,
+  frame firmato, rifiuto MAVLink1/troncato/flag incompatibile, health senza
+  payload e separazione dei contatori di sorgente e frame rifiutati. Anche
+  `py_compile` e `git diff --check` sono PASS.
 
 #### Verificato su hardware reale
 
@@ -1792,6 +1805,29 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   confermati 4/4 ping, `vcgencmd get_throttled=0x0`, broker attivo e contatori
   oltre 39.000 per target senza failure. L'USB Blackbox è soltanto
   alimentazione provvisoria da banco, non l'architettura finale.
+- Il sink è stato installato su `serverha` come servizio utente di banco
+  `efis-mavlink-observer-sink.service`, bind esclusivo
+  `192.168.1.6:14550`. Dopo sette secondi risultava `active/running` con
+  149/149 datagrammi/frame, sei heartbeat, circa 9,4 MiB RAM e zero errori;
+  successivamente ha raggiunto 2.018/2.018 frame e 77 heartbeat con
+  `NRestarts=0`, `malformed=0` e `socket_errors=0`.
+  `systemd-analyze --user verify` è PASS e il file distribuito coincide con il
+  repository: SHA-256
+  `a92b5c1404109a18687428529eb578b88dafed51365850e0304264a23cb836c8`.
+- Un singolo frame MAVLink2 strutturalmente valido inviato da un host diverso
+  dalla Blackbox ha incrementato soltanto `source_rejected` a uno, senza
+  incrementare i frame accettati. Una cattura simultanea di dieci secondi su
+  `wlan0` Blackbox, filtrata da server verso Blackbox, ha rilevato zero
+  pacchetti e zero drop. Il sink reale è quindi ricevente e fail-closed per il
+  caso provato.
+- Il fault del consumer server è stato provato arrestandolo intenzionalmente.
+  Durante l'assenza, i contatori Blackbox sono cresciuti da 52.739 a 53.156
+  datagrammi MAVLink, il recorder da 70.282 a 70.592 record e ciascun flusso
+  display da 70.282 a 70.592 datagrammi, con zero failure e
+  `NRestarts=0`. Dopo il riavvio il sink è tornato `LIVE` con 133/133 frame,
+  sei heartbeat e zero errori. La perdita del solo consumer server non ha
+  quindi arrestato ingestion, registrazione o distribuzione display nel caso
+  verificato.
 - Durante il primo tentativo di deployment una espansione PowerShell locale ha
   trasformato il percorso di backup e ha portato temporaneamente `/usr/bin` a
   modo `0750`, impedendo nuove shell SSH e il Wi-Fi dopo reboot. Non è stato
@@ -1803,8 +1839,12 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Aperto / non dichiarare DONE
 
-- Installare sul server il consumer persistente previsto, con bind e firewall
-  minimi; la ricezione attuale è stata verificata soltanto con sonda temporanea.
+- Promuovere il sink server dalla variante utente di banco all'unità di sistema
+  hardenizzata, oppure abilitare esplicitamente `loginctl enable-linger sfuso`.
+  Al momento `Linger=no`, quindi l'avvio dopo reboot/logout non è dimostrato.
+- Installare il filtro firewall host per UDP 14550 e verificare che ammetta
+  soltanto `192.168.1.47`, senza interferire con Docker, Caddy o le altre reti
+  del server. Il filtro applicativo è verificato ma non sostituisce il firewall.
 - Alimentare definitivamente Pixhawk tramite modulo regolato `POWER1`, quindi
   rimuovere l'USB Blackbox e ripetere presenza Ethernet, heartbeat, contatori e
   brownout test. L'attuale USB è ammessa solo per il banco.
@@ -1812,8 +1852,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `MONITOR-ONLY`: la telemetria e il veicolo sono visibili, ma richieste di
   stream, parametri, missioni e comandi scadono per progetto. Non presentare
   questa limitazione intenzionale come collegamento bidirezionale completo.
-- Provare perdita di WLAN, portatile e server senza effetti su ingestion,
-  recorder, DDP/EDP o controllo di volo.
+- Provare perdita della WLAN di servizio e del portatile senza effetti su
+  ingestion, recorder, DDP/EDP o controllo di volo. Il fault del solo consumer
+  server è già verificato; non equivale alla perdita completa del server o
+  della rete.
 - Eseguire soak con perdita, jitter, CPU, RAM e temperatura. UDP osservatori
   non è autenticato: i consumer devono trattarlo come telemetria non autorevole
   e filtrare la sorgente Blackbox.

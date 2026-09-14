@@ -1,0 +1,36 @@
+[Unit]
+Description=EFIS MAVLink monitor-only server sink
+Documentation=file:/opt/efis-next/docs/deployment/MAVLINK_OBSERVER_GATEWAY.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+StateDirectory=efis-mavlink-observer
+ExecStart=/usr/bin/python3 /opt/efis-next/tools/network/mavlink_observer_sink.py --bind 192.168.1.6 --port 14550 --source 192.168.1.47 --health /var/lib/efis-mavlink-observer/health.json
+Restart=always
+RestartSec=2
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_INET AF_UNIX
+IPAddressAllow=192.168.1.47
+IPAddressDeny=any
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

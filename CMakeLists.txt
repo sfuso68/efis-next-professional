@@ -303,6 +303,8 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/voice/test_vosk_replay_adapter.py)
         add_test(NAME efis_mavlink_observer_policy_tests
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_gateway.py)
+        add_test(NAME efis_mavlink_observer_sink_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_sink.py)
         add_test(NAME efis_blackbox_broker_observer_tests
             COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_blackbox_broker_observer.py
