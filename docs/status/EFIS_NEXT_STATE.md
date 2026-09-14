@@ -1756,9 +1756,42 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `192.168.1.47:14550` un singolo payload esplicitamente non-MAVLink. La
   cattura verso `10.77.10.3` è terminata con zero pacchetti e il broker è
   rimasto `active/running`, `NRestarts=0`, con DDP/EDP e fan-out in crescita.
-  Questo verifica l'assenza di inoltro IP generico per il caso provato, non
-  sostituisce un tentativo negativo con QGroundControl e messaggio MAVLink
-  valido.
+  Questo verifica l'assenza di inoltro IP generico per il caso provato.
+- Il vecchio bridge USB sul portatile è stato individuato come sorgente di una
+  seconda copia: prima dell'arresto una sonda ha ricevuto 204 datagrammi in
+  quattro secondi, 99 da `127.0.0.1` e 105 dalla Blackbox. Il servizio
+  `efis-mavlink-readonly-bridge.service` è stato disabilitato e arrestato; la
+  ripetizione ha ricevuto 105/105 datagrammi solo da `192.168.1.47`. Il
+  Pixhawk è stato fisicamente scollegato dall'USB del portatile e non sono più
+  presenti `/dev/ttyACM*` su quel nodo.
+- Una sonda sul server ha ricevuto 105 datagrammi, tutti dalla Blackbox. È una
+  verifica end-to-end temporanea: sul server non è ancora installato un
+  consumer persistente in ascolto su UDP 14550.
+- Un parser indipendente sul portatile ha ricevuto in cinque secondi 130
+  datagrammi contenenti 130 frame MAVLink2, zero frame malformati, cinque
+  heartbeat, 26 message ID e identità `system 1/component 1`. QGroundControl
+  5.0.8 è poi stato avviato come unico listener su `0.0.0.0:14550`; il log
+  conferma il link MAVLink v2 e la creazione del veicolo.
+- La prova applicativa negativa è stata eseguita con QGroundControl attivo. Il
+  log mostra richieste MAVLink reali `MAV_CMD_SET_MESSAGE_INTERVAL` e relativi
+  timeout. Nello stesso intervallo `tcpdump` su `wlan0` ha catturato 35
+  datagrammi QGC da `192.168.1.39:14550` verso la porta sorgente Blackbox
+  `192.168.1.47:58363`, mentre la cattura simultanea su `eth0` verso
+  `10.77.10.3` ha rilevato zero pacchetti e zero drop kernel. La Blackbox ha
+  continuato a trasmettere verso entrambi gli osservatori; il broker è rimasto
+  `NRestarts=0`, `ExecMainStatus=0`, con zero failure del fan-out. È quindi
+  verificato sul banco che le richieste QGC non raggiungono il Pixhawk.
+- La rimozione dell'USB dal portatile ha anche dimostrato che in banco il
+  Pixhawk era alimentato da quel cavo: Ethernet e contatori si sono arrestati.
+  Per ripristinare la prova il Pixhawk è stato alimentato temporaneamente via
+  USB dalla Blackbox, lasciando il trasporto dati su Ethernet. La Blackbox lo
+  rileva come `1209:5740 Generic Pixhawk6X` su `/dev/ttyACM0` e
+  `/dev/ttyACM1`, ma `fuser` non rileva consumer seriali. Una verifica di 30
+  secondi ha dato ping Ethernet continuo e crescita dei contatori osservatore
+  da 28.892 a 29.707 per ciascun target; dopo l'ultima riconnessione sono stati
+  confermati 4/4 ping, `vcgencmd get_throttled=0x0`, broker attivo e contatori
+  oltre 39.000 per target senza failure. L'USB Blackbox è soltanto
+  alimentazione provvisoria da banco, non l'architettura finale.
 - Durante il primo tentativo di deployment una espansione PowerShell locale ha
   trasformato il percorso di backup e ha portato temporaneamente `/usr/bin` a
   modo `0750`, impedendo nuove shell SSH e il Wi-Fi dopo reboot. Non è stato
@@ -1770,13 +1803,15 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Aperto / non dichiarare DONE
 
-- Aprire UDP 14550 esclusivamente dove necessario su portatile/server,
-  verificare QGroundControl e consumer di sviluppo, disabilitare il vecchio
-  inoltro USB e controllare assenza di duplicati.
-- Acquisire la ricezione sui due consumer e tentare da QGroundControl una
-  richiesta MAVLink valida, dimostrando con cattura che non esce alcun
-  datagramma Blackbox→Pixhawk. Il payload LAN non-MAVLink già provato e la
-  policy TX-only non sostituiscono questa prova applicativa negativa.
+- Installare sul server il consumer persistente previsto, con bind e firewall
+  minimi; la ricezione attuale è stata verificata soltanto con sonda temporanea.
+- Alimentare definitivamente Pixhawk tramite modulo regolato `POWER1`, quindi
+  rimuovere l'USB Blackbox e ripetere presenza Ethernet, heartbeat, contatori e
+  brownout test. L'attuale USB è ammessa solo per il banco.
+- Definire una modalità operativa QGroundControl esplicitamente
+  `MONITOR-ONLY`: la telemetria e il veicolo sono visibili, ma richieste di
+  stream, parametri, missioni e comandi scadono per progetto. Non presentare
+  questa limitazione intenzionale come collegamento bidirezionale completo.
 - Provare perdita di WLAN, portatile e server senza effetti su ingestion,
   recorder, DDP/EDP o controllo di volo.
 - Eseguire soak con perdita, jitter, CPU, RAM e temperatura. UDP osservatori
