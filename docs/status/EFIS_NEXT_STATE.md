@@ -1724,27 +1724,61 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Verificato su hardware reale
 
-- Nessuna nuova verifica hardware. Il Pixhawk era già stato verificato in
-  precedenza via Ethernet sulla Blackbox, ma il nuovo fan-out non è stato
-  compilato ARM64, installato o attivato sui nodi reali.
-- L'accesso SSH dalla postazione Codex a `192.168.1.47` e al relay PFD è stato
-  rifiutato per assenza della chiave privata autorizzata. Non è stata aggirata
-  l'autenticazione e nessun servizio o firewall reale è stato modificato.
+- Il 2026-09-14 la chiave dedicata è stata autorizzata e il preflight è stato
+  eseguito sulla Blackbox ARM64 `efisblackbox` (`192.168.1.47`). Il preflight
+  ha individuato il broker precedente in ascolto non conforme su
+  `0.0.0.0:14550`; Pixhawk `10.77.10.3`, portatile `192.168.1.39` e server
+  `192.168.1.6` risultavano raggiungibili prima dell'aggiornamento.
+- Il commit `55b24da` è stato compilato nativamente con GCC 14.2/CMake 3.31.6
+  sul nodo reale. La build ARM64 109/109 e l'intera suite disponibile 24/24
+  sono PASS; il validatore policy restituisce `status=PASS`, due osservatori e
+  `return_path=false`. Il warning GCC preesistente in `ddp_v2.cpp` resta da
+  analizzare separatamente e non è stato nascosto.
+- Il binario ARM64 con SHA-256
+  `648c7c91d1bc429ae33a909027d25e5ee956e7475319dcf5759395e75b37f8e0`
+  è installato con backup verificato in
+  `/opt/efis-blackbox/rollback/pre-55b24da-20260914-recovery1/`; il binario
+  precedente conservato ha SHA-256
+  `c621c272f2039123e7aee90232ae9ae3cc5488a11654873330ae15c79823c712`.
+- Il servizio reale è `active/running`, `NRestarts=0`, `ExecMainStatus=0` e
+  ascolta esclusivamente `10.77.10.2:14550`. Il Pixhawk risponde 3/3 su
+  Ethernet; i log mostrano datagrammi MAVLink e DDP/EDP in crescita, copie
+  TX-only verso entrambi gli osservatori e zero failure/reject al campione.
+- Sul nodo reale `net.ipv4.ip_forward=0` e
+  `net.ipv6.conf.all.forwarding=0`; nftables ha chain `forward` con policy
+  `drop`. Una cattura `eth0` ha osservato sei datagrammi da
+  `10.77.10.3:62510` a `10.77.10.2:14550`, 26 intercettati dal filtro e zero
+  drop kernel. Una cattura su `wlan0` ha osservato otto pacchetti alternati verso
+  `192.168.1.39:14550` e `192.168.1.6:14550`, con 52 pacchetti intercettati
+  dal filtro e zero drop kernel. La cattura prova l'uscita dalla Blackbox, non
+  la ricezione o interpretazione nei due consumer.
+- Durante una cattura separata su `eth0` è stato inviato dalla LAN a
+  `192.168.1.47:14550` un singolo payload esplicitamente non-MAVLink. La
+  cattura verso `10.77.10.3` è terminata con zero pacchetti e il broker è
+  rimasto `active/running`, `NRestarts=0`, con DDP/EDP e fan-out in crescita.
+  Questo verifica l'assenza di inoltro IP generico per il caso provato, non
+  sostituisce un tentativo negativo con QGroundControl e messaggio MAVLink
+  valido.
+- Durante il primo tentativo di deployment una espansione PowerShell locale ha
+  trasformato il percorso di backup e ha portato temporaneamente `/usr/bin` a
+  modo `0750`, impedendo nuove shell SSH e il Wi-Fi dopo reboot. Non è stato
+  nascosto: il nodo è stato avviato da microSD, `/usr/bin` è stato ripristinato
+  a `0755`, le tre directory root vuote create dal tentativo sono state rimosse
+  con `rmdir` e il post-check ha confermato root su `/dev/nvme0n1p2`, Wi-Fi
+  `.47`, broker/firewall attivi e Pixhawk 3/3. Il deployment è stato poi
+  ripetuto senza variabili remote, con staging, backup e attivazione separati.
 
 #### Aperto / non dichiarare DONE
 
-- Ripristinare l'accesso SSH controllato, acquisire il preflight Blackbox,
-  compilare ARM64, creare release immutabile e verificare unità/rollback prima
-  dell'attivazione.
-- Confermare `ip_forward=0`, assenza di bridge/NAT e policy nftables caricata;
-  catturare contemporaneamente il flusso atteso su `eth0` e le due sole copie
-  su WLAN.
 - Aprire UDP 14550 esclusivamente dove necessario su portatile/server,
   verificare QGroundControl e consumer di sviluppo, disabilitare il vecchio
   inoltro USB e controllare assenza di duplicati.
-- Tentare una richiesta dalla LAN e dimostrare con cattura che non esce alcun
-  datagramma Blackbox→Pixhawk. Provare perdita di WLAN, portatile e server senza
-  effetti su ingestion, recorder, DDP/EDP o controllo di volo.
+- Acquisire la ricezione sui due consumer e tentare da QGroundControl una
+  richiesta MAVLink valida, dimostrando con cattura che non esce alcun
+  datagramma Blackbox→Pixhawk. Il payload LAN non-MAVLink già provato e la
+  policy TX-only non sostituiscono questa prova applicativa negativa.
+- Provare perdita di WLAN, portatile e server senza effetti su ingestion,
+  recorder, DDP/EDP o controllo di volo.
 - Eseguire soak con perdita, jitter, CPU, RAM e temperatura. UDP osservatori
   non è autenticato: i consumer devono trattarlo come telemetria non autorevole
   e filtrare la sorgente Blackbox.
