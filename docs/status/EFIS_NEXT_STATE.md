@@ -1705,6 +1705,11 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `StateDirectory`, filtro IP e sandbox; servizio utente di banco per verifiche
   senza privilegi amministrativi. La seconda non equivale alla distribuzione
   persistente definitiva quando `Linger=no`.
+- Predisposta una tabella nftables server autonoma che interviene soltanto su
+  destinazione `192.168.1.6:14550` e scarta sorgenti diverse da
+  `192.168.1.47`. Non modifica le tabelle `iptables-nft` di Docker/Tailscale e
+  non contiene hook forward/output o NAT. Un'unità oneshot e un installatore
+  fail-closed eseguono check sintattici prima dell'attivazione.
 
 #### Verificato solo software
 
@@ -1734,6 +1739,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   frame firmato, rifiuto MAVLink1/troncato/flag incompatibile, health senza
   payload e separazione dei contatori di sorgente e frame rifiutati. Anche
   `py_compile` e `git diff --check` sono PASS.
+- Il test policy aggiuntivo vincola il firewall server a tabella dedicata,
+  indirizzi/porta esatti, drop della sorgente non autorizzata e assenza di
+  forward/output/NAT. La suite congiunta observer policy + sink è 12/12 PASS.
 
 #### Verificato su hardware reale
 
@@ -1814,6 +1822,12 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `systemd-analyze --user verify` è PASS e il file distribuito coincide con il
   repository: SHA-256
   `a92b5c1404109a18687428529eb578b88dafed51365850e0304264a23cb836c8`.
+- Sul server `Linger=yes` è stato abilitato e il servizio risulta ancora
+  `enabled/active`; l'avvio automatico dopo un reboot reale non è stato ancora
+  provato. La route verso la Blackbox usa `enp2s0`, sorgente
+  `192.168.1.6`. I file firewall sono stati copiati in staging nella home,
+  `/bin/sh -n` e `systemd-analyze verify` sono PASS, ma la regola non è stata
+  installata o attivata perché richiede la password amministrativa locale.
 - Un singolo frame MAVLink2 strutturalmente valido inviato da un host diverso
   dalla Blackbox ha incrementato soltanto `source_rejected` a uno, senza
   incrementare i frame accettati. Una cattura simultanea di dieci secondi su
@@ -1839,12 +1853,15 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Aperto / non dichiarare DONE
 
-- Promuovere il sink server dalla variante utente di banco all'unità di sistema
-  hardenizzata, oppure abilitare esplicitamente `loginctl enable-linger sfuso`.
-  Al momento `Linger=no`, quindi l'avvio dopo reboot/logout non è dimostrato.
+- Eseguire un reboot controllato del server e verificare che il servizio utente
+  con `Linger=yes` ritorni automaticamente `LIVE`. La promozione futura
+  all'unità di sistema hardenizzata resta opzionale ma preferibile per il nodo
+  definitivo.
 - Installare il filtro firewall host per UDP 14550 e verificare che ammetta
   soltanto `192.168.1.47`, senza interferire con Docker, Caddy o le altre reti
-  del server. Il filtro applicativo è verificato ma non sostituisce il firewall.
+  del server. File, unità e installatore sono in staging; attivazione e prova
+  drop richiedono ancora `sudo`. Il filtro applicativo è verificato ma non
+  sostituisce il firewall.
 - Alimentare definitivamente Pixhawk tramite modulo regolato `POWER1`, quindi
   rimuovere l'USB Blackbox e ripetere presenza Ethernet, heartbeat, contatori e
   brownout test. L'attuale USB è ammessa solo per il banco.

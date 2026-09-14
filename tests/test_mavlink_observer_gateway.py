@@ -54,6 +54,23 @@ class MavlinkObserverGatewayPolicyTests(unittest.TestCase):
         with self.assertRaises(MODULE.PolicyError):
             MODULE.validate(invalid)
 
+    def test_server_firewall_is_narrow_and_has_no_forward_or_nat_hook(self) -> None:
+        firewall = (
+            ROOT / "deploy" / "network" / "efis-mavlink-observer-server.nft"
+        ).read_text(encoding="utf-8")
+        normalized = " ".join(
+            line.split("#", 1)[0].strip()
+            for line in firewall.splitlines()
+            if line.split("#", 1)[0].strip()
+        )
+        self.assertIn("table inet efis_mavlink_observer", normalized)
+        self.assertIn("type filter hook input priority -10; policy accept;", normalized)
+        self.assertIn("ip daddr 192.168.1.6 udp dport 14550", normalized)
+        self.assertIn("ip saddr != 192.168.1.47 counter drop", normalized)
+        self.assertNotIn("hook forward", normalized)
+        self.assertNotIn("hook output", normalized)
+        self.assertNotIn("type nat", normalized)
+
 
 if __name__ == "__main__":
     unittest.main()

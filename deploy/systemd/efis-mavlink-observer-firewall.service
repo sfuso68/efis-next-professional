@@ -1,0 +1,16 @@
+[Unit]
+Description=EFIS MAVLink observer host firewall
+Documentation=file:/opt/efis-next/docs/deployment/MAVLINK_OBSERVER_GATEWAY.md
+After=nftables.service network-pre.target
+Before=network-online.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStartPre=-/usr/sbin/nft delete table inet efis_mavlink_observer
+ExecStart=/usr/sbin/nft --file /etc/efis/mavlink-observer-firewall.nft
+ExecStop=/usr/sbin/nft delete table inet efis_mavlink_observer
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

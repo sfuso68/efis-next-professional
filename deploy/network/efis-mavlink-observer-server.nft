@@ -1,0 +1,11 @@
+table inet efis_mavlink_observer {
+    chain input {
+        type filter hook input priority -10; policy accept;
+
+        # The observer sink is IPv4-only and bound to this exact local address.
+        # Drop every other source before the host's accept-by-default INPUT
+        # policy. The approved Blackbox source continues through the remaining
+        # host firewall chains; this table does not bypass later policy.
+        ip daddr 192.168.1.6 udp dport 14550 ip saddr != 192.168.1.47 counter drop
+    }
+}

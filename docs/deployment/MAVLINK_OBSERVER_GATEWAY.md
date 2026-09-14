@@ -150,6 +150,46 @@ repository in `/opt/efis-next`. L'unità usa `DynamicUser`, directory di stato
 dedicata e filtro IP systemd. Verificare sempre prima che nessun altro processo
 usi `192.168.1.6:14550`.
 
+Il firewall del server usa una tabella nftables indipendente, per non alterare
+le tabelle `ip filter`/`ip nat` gestite da Docker, iptables-nft e Tailscale:
+
+Con i tre file già predisposti in `/home/sfuso`, l'installazione verificata si
+riduce a:
+
+```bash
+sudo /bin/sh /home/sfuso/install_mavlink_observer_firewall.sh
+```
+
+L'installatore effettua prima `nft --check` e `systemd-analyze verify`, quindi
+abilita l'unità e stampa stato e tabella risultante. I passaggi equivalenti
+manuali sono:
+
+```bash
+sudo install -d -m 0755 /etc/efis
+sudo install -m 0644 deploy/network/efis-mavlink-observer-server.nft \
+  /etc/efis/mavlink-observer-firewall.nft
+sudo install -m 0644 deploy/systemd/efis-mavlink-observer-firewall.service \
+  /etc/systemd/system/efis-mavlink-observer-firewall.service
+sudo nft --check --file /etc/efis/mavlink-observer-firewall.nft
+sudo systemd-analyze verify \
+  /etc/systemd/system/efis-mavlink-observer-firewall.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now efis-mavlink-observer-firewall.service
+```
+
+La sola regola di drop riguarda l'indirizzo locale `192.168.1.6`, UDP 14550 e
+sorgenti diverse da `192.168.1.47`. Non crea hook `forward`/`output`, NAT o
+regole generiche di accettazione. Dopo l'installazione verificare:
+
+```bash
+sudo nft list table inet efis_mavlink_observer
+systemctl status efis-mavlink-observer-firewall.service --no-pager -l
+```
+
+Un datagramma di prova proveniente da un altro host deve incrementare il
+contatore nft `drop` senza modificare `source_rejected` del sink; i contatori
+MAVLink provenienti dalla Blackbox devono continuare a crescere.
+
 Controlli minimi:
 
 ```bash

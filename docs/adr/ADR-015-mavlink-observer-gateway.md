@@ -1,6 +1,6 @@
 # ADR-015 — Gateway osservatori MAVLink senza bridge IP
 
-- Stato: accettata per Software V1 e banco; hardware non verificato
+- Stato: accettata; banco hardware parzialmente verificato, non flight approved
 - Data: 2026-09-14
 - Riferimenti: ADR-003, ADR-009, ADR-010, ADR-013,
   `MAVLINK_OBSERVER_GATEWAY.md`
