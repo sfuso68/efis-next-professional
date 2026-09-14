@@ -20,6 +20,7 @@ Item {
                        : shell.currentPage === "NAV" ? navigationPage
                        : shell.currentPage === "EMS" ? emsPage
                        : shell.currentPage === "FPV" ? fpvPage
+                       : shell.currentPage === "RADIO" ? radioPage
                        : shell.currentPage === "EMERGENCY" ? emergencyPage
                        : pfdPage
     }
@@ -30,6 +31,7 @@ Item {
     Component { id: navigationPage; AdaptiveNavigationView { controller: shell.controller } }
     Component { id: emsPage; AdaptiveEmsView { controller: shell.controller } }
     Component { id: fpvPage; AdaptiveFpvView { controller: shell.controller; onAutoRevertRequested: shell.currentPage = "PFD" } }
+    Component { id: radioPage; RadioAssistView { controller: shell.controller; onCloseRequested: shell.currentPage = "PFD" } }
     Component { id: emergencyPage; EmergencyAssistView { controller: shell.controller; onCloseRequested: shell.currentPage = "PFD" } }
     PageSelector {
         anchors { right: parent.right; top: parent.top;
@@ -37,7 +39,7 @@ Item {
             topMargin: ((shell.currentPage === "PFD" || shell.currentPage === "CANVAS") ? 12 : 62)*shell.uiScale }
         z: 80; uiScale: shell.uiScale; currentPage: shell.currentPage
         onPageRequested: page => shell.currentPage = page
-        visible: shell.currentPage !== "EMERGENCY"
+        visible: shell.currentPage !== "EMERGENCY" && shell.currentPage !== "RADIO"
     }
     Connections { target: shell.controller; function onEmergencyAssistChanged() { if (shell.controller.emergencyAssistActive) shell.currentPage = "EMERGENCY" } }
 }

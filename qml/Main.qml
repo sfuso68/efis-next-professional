@@ -15,6 +15,7 @@ ApplicationWindow {
     property bool operationalProfilePreview: Qt.application.arguments.indexOf("--setup-operational-preview") >= 0 || Qt.application.arguments.indexOf("--setup-operational-entry-preview") >= 0 || Qt.application.arguments.indexOf("--setup-operational-load-preview") >= 0 || Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0 || Qt.application.arguments.indexOf("--setup-operational-keyboard-preview") >= 0
     property bool maintenanceVisible: Qt.application.arguments.indexOf("--setup-preview") >= 0 || Qt.application.arguments.indexOf("--setup-aircraft-preview") >= 0 || Qt.application.arguments.indexOf("--setup-catalog-preview") >= 0 || Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0 || Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0 || Qt.application.arguments.indexOf("--setup-airport-preview") >= 0 || Qt.application.arguments.indexOf("--setup-nearest-preview") >= 0 || Qt.application.arguments.indexOf("--setup-bench-preview") >= 0 || root.operationalProfilePreview
     property bool simulatorVisible: Qt.application.arguments.indexOf("--simulator-preview") >= 0
+    property bool radioAssistPreview: Qt.application.arguments.indexOf("--radio-assist-preview") >= 0
     function selectedEmergencyPreview() {
         const prefix = "--emergency-preview="
         for (let argument of Qt.application.arguments) {
@@ -28,13 +29,14 @@ ApplicationWindow {
     property bool emergencyPreview: emergencyPreviewKind.length > 0
     Component.onCompleted: { if (Qt.application.arguments.indexOf("--setup-bench-preview") >= 0) bench.startReplay(bench.defaultSource); if (Qt.application.arguments.indexOf("--setup-review-preview") >= 0 || Qt.application.arguments.indexOf("--setup-verify-preview") >= 0) pfd.stageAircraft(1); if (Qt.application.arguments.indexOf("--setup-engine-preview") >= 0 || Qt.application.arguments.indexOf("--setup-sensor-map-preview") >= 0 || Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.stageEngine(1); if (Qt.application.arguments.indexOf("--setup-channel-test-preview") >= 0) pfd.startEngineSensorTest("RPM",true); if (Qt.application.arguments.indexOf("--simulator-preview") >= 0) pfd.startSystemSimulation("full-flight"); if (root.emergencyPreview) { pfd.startSystemSimulation(root.emergencyPreviewKind === "ENGINE_POWER_LOSS" ? "engine-emergency" : "full-flight"); pfd.activateEmergencyAssist(root.emergencyPreviewKind, "preview argument"); pfd.confirmEmergencyAssist(root.emergencyPreviewKind) } }
 
-    AdaptiveShell { id: adaptiveShell; anchors.fill: parent; controller: pfd; initialPage: startupPage }
+    AdaptiveShell { id: adaptiveShell; anchors.fill: parent; controller: pfd; initialPage: root.radioAssistPreview ? "RADIO" : startupPage }
     Shortcut { sequence: "Ctrl+1"; onActivated: adaptiveShell.currentPage = "PFD" }
     Shortcut { sequence: "Ctrl+2"; onActivated: adaptiveShell.currentPage = "MISSION" }
     Shortcut { sequence: "Ctrl+3"; onActivated: adaptiveShell.currentPage = "FPV" }
     Shortcut { sequence: "Ctrl+4"; onActivated: adaptiveShell.currentPage = "EMS" }
     Shortcut { sequence: "Ctrl+5"; onActivated: adaptiveShell.currentPage = "NAV" }
     Shortcut { sequence: "Ctrl+6"; onActivated: root.simulatorVisible = !root.simulatorVisible }
+    Shortcut { sequence: "Ctrl+7"; onActivated: adaptiveShell.currentPage = "RADIO" }
     Shortcut { sequence: "F12"; onActivated: { pfd.activateEmergencyAssist("ENGINE_POWER_LOSS", "keyboard test input"); adaptiveShell.currentPage = "EMERGENCY" } }
 
     Rectangle {

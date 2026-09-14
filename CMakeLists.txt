@@ -14,6 +14,7 @@ add_library(efis_core
     src/emergency/emergency_assist.cpp
     src/emergency/emergency_input.cpp
     src/emergency/emergency_audio.cpp
+    src/voice/voice_assist.cpp
     src/core/flight_model.cpp
     src/core/node_health.cpp
     src/core/snapshot_arbitrator.cpp
@@ -169,6 +170,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/SystemSimulatorOverlay.qml
                 qml/EmergencyFlightSupport.qml
                 qml/EmergencyAssistView.qml
+                qml/RadioAssistView.qml
             RESOURCES
                 qml/shaders/terrain_taws.frag
         )
@@ -281,6 +283,10 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_emergency_io_tests tests/emergency_io_tests.cpp)
     target_link_libraries(efis_emergency_io_tests PRIVATE efis_core)
     add_test(NAME efis_emergency_io_tests COMMAND efis_emergency_io_tests)
+
+    add_executable(efis_voice_assist_tests tests/voice_assist_tests.cpp)
+    target_link_libraries(efis_voice_assist_tests PRIVATE efis_core)
+    add_test(NAME efis_voice_assist_tests COMMAND efis_voice_assist_tests)
 
     find_package(Python3 QUIET COMPONENTS Interpreter)
     if(Python3_Interpreter_FOUND)

@@ -1,8 +1,8 @@
 # EFIS NEXT — stato verificato
 
-Aggiornamento: 2026-09-12
+Aggiornamento: 2026-09-14
 
-Branch di lavoro: `work/avionics-ethernet-v1`
+Branch di lavoro: `work/voice-radio-assist-v1`
 
 Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-013.
 
@@ -1539,3 +1539,78 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Diagnosticare separatamente gli eseguibili della suite Windows che non si
   avviano e il test operativo sospeso; questo non viene mascherato dall'esito
   positivo delle suite Emergency.
+
+### Voice Command e Radio Phraseology Assist — incremento software 2026-09-14
+
+#### Implementato
+
+- ADR-014 separa il `Voice Command Gate` deterministico dal `Radio
+  Phraseology Assist` e mantiene il confine consultivo di ADR-012: nessuna API
+  verso Pixhawk, ArduPilot, servi, radio, transponder o attuatori.
+- Aggiunto un core C++20 indipendente da Qt con grammatica chiusa italiana e
+  inglese, abilitazione esplicita, PTT obbligatorio, health del recognizer,
+  soglia di confidenza configurabile e rifiuto fail-closed delle frasi fuori
+  grammatica.
+- L'acknowledgement conserva separatamente voce/touch e verifica del sensore.
+  `FATTO` o `CONFERMO` non possono quindi trasformare una condizione non
+  misurata in una condizione verificata.
+- Aggiunto un compositore fraseologico deterministico. Metadati incompleti,
+  package reali non approvati, contesto mancante, campi read-back assenti o
+  placeholder residui bloccano l'output. Anche un package completo mantiene
+  `pilot_review_required=true` e `transmit_allowed=false`.
+- Aggiunta la pagina `RadioAssistView` adattiva 1024x600 con stazione,
+  frequenza, origine/validità, contesto, trascrizione, confidenza, read-back,
+  selezione IT/EN e PTT simulato. Il menu espone la pagina `RADIO`; la preview
+  usa esclusivamente dati sintetici con banner permanente SIM/no-transmit.
+- Aggiunti configurazione development disabilitata per default, specifica del
+  futuro evento di rete e documento di design con sorgenti normative
+  EASA/ENAC/ENAV. Vosk e whisper.cpp sono soltanto candidati documentati: non
+  sono stati aggiunti come dipendenze o presentati come adapter installati.
+
+#### Verificato solo software
+
+- Configurazione CMake con Qt renderer obbligatorio: PASS.
+- Build Windows MSVC/Qt completa di tutti i target, incluso QML AOT della
+  nuova pagina e link di PFD/EMS: PASS.
+- `efis_voice_assist_tests`, `efis_emergency_assist_tests` ed
+  `efis_emergency_io_tests`: 3/3 PASS tramite CTest. Il nuovo test verifica PTT,
+  enablement, recognizer health, confidenza, grammatica esatta, assenza di
+  autorità, separazione acknowledgement/sensore e composizione fraseologica
+  fail-closed.
+- `qmllint` della nuova pagina termina con exit code 0 e senza warning. Il
+  controllo congiunto dei file shell preesistenti termina con exit code 0 ma
+  riporta warning storici di accesso non qualificato; non vengono dichiarati
+  corretti da questo incremento.
+- La suite generale ha eseguito 18 test con esito PASS. Un eseguibile ESP32 non
+  è stato avviato dal controllo applicazioni Windows, il test runtime-store è
+  andato in timeout a 90 secondi e il test profilo operativo è stato interrotto
+  dopo quel timeout. La suite completa non è pertanto dichiarata PASS.
+- La preview offscreen ha prodotto un PNG 1024x600 ed è terminata con exit
+  code 0. Il backend Windows non ha reso i font e la cattura non vale come
+  acceptance grafica o di leggibilità.
+
+#### Verificato su hardware reale
+
+- Nessuna verifica hardware è stata eseguita per Voice/Radio Assist. Non sono
+  stati collegati microfono, interfono, PTT, adapter audio o recognizer e non è
+  stato eseguito alcun deployment sulla Blackbox o sui display RPi5.
+
+#### Aperto / non dichiarare DONE
+
+- Identificare interfono, connettori e punto di prelievo audio; progettare
+  isolamento elettrico e PTT fisico prima di collegare la cabina.
+- Integrare un recognizer offline prima in simulazione, misurando false accept
+  e false reject su italiano, inglese, accenti, radio e rumore motore. La soglia
+  software 0,82 è soltanto un default di sviluppo non validato.
+- Definire protocollo autenticato Voice Core -> PFD/Blackbox, audit e
+  anti-replay; applicare limiti di CPU/memoria per non interferire con broker e
+  recorder.
+- Costruire il database fraseologico versionato e verificarlo con una figura
+  competente. Frequenze, pista, QNH, NOTAM e procedure devono provenire da
+  dati correnti con provenance e freshness; nessun testo SIM è operativo.
+- Implementare adapter ALSA/PipeWire e output audio, quindi verificare perdita
+  device, priorità STALL/TAWS, latenza e intelligibilità. L'audio grezzo resta
+  non persistente per default.
+- Compilare e catturare la pagina su RPi5 reale, eseguire acceptance touch e
+  confermare che la perdita Voice/Blackbox lasci disponibili PFD, touch e
+  procedure cartacee.

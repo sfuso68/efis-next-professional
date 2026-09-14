@@ -80,6 +80,10 @@
       "items": 5,
       "progress": 20.0
     },
+    "VOI": {
+      "items": 3,
+      "progress": 33.3
+    },
     "WX": {
       "items": 2,
       "progress": 50.0
@@ -89,17 +93,17 @@
     "PAN-002",
     "PAN-003"
   ],
-  "requirements": 62,
+  "requirements": 65,
   "status_counts": {
     "BLOCKED": 2,
     "DONE": 6,
     "LEGACY": 2,
-    "PARTIAL": 38,
-    "TODO": 13,
+    "PARTIAL": 40,
+    "TODO": 14,
     "VERIFY-HW": 1
   },
   "verify_hw": [
     "INST-001"
   ],
-  "weighted_progress": 44.8
+  "weighted_progress": 44.2
 }
