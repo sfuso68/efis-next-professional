@@ -292,6 +292,8 @@ if(EFIS_BUILD_TESTS)
     if(Python3_Interpreter_FOUND)
         add_test(NAME efis_emergency_event_transport_tests
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/blackbox/test_emergency_event_transport.py)
+        add_test(NAME efis_voice_replay_adapter_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/voice/test_vosk_replay_adapter.py)
     endif()
 
     add_executable(efis_ingest_tests tests/ingest_tests.cpp)

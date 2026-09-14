@@ -1,6 +1,6 @@
 # EFIS NEXT — Voice Command e Radio Phraseology Assist V1
 
-Stato: **SOFTWARE V1 PARZIALE / SIMULATION-ONLY / NESSUN ADAPTER AUDIO**
+Stato: **SOFTWARE V1 PARZIALE / SIMULATION-ONLY / REPLAY VOSK NON INSTALLATO**
 
 Data: 2026-09-14
 
@@ -66,8 +66,11 @@ microfono, accento e rumore reali; il default software non è un dato validato.
 - nessun servizio cloud nel percorso primario;
 - nessun output libero di un modello generativo può produrre un intento.
 
-Vosk e whisper.cpp non sono ancora dipendenze del progetto e non vengono
-installati da questo incremento.
+Il repository contiene ora un adapter Vosk **replay-only** per file WAV PCM16
+mono 16 kHz e una grammatica di decoder ristretta IT/EN. L'adapter richiede
+flag SIM e PTT espliciti, non apre il microfono e produce soltanto candidati
+con `accepted=false`, `intent=NONE` e autorità nulla. Vosk e i modelli non sono
+dipendenze installate; whisper.cpp resta soltanto un candidato futuro.
 
 ## 5. Modello fraseologico
 
@@ -140,9 +143,11 @@ opt-in, con retention e informativa definite; non viene abilitata implicitamente
 ## 10. Stato dell'incremento
 
 Implementati: gate deterministico, grammatica chiusa IT/EN, separazione fra
-acknowledgement e verifica sensore, compositore fail-closed, test software e
-pagina grafica SIM.
+acknowledgement e verifica sensore, compositore fail-closed, test software,
+pagina grafica SIM e adapter Vosk replay-only con test deterministici tramite
+recognizer fittizio.
 
-Non implementati: acquisizione microfono, Vosk/Whisper, PTT fisico, adapter
-audio, TTS, protocollo di rete, database fraseologico operativo, integrazione
+Non implementati: dipendenza/modello Vosk su Blackbox, riconoscimento validato
+su audio reale, acquisizione microfono, Whisper, PTT fisico, adapter audio,
+TTS, protocollo di rete, database fraseologico operativo, integrazione
 controller/QML con eventi reali, audit Blackbox e qualsiasi trasmissione radio.

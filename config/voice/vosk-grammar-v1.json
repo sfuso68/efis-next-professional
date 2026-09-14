@@ -1,0 +1,38 @@
+{
+  "schema": "efis-next.vosk-decoder-grammar.v1",
+  "authority": "DECODER_HINT_ONLY",
+  "languages": {
+    "it-IT": [
+      "confermo",
+      "fatto",
+      "ripeti",
+      "passo successivo",
+      "salta",
+      "non possibile",
+      "annulla",
+      "mostra emergenza",
+      "mostra fraseologia",
+      "nascondi fraseologia",
+      "italiano",
+      "inglese",
+      "silenzia",
+      "riattiva audio"
+    ],
+    "en-GB": [
+      "confirm",
+      "done",
+      "repeat",
+      "next item",
+      "skip",
+      "unable",
+      "cancel",
+      "show emergency",
+      "show phraseology",
+      "hide phraseology",
+      "italian",
+      "english",
+      "mute",
+      "unmute audio"
+    ]
+  }
+}

@@ -1614,3 +1614,59 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Compilare e catturare la pagina su RPi5 reale, eseguire acceptance touch e
   confermare che la perdita Voice/Blackbox lasci disponibili PFD, touch e
   procedure cartacee.
+
+### Voice Core — adapter Vosk replay SIM 2026-09-14
+
+#### Implementato
+
+- Aggiunto `tools/voice/vosk_replay_adapter.py`: accetta soltanto file WAV
+  locali PCM16 mono 16 kHz e richiede contemporaneamente `--simulate` e
+  `--ptt-active`. Non esistono percorsi microfono, rete, radio, CAN, Pixhawk o
+  attuatori.
+- Aggiunta la grammatica bilingue `vosk-grammar-v1.json`, marcata
+  `DECODER_HINT_ONLY`. Il gate C++ continua a rivalidare la frase e resta
+  l'unico componente che può accettare un intento dell'interfaccia.
+- Il replay emette JSONL `efis-next.voice-recognition-candidate.v1` con
+  sessione, sequenza, modello, lingua, hash grammatica, transcript e
+  confidenza conservativa. Ogni record mantiene `simulated=true`,
+  `candidate_only=true`, `accepted=false`, `intent=NONE` e
+  `transmission_or_actuation_allowed=false`.
+- In assenza delle confidenze parola-per-parola il punteggio viene posto a
+  zero. Formati WAV errati, grammatica/schema non validi, confidenze non finite
+  o fuori intervallo e risultati JSON malformati falliscono senza produrre un
+  candidato accettato.
+- Aggiunto il runbook Blackbox replay-only con dipendenze isolate, inventario
+  del modello e gate di carico/fault prima di qualsiasi servizio reale.
+
+#### Verificato solo software
+
+- `py_compile` dell'adapter e della relativa suite: PASS.
+- Sette test Python deterministici con Vosk fittizio: PASS. Coprono emissione
+  senza autorità, minimo delle confidenze, punteggi invalidi, WAV stereo,
+  grammatica per lingua, obbligo SIM/PTT e punteggio zero senza dettaglio
+  parola-per-parola.
+- Il test Python è registrato in CTest come
+  `efis_voice_replay_adapter_tests`. Configurazione CMake PASS e verifica
+  congiunta `efis_voice_assist_tests` + `efis_voice_replay_adapter_tests`:
+  2/2 PASS.
+- Build incrementale completa del preset Windows Qt/MSVC: PASS.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware. Vosk e i modelli non sono stati installati
+  sulla Blackbox; nessun file audio reale, microfono, PTT o interfono è stato
+  usato e non è stato eseguito alcun deployment.
+
+#### Aperto / non dichiarare DONE
+
+- Verificare disponibilità e compatibilità del runtime Vosk e dei modelli
+  IT/EN su Debian 13 ARM64, inventariare SHA-256 e licenza e usare soltanto un
+  ambiente isolato.
+- Costruire un corpus replay autorizzato con silenzio, frasi valide, fuori
+  grammatica, accenti e rumore; misurare false accept/false reject e non
+  promuovere il default 0,82 senza evidenza.
+- Misurare CPU, RAM, temperatura e jitter insieme a broker, recorder,
+  MAVLink, CAN, DDP/EDP e meteo; provare crash e modello mancante/corrotto.
+- Collegare candidato, gate C++ e audit soltanto dopo aver definito protocollo
+  autenticato/anti-replay. Acquisizione live, PTT fisico e audio cabina restano
+  esplicitamente fuori da questo incremento.
