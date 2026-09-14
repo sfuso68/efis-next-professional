@@ -13,12 +13,16 @@ della ADR-003:
 Pixhawk MAVLink UDP ─┐
                      ├─ pipeline normalizzata/arbitrata ─┬─ DDP V2 UDP ─ RPi5
 ESP32 SocketCAN ─────┘                                   └─ flight recorder
+          │
+          └─ copia MAVLink TX-only ─ portatile/server osservatori
 ```
 
 Entrambi gli ingressi sono monitor-only. Il processo apre una porta UDP locale
 per ricevere MAVLink e un socket SocketCAN in lettura; non contiene sender
-MAVLink, richieste stream, scritture parametri o trasmissioni CAN. L'unica
-uscita di rete è lo snapshot DDP normalizzato diretto al display configurato.
+MAVLink verso Pixhawk, richieste stream, scritture parametri o trasmissioni
+CAN. ADR-015 aggiunge un fan-out UDP esclusivamente trasmittente verso
+osservatori esterni nominati; non legge risposte e non crea un return path.
+Le uscite operative verso i display restano snapshot DDP/EDP normalizzati.
 Lo stesso snapshot, preceduto dagli eventi nodo/sorgente che lo hanno prodotto,
 viene scritto nel recorder segmentato locale.
 
@@ -26,7 +30,8 @@ viene scritto nel recorder segmentato locale.
 
 Il file `deploy/systemd/efis-blackbox-broker.service` usa questi valori di banco:
 
-- MAVLink: `0.0.0.0:14550`;
+- MAVLink: `10.77.10.2:14550`, sola sorgente `10.77.10.3`;
+- osservatori TX-only: `192.168.1.39:14550` e `192.168.1.6:14550`;
 - sensori ESP32: `can_a`;
 - destinazione PFD: `10.77.10.11:49002`;
 - nodo logico Blackbox: `47`;
@@ -81,7 +86,10 @@ sudo install -d -o blackbox -g blackbox -m 0750 /var/lib/blackbox/flight
 
 ```sh
 /opt/efis-blackbox/bin/efis-blackbox-broker \
-  --mavlink-bind 0.0.0.0 --mavlink-port 14550 \
+  --mavlink-bind 10.77.10.2 --mavlink-port 14550 \
+  --mavlink-source 10.77.10.3 \
+  --mavlink-observer 192.168.1.39 \
+  --mavlink-observer 192.168.1.6 --mavlink-observer-port 14550 \
   --can-interface can_a \
   --display 10.77.10.11 --display-port 49002 \
   --source-node 47 --records /var/lib/blackbox/flight --rate-hz 20
@@ -94,6 +102,9 @@ il display distingue un collegamento DDP vivo da sensori assenti.
 Il log periodico `blackbox_display_health` espone per ogni destinazione
 datagrammi, byte, errori e ultimo errore; `blackbox_broker_health` riporta il
 totale e continua a essere emesso anche se una destinazione fallisce.
+`blackbox_mavlink_observer_health` e
+`blackbox_mavlink_observer_target` espongono i contatori del fan-out. Il loro
+stato non autorizza comandi e non dichiara raggiungibile il Pixhawk dalla LAN.
 
 ## Gate prima dell'attivazione persistente
 

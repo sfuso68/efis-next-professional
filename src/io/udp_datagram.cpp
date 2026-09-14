@@ -218,12 +218,24 @@ UdpReceiver::~UdpReceiver() {
 
 DatagramResult UdpReceiver::receive(std::span<std::uint8_t> buffer) noexcept {
     if (buffer.empty()) return {DatagramStatus::failed, 0, 0};
+    sockaddr_in source{};
+#if defined(_WIN32)
+    int source_size = sizeof(source);
+#else
+    socklen_t source_size = sizeof(source);
+#endif
     const auto received = ::recvfrom(impl_->socket, reinterpret_cast<char*>(buffer.data()),
         static_cast<int>(std::min<std::size_t>(buffer.size(),
                                               std::numeric_limits<int>::max())),
-        0, nullptr, nullptr);
+        0, reinterpret_cast<sockaddr*>(&source), &source_size);
     if (received >= 0) {
-        return {DatagramStatus::received, static_cast<std::size_t>(received), 0};
+        char source_address[INET_ADDRSTRLEN]{};
+        if (inet_ntop(AF_INET, &source.sin_addr, source_address,
+                      sizeof(source_address)) == nullptr) {
+            return {DatagramStatus::failed, 0, last_error()};
+        }
+        return {DatagramStatus::received, static_cast<std::size_t>(received), 0,
+                {source_address, ntohs(source.sin_port)}};
     }
     const int error = last_error();
     if (would_block(error)) return {DatagramStatus::would_block, 0, error};

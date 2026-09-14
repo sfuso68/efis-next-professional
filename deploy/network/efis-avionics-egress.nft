@@ -1,4 +1,12 @@
 table inet efis_avionics {
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+
+        # Avionics nodes are endpoints, never routers between operational and
+        # recovery/service networks. The counter provides fault evidence.
+        counter
+    }
+
     chain output {
         type filter hook output priority filter; policy accept;
 

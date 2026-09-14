@@ -2,9 +2,9 @@
 
 Aggiornamento: 2026-09-14
 
-Branch di lavoro: `work/voice-radio-assist-v1`
+Branch di lavoro: `work/mavlink-observer-gateway-v1`
 
-Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-013.
+Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-015 pertinenti.
 
 Checkpoint corrente:
 `CHECKPOINT-2026-09-09-OPERATIONAL-PROFILE-WORKFLOW.md`. Il PFD operativo usa la
@@ -1670,3 +1670,85 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Collegare candidato, gate C++ e audit soltanto dopo aver definito protocollo
   autenticato/anti-replay. Acquisizione live, PTT fisico e audio cabina restano
   esplicitamente fuori da questo incremento.
+
+### Gateway osservatori MAVLink senza bridge IP — 2026-09-14
+
+#### Implementato
+
+- ADR-015 mantiene la separazione di ADR-010: la Blackbox non diventa router,
+  bridge L2 o NAT fra FLIGHT-DATA e LAN di servizio. È ammessa soltanto una
+  copia applicativa MAVLink TX-only verso osservatori espliciti.
+- `UdpReceiver` conserva ora indirizzo e porta della sorgente. Il broker può
+  quindi accettare soltanto il Pixhawk configurato (`10.77.10.3`) prima di
+  ingerire, registrare o replicare un datagramma; le altre sorgenti vengono
+  scartate e contate.
+- Aggiunto `ReadOnlyUdpFanout`, privo di receiver e di qualsiasi metodo di
+  ritorno. Replica byte-per-byte a un massimo di otto endpoint unicast, rifiuta
+  duplicati, wildcard e broadcast e isola errori/metriche per destinatario.
+- La configurazione di banco predispone il portatile Debian
+  `192.168.1.39:14550` e il server `192.168.1.6:14550`. Il bind broker viene
+  ristretto da `0.0.0.0` a `10.77.10.2`; il flusso Pixhawk resta
+  `10.77.10.3 -> 10.77.10.2:14550`.
+- Aggiunti policy JSON e validatore fail-closed. Tutti i flag di forwarding,
+  bridge, NAT, ritorno, comando, scrittura parametri/missione e armamento
+  devono essere esplicitamente falsi.
+- La protezione nftables contiene ora una chain `forward` con policy `drop`;
+  una configurazione sysctl separata forza a zero forwarding IPv4 e IPv6.
+  Il servizio broker, il drop-in multidisplay e il file ambiente includono i
+  nuovi endpoint.
+
+#### Verificato solo software
+
+- Configurazione CMake e build completa Windows Qt/MSVC 313/313: PASS.
+  Aggiunto `/EHsc` a tutti i target MSVC: le eccezioni standard usate per
+  validazione fail-closed e isolamento dei destinatari hanno ora semantica di
+  unwinding esplicita e i warning C4530 sono stati eliminati.
+- `efis_core_tests`, `efis_mavlink_observer_policy_tests`,
+  `efis_ingest_tests`, `efis_ddp_udp_tests` e
+  `efis_mavlink_observer_fanout_tests`: 5/5 PASS nel rilancio congiunto.
+- `efis_blackbox_broker_observer_tests`: PASS. La prova avvia il processo
+  reale, scarta un datagramma da `127.0.0.2`, replica quello dalla sorgente
+  ammessa, verifica bytes identici, contatore reject, modalità `TX_ONLY` e
+  zero failure del fan-out.
+- `efis_edp_v1_tests` era PASS nella prima esecuzione congiunta; dopo l'ultima
+  ricompilazione Windows non ha avviato una volta l'eseguibile (`BAD_COMMAND`),
+  quindi il test è stato rilanciato isolatamente ed è PASS. Il transitorio non
+  viene nascosto né attribuito al protocollo EDP.
+- Cinque test policy Python verificano configurazione repository, divieto di
+  IP forwarding e comandi, esclusione degli osservatori da FLIGHT-DATA e
+  rifiuto duplicati. Il validatore del piano Ethernet originale resta PASS
+  con due segmenti, 11 nodi, quattro flussi e due switch.
+- Il test loopback C++ verifica copia identica verso due destinatari, metadata
+  sorgente, metriche aggregate/per-target e rifiuto di duplicati, broadcast e
+  multicast.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware. Il Pixhawk era già stato verificato in
+  precedenza via Ethernet sulla Blackbox, ma il nuovo fan-out non è stato
+  compilato ARM64, installato o attivato sui nodi reali.
+- L'accesso SSH dalla postazione Codex a `192.168.1.47` e al relay PFD è stato
+  rifiutato per assenza della chiave privata autorizzata. Non è stata aggirata
+  l'autenticazione e nessun servizio o firewall reale è stato modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Ripristinare l'accesso SSH controllato, acquisire il preflight Blackbox,
+  compilare ARM64, creare release immutabile e verificare unità/rollback prima
+  dell'attivazione.
+- Confermare `ip_forward=0`, assenza di bridge/NAT e policy nftables caricata;
+  catturare contemporaneamente il flusso atteso su `eth0` e le due sole copie
+  su WLAN.
+- Aprire UDP 14550 esclusivamente dove necessario su portatile/server,
+  verificare QGroundControl e consumer di sviluppo, disabilitare il vecchio
+  inoltro USB e controllare assenza di duplicati.
+- Tentare una richiesta dalla LAN e dimostrare con cattura che non esce alcun
+  datagramma Blackbox→Pixhawk. Provare perdita di WLAN, portatile e server senza
+  effetti su ingestion, recorder, DDP/EDP o controllo di volo.
+- Eseguire soak con perdita, jitter, CPU, RAM e temperatura. UDP osservatori
+  non è autenticato: i consumer devono trattarlo come telemetria non autorevole
+  e filtrare la sorgente Blackbox.
+- Progettare separatamente l'eventuale manutenzione bidirezionale con
+  interlock fisico a terra, disarmato verificato, allowlist, audit, timeout ed
+  esclusione mutua. Questa funzione non è implementata e QGroundControl può
+  solo osservare, non configurare il Pixhawk attraverso la Blackbox.

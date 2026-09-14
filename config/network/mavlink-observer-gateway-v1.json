@@ -1,0 +1,37 @@
+{
+  "schema": "efis-next.mavlink-observer-gateway.v1",
+  "status": "BENCH_NOT_FLIGHT_APPROVED",
+  "implementation": "APPLICATION_FANOUT_NOT_IP_BRIDGE",
+  "ingress": {
+    "bind": "10.77.10.2",
+    "port": 14550,
+    "allowed_source": "10.77.10.3",
+    "segment": "flight-data"
+  },
+  "observers": [
+    {
+      "id": "ground-station-laptop",
+      "address": "192.168.1.39",
+      "port": 14550,
+      "role": "QGC_MONITOR_ONLY"
+    },
+    {
+      "id": "home-server",
+      "address": "192.168.1.6",
+      "port": 14550,
+      "role": "DEVELOPMENT_MONITOR_ONLY"
+    }
+  ],
+  "controls": {
+    "ip_forward_required": false,
+    "layer2_bridge_allowed": false,
+    "nat_allowed": false,
+    "broadcast_allowed": false,
+    "multicast_allowed": false,
+    "return_path_implemented": false,
+    "mavlink_command_forwarding_allowed": false,
+    "parameter_write_allowed": false,
+    "mission_write_allowed": false,
+    "arming_allowed": false
+  }
+}

@@ -110,7 +110,15 @@ sudo systemctl enable --now efis-avionics-egress.service
 
 La tabella `inet efis_avionics` rifiuta e conta ogni pacchetto IPv4 destinato a
 `10.77.10.0/24` quando l'interfaccia di uscita scelta non è `eth0`. Non cambia
-la policy generale del firewall e non inoltra alcun pacchetto. Rollback:
+la policy generale del firewall e non inoltra alcun pacchetto.
+
+ADR-015 aggiunge una difesa separata contro il routing accidentale: la chain
+`forward` ha policy `drop` e
+`deploy/network/99-efis-no-ip-forwarding.conf` forza a zero il forwarding IPv4
+e IPv6. Il fan-out osservatori MAVLink usa socket applicativi in sola uscita e
+non richiede né deve aggirare queste protezioni.
+
+Rollback:
 
 ```sh
 sudo systemctl disable --now efis-avionics-egress.service

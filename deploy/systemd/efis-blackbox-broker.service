@@ -12,15 +12,18 @@ WorkingDirectory=/opt/efis-blackbox
 Environment="EFIS_DDP_DISPLAY_ARGS=--display 10.77.10.11 --display 10.77.10.13"
 Environment=EFIS_PFD_DDP_PORT=49002
 Environment=EFIS_BLACKBOX_NODE=47
-Environment=EFIS_MAVLINK_BIND=0.0.0.0
+Environment=EFIS_MAVLINK_BIND=10.77.10.2
 Environment=EFIS_MAVLINK_PORT=14550
+Environment=EFIS_MAVLINK_SOURCE=10.77.10.3
+Environment="EFIS_MAVLINK_OBSERVER_ARGS=--mavlink-observer 192.168.1.39 --mavlink-observer 192.168.1.6"
+Environment=EFIS_MAVLINK_OBSERVER_PORT=14550
 Environment=EFIS_SENSOR_CAN=can_a
 Environment=EFIS_EDP_EMS_ADDRESS=10.77.10.12
 Environment=EFIS_EDP_EMS_PORT=49003
 EnvironmentFile=-/etc/efis/blackbox-broker.env
 # --engine-simulation rende visibile che questo e' ancora un feed di banco.
 # Va rimosso, non rinominato, quando il decoder motore CAN reale sara' collegato.
-ExecStart=/opt/efis-blackbox/bin/efis-blackbox-broker --mavlink-bind ${EFIS_MAVLINK_BIND} --mavlink-port ${EFIS_MAVLINK_PORT} --can-interface ${EFIS_SENSOR_CAN} $EFIS_DDP_DISPLAY_ARGS --display-port ${EFIS_PFD_DDP_PORT} --engine-display ${EFIS_EDP_EMS_ADDRESS} --engine-port ${EFIS_EDP_EMS_PORT} --engine-simulation --source-node ${EFIS_BLACKBOX_NODE} --records /var/lib/blackbox/flight --rate-hz 20
+ExecStart=/opt/efis-blackbox/bin/efis-blackbox-broker --mavlink-bind ${EFIS_MAVLINK_BIND} --mavlink-port ${EFIS_MAVLINK_PORT} --mavlink-source ${EFIS_MAVLINK_SOURCE} $EFIS_MAVLINK_OBSERVER_ARGS --mavlink-observer-port ${EFIS_MAVLINK_OBSERVER_PORT} --can-interface ${EFIS_SENSOR_CAN} $EFIS_DDP_DISPLAY_ARGS --display-port ${EFIS_PFD_DDP_PORT} --engine-display ${EFIS_EDP_EMS_ADDRESS} --engine-port ${EFIS_EDP_EMS_PORT} --engine-simulation --source-node ${EFIS_BLACKBOX_NODE} --records /var/lib/blackbox/flight --rate-hz 20
 Restart=on-failure
 RestartSec=2
 NoNewPrivileges=true

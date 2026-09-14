@@ -26,6 +26,7 @@ struct DatagramResult final {
     DatagramStatus status{DatagramStatus::would_block};
     std::size_t size{};
     int error_code{};
+    UdpEndpoint source{};
 };
 
 class UdpSender final {

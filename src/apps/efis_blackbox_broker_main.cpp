@@ -1,5 +1,6 @@
 #include "efis/ingest/blackbox_publisher_session.hpp"
 #include "efis/io/socketcan_source.hpp"
+#include "efis/io/readonly_udp_fanout.hpp"
 #include "efis/io/udp_datagram.hpp"
 #include "efis/providers/edp_udp.hpp"
 #include "efis/providers/engine_simulation_provider.hpp"
@@ -30,6 +31,9 @@ void stop(int) { running.store(false); }
 struct Options final {
     std::string mavlink_bind{"0.0.0.0"};
     std::uint16_t mavlink_port{14'550};
+    std::string mavlink_source;
+    std::vector<std::string> mavlink_observers;
+    std::uint16_t mavlink_observer_port{14'550};
     std::string can_interface;
     std::vector<std::string> displays;
     std::filesystem::path records;
@@ -66,6 +70,13 @@ Options parse(int argc, char** argv) {
         else if (argument == "--mavlink-port") {
             options.mavlink_port = unsigned_value<std::uint16_t>(
                 value("--mavlink-port"), "MAVLink port", 65'535);
+        } else if (argument == "--mavlink-source") {
+            options.mavlink_source = value("--mavlink-source");
+        } else if (argument == "--mavlink-observer") {
+            options.mavlink_observers.push_back(value("--mavlink-observer"));
+        } else if (argument == "--mavlink-observer-port") {
+            options.mavlink_observer_port = unsigned_value<std::uint16_t>(
+                value("--mavlink-observer-port"), "MAVLink observer port", 65'535);
         } else if (argument == "--can-interface") {
             options.can_interface = value("--can-interface");
         } else if (argument == "--display") {
@@ -101,6 +112,16 @@ Options parse(int argc, char** argv) {
     if (options.records.empty()) {
         throw std::invalid_argument{"--records is required"};
     }
+    if (!options.mavlink_observers.empty()) {
+        if (options.mavlink_source.empty()) {
+            throw std::invalid_argument{
+                "--mavlink-source is required when observers are enabled"};
+        }
+        if (options.mavlink_bind == "0.0.0.0") {
+            throw std::invalid_argument{
+                "observer mode requires an explicit MAVLink bind address"};
+        }
+    }
     if (!options.engine_display.empty() && !options.engine_simulation) {
         throw std::invalid_argument{
             "engine display requires an implemented engine source; use "
@@ -127,6 +148,16 @@ int main(int argc, char** argv) {
         std::cout << std::unitbuf;
 
         efis::io::UdpReceiver mavlink{{options.mavlink_bind, options.mavlink_port}};
+        std::unique_ptr<efis::io::ReadOnlyUdpFanout> mavlink_observers;
+        if (!options.mavlink_observers.empty()) {
+            std::vector<efis::io::UdpEndpoint> destinations;
+            destinations.reserve(options.mavlink_observers.size());
+            for (const auto& address : options.mavlink_observers) {
+                destinations.push_back({address, options.mavlink_observer_port});
+            }
+            mavlink_observers = std::make_unique<efis::io::ReadOnlyUdpFanout>(
+                std::move(destinations));
+        }
         std::unique_ptr<efis::io::SocketCanSource> can;
         if (!options.can_interface.empty()) {
             if (!efis::io::SocketCanSource::supported()) {
@@ -164,6 +195,7 @@ int main(int argc, char** argv) {
         std::uint64_t mavlink_datagrams{};
         std::uint64_t mavlink_socket_errors{};
         std::uint64_t mavlink_truncated{};
+        std::uint64_t mavlink_source_rejected{};
 
         const auto started = efis::MonoClock::now();
         auto next = started;
@@ -172,6 +204,11 @@ int main(int argc, char** argv) {
 
         std::cout << "event=blackbox_broker_start mode=LIVE_READ_ONLY mavlink_bind="
                   << options.mavlink_bind << ':' << options.mavlink_port
+                  << " mavlink_source="
+                  << (options.mavlink_source.empty() ? "ANY" : options.mavlink_source)
+                  << " mavlink_observer_mode=TX_ONLY mavlink_observers="
+                  << options.mavlink_observers.size()
+                  << " mavlink_observer_port=" << options.mavlink_observer_port
                   << " can=" << (options.can_interface.empty() ? "DISABLED" : options.can_interface)
                   << " displays=" << options.displays.size()
                   << " display_port=" << options.display_port
@@ -195,9 +232,16 @@ int main(int argc, char** argv) {
                     ++mavlink_socket_errors;
                     break;
                 }
+                if (!options.mavlink_source.empty() &&
+                    result.source.address != options.mavlink_source) {
+                    ++mavlink_source_rejected;
+                    continue;
+                }
                 ++mavlink_datagrams;
-                session.consume_mavlink(
-                    std::span<const std::uint8_t>{mavlink_buffer.data(), result.size}, now);
+                const auto datagram = std::span<const std::uint8_t>{
+                    mavlink_buffer.data(), result.size};
+                if (mavlink_observers) mavlink_observers->forward(datagram);
+                session.consume_mavlink(datagram, now);
             }
             if (can) {
                 const auto count = can->read(can_buffer);
@@ -220,6 +264,7 @@ int main(int argc, char** argv) {
                           << mavlink_datagrams << " mavlink_bytes=" << stats.mavlink_bytes
                           << " mavlink_socket_errors=" << mavlink_socket_errors
                           << " mavlink_truncated=" << mavlink_truncated
+                          << " mavlink_source_rejected=" << mavlink_source_rejected
                           << " can_frames=" << stats.can_frames
                           << " node_events=" << stats.node_events_observed
                           << " source_events=" << stats.source_events_observed
@@ -227,6 +272,26 @@ int main(int argc, char** argv) {
                           << " ddp_datagrams=" << transmitted.datagrams
                           << " ddp_bytes=" << transmitted.bytes
                           << " ddp_failures=" << stats.ddp_publish_failures << '\n';
+                if (mavlink_observers) {
+                    const auto observer_stats = mavlink_observers->statistics();
+                    std::cout << "event=blackbox_mavlink_observer_health mode=TX_ONLY"
+                              << " datagrams=" << observer_stats.datagrams
+                              << " bytes=" << observer_stats.bytes
+                              << " failures=" << observer_stats.failures << '\n';
+                    for (const auto& observer :
+                         mavlink_observers->target_statistics()) {
+                        std::cout << "event=blackbox_mavlink_observer_target destination="
+                                  << observer.destination.address << ':'
+                                  << observer.destination.port
+                                  << " datagrams=" << observer.datagrams
+                                  << " bytes=" << observer.bytes
+                                  << " failures=" << observer.failures;
+                        if (!observer.last_error.empty()) {
+                            std::cout << " last_error=\"" << observer.last_error << '"';
+                        }
+                        std::cout << '\n';
+                    }
+                }
                 if (engine_publisher) {
                     std::cout << "event=blackbox_engine_health destination="
                               << options.engine_display << ':' << options.engine_port
@@ -255,9 +320,14 @@ int main(int argc, char** argv) {
 
         recorder.close();
         const auto transmitted = session.publisher_metrics();
+        const auto observer_stats = mavlink_observers
+            ? mavlink_observers->statistics()
+            : efis::io::ReadOnlyUdpFanoutStatistics{};
         std::cout << "event=blackbox_broker_stop ddp_datagrams="
                   << transmitted.datagrams
                   << " ddp_failures=" << session.statistics().ddp_publish_failures
+                  << " mavlink_observer_datagrams=" << observer_stats.datagrams
+                  << " mavlink_observer_failures=" << observer_stats.failures
                   << '\n';
         return 0;
     } catch (const std::exception& error) {

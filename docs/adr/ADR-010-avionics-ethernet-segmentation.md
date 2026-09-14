@@ -1,6 +1,7 @@
 # ADR-010 — Segmentazione Ethernet avionica
 
-- Stato: proposta per il banco V1; approvazione hardware ancora richiesta
+- Stato: proposta per il banco V1; approvazione hardware ancora richiesta;
+  esportazione osservatori limitata da ADR-015
 - Data: 2026-09-07
 - Riferimenti: ADR-002, ADR-003, ADR-008, ADR-009
 
@@ -18,6 +19,10 @@ default gateway. Il server di casa, Internet e l'hotspot non appartengono alla
 rete FLIGHT-DATA. La Blackbox può sincronizzare dati tramite una seconda
 interfaccia di servizio, ma non opera come router o bridge IP: trasferisce
 soltanto oggetti applicativi validati e stato normalizzato.
+
+ADR-015 ammette inoltre una copia MAVLink grezza esclusivamente **in uscita**
+verso endpoint di osservazione nominati sulla LAN di servizio. Non abilita
+forwarding, bridge, NAT o un percorso di ritorno verso Pixhawk.
 
 Il flusso primario è:
 

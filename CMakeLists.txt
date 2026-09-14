@@ -9,6 +9,12 @@ option(EFIS_BUILD_TESTS "Build EFIS Next tests" ON)
 option(EFIS_BUILD_QT_RENDERER "Build the Qt Quick PFD when Qt is available" ON)
 option(EFIS_REQUIRE_QT_RENDERER "Fail configuration if the Qt Quick PFD cannot be built" OFF)
 
+if(MSVC)
+    # Core, adapters and applications use standard C++ exceptions for
+    # fail-closed validation and per-destination fault isolation.
+    add_compile_options(/EHsc)
+endif()
+
 add_library(efis_core
     src/core/alert_engine.cpp
     src/emergency/emergency_assist.cpp
@@ -47,6 +53,7 @@ add_library(efis_core
     src/ingest/blackbox_publisher_session.cpp
     src/io/byte_source.cpp
     src/io/udp_datagram.cpp
+    src/io/readonly_udp_fanout.cpp
     src/bench/sensor_bench.cpp
     src/core/altimetry.cpp
     src/core/flight_dynamics.cpp
@@ -294,6 +301,12 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/blackbox/test_emergency_event_transport.py)
         add_test(NAME efis_voice_replay_adapter_tests
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/voice/test_vosk_replay_adapter.py)
+        add_test(NAME efis_mavlink_observer_policy_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_gateway.py)
+        add_test(NAME efis_blackbox_broker_observer_tests
+            COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_blackbox_broker_observer.py
+                $<TARGET_FILE:efis-blackbox-broker>)
     endif()
 
     add_executable(efis_ingest_tests tests/ingest_tests.cpp)
@@ -332,6 +345,12 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_ddp_udp_tests tests/ddp_udp_tests.cpp)
     target_link_libraries(efis_ddp_udp_tests PRIVATE efis_core)
     add_test(NAME efis_ddp_udp_tests COMMAND efis_ddp_udp_tests)
+
+    add_executable(efis_mavlink_observer_fanout_tests
+        tests/mavlink_observer_fanout_tests.cpp)
+    target_link_libraries(efis_mavlink_observer_fanout_tests PRIVATE efis_core)
+    add_test(NAME efis_mavlink_observer_fanout_tests
+        COMMAND efis_mavlink_observer_fanout_tests)
 
     add_executable(efis_edp_v1_tests tests/edp_v1_tests.cpp)
     target_link_libraries(efis_edp_v1_tests PRIVATE efis_core)
