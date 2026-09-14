@@ -1834,8 +1834,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   Dopo l'invio di un datagramma da un altro host, il sink è cresciuto da
   13.493 a 14.327 frame autorizzati mentre `source_rejected` è rimasto zero;
   sink e firewall sono rimasti attivi e il sink ha zero errori/riavvii. Questo
-  dimostra che il datagramma estraneo non ha raggiunto l'applicazione; la
-  lettura privilegiata del contatore nft dopo il test resta da acquisire.
+  dimostra che il datagramma estraneo non ha raggiunto l'applicazione. La
+  lettura privilegiata successiva ha confermato sulla regola nftables
+  `packets 1 bytes 40 drop`: il filtro kernel ha scartato esattamente il caso
+  di prova prima del sink.
 - Un singolo frame MAVLink2 strutturalmente valido inviato da un host diverso
   dalla Blackbox ha incrementato soltanto `source_rejected` a uno, senza
   incrementare i frame accettati. Una cattura simultanea di dieci secondi su
@@ -1867,9 +1869,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   definitivo.
 - Installare il filtro firewall host per UDP 14550 e verificare che ammetta
   soltanto `192.168.1.47`, senza interferire con Docker, Caddy o le altre reti
-  del server. Installazione e prova applicativa negativa sono riuscite; manca
-  la lettura privilegiata del contatore `drop` dopo il test e un reboot per
-  verificare la persistenza con Docker/Tailscale attivi.
+  del server. Installazione, prova applicativa negativa e contatore drop sono
+  verificati; manca un reboot controllato per verificare la persistenza con
+  Docker/Tailscale attivi.
 - Alimentare definitivamente Pixhawk tramite modulo regolato `POWER1`, quindi
   rimuovere l'USB Blackbox e ripetere presenza Ethernet, heartbeat, contatori e
   brownout test. L'attuale USB è ammessa solo per il banco.
