@@ -96,9 +96,65 @@ sudo systemctl status efis-blackbox-broker.service --no-pager -l
 ## Collaudo ricezione
 
 Sul portatile chiudere il vecchio bridge USB e scollegare il cavo USB Pixhawk.
-In QGroundControl aprire l'ascolto UDP sulla porta 14550. La connessione può
-mostrare telemetria, ma le funzioni che richiedono risposte o scritture devono
-fallire: è il comportamento previsto.
+QGroundControl ascolta UDP sulla porta 14550. La connessione può mostrare
+telemetria, ma le funzioni che richiedono risposte o scritture devono fallire:
+è il comportamento previsto.
+
+### QGroundControl permanente MONITOR ONLY
+
+L'unità utente `efis-qgc-monitor.service` è legata a
+`graphical-session.target`; sul portatile `Linger=no` resta intenzionale, così
+l'applicazione grafica non parte senza login. Prima di ogni avvio il preflight
+`qgc_monitor_preflight.py` blocca QGC con exit 78 quando rileva almeno uno di
+questi casi:
+
+- qualsiasi `/dev/ttyACM*` o identità seriale Pixhawk/ArduPilot/PX4/FMU;
+- il vecchio `efis-mavlink-readonly-bridge.service` attivo;
+- UDP `0.0.0.0:14550` già occupata.
+
+Il risultato atomico viene scritto in
+`~/.local/state/efis-next/qgc-monitor-preflight.json`. Il preflight non apre
+connessioni e non invia MAVLink. Questi controlli evitano configurazioni locali
+ambigue; la garanzia di nessun ritorno verso Pixhawk resta strutturale nella
+Blackbox TX-only, non nell'etichetta dell'interfaccia QGC.
+
+Per conservare l'hardening `NoNewPrivileges`, QGC non viene avviato montando
+l'AppImage con FUSE. Estrarre una sola volta la versione approvata:
+
+```bash
+cd ~/EFIS-ArduPilot/qgroundcontrol
+mkdir -m 0700 .extract-qgc-5.0.8
+cd .extract-qgc-5.0.8
+../QGroundControl-5.0.8-x86_64.AppImage --appimage-extract >/dev/null
+mv squashfs-root ../QGroundControl-5.0.8-x86_64.AppDir
+cd ..
+rmdir .extract-qgc-5.0.8
+```
+
+Installare quindi i file mantenuti dal repository:
+
+```bash
+install -d -m 0755 ~/.local/lib/efis-next ~/.config/systemd/user \
+  ~/.local/share/applications
+install -d -m 0700 ~/.local/state/efis-next
+install -m 0755 tools/groundstation/qgc_monitor_preflight.py \
+  ~/.local/lib/efis-next/qgc_monitor_preflight.py
+install -m 0644 deploy/systemd/efis-qgc-monitor.user.service \
+  ~/.config/systemd/user/efis-qgc-monitor.service
+install -m 0644 deploy/desktop/efis-qgc-monitor.desktop \
+  ~/.local/share/applications/efis-qgc-monitor.desktop
+systemd-analyze --user verify \
+  ~/.config/systemd/user/efis-qgc-monitor.service
+systemctl --user daemon-reload
+systemctl --user enable --now efis-qgc-monitor.service
+```
+
+Verificare `status=PASS`, servizio `active/running`, un solo processo in bind
+su UDP 14550 e `NRestarts=0`. QGC 5.0.8 non ha risposto a SIGINT nel banco:
+systemd forza perciò la chiusura dopo otto secondi. È un arresto limitato nel
+tempo ma non graceful e resta una limitazione aperta. Anche il plugin Qt
+`speechd` mancante è registrato come gap non bloccante; non nascondere il log e
+non confonderlo con la futura catena voce EFIS.
 
 Sul server, per una prova senza dipendenze aggiuntive:
 

@@ -1,0 +1,33 @@
+[Unit]
+Description=EFIS QGroundControl - MONITOR ONLY
+Documentation=file:/opt/efis-next/docs/deployment/MAVLINK_OBSERVER_GATEWAY.md
+After=graphical-session.target network-online.target
+Wants=network-online.target
+PartOf=graphical-session.target
+ConditionPathExists=%h/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppDir/AppRun
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/python3 %h/.local/lib/efis-next/qgc_monitor_preflight.py --report %h/.local/state/efis-next/qgc-monitor-preflight.json
+ExecStart=%h/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppDir/AppRun
+Restart=on-failure
+RestartPreventExitStatus=78
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=8
+SendSIGKILL=yes
+NoNewPrivileges=true
+PrivateDevices=false
+ProtectClock=true
+ProtectControlGroups=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+UMask=0077
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=EFIS QGroundControl — MONITOR ONLY
+Comment=Telemetria passiva dalla Blackbox; nessun percorso di comando verso Pixhawk
+Exec=systemctl --user start efis-qgc-monitor.service
+Icon=applications-engineering
+Terminal=false
+Categories=Network;Monitor;
+StartupNotify=false

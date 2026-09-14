@@ -305,6 +305,8 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_gateway.py)
         add_test(NAME efis_mavlink_observer_sink_tests
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_sink.py)
+        add_test(NAME efis_qgc_monitor_preflight_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_qgc_monitor_preflight.py)
         add_test(NAME efis_blackbox_broker_observer_tests
             COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_blackbox_broker_observer.py

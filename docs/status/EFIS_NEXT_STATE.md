@@ -1714,6 +1714,12 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `192.168.1.47`. Non modifica le tabelle `iptables-nft` di Docker/Tailscale e
   non contiene hook forward/output o NAT. Un'unità oneshot e un installatore
   fail-closed eseguono check sintattici prima dell'attivazione.
+- Aggiunti per il portatile il preflight fail-closed
+  `qgc_monitor_preflight.py`, l'unità utente permanente legata alla sessione
+  grafica e il launcher desktop esplicitamente `MONITOR ONLY`. L'avvio viene
+  bloccato con exit 78, senza restart-loop, in presenza di USB ACM, bridge USB
+  legacy attivo o UDP 14550 già occupata. L'AppImage viene estratta in AppDir
+  per conservare `NoNewPrivileges` senza dipendere da FUSE/setuid.
 
 #### Verificato solo software
 
@@ -1747,6 +1753,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Il test policy aggiuntivo vincola il firewall server a tabella dedicata,
   indirizzi/porta esatti, drop della sorgente non autorizzata e assenza di
   forward/output/NAT. La suite congiunta observer policy + sink è 14/14 PASS.
+- I sette test Python del preflight QGC sono PASS e coprono triplo gate,
+  rilevazione seriale, bridge legacy, porta UDP libera/occupata, exit 78 e
+  report privo di telemetria. `py_compile`, verifica unità systemd e
+  `git diff --check` sono PASS.
 
 #### Verificato su hardware reale
 
@@ -1889,6 +1899,31 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `NRestarts=0`, bind `0.0.0.0:14550` e stato active. Il log segnala ancora il
   plugin text-to-speech `speechd` mancante; non blocca MAVLink ma resta un gap
   per le funzioni vocali e per una chiusura ordinata della Ground Station.
+- L'unità transitoria è stata sostituita sul portatile `Port-hp` da
+  `~/.config/systemd/user/efis-qgc-monitor.service`, abilitata soltanto con la
+  sessione grafica (`Linger=no`). Il preflight reale ha riportato `PASS` per
+  assenza di `/dev/ttyACM*`, bridge legacy inattivo e UDP 14550 libera. Dopo
+  l'avvio AppDir QGC è `active/running`, PID 46762, unico bind
+  `0.0.0.0:14550`, `NRestarts=0`; la variante AppImage diretta aveva invece
+  fallito sotto hardening per FUSE ed è stata scartata, non nascosta.
+  L'AppImage QGC 5.0.8 conservata ha SHA-256
+  `06969c67ef58ea063def0a8271447a1cc385438c4a7df36813315b4475146737`;
+  preflight, unità e launcher distribuiti hanno rispettivamente SHA-256
+  `06dee66a14d3059fc4e8d93b7b4c02393bc9efc82063cc0addfeb919b977d60e`,
+  `f2927b754c5cbb9493a530dbea531eba58d5aa28535c49dcb8a2d4209feebe7a`
+  e `f2149da830b6bdd4b036aded1fb89cd8e18e360a7e592ff8b54a5f7e227b9cfd`.
+- Il test di arresto reale è durato 8,1 secondi: QGC 5.0.8 non ha reagito a
+  SIGINT e systemd ha applicato SIGKILL al timeout. Il successivo avvio è
+  riuscito con preflight `PASS`, `RestartPreventExitStatus=78`, supporto
+  `AF_NETLINK`, servizio attivo e UDP 14550 occupata dal solo QGC. Lo shutdown
+  è dunque bounded ma non graceful. Il warning `speechd` è ancora presente.
+- Nel controllo finale con QGC permanente attivo, il broker Blackbox è rimasto
+  `active/running`, `NRestarts=0`: in un secondo MAVLink e ciascun osservatore
+  sono cresciuti da 152.389 a 152.421 datagrammi e ciascun display da 146.079
+  a 146.099, con zero failure/reject/socket error. Il sink server era `LIVE`,
+  `NRestarts=0`, a 49.455 frame/1.882 heartbeat e zero errori. Questa è
+  evidenza di continuità del banco, non ancora un soak o una prova reboot del
+  portatile.
 - Durante il primo tentativo di deployment una espansione PowerShell locale ha
   trasformato il percorso di backup e ha portato temporaneamente `/usr/bin` a
   modo `0750`, impedendo nuove shell SSH e il Wi-Fi dopo reboot. Non è stato
@@ -1915,13 +1950,13 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Alimentare definitivamente Pixhawk tramite modulo regolato `POWER1`, quindi
   rimuovere l'USB Blackbox e ripetere presenza Ethernet, heartbeat, contatori e
   brownout test. L'attuale USB è ammessa solo per il banco.
-- Definire una modalità operativa QGroundControl esplicitamente
-  `MONITOR-ONLY`: la telemetria e il veicolo sono visibili, ma richieste di
-  stream, parametri, missioni e comandi scadono per progetto. Non presentare
-  questa limitazione intenzionale come collegamento bidirezionale completo.
-  Sostituire l'unità transitoria con launcher/unità mantenuti e risolvere o
-  disabilitare esplicitamente `speechd`; verificare inoltre lo shutdown entro
-  timeout senza intervento manuale.
+- La modalità operativa QGroundControl `MONITOR-ONLY`, il launcher e l'unità
+  permanente sono implementati e installati. La telemetria e il veicolo sono
+  visibili, ma richieste di stream, parametri, missioni e comandi scadono per
+  progetto. Resta da ottenere una chiusura graceful o qualificare formalmente
+  il SIGKILL dopo otto secondi; risolvere/disabilitare esplicitamente
+  `speechd` senza confonderlo con la voce EFIS e provare un nuovo login/reboot
+  grafico per confermare l'avvio automatico.
 - Provare perdita della WLAN di servizio e del portatile intero senza effetti
   su ingestion, recorder, DDP/EDP o controllo di volo. I fault dei soli
   consumer server e QGC sono verificati; non equivalgono alla perdita completa
