@@ -1,6 +1,6 @@
 # Emergency storage fault — prova Blackbox isolata
 
-Stato: **HARNESS IMPLEMENTATO / ESECUZIONE SU HARDWARE APERTA / NON-CERT**
+Stato: **PASS SU FILESYSTEM ISOLATO BLACKBOX / POWER-LOSS APERTO / NON-CERT**
 
 ## Scopo
 
@@ -64,3 +64,35 @@ database reale.
 Il rapporto è `PASS` soltanto con sequenza HTTP `201 → 507/503 → 201/200`, due
 record presenti prima di `SIGKILL` e gli stessi due record dopo il riavvio.
 `power_loss_verified` resta obbligatoriamente `false`.
+
+## Esecuzione registrata — 2026-09-14
+
+Nodo: `efisblackbox` (`192.168.1.47`, ARM64).
+
+Durante i primi due tentativi l'harness si è arrestato prima della fault
+injection e ha evidenziato due difetti nello script:
+
+- la directory `mktemp` 0700/root impediva all'hub avviato come `blackbox` di
+  raggiungere token e database isolati;
+- il testo dell'evento superava il limite protocollo di 4096 caratteri e veniva
+  correttamente respinto con HTTP 400.
+
+Lo script ora assegna al gruppo `blackbox` il solo attraversamento della
+directory radice (`root:blackbox`, 0710) e mantiene il payload sotto il limite.
+Dopo entrambe le interruzioni il cleanup non ha lasciato mount o listener.
+
+Il terzo tentativo ha prodotto `PASS` con:
+
+- scrittura iniziale HTTP 201;
+- filesystem pieno HTTP 507 e `persisted=false`;
+- health degradata HTTP 503;
+- nuova scrittura dopo recupero HTTP 201;
+- 2 record prima e dopo `SIGKILL`;
+- `quick_check` superato al riavvio;
+- servizio production `active` prima e dopo, senza restart.
+
+Evidenza: `docs/status/evidence/emergency-storage-fault-blackbox-20260914/`.
+Il listener production resta vincolato a `10.77.10.2:18094`; il firewall del
+nodo rifiuta intenzionalmente traffico verso `10.77.10.0/24` che non esce da
+`eth0`, quindi una health locale instradata su `lo` non è una prova valida. La
+health end-to-end deve essere verificata dal PFD sul collegamento FLIGHT-DATA.

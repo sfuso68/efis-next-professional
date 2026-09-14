@@ -37,6 +37,11 @@ case "$TEST_ROOT" in
     /var/tmp/efis-emergency-storage-fault.*) ;;
     *) echo "error: unsafe temporary path: $TEST_ROOT" >&2; exit 2 ;;
 esac
+# mktemp creates the directory as 0700/root.  The isolated hub deliberately
+# runs as the production service account, so grant only that group traversal;
+# without this the hub cannot reach its token file or mounted database.
+chown root:blackbox "$TEST_ROOT"
+chmod 0710 "$TEST_ROOT"
 
 MOUNT_DIR="$TEST_ROOT/mnt"
 IMAGE_FILE="$TEST_ROOT/storage.img"
@@ -142,7 +147,9 @@ for sequence, path in enumerate(sys.argv[1:3], 1):
             "event_sequence": sequence,
             "written_utc": "2026-09-13T00:00:00.000Z",
             "code": "STORAGE_FAULT_HW_TEST",
-            "detail": "isolated loopback filesystem test " + ("x" * 4096),
+            # Stay below the protocol's 4096-character detail limit while
+            # keeping each durable write large enough for the storage test.
+            "detail": "isolated loopback filesystem test " + ("x" * 4000),
             "assist_state": "TEST ONLY",
             "emergency_kind": "STORAGE TEST",
             "simulation": True,

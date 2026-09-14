@@ -1430,17 +1430,35 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Verificato su hardware reale
 
-- Nessuna nuova verifica hardware in questo incremento. Il collegamento SSH a
-  `192.168.1.47` è raggiungibile ma rifiuta le credenziali disponibili sulla
-  workstation (`publickey,password`); quindi il nuovo harness non è stato
-  trasferito o eseguito. Restano valide le precedenti prove sul PFD e sulla
-  Blackbox, ma non sono state ripetute né estese al filesystem pieno.
+- Il 2026-09-14 l'harness è stato eseguito sul nodo ARM64 `efisblackbox`
+  (`192.168.1.47`) con filesystem ext4 loopback isolato e porta locale 28094.
+  Il rapporto è `PASS`: 201 iniziale, 507 con `persisted=false` a filesystem
+  pieno, health 503, recovery 201, due record presenti prima e dopo `SIGKILL` e
+  `quick_check` superato alla riapertura.
+- Il servizio production è rimasto `active` prima e dopo, con `NRestarts=0`;
+  anche `efis-blackbox-broker.service` è rimasto active con zero restart. La
+  porta 28094 e i mount temporanei risultano assenti dopo il cleanup.
+- I primi due tentativi si sono fermati in sicurezza prima della fault
+  injection e hanno corretto due difetti dell'harness: attraversamento della
+  directory 0700/root da parte dell'utente `blackbox` e payload `detail` oltre
+  il limite protocollo. Le correzioni sono incluse nello script verificato.
+- Evidenza salvata in
+  `docs/status/evidence/emergency-storage-fault-blackbox-20260914/`.
+- Il test è hardware reale per filesystem pieno e crash di processo, ma usa un
+  loopback isolato: `power_loss_verified` resta `false` e non prova ENOSPC,
+  corruzione o I/O error sul filesystem production.
 
 #### Aperto / non dichiarare DONE
 
-- Provare sul nodo Blackbox reale filesystem pieno, inode esauriti, I/O error,
-  riavvio host e perdita alimentazione controllata, verificando database/WAL,
-  offset PFD, alert health e successiva consegna senza gap o duplicati.
+- Restano da provare inode esauriti, I/O error, riavvio host e perdita
+  alimentazione controllata. Sul percorso production vanno ancora correlati
+  database/WAL, offset PFD, alert health e consegna successiva senza gap o
+  duplicati; la prova loopback non autorizza una fault injection sul volume
+  production.
+- Verificare la health production dal PFD sul collegamento FLIGHT-DATA. Il nodo
+  Blackbox non può interrogare localmente `10.77.10.2:18094` perché la policy
+  firewall rifiuta il traffico verso la subnet 10.77.10.0/24 non uscente da
+  `eth0`; il listener risulta comunque attivo sul bind previsto.
 - Definire retention, quota riservata e allarme preventivo. Nessun record
   Emergency viene eliminato automaticamente da questo incremento.
 - Touch, adapter pulsante, audio reale, replay temporale dei bus e fonti
