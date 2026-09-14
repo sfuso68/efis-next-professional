@@ -1876,6 +1876,19 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   sei heartbeat e zero errori. La perdita del solo consumer server non ha
   quindi arrestato ingestion, registrazione o distribuzione display nel caso
   verificato.
+- È stato eseguito anche il fault del solo processo QGroundControl sul
+  portatile. Con QGC realmente fermo e UDP 14550 libera, i datagrammi MAVLink
+  Blackbox sono cresciuti da 134.431 a 136.458, il recorder da 132.421 a
+  133.958 e ciascun flusso display da 132.421 a 133.958; broker e sink server
+  sono rimasti attivi, senza failure o restart. Questo prova l'indipendenza dal
+  consumer QGC, non la perdita completa del portatile o della WLAN.
+- QGroundControl non ha terminato entro dieci secondi su richiesta systemd ed
+  è stato necessario `SIGKILL`, come già osservato in precedenza. È stato
+  riavviato senza logging diagnostico completo in una nuova unità transitoria
+  `efis-qgc-monitor.service`, con `KillSignal=SIGINT`, `TimeoutStopSec=8`,
+  `NRestarts=0`, bind `0.0.0.0:14550` e stato active. Il log segnala ancora il
+  plugin text-to-speech `speechd` mancante; non blocca MAVLink ma resta un gap
+  per le funzioni vocali e per una chiusura ordinata della Ground Station.
 - Durante il primo tentativo di deployment una espansione PowerShell locale ha
   trasformato il percorso di backup e ha portato temporaneamente `/usr/bin` a
   modo `0750`, impedendo nuove shell SSH e il Wi-Fi dopo reboot. Non è stato
@@ -1906,10 +1919,13 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `MONITOR-ONLY`: la telemetria e il veicolo sono visibili, ma richieste di
   stream, parametri, missioni e comandi scadono per progetto. Non presentare
   questa limitazione intenzionale come collegamento bidirezionale completo.
-- Provare perdita della WLAN di servizio e del portatile senza effetti su
-  ingestion, recorder, DDP/EDP o controllo di volo. Il fault del solo consumer
-  server è già verificato; non equivale alla perdita completa del server o
-  della rete.
+  Sostituire l'unità transitoria con launcher/unità mantenuti e risolvere o
+  disabilitare esplicitamente `speechd`; verificare inoltre lo shutdown entro
+  timeout senza intervento manuale.
+- Provare perdita della WLAN di servizio e del portatile intero senza effetti
+  su ingestion, recorder, DDP/EDP o controllo di volo. I fault dei soli
+  consumer server e QGC sono verificati; non equivalgono alla perdita completa
+  dei nodi o della rete.
 - Eseguire soak con perdita, jitter, CPU, RAM e temperatura. UDP osservatori
   non è autenticato: i consumer devono trattarlo come telemetria non autorevole
   e filtrare la sorgente Blackbox.
