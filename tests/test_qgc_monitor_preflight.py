@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
+import json
 from pathlib import Path
 import socket
 import sys
@@ -76,6 +78,90 @@ class QgcMonitorPreflightTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
         self.assertIn('"status": "PASS"', text)
         self.assertNotIn("mavlink_payload", text)
+
+    def write_manifest(self, directory: Path, *, digest: str | None = None) -> Path:
+        appimage = directory / "QGroundControl.AppImage"
+        appimage.write_bytes(b"approved-qgc-image")
+        executable = directory / "AppRun"
+        executable.write_text("#!/bin/sh\n", encoding="utf-8")
+        executable.chmod(executable.stat().st_mode | 0o100)
+        manifest = {
+            "schema": MODULE.MANIFEST_SCHEMA,
+            "mode": MODULE.MODE,
+            "application": "QGroundControl",
+            "version": "5.0.8",
+            "appimage": {
+                "path": str(appimage),
+                "sha256": digest or hashlib.sha256(appimage.read_bytes()).hexdigest(),
+            },
+            "executable": str(executable),
+            "listener": {
+                "bind": "0.0.0.0",
+                "port": 14550,
+                "allowed_source": "192.168.1.47",
+            },
+            "legacy_unit": MODULE.DEFAULT_LEGACY_UNIT,
+        }
+        path = directory / "manifest.json"
+        path.write_text(json.dumps(manifest), encoding="utf-8")
+        return path
+
+    def test_approved_artifacts_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = MODULE.inspect_artifacts(
+                self.write_manifest(Path(directory)),
+                bind_address="0.0.0.0",
+                port=14550,
+                legacy_unit=MODULE.DEFAULT_LEGACY_UNIT,
+            )
+        self.assertTrue(result["pass"])
+        self.assertEqual(result["version"], "5.0.8")
+
+    def test_modified_appimage_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = MODULE.inspect_artifacts(
+                self.write_manifest(Path(directory), digest="0" * 64),
+                bind_address="0.0.0.0",
+                port=14550,
+                legacy_unit=MODULE.DEFAULT_LEGACY_UNIT,
+            )
+        self.assertFalse(result["pass"])
+        self.assertIn("mismatch", result["reason"])
+
+    def test_missing_manifest_is_rejected(self) -> None:
+        result = MODULE.inspect_artifacts(
+            Path("does-not-exist.json"),
+            bind_address="0.0.0.0",
+            port=14550,
+            legacy_unit=MODULE.DEFAULT_LEGACY_UNIT,
+        )
+        self.assertFalse(result["pass"])
+
+    def test_manifest_endpoint_mismatch_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = MODULE.inspect_artifacts(
+                self.write_manifest(Path(directory)),
+                bind_address="127.0.0.1",
+                port=14550,
+                legacy_unit=MODULE.DEFAULT_LEGACY_UNIT,
+            )
+        self.assertFalse(result["pass"])
+        self.assertIn("endpoint", result["reason"])
+
+    def test_unapproved_observer_source_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write_manifest(Path(directory))
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+            manifest["listener"]["allowed_source"] = "192.168.1.99"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            result = MODULE.inspect_artifacts(
+                path,
+                bind_address="0.0.0.0",
+                port=14550,
+                legacy_unit=MODULE.DEFAULT_LEGACY_UNIT,
+            )
+        self.assertFalse(result["pass"])
+        self.assertIn("approved Blackbox", result["reason"])
 
 
 if __name__ == "__main__":

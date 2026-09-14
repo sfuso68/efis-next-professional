@@ -1,0 +1,17 @@
+{
+  "schema": "efis-next.qgc-monitor-manifest.v1",
+  "mode": "MONITOR_ONLY_NO_PIXHAWK_RETURN",
+  "application": "QGroundControl",
+  "version": "5.0.8",
+  "appimage": {
+    "path": "~/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppImage",
+    "sha256": "06969c67ef58ea063def0a8271447a1cc385438c4a7df36813315b4475146737"
+  },
+  "executable": "~/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppDir/AppRun",
+  "listener": {
+    "bind": "0.0.0.0",
+    "port": 14550,
+    "allowed_source": "192.168.1.47"
+  },
+  "legacy_unit": "efis-mavlink-readonly-bridge.service"
+}

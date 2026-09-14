@@ -71,6 +71,46 @@ class MavlinkObserverGatewayPolicyTests(unittest.TestCase):
         self.assertNotIn("hook output", normalized)
         self.assertNotIn("type nat", normalized)
 
+    def test_ground_station_firewall_is_monitor_only_and_narrow(self) -> None:
+        firewall = (
+            ROOT / "deploy" / "network" / "efis-qgc-monitor-firewall.nft"
+        ).read_text(encoding="utf-8")
+        normalized = " ".join(
+            line.split("#", 1)[0].strip()
+            for line in firewall.splitlines()
+            if line.split("#", 1)[0].strip()
+        )
+        self.assertIn("table inet efis_qgc_monitor", normalized)
+        self.assertIn("hook input priority -10; policy accept;", normalized)
+        self.assertIn("hook output priority -10; policy accept;", normalized)
+        self.assertIn("ip daddr 192.168.1.39 udp dport 14550", normalized)
+        self.assertIn("ip saddr != 192.168.1.47 counter drop", normalized)
+        self.assertIn("ip daddr 192.168.1.47 udp counter drop", normalized)
+        self.assertIn("ip daddr 10.77.10.0/24 counter drop", normalized)
+        self.assertNotIn("hook forward", normalized)
+        self.assertNotIn("type nat", normalized)
+        self.assertNotIn("counter accept", normalized)
+
+    def test_ground_station_firewall_installer_checks_before_enable(self) -> None:
+        installer = (
+            ROOT / "deploy" / "scripts" / "install_qgc_monitor_firewall.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn('if [ "$(id -u)" -ne 0 ]', installer)
+        self.assertLess(installer.index("nft --check"), installer.index("enable --now"))
+        self.assertLess(
+            installer.index("systemd-analyze verify"),
+            installer.index("enable --now"),
+        )
+
+    def test_ground_station_firewall_unit_has_no_forwarding_side_effect(self) -> None:
+        unit = (
+            ROOT / "deploy" / "systemd" / "efis-qgc-monitor-firewall.service"
+        ).read_text(encoding="utf-8")
+        self.assertIn("/etc/efis/qgc-monitor-firewall.nft", unit)
+        self.assertIn("RemainAfterExit=yes", unit)
+        self.assertNotIn("ip_forward", unit)
+        self.assertNotIn("NetworkNamespacePath", unit)
+
 
 if __name__ == "__main__":
     unittest.main()

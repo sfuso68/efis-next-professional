@@ -1728,6 +1728,18 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   creare un conflitto controllato e temporaneo. Il preflight QGC è stato
   spostato da `ExecStartPre` a `ExecCondition`: exit 78 ora salta l'avvio senza
   essere trattato come crash soggetto a restart.
+- Il manifest QGC versionato fissa modalità, versione 5.0.8, endpoint, sorgente
+  Blackbox, AppRun e SHA-256 dell'AppImage. Il preflight verifica il contratto
+  e ricalcola l'hash prima di ogni avvio; file, schema, sorgente o endpoint non
+  conformi bloccano QGC.
+- Predisposti firewall Ground Station, unità e installatore fail-closed. La
+  tabella ammette su UDP 14550 soltanto la Blackbox, scarta UDP verso la
+  Blackbox e qualunque traffico verso FLIGHT-DATA; non contiene forward/NAT.
+  I file sono soltanto in staging sul portatile, non attivati.
+- Aggiunti analizzatore soak Blackbox e verificatore operativo QGC. Il primo
+  controlla monotonia/progresso/errori di broker, recorder, DDP, fan-out,
+  osservatori e display; il secondo distingue `PASS`, `PARTIAL` e `FAIL`
+  includendo l'effettivo stato firewall.
 
 #### Verificato solo software
 
@@ -1761,9 +1773,10 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Il test policy aggiuntivo vincola il firewall server a tabella dedicata,
   indirizzi/porta esatti, drop della sorgente non autorizzata e assenza di
   forward/output/NAT. La suite congiunta observer policy + sink è 14/14 PASS.
-- I sette test Python del preflight QGC sono PASS e coprono triplo gate,
-  rilevazione seriale, bridge legacy, porta UDP libera/occupata, exit 78 e
-  report privo di telemetria. `py_compile`, verifica unità systemd e
+- I tredici test Python del preflight QGC sono PASS e coprono gate systemd,
+  rilevazione seriale, bridge legacy, porta UDP libera/occupata, exit 78,
+  report privo di telemetria, manifest valido/mancante, hash modificato,
+  endpoint e sorgente non approvati. `py_compile`, verifica unità systemd e
   `git diff --check` sono PASS.
 - Il nuovo harness fault Wi-Fi supera `/bin/sh -n`; la logica di rifiuto senza
   privilegi è stata verificata. Il fault reale non è stato eseguito perché
@@ -1771,6 +1784,13 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Il test subprocess del port-holder è PASS e verifica bind esclusivo,
   collisione e rilascio. Il test di regressione del preflight impone che
   l'unità usi `ExecCondition` e non reintroduca `ExecStartPre`.
+- La suite policy observer è ora 9/9 PASS e vincola anche input/output del
+  firewall Ground Station, assenza di forward/NAT, unità e ordine check-before-
+  enable dell'installatore. `/bin/sh -n` e `systemd-analyze verify` sullo
+  staging reale sono PASS; `nft --check` richiede ancora sudo locale.
+- Analizzatore soak 5/5 e verificatore QGC 4/4 test Python PASS: sono coperti
+  progresso completo, errori, rollback contatori, osservatore mancante,
+  firewall mancante, preflight fallito, restart e listener concorrente.
 
 #### Verificato su hardware reale
 
@@ -1922,9 +1942,11 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   fallito sotto hardening per FUSE ed è stata scartata, non nascosta.
   L'AppImage QGC 5.0.8 conservata ha SHA-256
   `06969c67ef58ea063def0a8271447a1cc385438c4a7df36813315b4475146737`;
-  preflight, unità e launcher distribuiti hanno rispettivamente SHA-256
-  `06dee66a14d3059fc4e8d93b7b4c02393bc9efc82063cc0addfeb919b977d60e`,
-  `412fc06c33f8c5875889d5f59206dfd17c4a253792dc750e661e0c1c4ec402dc`
+  preflight, manifest, unità e launcher distribuiti hanno rispettivamente
+  SHA-256
+  `731c3ca982999bf5508256e1663afcbc92dc3b8d749fe40e837d95a560b61c4a`,
+  `c3435147c57253141d01fdaa4ae5c6c5175983a028ed2b7eddf75f5f2a2e6ad0`,
+  `67fa4a6f1471fee5e0921d2d5cd4801c148099daef706793124809852721bab5`
   e `f2149da830b6bdd4b036aded1fb89cd8e18e360a7e592ff8b54a5f7e227b9cfd`.
 - Il test di arresto reale è durato 8,1 secondi: QGC 5.0.8 non ha reagito a
   SIGINT e systemd ha applicato SIGKILL al timeout. Il successivo avvio è
@@ -1950,6 +1972,23 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `LIVE`, passando 61.607→73.206 frame e 2.344→2.785 heartbeat, senza errori.
   Rilasciata la porta, il preflight è tornato `PASS` e QGC è ripartito al primo
   tentativo, PID 47330, unico bind 14550 e `NRestarts=0`.
+- Il manifest è stato distribuito e verificato sul portatile: il preflight
+  reale ha confermato QGC 5.0.8, AppRun eseguibile, sorgente
+  `192.168.1.47`, SHA-256 AppImage attesa e tutti i gate `PASS`. QGC è
+  ripartito in circa 0,3 secondi, PID 47492, `NRestarts=0` e unico listener
+  UDP 14550.
+- I tre artefatti firewall sono nello staging
+  `/home/stefano/efis-qgc-firewall-staging`; hash repository/nodo coincidono.
+  Shell e unità sono valide, mentre servizio e tabella risultano
+  `not-found/inactive`: nessuna regola è stata attivata senza sudo.
+- L'analizzatore è stato eseguito su 60 secondi di journal Blackbox e ha
+  restituito `PASS`: 58 campioni, 25,433 Hz MAVLink, +1.526 datagrammi per
+  osservatore, +1.168 record, +2.336 DDP e +1.168 datagrammi per ciascun
+  display, tutti monotoni e con zero errori/failure/reject.
+- Il verificatore Ground Station reale restituisce intenzionalmente `PARTIAL`:
+  preflight/integrità/QGC/listener/restart sono tutti verdi; i soli tre gate
+  falsi sono firewall loaded/enabled/active. Il report non viene promosso a
+  `PASS` finché l'installazione e la prova negativa non sono eseguite.
 - Durante il primo tentativo di deployment una espansione PowerShell locale ha
   trasformato il percorso di backup e ha portato temporaneamente `/usr/bin` a
   modo `0750`, impedendo nuove shell SSH e il Wi-Fi dopo reboot. Non è stato
@@ -1984,6 +2023,14 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   Risolvere/disabilitare esplicitamente
   `speechd` senza confonderlo con la voce EFIS e provare un nuovo login/reboot
   grafico per confermare l'avvio automatico.
+- Installare dalla console locale il firewall Ground Station in staging,
+  eseguire `nft --check`, verificare i contatori input/output con cattura
+  negativa e confermare che QGC continui a ricevere. Fino ad allora il report
+  `qgc-monitor-status.json` deve restare `PARTIAL`.
+- Il manifest verifica SHA-256 dell'AppImage sorgente e presenza/eseguibilità
+  di AppRun, ma non ancora un digest completo dell'AppDir estratta da circa
+  453 MiB. Aggiungere un manifest di albero o un deployment atomico verificato
+  prima di trattare l'integrità del runtime estratto come chiusa.
 - Provare perdita della WLAN di servizio e del portatile intero senza effetti
   su ingestion, recorder, DDP/EDP o controllo di volo. I fault dei soli
   consumer server e QGC sono verificati; non equivalgono alla perdita completa

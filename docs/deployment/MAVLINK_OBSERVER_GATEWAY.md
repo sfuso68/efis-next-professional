@@ -110,7 +110,8 @@ exit 78 quando rileva almeno uno di questi casi:
 
 - qualsiasi `/dev/ttyACM*` o identità seriale Pixhawk/ArduPilot/PX4/FMU;
 - il vecchio `efis-mavlink-readonly-bridge.service` attivo;
-- UDP `0.0.0.0:14550` già occupata.
+- UDP `0.0.0.0:14550` già occupata;
+- manifest, versione, AppRun o SHA-256 dell'AppImage non conformi.
 
 Il risultato atomico viene scritto in
 `~/.local/state/efis-next/qgc-monitor-preflight.json`. Il preflight non apre
@@ -144,6 +145,8 @@ install -d -m 0755 ~/.local/lib/efis-next ~/.config/systemd/user \
 install -d -m 0700 ~/.local/state/efis-next
 install -m 0755 tools/groundstation/qgc_monitor_preflight.py \
   ~/.local/lib/efis-next/qgc_monitor_preflight.py
+install -m 0644 deploy/groundstation/qgc-monitor-manifest.json \
+  ~/.local/lib/efis-next/qgc-monitor-manifest.json
 install -m 0644 deploy/systemd/efis-qgc-monitor.user.service \
   ~/.config/systemd/user/efis-qgc-monitor.service
 install -m 0644 deploy/desktop/efis-qgc-monitor.desktop \
@@ -165,6 +168,61 @@ Per provare il gate porta senza dipendere da quoting shell, usare
 `tools/network/udp_port_holder.py` come unico listener temporaneo. Il tool non
 trasmette datagrammi, accetta una durata massima di dieci minuti e deve essere
 terminato prima di riavviare QGC.
+
+Il manifest autorizzato è parte del deployment e contiene versione, endpoint,
+sorgente Blackbox, percorso AppRun e SHA-256 dell'AppImage originale. Il
+preflight ricalcola l'hash prima di ogni avvio; non aggiornare il valore per
+far passare un file inatteso senza prima inventariare provenienza, versione e
+rollback.
+
+### Firewall Ground Station in difesa di profondità
+
+La tabella `efis_qgc_monitor` è separata dalle policy di sistema e applica tre
+soli divieti: sorgenti diverse dalla Blackbox verso UDP 14550, tutto il traffico
+del portatile verso `10.77.10.0/24` e ogni UDP portatile→Blackbox. Non contiene
+forward, NAT o regole generiche di accept e non blocca SSH/TCP sulla LAN di
+servizio.
+
+Prima dell'attivazione copiare l'intera directory di progetto sul portatile e
+verificare lo staging. L'installazione richiede una console locale con sudo:
+
+```bash
+sudo deploy/scripts/install_qgc_monitor_firewall.sh
+sudo nft list table inet efis_qgc_monitor
+systemctl status efis-qgc-monitor-firewall.service --no-pager -l
+```
+
+Subito dopo ripetere la ricezione QGC e una cattura negativa: le risposte UDP
+generate da QGC devono incrementare soltanto il contatore output drop e non
+devono comparire su `wlan0`; il flusso Blackbox→QGC deve continuare. Fino a
+questa prova il verificatore operativo deve restituire `PARTIAL`.
+
+### Verifica operativa e soak
+
+`qgc_monitor_status.py` combina preflight, integrità artefatto, stato/riavvii
+systemd, unicità del listener e firewall. Restituisce `FAIL` per un gate QGC
+critico, `PARTIAL` quando QGC è corretto ma il firewall non è attivo e `PASS`
+soltanto con tutti i gate verdi:
+
+```bash
+python3 tools/groundstation/qgc_monitor_status.py
+```
+
+Sulla Blackbox, `analyze_mavlink_observer_soak.py` analizza il journal del
+broker e richiede contatori monotoni, progresso e zero errori per ingestion,
+recorder, DDP, fan-out, ogni osservatore e ogni display. Esempio su 60 secondi:
+
+```bash
+journalctl -u efis-blackbox-broker.service --since '60 seconds ago' \
+  -o cat --no-pager | \
+python3 tools/network/analyze_mavlink_observer_soak.py \
+  --input - --duration-seconds 60 --minimum-mavlink-hz 5 \
+  --observer 192.168.1.39:14550 --observer 192.168.1.6:14550 \
+  --display 10.77.10.11:49002 --display 10.77.10.13:49002
+```
+
+Il test di 60 secondi è un controllo funzionale breve, non sostituisce il soak
+termico/endurance finale.
 
 Sul server, per una prova senza dipendenze aggiuntive:
 

@@ -45,6 +45,17 @@ Pixhawk 10.77.10.3 --MAVLink2/UDP--> Blackbox 10.77.10.2:14550
 `net.ipv4.ip_forward` resta zero. Non esiste route, bridge o NAT fra
 `10.77.10.0/24` e `192.168.1.0/24`.
 
+Sul portatile una tabella nftables dedicata costituisce difesa in profondità:
+ammette su UDP 14550 soltanto la sorgente Blackbox, scarta UDP in uscita verso
+la Blackbox e vieta ogni destinazione `10.77.10.0/24`. La tabella non è la
+garanzia primaria di non ritorno — che resta l'assenza del percorso nella
+Blackbox — e la sua mancata attivazione mantiene l'acceptance in stato
+`PARTIAL`.
+
+QGroundControl viene avviato soltanto dopo un `ExecCondition` fail-closed che
+verifica assenza USB/bridge, unicità della porta e identità SHA-256 del
+pacchetto approvato. Un errore di condizione salta l'avvio senza restart-loop.
+
 ## Capacità e limite intenzionale
 
 QGroundControl, MAVProxy o strumenti di sviluppo possono ricevere heartbeat e

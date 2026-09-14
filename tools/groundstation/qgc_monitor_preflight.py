@@ -12,7 +12,9 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import glob
+import hashlib
 import json
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -22,11 +24,75 @@ from typing import Callable
 
 MODE = "MONITOR_ONLY_NO_PIXHAWK_RETURN"
 DEFAULT_LEGACY_UNIT = "efis-mavlink-readonly-bridge.service"
+DEFAULT_ALLOWED_SOURCE = "192.168.1.47"
 BLOCKED_EXIT = 78  # EX_CONFIG: operator action is required; do not restart-loop.
+MANIFEST_SCHEMA = "efis-next.qgc-monitor-manifest.v1"
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def inspect_artifacts(
+    manifest_path: Path,
+    *,
+    bind_address: str,
+    port: int,
+    legacy_unit: str,
+) -> dict[str, object]:
+    """Validate the approved immutable QGC package and local policy contract."""
+    result: dict[str, object] = {
+        "pass": False,
+        "manifest": str(manifest_path),
+    }
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        appimage = manifest["appimage"]
+        listener = manifest["listener"]
+        appimage_path = Path(appimage["path"]).expanduser()
+        executable = Path(manifest["executable"]).expanduser()
+        expected_sha256 = str(appimage["sha256"]).lower()
+        if manifest["schema"] != MANIFEST_SCHEMA:
+            raise ValueError("unsupported manifest schema")
+        if manifest["mode"] != MODE:
+            raise ValueError("manifest mode is not monitor-only")
+        if listener["bind"] != bind_address or listener["port"] != port:
+            raise ValueError("listener endpoint differs from unit arguments")
+        if listener["allowed_source"] != DEFAULT_ALLOWED_SOURCE:
+            raise ValueError("observer source is not the approved Blackbox")
+        if manifest["legacy_unit"] != legacy_unit:
+            raise ValueError("legacy unit differs from unit arguments")
+        if len(expected_sha256) != 64:
+            raise ValueError("invalid expected SHA-256")
+        if not executable.is_file() or not os.access(executable, os.X_OK):
+            raise ValueError("approved AppRun is missing or not executable")
+        actual_sha256 = sha256_file(appimage_path)
+        if actual_sha256 != expected_sha256:
+            raise ValueError("AppImage SHA-256 mismatch")
+    except (KeyError, TypeError, ValueError, OSError, json.JSONDecodeError) as error:
+        result["reason"] = str(error)
+        return result
+
+    result.update(
+        {
+            "pass": True,
+            "application": manifest["application"],
+            "version": manifest["version"],
+            "appimage": str(appimage_path),
+            "appimage_sha256": actual_sha256,
+            "executable": str(executable),
+            "allowed_source": listener["allowed_source"],
+        }
+    )
+    return result
 
 
 def discover_serial_devices(
@@ -78,7 +144,11 @@ def udp_port_available(
 
 
 def evaluate(
-    *, serial_devices: list[str], bridge_active: bool, port_available: bool
+    *,
+    serial_devices: list[str],
+    bridge_active: bool,
+    port_available: bool,
+    artifact_integrity: dict[str, object] | None = None,
 ) -> dict[str, object]:
     checks = {
         "pixhawk_usb_absent": {
@@ -88,6 +158,8 @@ def evaluate(
         "legacy_usb_bridge_inactive": {"pass": not bridge_active},
         "udp_listener_available": {"pass": port_available},
     }
+    if artifact_integrity is not None:
+        checks["artifact_integrity"] = artifact_integrity
     passed = all(bool(item["pass"]) for item in checks.values())
     return {
         "schema": "efis-next.qgc-monitor-preflight.v1",
@@ -115,6 +187,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--acm-pattern", default="/dev/ttyACM*")
     parser.add_argument("--serial-by-id", type=Path, default=Path("/dev/serial/by-id"))
     parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path("~/.local/lib/efis-next/qgc-monitor-manifest.json").expanduser(),
+    )
+    parser.add_argument(
         "--report",
         type=Path,
         default=Path("~/.local/state/efis-next/qgc-monitor-preflight.json").expanduser(),
@@ -134,6 +211,12 @@ def main() -> int:
         ),
         bridge_active=legacy_bridge_active(args.legacy_unit),
         port_available=udp_port_available(args.port, bind_address=args.bind),
+        artifact_integrity=inspect_artifacts(
+            args.manifest,
+            bind_address=args.bind,
+            port=args.port,
+            legacy_unit=args.legacy_unit,
+        ),
     )
     report["udp_endpoint"] = f"{args.bind}:{args.port}"
     report["legacy_unit"] = args.legacy_unit
