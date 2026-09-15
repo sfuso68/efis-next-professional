@@ -2173,8 +2173,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 #### Implementato
 
 - Rimossa dall'unità QGC l'attivazione automatica di Speech Dispatcher.
-- Aggiunto uno script idempotente che maschera servizio e socket speech senza
-  arrestare QGC e verifica telemetria UDP 14550 ancora attiva.
+- Aggiunto uno script idempotente che imposta `audioMuted=true`, maschera
+  servizio e socket speech, riavvia soltanto QGC e verifica telemetria UDP
+  14550 ancora attiva e assenza del processo speech.
 - Status e gate reboot richiedono ora `speech_output_muted`; warning e plugin
   TTS restano diagnostici e non sono confusi con la futura voce EFIS.
 - ADR-014 adotta un target ibrido: annunci critici registrati/versionati e TTS
@@ -2194,8 +2195,11 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - La persistenza del mute deve essere verificata nel reboot/login già armato.
 - Voce, lingua, registrazioni, motore TTS neurale, hardware audio/interfono e
   intelligibilità nel rumore non sono ancora selezionati né provati.
-- Il preload GLib resta per compatibilità del pacchetto QGC ma non riabilita
-  Speech Dispatcher finché servizio e socket rimangono mascherati.
+- Il primo login reale ha mostrato che QGC poteva avviare Speech Dispatcher
+  direttamente nonostante il mask. Il preload GLib è stato quindi rimosso
+  dall'`ExecStart` operativo e il gate richiede ora anche configurazione mute e
+  assenza del processo. Il riferimento nel manifest resta per la diagnosi ABI,
+  non viene caricato dall'unità.
 
 ### Aggiornamento 2026-09-15 — gate reboot server 50C
 
@@ -2212,6 +2216,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Aperto / non dichiarare DONE
 
-- Restano reboot/login del portatile, firewall QGC con rollback e conferma,
-  fault WLAN e alimentazione POWER1/rimozione USB. Il lotto 50C resta quindi
-  `IN PROGRESS`.
+- Il reboot/login del portatile è `PASS` sul nuovo boot ID
+  `14f1cbf7-4864-4845-a0ea-621834d28423`: QGC PID 2976, listener unico,
+  integrità e preflight validi, zero restart, `Linger=no`, `audioMuted=true`,
+  backend mascherato e nessun processo speech.
+- Restano firewall QGC con rollback e conferma, fault WLAN e alimentazione
+  POWER1/rimozione USB. Il lotto 50C resta quindi `IN PROGRESS`.

@@ -184,16 +184,19 @@ cabina.
 ### Politica voce della Ground Station
 
 La sintesi QGC sul portatile non fa parte della catena audio EFIS. Per scelta
-del proprietario è disabilitata in modo persistente mascherando sia
-`speech-dispatcher.service` sia `speech-dispatcher.socket`, senza fermare QGC:
+del proprietario è disabilitata in modo persistente impostando
+`audioMuted=true`, mascherando `speech-dispatcher.service` e relativo socket e
+rimuovendo il preload speech dall'avvio operativo. Lo script riavvia soltanto
+QGC e verifica il ritorno della telemetria:
 
 ```sh
 sh deploy/scripts/disable_qgc_synthetic_speech.sh
 ```
 
-Il gate richiede entrambi `masked/inactive` e continua a verificare QGC,
-listener e zero restart. Gli avvisi sonori non vocali di QGC non sono oggetto
-di questo mute. La futura voce naturale è una funzione EFIS distinta e viene
+Il gate richiede entrambi `masked/inactive`, il valore QGC mute e nessun
+processo `speech-dispatcher`; continua inoltre a verificare QGC, listener e
+zero restart. Il mute QGC comprende anche gli avvisi audio della Ground
+Station. La futura voce naturale è una funzione EFIS distinta e viene
 allocata alla Blackbox o a un nodo audio dedicato secondo ADR-014.
 
 Per provare il gate porta senza dipendere da quoting shell, usare

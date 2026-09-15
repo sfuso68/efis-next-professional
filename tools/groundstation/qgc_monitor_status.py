@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import configparser
 import json
+import os
 from pathlib import Path
 import subprocess
 
@@ -58,6 +60,21 @@ def enablement_state(unit: str, *, user: bool) -> str:
     return result.stdout.strip()
 
 
+def qgc_audio_muted(path: Path) -> bool:
+    parser = configparser.ConfigParser()
+    parser.optionxform = str
+    try:
+        parser.read(path, encoding="utf-8")
+        return parser.getboolean("General", "audioMuted")
+    except (OSError, configparser.Error, KeyError, ValueError):
+        return False
+
+
+def speech_process_lines() -> list[str]:
+    result = run(["pgrep", "-a", "-u", str(os.getuid()), "-x", "speech-dispatcher"])
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
 def listener_lines(port: int) -> list[str]:
     result = run(["ss", "-H", "-lunp"])
     suffix = f":{port}"
@@ -106,16 +123,21 @@ def evaluate(
     speech_socket_state: dict[str, str] | None = None,
     speech_enablement: str = "",
     speech_socket_enablement: str = "",
+    qgc_audio_is_muted: bool = False,
+    speech_processes: list[str] | None = None,
     qgc_runtime_warnings: list[str] | None = None,
 ) -> dict[str, object]:
     speech_state = speech_state or {}
     speech_socket_state = speech_socket_state or {}
+    speech_processes = speech_processes or []
     qgc_runtime_warnings = qgc_runtime_warnings or []
     speech_output_muted = (
         speech_enablement == "masked"
         and speech_socket_enablement == "masked"
         and speech_state.get("ActiveState") == "inactive"
         and speech_socket_state.get("ActiveState") == "inactive"
+        and qgc_audio_is_muted
+        and not speech_processes
     )
     checks = {
         "preflight_pass": preflight.get("status") == "PASS",
@@ -174,6 +196,8 @@ def evaluate(
         "speech_socket": speech_socket_state,
         "speech_enablement": speech_enablement,
         "speech_socket_enablement": speech_socket_enablement,
+        "qgc_audio_muted": qgc_audio_is_muted,
+        "speech_processes": speech_processes,
         "speech_policy": "GROUND_STATION_SYNTHETIC_SPEECH_MUTED",
         "qgc_runtime_warnings": qgc_runtime_warnings,
         "listeners": listeners,
@@ -193,6 +217,11 @@ def parse_args() -> argparse.Namespace:
         default=Path("~/.local/state/efis-next/qgc-monitor-status.json").expanduser(),
     )
     parser.add_argument("--port", type=int, default=14550)
+    parser.add_argument(
+        "--qgc-settings",
+        type=Path,
+        default=Path("~/.config/QGroundControl/QGroundControl.ini").expanduser(),
+    )
     return parser.parse_args()
 
 
@@ -215,6 +244,8 @@ def main() -> int:
         speech_socket_enablement=enablement_state(
             "speech-dispatcher.socket", user=True
         ),
+        qgc_audio_is_muted=qgc_audio_muted(args.qgc_settings),
+        speech_processes=speech_process_lines(),
         qgc_runtime_warnings=current_invocation_warnings("efis-qgc-monitor.service"),
     )
     document = json.dumps(report, indent=2, sort_keys=True) + "\n"

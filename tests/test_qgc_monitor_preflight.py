@@ -43,15 +43,13 @@ class QgcMonitorPreflightTests(unittest.TestCase):
         )
         self.assertIn("is-active --quiet efis-qgc-monitor.service", script)
         self.assertIn(":14550", script)
-        self.assertNotIn("stop efis-qgc-monitor", script)
+        self.assertIn("audioMuted=true", script)
+        self.assertIn("speech-dispatcher was spawned", script)
 
-    def test_systemd_preloads_approved_host_glib(self) -> None:
+    def test_systemd_does_not_load_synthetic_speech_plugin_compatibility(self) -> None:
         unit = UNIT.read_text(encoding="utf-8")
-        self.assertIn(
-            "ExecStart=/usr/bin/env LD_PRELOAD=/lib/x86_64-linux-gnu/"
-            "libglib-2.0.so.0 ",
-            unit,
-        )
+        self.assertNotIn("LD_PRELOAD", unit)
+        self.assertIn("ExecStart=%h/EFIS-ArduPilot/qgroundcontrol/", unit)
 
     def test_blocked_exit_is_non_transient_configuration_failure(self) -> None:
         self.assertEqual(MODULE.BLOCKED_EXIT, 78)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 
@@ -46,6 +47,8 @@ class QgcMonitorStatusTests(unittest.TestCase):
             "speech_socket_state": SPEECH_MUTED,
             "speech_enablement": "masked",
             "speech_socket_enablement": "masked",
+            "qgc_audio_is_muted": True,
+            "speech_processes": [],
             "qgc_runtime_warnings": [],
         }
         arguments.update(overrides)
@@ -78,6 +81,24 @@ class QgcMonitorStatusTests(unittest.TestCase):
         )
         self.assertEqual(report["status"], "PARTIAL")
         self.assertFalse(report["checks"]["speech_output_muted"])
+
+    def test_spawned_speech_process_is_partial(self) -> None:
+        report = self.evaluate(
+            speech_processes=["123 /usr/bin/speech-dispatcher --spawn"]
+        )
+        self.assertEqual(report["status"], "PARTIAL")
+        self.assertFalse(report["checks"]["speech_output_muted"])
+
+    def test_qgc_audio_setting_is_required_and_parsed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = Path(directory) / "QGroundControl.ini"
+            settings.write_text("[General]\naudioMuted=true\n", encoding="utf-8")
+            self.assertTrue(MODULE.qgc_audio_muted(settings))
+            settings.write_text("[General]\naudioMuted=false\n", encoding="utf-8")
+            self.assertFalse(MODULE.qgc_audio_muted(settings))
+        self.assertEqual(
+            self.evaluate(qgc_audio_is_muted=False)["status"], "PARTIAL"
+        )
 
     def test_qgc_speech_plugin_error_is_informational_when_muted(self) -> None:
         report = self.evaluate(

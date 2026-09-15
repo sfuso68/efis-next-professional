@@ -66,7 +66,7 @@ runner Windows per i casi POSIX), `py_compile`, generatore stato,
 ## Gate interattivi
 
 1. **PASS** — reboot server e `server_observer_reboot_acceptance.py check`;
-2. reboot/login laptop e `qgc_reboot_acceptance.py check`;
+2. **PASS** — reboot/login laptop e `qgc_reboot_acceptance.py check`;
 3. installazione firewall con rollback, verifica esterna e commit;
 4. fault WLAN con recupero temporizzato;
 5. alimentazione POWER1 definitiva e rimozione USB di banco.
@@ -77,3 +77,10 @@ Il gate server è stato chiuso il 2026-09-15: boot ID passato da
 listener, `Linger=yes`, 12 container e Caddy 401 sono tutti `PASS`, con
 `NRestarts=0`. Gli altri quattro gate non sono dichiarati verificati prima
 dell'evidenza reale.
+
+Il gate laptop è stato chiuso sul nuovo boot ID
+`14f1cbf7-4864-4845-a0ea-621834d28423`: login grafico, preflight, integrità,
+QGC, listener, `Linger=no`, zero restart e mute sintetico sono `PASS`. La
+prima verifica ha scoperto che QGC aggirava il mask avviando direttamente
+Speech Dispatcher; il gate è stato corretto per richiedere anche
+`audioMuted=true` e nessun processo speech. Restano tre gate aperti.
