@@ -30,6 +30,8 @@ ETHERNET_HEADER_BYTES = 14
 ETHERTYPE_IPV4 = 0x0800
 VLAN_ETHERTYPES = {0x8100, 0x88A8}
 UDP_PROTOCOL = 17
+DEFAULT_MAX_INTERARRIVAL_MS = 1000.0
+DEFAULT_MAX_P95_INTERARRIVAL_MS = 100.0
 
 
 class PacketError(ValueError):
@@ -152,6 +154,11 @@ def percentile(values: list[float], probability: float) -> float | None:
     return ordered[index]
 
 
+def ceil_milliseconds(value: float) -> float:
+    """Keep threshold comparisons fail-closed at report precision."""
+    return math.ceil(value * 1000.0) / 1000.0
+
+
 def timing_report(intervals_ms: list[float]) -> dict[str, float | int | None]:
     if not intervals_ms:
         return {
@@ -164,8 +171,8 @@ def timing_report(intervals_ms: list[float]) -> dict[str, float | int | None]:
     return {
         "samples": len(intervals_ms),
         "average_ms": round(statistics.fmean(intervals_ms), 3),
-        "maximum_ms": round(max(intervals_ms), 3),
-        "p95_ms": round(percentile(intervals_ms, 0.95) or 0.0, 3),
+        "maximum_ms": ceil_milliseconds(max(intervals_ms)),
+        "p95_ms": ceil_milliseconds(percentile(intervals_ms, 0.95) or 0.0),
         "mdev_ms": round(statistics.pstdev(intervals_ms), 3),
     }
 
@@ -176,6 +183,11 @@ def evaluate(report: dict[str, object], args: argparse.Namespace) -> dict[str, b
     denominator = frames + gaps
     gap_percent = (gaps * 100.0 / denominator) if denominator else 100.0
     report["sequence_gap_percent"] = round(gap_percent, 6)
+    timing = report["interarrival"]
+    assert isinstance(timing, dict)
+    timing_samples = int(timing["samples"])
+    maximum_ms = timing["maximum_ms"]
+    p95_ms = timing["p95_ms"]
     return {
         "duration_covered": float(report["actual_duration_seconds"])
         >= args.duration_seconds * 0.95,
@@ -186,6 +198,11 @@ def evaluate(report: dict[str, object], args: argparse.Namespace) -> dict[str, b
         "duplicates_within_limit": int(report["duplicates"]) <= args.max_duplicates,
         "out_of_order_within_limit": int(report["out_of_order"])
         <= args.max_out_of_order,
+        "timing_samples_present": timing_samples > 0,
+        "maximum_interarrival_within_limit": maximum_ms is not None
+        and float(maximum_ms) <= args.max_interarrival_ms,
+        "p95_interarrival_within_limit": p95_ms is not None
+        and float(p95_ms) <= args.max_p95_interarrival_ms,
         "socket_errors_zero": int(report["socket_errors"]) == 0,
     }
 
@@ -268,6 +285,10 @@ def capture(
         "duplicates": duplicates,
         "out_of_order": out_of_order,
         "interarrival": timing_report(intervals_ms),
+        "acceptance_limits": {
+            "maximum_interarrival_ms": args.max_interarrival_ms,
+            "maximum_p95_interarrival_ms": args.max_p95_interarrival_ms,
+        },
         "streams": [asdict(streams[key]) for key in sorted(streams)],
         "raw_payload_persisted": False,
     }
@@ -309,6 +330,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-malformed", type=int, default=0)
     parser.add_argument("--max-duplicates", type=int, default=0)
     parser.add_argument("--max-out-of-order", type=int, default=0)
+    parser.add_argument(
+        "--max-interarrival-ms",
+        type=float,
+        default=DEFAULT_MAX_INTERARRIVAL_MS,
+        help="fail when any accepted datagram interval exceeds this limit",
+    )
+    parser.add_argument(
+        "--max-p95-interarrival-ms",
+        type=float,
+        default=DEFAULT_MAX_P95_INTERARRIVAL_MS,
+        help="fail when the p95 accepted datagram interval exceeds this limit",
+    )
     parser.add_argument("--output", default="-")
     args = parser.parse_args()
     args.source = validated_ipv4(args.source, "source")
@@ -323,6 +356,10 @@ def parse_args() -> argparse.Namespace:
         parser.error("gap percentage must be between 0 and 100")
     if min(args.max_malformed, args.max_duplicates, args.max_out_of_order) < 0:
         parser.error("counter limits must not be negative")
+    if args.max_interarrival_ms <= 0 or args.max_p95_interarrival_ms <= 0:
+        parser.error("interarrival limits must be positive")
+    if args.max_p95_interarrival_ms > args.max_interarrival_ms:
+        parser.error("p95 interarrival limit must not exceed the maximum limit")
     return args
 
 

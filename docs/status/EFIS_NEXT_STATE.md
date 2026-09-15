@@ -2463,3 +2463,40 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   sincronizzata resta aperta. Persistenza power save, fault perdita/jitter,
   shutdown QGC ed Ethernet Ground Station restano gate separati. POWER1 resta
   rinviato.
+
+### Aggiornamento 2026-09-15 — gate freshness MAVLink 50G
+
+#### Implementato
+
+- La cattura passiva applica ora gate fail-closed sia al massimo interarrival
+  sia al p95. I default sono rispettivamente 1.000 ms, coerente con il confine
+  CORE `stale_after`, e 100 ms; i limiti effettivi vengono inclusi nel report.
+- Un report privo di campioni timing fallisce. Limiti non positivi o un limite
+  p95 superiore al limite assoluto sono rifiutati prima della cattura. Massimo
+  e p95 sono arrotondati per eccesso alla precisione del report, evitando che
+  un superamento sub-millisecondo venga promosso per arrotondamento.
+
+#### Verificato solo software
+
+- Suite dedicata 14/14 `PASS`, inclusi superamento massimo/p95, assenza
+  campioni, soglie esatte e report dei limiti. Regressione rete complessiva:
+  111 test, 109 `PASS` e due skip POSIX attesi su Windows.
+- Il report 50F, rivalutato rispetto alla nuova politica, non sarebbe
+  qualificabile temporalmente perché 1.012,999 ms supera il limite di 1.000
+  ms; l'integrità di sequenza precedentemente registrata resta valida.
+
+#### Verificato su hardware reale
+
+- Tool aggiornato distribuito sul portatile; SHA-256 locale/remoto identico
+  `58fb5af55606d72621b26087bf0c60285dc9ebabcf9b309db1b1025b0e32416c`.
+  `py_compile` e opzioni CLI verificate su Debian 13.
+- QGC è rimasto `active/running`, PID 2660 e `NRestarts=0` dopo la
+  distribuzione.
+
+#### Aperto / non dichiarare DONE
+
+- Eseguire la cattura 50G da 180 s con entrambi i gate attivi e correlare i
+  delta Blackbox sulla stessa finestra. I valori sono confini di salute di
+  banco e non costituiscono certificazione del trasporto.
+- Persistenza power save, fault confinato, Ethernet Ground Station, shutdown
+  QGC e POWER1 restano aperti.

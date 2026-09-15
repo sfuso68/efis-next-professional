@@ -146,5 +146,10 @@ però il timing: il massimo interarrival è 1.012,999 ms e il mdev 176,557 ms.
 Di conseguenza un gate timing esplicito e una ripetizione con delta Blackbox
 sincronizzato sono obbligatori prima di promuovere il collegamento Wi-Fi.
 
+Il lotto 50G rende tale decisione eseguibile: la cattura fallisce senza
+campioni timing, con massimo interarrival oltre 1.000 ms o p95 oltre 100 ms.
+I limiti sono registrati nel report, derivano dal confine di salute CORE e
+restano soglie di banco configurabili, non requisiti certificativi impliciti.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

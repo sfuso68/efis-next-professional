@@ -535,6 +535,13 @@ I gap sono derivati dal sequence byte MAVLink2 per system/component. Il parser
 validazione autorevole della Blackbox. Interarrival mdev e p95 non costituiscono
 da soli una qualifica di jitter deterministico.
 
+Il lotto 50G aggiunge due gate distinti: `--max-interarrival-ms` (default
+1.000 ms, coerente col confine CORE `stale_after`) e
+`--max-p95-interarrival-ms` (default 100 ms). Entrambi i limiti sono registrati
+nel report. Mancanza di campioni timing, superamento del massimo o superamento
+del p95 producono `FAIL`. Sono soglie di acceptance di banco, non limiti
+certificativi né prova della causa della pausa.
+
 ## Rollback
 
 Ripristinare il precedente binario immutabile e la precedente unità systemd,

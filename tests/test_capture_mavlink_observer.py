@@ -62,6 +62,8 @@ def arguments(**overrides: object) -> argparse.Namespace:
         "max_malformed": 0,
         "max_duplicates": 0,
         "max_out_of_order": 0,
+        "max_interarrival_ms": 1000.0,
+        "max_p95_interarrival_ms": 100.0,
     }
     values.update(overrides)
     return argparse.Namespace(**values)
@@ -126,6 +128,9 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
         self.assertEqual(report["maximum_ms"], 40.0)
         self.assertEqual(report["p95_ms"], 40.0)
         self.assertIsNotNone(report["mdev_ms"])
+        boundary = MODULE.timing_report([1000.0001])
+        self.assertEqual(boundary["maximum_ms"], 1000.001)
+        self.assertEqual(boundary["p95_ms"], 1000.001)
 
     def test_evaluation_passes_clean_capture(self) -> None:
         report: dict[str, object] = {
@@ -137,6 +142,13 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
             "out_of_order": 0,
             "malformed": 0,
             "socket_errors": 0,
+            "interarrival": {
+                "samples": 259,
+                "average_ms": 38.0,
+                "maximum_ms": 45.0,
+                "p95_ms": 42.0,
+                "mdev_ms": 2.0,
+            },
         }
         checks = MODULE.evaluate(report, arguments())
         self.assertTrue(all(checks.values()))
@@ -152,6 +164,13 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
             "out_of_order": 0,
             "malformed": 0,
             "socket_errors": 0,
+            "interarrival": {
+                "samples": 259,
+                "average_ms": 38.0,
+                "maximum_ms": 45.0,
+                "p95_ms": 42.0,
+                "mdev_ms": 2.0,
+            },
         }
         for key, value in (
             ("actual_duration_seconds", 9.0),
@@ -167,6 +186,59 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
                 report = dict(baseline)
                 report[key] = value
                 self.assertFalse(all(MODULE.evaluate(report, arguments()).values()))
+
+    def test_evaluation_fails_timing_gates(self) -> None:
+        baseline: dict[str, object] = {
+            "actual_duration_seconds": 10.0,
+            "datagram_hz": 26.0,
+            "frames": 260,
+            "sequence_gaps": 0,
+            "duplicates": 0,
+            "out_of_order": 0,
+            "malformed": 0,
+            "socket_errors": 0,
+            "interarrival": {
+                "samples": 259,
+                "average_ms": 38.0,
+                "maximum_ms": 45.0,
+                "p95_ms": 42.0,
+                "mdev_ms": 2.0,
+            },
+        }
+        cases = (
+            ("samples", 0, "timing_samples_present"),
+            ("maximum_ms", 1000.001, "maximum_interarrival_within_limit"),
+            ("p95_ms", 100.001, "p95_interarrival_within_limit"),
+        )
+        for field, value, check in cases:
+            with self.subTest(field=field):
+                report = dict(baseline)
+                report["interarrival"] = dict(baseline["interarrival"])
+                report["interarrival"][field] = value
+                checks = MODULE.evaluate(report, arguments())
+                self.assertFalse(checks[check])
+
+    def test_evaluation_accepts_timing_boundaries(self) -> None:
+        report: dict[str, object] = {
+            "actual_duration_seconds": 10.0,
+            "datagram_hz": 26.0,
+            "frames": 260,
+            "sequence_gaps": 0,
+            "duplicates": 0,
+            "out_of_order": 0,
+            "malformed": 0,
+            "socket_errors": 0,
+            "interarrival": {
+                "samples": 259,
+                "average_ms": 38.0,
+                "maximum_ms": 1000.0,
+                "p95_ms": 100.0,
+                "mdev_ms": 50.0,
+            },
+        }
+        checks = MODULE.evaluate(report, arguments())
+        self.assertTrue(checks["maximum_interarrival_within_limit"])
+        self.assertTrue(checks["p95_interarrival_within_limit"])
 
     def test_validators_are_fail_closed(self) -> None:
         self.assertEqual(MODULE.validated_interface("wlo1"), "wlo1")
@@ -212,7 +284,11 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
         receiver = FakeSocket()
         ticks = iter((0, 0, 1_000_000_000, 1_000_000_000,
                       2_000_000_000, 10_000_000_000, 10_000_000_000))
-        args = arguments(minimum_hz=0.1)
+        args = arguments(
+            minimum_hz=0.1,
+            max_interarrival_ms=1000.0,
+            max_p95_interarrival_ms=1000.0,
+        )
         args.interface = "wlo1"
         args.source = "192.168.1.47"
         args.destination = "192.168.1.39"
@@ -231,6 +307,7 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
         self.assertEqual(report["sequence_gaps"], 0)
         self.assertFalse(report["raw_payload_persisted"])
         self.assertEqual(report["interarrival"]["average_ms"], 1000.0)
+        self.assertEqual(report["acceptance_limits"]["maximum_interarrival_ms"], 1000.0)
 
     def test_source_contains_no_transmit_call(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8")
