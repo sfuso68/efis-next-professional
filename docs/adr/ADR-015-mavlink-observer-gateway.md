@@ -163,5 +163,13 @@ separato di 3.000 ms coerente con `lost_after`. La decisione architetturale
 resta conservativa: prima si confrontano ingresso Ethernet e uscita Wi-Fi,
 poi si decide se intervenire su sorgente, broker o trasporto.
 
+Il confronto hardware 50H mostra la stessa firma già su Ethernet in ingresso:
+179 pause oltre 500 ms e 194 raffiche in 180 s, contro 180/196 sul portatile.
+Entrambi i lati hanno 180 HEARTBEAT e zero difetti di sequenza; il Wi-Fi porta
+il massimo HEARTBEAT da 1.000,341 a 1.046,943 ms, sempre entro 3.000 ms. La
+decisione è quindi di distinguere tre esiti: integrità, liveness e uniformità.
+Il gate uniforme Wi-Fi resta fallito e visibile, ma non equivale a perdita del
+link monitor-only. Ethernet rimane preferita per una Ground Station operativa.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

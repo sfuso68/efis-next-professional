@@ -2492,6 +2492,25 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `py_compile` e opzioni CLI verificate su Debian 13.
 - QGC è rimasto `active/running`, PID 2660 e `NRestarts=0` dopo la
   distribuzione.
+- Cattura v2 portatile completata per 180,052 s: 4.736 frame a 26,303 Hz,
+  zero difetti di integrità, 180 HEARTBEAT con massimo 1.046,943 ms entro il
+  gate 3.000 ms. Sono presenti 180 pause oltre 500 ms, 196 raffiche da 24,163
+  datagrammi medi e un intervallo oltre 1.000 ms; il gate uniforme resta
+  correttamente `FAIL`. SHA-256 report
+  `87fd999c508b63411afbcb06f76af2d91b6b69830e1b143c602d9a16b718d9e8`.
+- Lo stesso tool è stato distribuito sulla Blackbox ed eseguito su `eth0`
+  Pixhawk→Blackbox per 180,024 s: 4.734 frame a 26,296 Hz, zero difetti,
+  180 HEARTBEAT, 179 pause oltre 500 ms e 194 raffiche da 24,402 datagrammi
+  medi. Tutti i gate, incluso massimo 979,900 ms, sono `PASS`. SHA-256 report
+  `e75fb1982c082597987e14ca213d52f123991374996cd80afb6bb196f0be05d3`.
+- La struttura quasi identica localizza la formazione delle raffiche a monte
+  del fan-out Wi-Fi. Il Wi-Fi non perde né riordina frame, ma nella finestra
+  separata porta HEARTBEAT massimo da 1.000,341 a 1.046,943 ms e mdev da
+  0,099 a 8,882 ms. È evidenza di variabilità aggiuntiva, non un confronto
+  pacchetto-per-pacchetto perché le catture non erano simultanee.
+- Dopo le prove broker PID 2448 e QGC PID 2660 sono `active/running`, zero
+  restart; recorder/DDP/EDP crescono, failure/errori UDP sono zero e
+  throttling Blackbox è `0x0`.
 
 #### Aperto / non dichiarare DONE
 
@@ -2540,8 +2559,9 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Aperto / non dichiarare DONE
 
-- La cattura hardware v2 non è ancora stata eseguita. Serve il report 50H per
-  quantificare periodicità/dimensione delle raffiche e freshness HEARTBEAT.
-- Per localizzare la causa occorre una seconda cattura passiva sull'ingresso
-  Ethernet Blackbox nella stessa condizione; i soli dati lato portatile non
-  distinguono sorgente/broker/Wi-Fi.
+- Separare formalmente nel report integrità, liveness e uniformità: il link
+  observer è integro e vivo, ma non soddisfa il gate uniforme da 1.000 ms sul
+  Wi-Fi. Non trasformare quest'ultimo né in perdita link né in PASS globale.
+- Una prova simultanea sui due lati resta necessaria per quantificare il delta
+  pacchetto-per-pacchetto. Ethernet resta preferita per il ruolo operativo;
+  persistenza power save, fault confinato, shutdown e POWER1 restano aperti.
