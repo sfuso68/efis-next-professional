@@ -516,6 +516,25 @@ L'UUID è quello verificato sul portatile del banco e non va riutilizzato su un
 altro host. Anche dopo un miglioramento ICMP, QGC necessita di una misura
 applicativa di sequenza/freshness prima di qualificare il collegamento.
 
+### Cattura passiva lato Ground Station
+
+`capture_mavlink_observer.py` misura il traffico che raggiunge realmente
+`wlo1` senza aprire UDP 14550 e senza sottrarre datagrammi a QGC. Usa un socket
+Linux `AF_PACKET` raw esclusivamente in ricezione e filtra
+`192.168.1.47 -> 192.168.1.39:14550`. Non contiene un percorso di invio e non
+persiste payload: il report conserva soltanto conteggi, stream system/component,
+sequenze aggregate e tempi di inter-arrivo.
+
+Il privilegio serve soltanto ad aprire `AF_PACKET`. Mantenere la scrittura del
+report nel processo utente con una pipe e `tee`, come nel checkpoint 50F. Il
+tool deve essere eseguito mentre QGC resta attivo; il risultato va confrontato
+con PID/restart/drop QGC e con il delta observer Blackbox della stessa finestra.
+
+I gap sono derivati dal sequence byte MAVLink2 per system/component. Il parser
+è strutturale e non ricalcola il CRC di dialect: un `PASS` non sostituisce la
+validazione autorevole della Blackbox. Interarrival mdev e p95 non costituiscono
+da soli una qualifica di jitter deterministico.
+
 ## Rollback
 
 Ripristinare il precedente binario immutabile e la precedente unità systemd,

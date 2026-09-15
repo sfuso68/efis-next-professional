@@ -132,5 +132,13 @@ sequenza lato QGC mantengono Ethernet come preferenza operativa e impediscono
 di qualificare il Wi-Fi come canale deterministico. La persistenza dopo reboot
 resta da provare.
 
+Il lotto 50F adotta per l'acceptance lato Ground Station una cattura passiva
+Linux `AF_PACKET`, separata dal socket UDP di QGC. La cattura non trasmette e
+non persiste payload; filtra soltanto il flusso Blackbox→Ground Station e
+produce rate, gap, duplicati, riordino e interarrival aggregati. L'esecuzione
+hardware richiede `CAP_NET_RAW`/root e resta un'azione esplicita di banco. Il
+parser è strutturale, non sostituisce CRC/dialect Blackbox e non autorizza un
+percorso di ritorno.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

@@ -2410,3 +2410,40 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - ICMP non misura sequenza, freshness o jitter applicativo MAVLink. Il picco
   RTT di 125,880 ms mantiene Ethernet come soluzione preferita per un ruolo
   Ground Station operativo.
+
+### Aggiornamento 2026-09-15 — cattura MAVLink passiva 50F
+
+#### Implementato
+
+- Aggiunto `tools/network/capture_mavlink_observer.py`: cattura Linux
+  `AF_PACKET` passiva, senza bind UDP concorrente con QGC e senza funzioni di
+  trasmissione. Filtra sorgente/destinazione/porta, valida Ethernet/VLAN,
+  IPv4/UDP e confini MAVLink2, quindi misura rate, gap, duplicati, riordino e
+  tempi di inter-arrivo per system/component.
+- Il report è aggregato e non conserva payload. La scrittura opzionale è
+  atomica; stdout consente di mantenere il file finale di proprietà dell'utente
+  anche quando l'apertura del raw socket richiede `sudo`.
+
+#### Verificato solo software
+
+- 12/12 test dedicati `PASS`: parser Ethernet/VLAN/IPv4/UDP, endpoint non
+  pertinenti, troncamento/frammentazione, wrap 255→0, gap, duplicati, riordino,
+  stream indipendenti, capture loop simulato, timing, gate fail-closed e
+  assenza statica di qualsiasi chiamata di invio.
+- Sintassi Python verificata anche sul portatile Debian 13. L'avvio senza
+  privilegi restituisce exit 77 prima di aprire la cattura.
+
+#### Verificato su hardware reale
+
+- Distribuiti tool e parser dipendente sul portatile. La prova negativa non
+  privilegiata non ha interferito con QGC: PID 2660, `NRestarts=0`, listener
+  UDP unico e coda/drop socket zero.
+
+#### Aperto / non dichiarare DONE
+
+- La cattura raw di 60 s richiede esecuzione locale `sudo` e non è ancora
+  avvenuta. Vanno verificati sul flusso reale rate, gap, duplicati, riordino e
+  modello delle sequenze per system/component.
+- Confrontare la finestra con contatori Blackbox e stato QGC. Persistenza power
+  save, fault perdita/jitter, shutdown QGC ed Ethernet Ground Station restano
+  gate separati. POWER1 resta rinviato.
