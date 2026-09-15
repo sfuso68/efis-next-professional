@@ -542,6 +542,14 @@ nel report. Mancanza di campioni timing, superamento del massimo o superamento
 del p95 producono `FAIL`. Sono soglie di acceptance di banco, non limiti
 certificativi né prova della causa della pausa.
 
+Lo schema v2 del lotto 50H aggiunge un profilo diagnostico senza payload:
+bucket degli intervalli, conteggi oltre 100/500/1.000/3.000 ms, analisi delle
+raffiche separate da oltre 100 ms e timing HEARTBEAT per system/component. Il
+gate HEARTBEAT predefinito è 3.000 ms, coerente col confine `lost_after` del
+CORE. Il gate su tutti i datagrammi resta separato: un suo fallimento non deve
+essere riclassificato né attribuito al Wi-Fi senza confrontare ingresso
+Ethernet e uscita Wi-Fi della Blackbox.
+
 ## Rollback
 
 Ripristinare il precedente binario immutabile e la precedente unità systemd,

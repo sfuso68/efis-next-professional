@@ -157,5 +157,11 @@ di 3,120 ms e la media di 37,843 ms sono compatibili con una sorgente a
 raffiche. Non è autorizzato allargare il limite: prima vanno misurati
 HEARTBEAT, periodicità delle pause e i due lati Ethernet/Wi-Fi della Blackbox.
 
+Il lotto 50H introduce lo schema report v2: distribuzione degli intervalli,
+raffiche e timing HEARTBEAT sono aggregati senza payload. HEARTBEAT usa un gate
+separato di 3.000 ms coerente con `lost_after`. La decisione architetturale
+resta conservativa: prima si confrontano ingresso Ethernet e uscita Wi-Fi,
+poi si decide se intervenire su sorgente, broker o trasporto.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

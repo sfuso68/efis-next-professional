@@ -64,6 +64,7 @@ def arguments(**overrides: object) -> argparse.Namespace:
         "max_out_of_order": 0,
         "max_interarrival_ms": 1000.0,
         "max_p95_interarrival_ms": 100.0,
+        "max_heartbeat_interarrival_ms": 3000.0,
     }
     values.update(overrides)
     return argparse.Namespace(**values)
@@ -149,6 +150,16 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
                 "p95_ms": 42.0,
                 "mdev_ms": 2.0,
             },
+            "heartbeat": {
+                "frames": 10,
+                "interarrival": {
+                    "samples": 9,
+                    "average_ms": 1000.0,
+                    "maximum_ms": 1000.0,
+                    "p95_ms": 1000.0,
+                    "mdev_ms": 0.0,
+                },
+            },
         }
         checks = MODULE.evaluate(report, arguments())
         self.assertTrue(all(checks.values()))
@@ -170,6 +181,16 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
                 "maximum_ms": 45.0,
                 "p95_ms": 42.0,
                 "mdev_ms": 2.0,
+            },
+            "heartbeat": {
+                "frames": 10,
+                "interarrival": {
+                    "samples": 9,
+                    "average_ms": 1000.0,
+                    "maximum_ms": 1000.0,
+                    "p95_ms": 1000.0,
+                    "mdev_ms": 0.0,
+                },
             },
         }
         for key, value in (
@@ -204,6 +225,16 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
                 "p95_ms": 42.0,
                 "mdev_ms": 2.0,
             },
+            "heartbeat": {
+                "frames": 10,
+                "interarrival": {
+                    "samples": 9,
+                    "average_ms": 1000.0,
+                    "maximum_ms": 1000.0,
+                    "p95_ms": 1000.0,
+                    "mdev_ms": 0.0,
+                },
+            },
         }
         cases = (
             ("samples", 0, "timing_samples_present"),
@@ -235,10 +266,84 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
                 "p95_ms": 100.0,
                 "mdev_ms": 50.0,
             },
+            "heartbeat": {
+                "frames": 10,
+                "interarrival": {
+                    "samples": 9,
+                    "average_ms": 1000.0,
+                    "maximum_ms": 1000.0,
+                    "p95_ms": 1000.0,
+                    "mdev_ms": 0.0,
+                },
+            },
         }
         checks = MODULE.evaluate(report, arguments())
         self.assertTrue(checks["maximum_interarrival_within_limit"])
         self.assertTrue(checks["p95_interarrival_within_limit"])
+
+    def test_evaluation_fails_heartbeat_gates(self) -> None:
+        baseline: dict[str, object] = {
+            "actual_duration_seconds": 10.0,
+            "datagram_hz": 26.0,
+            "frames": 260,
+            "sequence_gaps": 0,
+            "duplicates": 0,
+            "out_of_order": 0,
+            "malformed": 0,
+            "socket_errors": 0,
+            "interarrival": {
+                "samples": 259,
+                "average_ms": 38.0,
+                "maximum_ms": 45.0,
+                "p95_ms": 42.0,
+                "mdev_ms": 2.0,
+            },
+            "heartbeat": {
+                "frames": 10,
+                "interarrival": {
+                    "samples": 9,
+                    "average_ms": 1000.0,
+                    "maximum_ms": 1000.0,
+                    "p95_ms": 1000.0,
+                    "mdev_ms": 0.0,
+                },
+            },
+        }
+        cases = (
+            (1, 1, 1000.0, "heartbeat_frames_present"),
+            (2, 0, None, "heartbeat_timing_samples_present"),
+            (2, 1, 3000.001, "maximum_heartbeat_interarrival_within_limit"),
+        )
+        for frames, samples, maximum, expected in cases:
+            with self.subTest(expected=expected):
+                report = dict(baseline)
+                heartbeat = dict(baseline["heartbeat"])
+                heartbeat["frames"] = frames
+                heartbeat["interarrival"] = dict(heartbeat["interarrival"])
+                heartbeat["interarrival"]["samples"] = samples
+                heartbeat["interarrival"]["maximum_ms"] = maximum
+                report["heartbeat"] = heartbeat
+                self.assertFalse(MODULE.evaluate(report, arguments())[expected])
+
+    def test_interval_distribution_and_bursts_are_aggregate(self) -> None:
+        intervals = [1.0, 2.0, 200.0, 3.0, 600.0, 4.0, 1000.1]
+        distribution = MODULE.interval_distribution(intervals)
+        self.assertEqual(distribution["over_100_ms"], 3)
+        self.assertEqual(distribution["over_500_ms"], 2)
+        self.assertEqual(distribution["over_1000_ms"], 1)
+        bursts = MODULE.burst_report(intervals, 100.0, 8)
+        self.assertEqual(bursts["bursts"], 4)
+        self.assertEqual(bursts["minimum_datagrams_per_burst"], 1)
+        self.assertEqual(bursts["maximum_datagrams_per_burst"], 3)
+
+    def test_heartbeat_state_keeps_only_aggregate_timing(self) -> None:
+        state = MODULE.HeartbeatState(1, 1)
+        state.observe(1_000_000_000)
+        state.observe(2_000_000_000)
+        report = state.report()
+        self.assertEqual(report["frames"], 2)
+        self.assertEqual(report["interarrival"]["maximum_ms"], 1000.0)
+        self.assertNotIn("last_received_ns", report)
 
     def test_validators_are_fail_closed(self) -> None:
         self.assertEqual(MODULE.validated_interface("wlo1"), "wlo1")
@@ -308,6 +413,9 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
         self.assertFalse(report["raw_payload_persisted"])
         self.assertEqual(report["interarrival"]["average_ms"], 1000.0)
         self.assertEqual(report["acceptance_limits"]["maximum_interarrival_ms"], 1000.0)
+        self.assertEqual(report["heartbeat"]["frames"], 2)
+        self.assertEqual(report["heartbeat"]["interarrival"]["maximum_ms"], 1000.0)
+        self.assertEqual(report["burst_analysis"]["bursts"], 2)
 
     def test_source_contains_no_transmit_call(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8")

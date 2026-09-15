@@ -2511,3 +2511,37 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   delle raffiche.
 - Persistenza power save, fault confinato, Ethernet Ground Station, shutdown
   QGC e POWER1 restano aperti.
+
+### Aggiornamento 2026-09-15 — diagnostica raffiche/HEARTBEAT 50H
+
+#### Implementato
+
+- Lo schema passivo v2 aggiunge distribuzione degli intervalli, conteggi oltre
+  100/500/1.000/3.000 ms e dimensione delle raffiche separate da pause oltre
+  100 ms. Le grandezze restano aggregate e non contengono payload.
+- HEARTBEAT è ora misurato separatamente per system/component con gate di
+  presenza, timing disponibile e massimo configurabile, default 3.000 ms
+  coerente con il confine CORE `lost_after`.
+
+#### Verificato solo software
+
+- Suite dedicata 17/17 `PASS`: gate HEARTBEAT fail-closed, bucket intervalli,
+  raffiche, coerenza datagrammi/intervalli e assenza di timestamp assoluti nel
+  report per stream. Regressione rete: 114 test, 112 `PASS`, due skip POSIX
+  attesi su Windows.
+
+#### Verificato su hardware reale
+
+- Tool v2 distribuito sul portatile Debian 13; `py_compile`, help CLI e hash
+  locale/remoto verificati:
+  `b0bb9e2369445d802b8c0c01c1920ea89c018f986522518d7f819f9661d6eabd`.
+  QGC è rimasto `active/running`, PID 2660 e `NRestarts=0` durante la
+  distribuzione.
+
+#### Aperto / non dichiarare DONE
+
+- La cattura hardware v2 non è ancora stata eseguita. Serve il report 50H per
+  quantificare periodicità/dimensione delle raffiche e freshness HEARTBEAT.
+- Per localizzare la causa occorre una seconda cattura passiva sull'ingresso
+  Ethernet Blackbox nella stessa condizione; i soli dati lato portatile non
+  distinguono sorgente/broker/Wi-Fi.

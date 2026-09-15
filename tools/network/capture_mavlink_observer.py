@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import ipaddress
 import json
@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mavlink_observer_sink import FrameError, parse_mavlink2_datagram  # noqa: E402
 
 
-SCHEMA = "efis-next.mavlink-passive-capture.v1"
+SCHEMA = "efis-next.mavlink-passive-capture.v2"
 MODE = "PASSIVE_AF_PACKET_NO_RETURN_PATH"
 ETHERNET_HEADER_BYTES = 14
 ETHERTYPE_IPV4 = 0x0800
@@ -32,6 +32,10 @@ VLAN_ETHERTYPES = {0x8100, 0x88A8}
 UDP_PROTOCOL = 17
 DEFAULT_MAX_INTERARRIVAL_MS = 1000.0
 DEFAULT_MAX_P95_INTERARRIVAL_MS = 100.0
+DEFAULT_MAX_HEARTBEAT_INTERARRIVAL_MS = 3000.0
+BURST_SEPARATOR_MS = 100.0
+INTERVAL_BUCKETS_MS = (5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0,
+                       750.0, 1000.0, 1500.0, 3000.0)
 
 
 class PacketError(ValueError):
@@ -72,6 +76,29 @@ class StreamState:
             self.last_sequence = sequence
             return
         self.out_of_order += 1
+
+
+@dataclass
+class HeartbeatState:
+    system_id: int
+    component_id: int
+    frames: int = 0
+    last_received_ns: int | None = None
+    intervals_ms: list[float] = field(default_factory=list)
+
+    def observe(self, received_ns: int) -> None:
+        if self.last_received_ns is not None:
+            self.intervals_ms.append((received_ns - self.last_received_ns) / 1e6)
+        self.last_received_ns = received_ns
+        self.frames += 1
+
+    def report(self) -> dict[str, object]:
+        return {
+            "system_id": self.system_id,
+            "component_id": self.component_id,
+            "frames": self.frames,
+            "interarrival": timing_report(self.intervals_ms),
+        }
 
 
 def validated_ipv4(value: str, label: str) -> str:
@@ -177,6 +204,58 @@ def timing_report(intervals_ms: list[float]) -> dict[str, float | int | None]:
     }
 
 
+def interval_distribution(intervals_ms: list[float]) -> dict[str, object]:
+    buckets: list[dict[str, float | int]] = []
+    lower = 0.0
+    for index, upper in enumerate(INTERVAL_BUCKETS_MS):
+        count = sum(
+            1
+            for value in intervals_ms
+            if (lower <= value if index == 0 else lower < value) and value <= upper
+        )
+        buckets.append({"above_ms": lower, "up_to_ms": upper, "count": count})
+        lower = upper
+    return {
+        "buckets": buckets,
+        "over_3000_ms": sum(1 for value in intervals_ms if value > 3000.0),
+        "over_100_ms": sum(1 for value in intervals_ms if value > 100.0),
+        "over_500_ms": sum(1 for value in intervals_ms if value > 500.0),
+        "over_1000_ms": sum(1 for value in intervals_ms if value > 1000.0),
+    }
+
+
+def burst_report(
+    intervals_ms: list[float], separator_ms: float, datagrams: int
+) -> dict[str, object]:
+    if datagrams < 0 or (datagrams and len(intervals_ms) != datagrams - 1):
+        raise ValueError("burst analysis requires one fewer interval than datagrams")
+    if datagrams == 0:
+        return {
+            "separator_ms": separator_ms,
+            "bursts": 0,
+            "average_datagrams_per_burst": None,
+            "minimum_datagrams_per_burst": None,
+            "maximum_datagrams_per_burst": None,
+            "p95_datagrams_per_burst": None,
+        }
+    sizes = [1]
+    for interval in intervals_ms:
+        if interval > separator_ms:
+            sizes.append(1)
+        else:
+            sizes[-1] += 1
+    return {
+        "separator_ms": separator_ms,
+        "bursts": len(sizes),
+        "average_datagrams_per_burst": round(statistics.fmean(sizes), 3),
+        "minimum_datagrams_per_burst": min(sizes),
+        "maximum_datagrams_per_burst": max(sizes),
+        "p95_datagrams_per_burst": percentile(
+            [float(size) for size in sizes], 0.95
+        ),
+    }
+
+
 def evaluate(report: dict[str, object], args: argparse.Namespace) -> dict[str, bool]:
     frames = int(report["frames"])
     gaps = int(report["sequence_gaps"])
@@ -188,6 +267,13 @@ def evaluate(report: dict[str, object], args: argparse.Namespace) -> dict[str, b
     timing_samples = int(timing["samples"])
     maximum_ms = timing["maximum_ms"]
     p95_ms = timing["p95_ms"]
+    heartbeat = report["heartbeat"]
+    assert isinstance(heartbeat, dict)
+    heartbeat_frames = int(heartbeat["frames"])
+    heartbeat_timing = heartbeat["interarrival"]
+    assert isinstance(heartbeat_timing, dict)
+    heartbeat_samples = int(heartbeat_timing["samples"])
+    heartbeat_maximum_ms = heartbeat_timing["maximum_ms"]
     return {
         "duration_covered": float(report["actual_duration_seconds"])
         >= args.duration_seconds * 0.95,
@@ -203,6 +289,11 @@ def evaluate(report: dict[str, object], args: argparse.Namespace) -> dict[str, b
         and float(maximum_ms) <= args.max_interarrival_ms,
         "p95_interarrival_within_limit": p95_ms is not None
         and float(p95_ms) <= args.max_p95_interarrival_ms,
+        "heartbeat_frames_present": heartbeat_frames >= 2,
+        "heartbeat_timing_samples_present": heartbeat_samples > 0,
+        "maximum_heartbeat_interarrival_within_limit": heartbeat_maximum_ms
+        is not None
+        and float(heartbeat_maximum_ms) <= args.max_heartbeat_interarrival_ms,
         "socket_errors_zero": int(report["socket_errors"]) == 0,
     }
 
@@ -225,6 +316,7 @@ def capture(
     last_datagram_ns: int | None = None
     intervals_ms: list[float] = []
     streams: dict[tuple[int, int], StreamState] = {}
+    heartbeat_streams: dict[tuple[int, int], HeartbeatState] = {}
     packets_seen = datagrams = frames = malformed = socket_errors = 0
     ignored = bytes_observed = 0
     try:
@@ -253,11 +345,16 @@ def capture(
             datagrams += 1
             bytes_observed += len(payload)
             frames += len(parsed)
-            for system_id, component_id, _message_id, sequence in parsed:
+            for system_id, component_id, message_id, sequence in parsed:
                 key = (system_id, component_id)
                 streams.setdefault(
                     key, StreamState(system_id=system_id, component_id=component_id)
                 ).observe(sequence)
+                if message_id == 0:
+                    heartbeat_streams.setdefault(
+                        key,
+                        HeartbeatState(system_id=system_id, component_id=component_id),
+                    ).observe(now_ns)
     finally:
         receiver.close()
     finished_ns = monotonic_ns()
@@ -265,6 +362,14 @@ def capture(
     sequence_gaps = sum(stream.gaps for stream in streams.values())
     duplicates = sum(stream.duplicates for stream in streams.values())
     out_of_order = sum(stream.out_of_order for stream in streams.values())
+    heartbeat_reports = [
+        heartbeat_streams[key].report() for key in sorted(heartbeat_streams)
+    ]
+    heartbeat_intervals = [
+        interval
+        for state in heartbeat_streams.values()
+        for interval in state.intervals_ms
+    ]
     report: dict[str, object] = {
         "schema": SCHEMA,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -285,9 +390,18 @@ def capture(
         "duplicates": duplicates,
         "out_of_order": out_of_order,
         "interarrival": timing_report(intervals_ms),
+        "interval_distribution": interval_distribution(intervals_ms),
+        "burst_analysis": burst_report(intervals_ms, BURST_SEPARATOR_MS, datagrams),
+        "heartbeat": {
+            "frames": sum(state.frames for state in heartbeat_streams.values()),
+            "interarrival": timing_report(heartbeat_intervals),
+            "streams": heartbeat_reports,
+        },
         "acceptance_limits": {
             "maximum_interarrival_ms": args.max_interarrival_ms,
             "maximum_p95_interarrival_ms": args.max_p95_interarrival_ms,
+            "maximum_heartbeat_interarrival_ms":
+            args.max_heartbeat_interarrival_ms,
         },
         "streams": [asdict(streams[key]) for key in sorted(streams)],
         "raw_payload_persisted": False,
@@ -342,6 +456,12 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_MAX_P95_INTERARRIVAL_MS,
         help="fail when the p95 accepted datagram interval exceeds this limit",
     )
+    parser.add_argument(
+        "--max-heartbeat-interarrival-ms",
+        type=float,
+        default=DEFAULT_MAX_HEARTBEAT_INTERARRIVAL_MS,
+        help="fail when the heartbeat interval exceeds this limit",
+    )
     parser.add_argument("--output", default="-")
     args = parser.parse_args()
     args.source = validated_ipv4(args.source, "source")
@@ -356,7 +476,11 @@ def parse_args() -> argparse.Namespace:
         parser.error("gap percentage must be between 0 and 100")
     if min(args.max_malformed, args.max_duplicates, args.max_out_of_order) < 0:
         parser.error("counter limits must not be negative")
-    if args.max_interarrival_ms <= 0 or args.max_p95_interarrival_ms <= 0:
+    if (
+        args.max_interarrival_ms <= 0
+        or args.max_p95_interarrival_ms <= 0
+        or args.max_heartbeat_interarrival_ms <= 0
+    ):
         parser.error("interarrival limits must be positive")
     if args.max_p95_interarrival_ms > args.max_interarrival_ms:
         parser.error("p95 interarrival limit must not exceed the maximum limit")
