@@ -2495,8 +2495,19 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 
 #### Aperto / non dichiarare DONE
 
-- Eseguire la cattura 50G da 180 s con entrambi i gate attivi e correlare i
-  delta Blackbox sulla stessa finestra. I valori sono confini di salute di
-  banco e non costituiscono certificazione del trasporto.
+- La cattura 50G reale da 180,024 s ha prodotto 4.734 frame a 26,296 Hz,
+  integrità completa e zero errori, ma status `FAIL`: massimo interarrival
+  1.032,429 ms oltre il limite 1.000 ms. Media 37,843 ms, p95 3,120 ms e mdev
+  188,181 ms indicano una distribuzione a raffiche da caratterizzare; non
+  dimostrano da soli che la causa sia il Wi-Fi.
+- Report SHA-256
+  `055e944ab9daa9f42f8274f54f04c268a2234eefe03a9f483799cea1386ae806`;
+  `CAPTURE_RC=1`. QGC e broker sono rimasti attivi con gli stessi PID, zero
+  restart, coda/errori UDP zero, fan-out Blackbox in crescita e throttling
+  `0x0`.
+- Misurare pause e HEARTBEAT separatamente e confrontare in parallelo ingresso
+  Ethernet e uscita Wi-Fi Blackbox. I contatori a cadenza di un secondo
+  mostrano circa 26 frame/s senza errori, ma non localizzano la formazione
+  delle raffiche.
 - Persistenza power save, fault confinato, Ethernet Ground Station, shutdown
   QGC e POWER1 restano aperti.

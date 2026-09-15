@@ -4,7 +4,7 @@ Data: 2026-09-15
 
 Branch: `work/mavlink-observer-gateway-v1`
 
-Stato: IMPLEMENTED / SOFTWARE PASS / DEPLOYED / HARDWARE RECHECK PENDING / NON-CERT
+Stato: IMPLEMENTED / SOFTWARE PASS / HARDWARE INTEGRITY PASS / HARDWARE TIMING FAIL / NON-CERT
 
 ID interessati: `NET-001`, `GS-001`.
 
@@ -59,8 +59,8 @@ ID interessati: `NET-001`, `GS-001`.
 47. Distribuita la nuova versione sul portatile Debian 13.
 48. Verificato hash repository/nodo identico `58fb5a...416c`.
 49. Verificati help CLI e `py_compile` sul nodo reale.
-50. Verificato QGC ancora `active/running`, PID 2660, zero restart; la
-    ripetizione raw con i nuovi gate resta intenzionalmente pendente.
+50. Eseguita ripetizione raw da 180,024 s: integrità ancora completa, ma
+    `maximum_interarrival_within_limit=false`, status `FAIL` e `CAPTURE_RC=1`.
 
 ## Comando di acceptance locale
 
@@ -89,10 +89,27 @@ sudo /usr/bin/python3 \
 echo "CAPTURE_RC=${PIPESTATUS[0]}"
 ```
 
+## Evidenza hardware 50G
+
+- Report `/home/stefano/.local/state/efis-next/mavlink-passive-50g.json`,
+  SHA-256 `055e944ab9daa9f42f8274f54f04c268a2234eefe03a9f483799cea1386ae806`.
+- Durata 180,023980 s; 4.734/4.734 datagrammi/frame, 26,296497 Hz, zero
+  gap/duplicati/riordino/malformed/errori e nessun payload persistito.
+- Timing: media 37,843 ms, p95 3,120 ms, massimo 1.032,429 ms, mdev
+  188,181 ms. Il solo gate massimo è `false`; `CAPTURE_RC=1` è corretto.
+- La combinazione p95 molto basso/media 37,843 ms/massimo circa un secondo è
+  compatibile con frame raggruppati in raffiche, ma questo report non localizza
+  la causa fra sorgente, broker e Wi-Fi.
+- QGC è ancora `active/running`, PID 2660, `NRestarts=0`, proprietario unico
+  UDP 14550; coda e contatori errori UDP sono zero.
+- Blackbox è `active/running`, PID 2448, `NRestarts=0`, throttling `0x0`.
+  Nella finestra i log cumulativi crescono normalmente di circa 26 frame/s,
+  senza incremento di errori, reject o node events.
+
 ## Aperto / non dichiarare DONE
 
-- eseguire la nuova cattura reale da 180 s e conservare hash/report;
-- campionare i contatori Blackbox esattamente ai limiti della stessa finestra;
-- se il gate massimo fallisce, caratterizzare frequenza e causa delle pause;
+- caratterizzare numero, periodicità e posizione delle pause senza payload;
+- misurare HEARTBEAT separatamente dai datagrammi aggregati;
+- confrontare in parallelo ingresso Ethernet e uscita Wi-Fi Blackbox;
 - verificare persistenza power save dopo reboot e preferire Ethernet;
 - fault perdita/jitter, shutdown QGC e POWER1 restano gate separati.

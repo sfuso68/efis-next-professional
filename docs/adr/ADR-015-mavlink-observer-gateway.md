@@ -151,5 +151,11 @@ campioni timing, con massimo interarrival oltre 1.000 ms o p95 oltre 100 ms.
 I limiti sono registrati nel report, derivano dal confine di salute CORE e
 restano soglie di banco configurabili, non requisiti certificativi impliciti.
 
+La prova hardware 50G fallisce correttamente il gate massimo: 4.734 frame in
+180,024 s, zero difetti di sequenza o socket, ma massimo 1.032,429 ms. Il p95
+di 3,120 ms e la media di 37,843 ms sono compatibili con una sorgente a
+raffiche. Non è autorizzato allargare il limite: prima vanno misurati
+HEARTBEAT, periodicità delle pause e i due lati Ethernet/Wi-Fi della Blackbox.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.
