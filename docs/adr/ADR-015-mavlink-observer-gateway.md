@@ -171,5 +171,11 @@ decisione è quindi di distinguere tre esiti: integrità, liveness e uniformità
 Il gate uniforme Wi-Fi resta fallito e visibile, ma non equivale a perdita del
 link monitor-only. Ethernet rimane preferita per una Ground Station operativa.
 
+Il lotto 50I codifica la distinzione: integrità e liveness determinano
+`link_status`; l'uniformità determina `quality_status`; l'esito globale resta
+FAIL se uno dei tre gruppi fallisce. La condizione Wi-Fi reale diventa quindi
+link PASS, quality DEGRADED, overall FAIL. Questa rappresentazione evita sia il
+falso allarme di link perso sia la promozione indebita della qualità.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

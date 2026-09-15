@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mavlink_observer_sink import FrameError, parse_mavlink2_datagram  # noqa: E402
 
 
-SCHEMA = "efis-next.mavlink-passive-capture.v2"
+SCHEMA = "efis-next.mavlink-passive-capture.v3"
 MODE = "PASSIVE_AF_PACKET_NO_RETURN_PATH"
 ETHERNET_HEADER_BYTES = 14
 ETHERTYPE_IPV4 = 0x0800
@@ -36,6 +36,26 @@ DEFAULT_MAX_HEARTBEAT_INTERARRIVAL_MS = 3000.0
 BURST_SEPARATOR_MS = 100.0
 INTERVAL_BUCKETS_MS = (5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0,
                        750.0, 1000.0, 1500.0, 3000.0)
+INTEGRITY_CHECKS = (
+    "duration_covered",
+    "minimum_datagram_rate",
+    "frames_present",
+    "malformed_within_limit",
+    "sequence_gap_within_limit",
+    "duplicates_within_limit",
+    "out_of_order_within_limit",
+    "socket_errors_zero",
+)
+LIVENESS_CHECKS = (
+    "heartbeat_frames_present",
+    "heartbeat_timing_samples_present",
+    "maximum_heartbeat_interarrival_within_limit",
+)
+UNIFORMITY_CHECKS = (
+    "timing_samples_present",
+    "maximum_interarrival_within_limit",
+    "p95_interarrival_within_limit",
+)
 
 
 class PacketError(ValueError):
@@ -298,6 +318,32 @@ def evaluate(report: dict[str, object], args: argparse.Namespace) -> dict[str, b
     }
 
 
+def assessment(checks: dict[str, bool]) -> dict[str, object]:
+    def group(keys: tuple[str, ...]) -> dict[str, object]:
+        missing = [key for key in keys if key not in checks]
+        failed = [key for key in keys if checks.get(key) is False]
+        return {
+            "status": "PASS" if not missing and not failed else "FAIL",
+            "failed_checks": failed,
+            "missing_checks": missing,
+        }
+
+    integrity = group(INTEGRITY_CHECKS)
+    liveness = group(LIVENESS_CHECKS)
+    uniformity = group(UNIFORMITY_CHECKS)
+    link_passes = integrity["status"] == "PASS" and liveness["status"] == "PASS"
+    quality_passes = uniformity["status"] == "PASS"
+    return {
+        "integrity": integrity,
+        "liveness": liveness,
+        "uniformity": uniformity,
+        "link_status": "PASS" if link_passes else "FAIL",
+        "quality_status": "PASS" if quality_passes else "DEGRADED",
+        "overall_status": "PASS" if link_passes and quality_passes else "FAIL",
+        "flight_approval": False,
+    }
+
+
 def capture(
     args: argparse.Namespace,
     *,
@@ -408,7 +454,8 @@ def capture(
     }
     checks = evaluate(report, args)
     report["checks"] = checks
-    report["status"] = "PASS" if all(checks.values()) else "FAIL"
+    report["assessment"] = assessment(checks)
+    report["status"] = report["assessment"]["overall_status"]
     return report
 
 

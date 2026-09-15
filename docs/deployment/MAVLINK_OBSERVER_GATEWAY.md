@@ -550,6 +550,17 @@ CORE. Il gate su tutti i datagrammi resta separato: un suo fallimento non deve
 essere riclassificato né attribuito al Wi-Fi senza confrontare ingresso
 Ethernet e uscita Wi-Fi della Blackbox.
 
+Lo schema v3 del lotto 50I espone tre gruppi indipendenti. `link_status` è
+`PASS` soltanto se integrità e liveness sono entrambe `PASS`;
+`quality_status` diventa `DEGRADED` quando fallisce l'uniformità. L'esito
+globale rimane comunque `FAIL`, quindi la separazione non nasconde il gate.
+`flight_approval` è sempre `false`.
+
+`assess_mavlink_capture.py REPORT.json` applica la stessa classificazione a
+report v2/v3 senza privilegi, replay o accesso a payload. Restituisce 0 per
+PASS completo, 2 per link PASS con qualità degradata e 1 per link/report
+fallito. Il chiamante deve distinguere esplicitamente il codice 2.
+
 ## Rollback
 
 Ripristinare il precedente binario immutabile e la precedente unità systemd,

@@ -325,6 +325,44 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
                 report["heartbeat"] = heartbeat
                 self.assertFalse(MODULE.evaluate(report, arguments())[expected])
 
+    def test_assessment_separates_link_from_uniformity(self) -> None:
+        checks = {key: True for key in (
+            MODULE.INTEGRITY_CHECKS + MODULE.LIVENESS_CHECKS
+            + MODULE.UNIFORMITY_CHECKS
+        )}
+        checks["maximum_interarrival_within_limit"] = False
+        result = MODULE.assessment(checks)
+        self.assertEqual(result["integrity"]["status"], "PASS")
+        self.assertEqual(result["liveness"]["status"], "PASS")
+        self.assertEqual(result["uniformity"]["status"], "FAIL")
+        self.assertEqual(result["link_status"], "PASS")
+        self.assertEqual(result["quality_status"], "DEGRADED")
+        self.assertEqual(result["overall_status"], "FAIL")
+        self.assertFalse(result["flight_approval"])
+
+    def test_assessment_fails_link_when_liveness_fails(self) -> None:
+        checks = {key: True for key in (
+            MODULE.INTEGRITY_CHECKS + MODULE.LIVENESS_CHECKS
+            + MODULE.UNIFORMITY_CHECKS
+        )}
+        checks["maximum_heartbeat_interarrival_within_limit"] = False
+        result = MODULE.assessment(checks)
+        self.assertEqual(result["link_status"], "FAIL")
+        self.assertEqual(result["quality_status"], "PASS")
+        self.assertEqual(result["overall_status"], "FAIL")
+
+    def test_assessment_is_fail_closed_for_missing_check(self) -> None:
+        checks = {key: True for key in (
+            MODULE.INTEGRITY_CHECKS + MODULE.LIVENESS_CHECKS
+            + MODULE.UNIFORMITY_CHECKS
+        )}
+        del checks["sequence_gap_within_limit"]
+        result = MODULE.assessment(checks)
+        self.assertEqual(result["link_status"], "FAIL")
+        self.assertEqual(
+            result["integrity"]["missing_checks"], ["sequence_gap_within_limit"]
+        )
+
     def test_interval_distribution_and_bursts_are_aggregate(self) -> None:
         intervals = [1.0, 2.0, 200.0, 3.0, 600.0, 4.0, 1000.1]
         distribution = MODULE.interval_distribution(intervals)
@@ -416,6 +454,8 @@ class CaptureMavlinkObserverTests(unittest.TestCase):
         self.assertEqual(report["heartbeat"]["frames"], 2)
         self.assertEqual(report["heartbeat"]["interarrival"]["maximum_ms"], 1000.0)
         self.assertEqual(report["burst_analysis"]["bursts"], 2)
+        self.assertEqual(report["assessment"]["link_status"], "PASS")
+        self.assertEqual(report["assessment"]["quality_status"], "PASS")
 
     def test_source_contains_no_transmit_call(self) -> None:
         source = SCRIPT.read_text(encoding="utf-8")

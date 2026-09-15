@@ -2565,3 +2565,37 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Una prova simultanea sui due lati resta necessaria per quantificare il delta
   pacchetto-per-pacchetto. Ethernet resta preferita per il ruolo operativo;
   persistenza power save, fault confinato, shutdown e POWER1 restano aperti.
+
+### Aggiornamento 2026-09-15 — classificazione rete 50I
+
+#### Implementato
+
+- Lo schema cattura v3 separa `integrity`, `liveness` e `uniformity`.
+  `link_status` richiede i primi due; `quality_status` diventa `DEGRADED` se
+  fallisce l'uniformità; `overall_status` e il campo storico `status` restano
+  `FAIL`. `flight_approval` è sempre falso.
+- Aggiunto verificatore offline v2/v3 con validazione fail-closed, limite file
+  1 MiB, hash sorgente e codici 0 PASS, 2 DEGRADED, 1 FAIL.
+
+#### Verificato solo software
+
+- 24/24 test dedicati `PASS`, inclusi gruppi, check mancanti, schema, tipi e
+  codici uscita. Regressione rete: 121 test, 119 `PASS` e due skip POSIX
+  attesi su Windows.
+
+#### Verificato su hardware reale
+
+- Tool distribuiti su portatile e Blackbox con SHA-256 identici:
+  capture `d01e13888a8975bc0ac0f2065adef2a00815a3f8385bb26271764908236ad93d`,
+  assessment `25556a6613d24be975a4493f22c238805ab98f0aabdd493002dcf092b71f2b05`.
+- Rivalutazione report reali v2: ingresso Ethernet `PASS/PASS/PASS`, exit 0;
+  uscita Wi-Fi integrity/liveness `PASS`, uniformity `FAIL`, link `PASS`,
+  quality `DEGRADED`, overall `FAIL`, exit 2. QGC PID 2660 e broker PID 2448
+  restano attivi con zero restart.
+
+#### Aperto / non dichiarare DONE
+
+- Non è stata eseguita una nuova cattura v3; è stata applicata la nuova
+  classificazione ai report hardware v2 immutati e identificati da hash.
+- Wi-Fi resta qualità degradata e non flight approved. Ground Station Ethernet,
+  prova simultanea, reboot power save, fault confinato e POWER1 restano aperti.
