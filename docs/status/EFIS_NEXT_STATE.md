@@ -2599,3 +2599,36 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   classificazione ai report hardware v2 immutati e identificati da hash.
 - Wi-Fi resta qualità degradata e non flight approved. Ground Station Ethernet,
   prova simultanea, reboot power save, fault confinato e POWER1 restano aperti.
+
+### Aggiornamento 2026-09-15 — readiness Ground Station Ethernet 50J
+
+#### Implementato
+
+- Aggiunto preflight read-only a due fasi (`physical`, `post-switch`) per
+  carrier, esclusività IP, route Blackbox, stato QGC e listener UDP.
+- Definita migrazione conservando `192.168.1.39` esclusivamente su una sola
+  interfaccia, così target Blackbox e firewall restano invariati. Documentati
+  rollback e criteri di rifiuto; nessuna procedura mutante è stata eseguita.
+
+#### Verificato solo software
+
+- 6/6 test dedicati `PASS`: carrier, duplicazione IP, route post-switch,
+  restart QGC e listener concorrente. Sintassi Python e report fail-closed
+  verificati.
+
+#### Verificato su hardware reale
+
+- Inventario portatile: `eno1` presente ma `NO-CARRIER`, senza IPv4; `wlo1`
+  attiva con `192.168.1.39`, profilo `CASA` e route Blackbox. QGC PID 2660,
+  zero restart e listener unico.
+- Tool distribuito con SHA-256
+  `f1a8bb87ce8dd37b8e5d5c6693f0ba8addca42ac18763ee4b435fd0cb9a768ad`.
+  Preflight reale `BLOCKED`/exit 2 con unico fallimento
+  `ethernet_carrier=false`.
+
+#### Aperto / non dichiarare DONE
+
+- Il cavo Ethernet Ground Station non risulta collegato. Nessun profilo è
+  stato creato/attivato e nessuna route è stata cambiata.
+- Dopo carrier PASS serviranno profilo inattivo, rollback armato, switch da
+  console locale, post-check e nuova cattura MAVLink v3.

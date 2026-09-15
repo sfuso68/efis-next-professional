@@ -177,5 +177,12 @@ FAIL se uno dei tre gruppi fallisce. La condizione Wi-Fi reale diventa quindi
 link PASS, quality DEGRADED, overall FAIL. Questa rappresentazione evita sia il
 falso allarme di link perso sia la promozione indebita della qualità.
 
+Il lotto 50J sceglie per la Ground Station Ethernet il trasferimento esclusivo
+dell'identità `192.168.1.39` da `wlo1` a `eno1`. In tal modo fan-out e firewall
+non cambiano; è vietato tenere l'indirizzo su entrambe le interfacce. Il
+preflight reale è `BLOCKED` soltanto perché `eno1` è `NO-CARRIER`: nessun
+profilo o cambio route è autorizzato prima del collegamento fisico e del
+rollback armato da console locale.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.
