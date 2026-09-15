@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -88,6 +89,25 @@ class QgcMonitorStatusTests(unittest.TestCase):
         )
         self.assertEqual(report["status"], "PARTIAL")
         self.assertFalse(report["checks"]["speech_output_muted"])
+
+    def test_speech_process_probe_uses_full_command_line(self) -> None:
+        calls: list[list[str]] = []
+        original_run = MODULE.run
+
+        def fake_run(command: list[str]) -> subprocess.CompletedProcess[str]:
+            calls.append(command)
+            return subprocess.CompletedProcess(command, 0, "123 /usr/bin/speech-dispatcher --spawn\n", "")
+
+        MODULE.run = fake_run
+        try:
+            self.assertEqual(
+                MODULE.speech_process_lines(),
+                ["123 /usr/bin/speech-dispatcher --spawn"],
+            )
+        finally:
+            MODULE.run = original_run
+        self.assertIn("-f", calls[0])
+        self.assertNotIn("-x", calls[0])
 
     def test_qgc_audio_setting_is_required_and_parsed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

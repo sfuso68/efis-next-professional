@@ -45,6 +45,9 @@ class QgcMonitorPreflightTests(unittest.TestCase):
         self.assertIn(":14550", script)
         self.assertIn("audioMuted=true", script)
         self.assertIn("speech-dispatcher was spawned", script)
+        self.assertIn("pgrep -u", script)
+        self.assertIn(" -f ", script)
+        self.assertNotIn("-x speech-dispatcher", script)
 
     def test_systemd_does_not_load_synthetic_speech_plugin_compatibility(self) -> None:
         unit = UNIT.read_text(encoding="utf-8")

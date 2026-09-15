@@ -16,7 +16,7 @@ else
 fi
 
 systemctl --user mask --now speech-dispatcher.service speech-dispatcher.socket
-pkill -TERM -u "$(id -u)" -x speech-dispatcher 2>/dev/null || true
+pkill -TERM -u "$(id -u)" -f '(^|/)speech-dispatcher([[:space:]]|$)' 2>/dev/null || true
 
 systemctl --user daemon-reload
 systemctl --user start efis-qgc-monitor.service
@@ -39,7 +39,7 @@ done
 systemctl --user is-active --quiet efis-qgc-monitor.service
 ss -H -lunp | grep -E ':14550[[:space:]].*QGroundControl' >/dev/null
 grep -qx 'audioMuted=true' "$settings"
-if pgrep -u "$(id -u)" -x speech-dispatcher >/dev/null; then
+if pgrep -u "$(id -u)" -f '(^|/)speech-dispatcher([[:space:]]|$)' >/dev/null; then
     echo "error: speech-dispatcher was spawned despite mute policy" >&2
     exit 1
 fi

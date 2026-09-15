@@ -151,6 +151,30 @@ class MavlinkObserverGatewayPolicyTests(unittest.TestCase):
         self.assertNotIn("ip_forward", unit)
         self.assertNotIn("NetworkNamespacePath", unit)
 
+    def test_wifi_fault_has_non_mutating_preflight(self) -> None:
+        script = (ROOT / "tools" / "network" / "fault_laptop_wifi.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('if [ "${1:-}" = "--check" ]', script)
+        self.assertLess(script.index('if [ "$mode" = "check" ]'), script.index('if [ "$(id -u)" -ne 0 ]'))
+        self.assertIn("WIFI_FAULT_PREFLIGHT=PASS", script)
+
+    def test_wifi_fault_recovers_by_unique_connection_uuid(self) -> None:
+        script = (ROOT / "tools" / "network" / "fault_laptop_wifi.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("connection_uuid=$(nmcli -g connection.uuid", script)
+        self.assertIn('connection up uuid "$connection_uuid" ifname "$interface"', script)
+        self.assertNotIn('/usr/bin/nmcli connection up "$connection"', script)
+
+    def test_wifi_fault_arms_recovery_before_disconnect(self) -> None:
+        script = (ROOT / "tools" / "network" / "fault_laptop_wifi.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertLess(script.index("systemd-run"), script.index('nmcli device disconnect "$interface"'))
+        self.assertIn('systemctl is-active --quiet "$recovery_unit.timer"', script)
+        self.assertIn('--timer-property=AccuracySec=1s', script)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2255,3 +2255,42 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   stata provata dopo questa installazione.
 - Restano fault WLAN controllato e alimentazione POWER1/rimozione USB; il
   lotto 50C rimane `IN PROGRESS`.
+
+### Aggiornamento 2026-09-15 — batch 50D, persistenza firewall e fault WLAN
+
+#### Implementato
+
+- Il rilevamento di Speech Dispatcher usa ora la command line completa con
+  `pgrep -f`: `pgrep -x` non è affidabile per nomi Linux oltre 15 caratteri.
+  La stessa correzione è applicata a stop e verifica dello script mute.
+- `fault_laptop_wifi.sh` dispone di `--check` non mutante, verifica i tool,
+  richiede un dispositivo NetworkManager di tipo Wi-Fi, risolve il profilo in
+  un UUID univoco e usa tale UUID per il recupero temporizzato.
+- I test statici vincolano preflight prima dei privilegi, recovery armata prima
+  del disconnect e divieto di ripristino tramite nome ambiguo.
+
+#### Verificato solo software
+
+- I test mirati Windows hanno scoperto e corretto l'uso non portabile di
+  `os.getuid`; il probe usa ora `getpass.getuser`. Sintassi Python e shell e
+  `git diff --check` sono rieseguiti nel lotto.
+
+#### Verificato su hardware reale
+
+- Dopo il reboot successivo all'installazione, il boot ID laptop è
+  `5216e58b-32d4-4ec6-b31b-0ca5ec1c49bb`; firewall `enabled/active`, rollback
+  `inactive`, speech service/socket `masked/inactive`, `audioMuted=true` e
+  nessun processo speech rilevato col nuovo probe.
+- Il sink server è rimasto LIVE/RX-only, PID 999, `NRestarts=0`, zero errori.
+- Il preflight WLAN reale è `PASS`: interfaccia `wlo1`, connessione `CASA`,
+  UUID `7f55c93d-adc6-40f8-aa01-ac73f75c1e07`, durata 45 s.
+
+#### Aperto / non dichiarare DONE
+
+- Al momento della verifica il laptop era ancora sul greeter GDM: QGC era
+  correttamente inattivo senza sessione grafica. Serve login fisico e prova
+  dell'autostart prima di chiudere la persistenza completa.
+- Il fault WLAN è soltanto preflight-validato, non eseguito. Il test richiede
+  console locale, QGC attivo e monitor contemporaneo Blackbox/server.
+- POWER1 e rimozione USB restano fisici; modello del modulo, tensione/polarità
+  e cablaggio devono essere identificati prima di qualsiasi prova.

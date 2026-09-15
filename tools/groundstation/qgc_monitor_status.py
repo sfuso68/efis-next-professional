@@ -5,8 +5,8 @@ from __future__ import annotations
 
 import argparse
 import configparser
+import getpass
 import json
-import os
 from pathlib import Path
 import subprocess
 
@@ -71,7 +71,16 @@ def qgc_audio_muted(path: Path) -> bool:
 
 
 def speech_process_lines() -> list[str]:
-    result = run(["pgrep", "-a", "-u", str(os.getuid()), "-x", "speech-dispatcher"])
+    result = run(
+        [
+            "pgrep",
+            "-a",
+            "-u",
+            getpass.getuser(),
+            "-f",
+            r"(^|/)speech-dispatcher(\s|$)",
+        ]
+    )
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 

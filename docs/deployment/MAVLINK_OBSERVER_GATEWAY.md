@@ -452,12 +452,15 @@ Per il fault controllato della sola rete Ground Station, copiare
 locale, non via SSH:
 
 ```bash
+./fault_laptop_wifi.sh --check wlo1 CASA 45
 sudo ./fault_laptop_wifi.sh wlo1 CASA 45
 ```
 
-Lo script verifica interfaccia e connessione attive, accetta solo durate fra
-20 e 180 secondi e programma nel system manager root il comando di recupero
-prima di disconnettere il Wi-Fi. Il timer dedicato è
+Il primo comando è un preflight non mutante e non richiede privilegi. Lo
+script verifica tool, tipo Wi-Fi, interfaccia e connessione attive, risolve il
+profilo in un solo UUID, accetta solo durate fra 20 e 180 secondi e programma
+nel system manager root il recupero tramite UUID prima di disconnettere il
+Wi-Fi. Il timer dedicato è
 `efis-wifi-recovery.timer`. Durante i 45 secondi acquisire dalla Blackbox la
 crescita di ingestion, recorder, DDP/EDP e fan-out server; sul server verificare
 sink `LIVE` e contatori crescenti. Dopo il recupero controllare indirizzo
