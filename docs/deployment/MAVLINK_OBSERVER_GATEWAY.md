@@ -172,11 +172,14 @@ Verificare `status=PASS`, servizio `active/running`, un solo processo in bind
 su UDP 14550 e `NRestarts=0`. QGC 5.0.8 non ha risposto a SIGINT nel banco:
 systemd forza perciò la chiusura dopo otto secondi. È un arresto limitato nel
 tempo ma non graceful e resta una limitazione aperta. Le librerie Qt/speechd,
-il socket, il servizio e le voci sono presenti e funzionanti, ma QGC continua
-a registrare `Error loading text-to-speech plug-in "speechd"`. L'unità ordina
-l'avvio del backend prima di QGC e il verificatore controlla il warning della
-sola invocazione corrente; il difetto del plugin resta aperto e non va confuso
-con la catena voce EFIS.
+il socket, il servizio e le voci sono presenti. La diagnostica Qt ha
+identificato il conflitto ABI: la GLib inclusa nell'AppDir non espone
+`g_string_free_and_steal`, richiesto da `libspeechd.so.2` Debian 13. Il
+manifest autorizza la GLib di sistema e il preflight ne verifica percorso e
+simbolo; `/usr/bin/env LD_PRELOAD=...` la applica soltanto al processo QGC.
+La prova reale ha caricato il plugin senza warning mantenendo immutata AppDir.
+Questo non sostituisce la catena voce EFIS né costituisce acceptance audio in
+cabina.
 
 Per provare il gate porta senza dipendere da quoting shell, usare
 `tools/network/udp_port_holder.py` come unico listener temporaneo. Il tool non
@@ -205,6 +208,17 @@ sudo deploy/scripts/install_qgc_monitor_firewall.sh
 sudo nft list table inet efis_qgc_monitor
 systemctl status efis-qgc-monitor-firewall.service --no-pager -l
 ```
+
+L'installatore arma prima un rollback automatico di 300 secondi. Dopo la prova
+esterna di ricezione e dei contatori, confermare entro la finestra soltanto con:
+
+```bash
+sudo /usr/local/sbin/commit_qgc_monitor_firewall
+```
+
+Se il comando non viene eseguito, `rollback_qgc_monitor_firewall` disabilita
+esclusivamente il servizio dedicato e rimuove esclusivamente la tabella
+`inet efis_qgc_monitor`; non esegue `flush ruleset`.
 
 Subito dopo ripetere la ricezione QGC e una cattura negativa: le risposte UDP
 generate da QGC devono incrementare soltanto il contatore output drop e non
@@ -257,6 +271,29 @@ Il 2026-09-15 il collector reale ha restituito `PASS`: copertura 97,33%,
 zero errori/restart, 48,3 °C, throttling `0x0`, 3.813.163.008 byte di memoria
 disponibile e RSS broker 4.341.760 byte. Dieci minuti restano una prova
 estesa di banco, non l'endurance/termica finale.
+
+Una successiva finestra retrospettiva di 3.600 secondi è anch'essa `PASS`:
+3.506 campioni (97,39%), 26,279 Hz, +94.604 frame per ciascun observer,
++71.976 record per ciascun display, parità esatta e zero errori/restart;
+47,7 °C e throttling `0x0` al controllo finale.
+
+I gate reboot vengono armati prima dell'azione privilegiata e verificati dopo
+il ritorno del nodo:
+
+```bash
+python3 ~/.local/lib/efis-next/qgc_reboot_acceptance.py arm
+# sudo reboot; effettuare login grafico
+python3 ~/.local/lib/efis-next/qgc_reboot_acceptance.py check
+
+python3 ~/.local/lib/efis-next/server_observer_reboot_acceptance.py arm
+# sudo reboot
+python3 ~/.local/lib/efis-next/server_observer_reboot_acceptance.py check
+```
+
+Il gate laptop ignora intenzionalmente il firewall rinviato, ma richiede
+manifest/preflight, QGC, listener, zero restart, speech pulito e `Linger=no`.
+Il gate server richiede nuovo boot ID, sink RX-only LIVE/fresco, firewall,
+listener, `Linger=yes`, endpoint Caddy protetto e tutti i dodici container.
 
 Sul server, per una prova senza dipendenze aggiuntive:
 

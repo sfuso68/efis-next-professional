@@ -16,6 +16,11 @@
     "file_bytes": 471337419
   },
   "executable": "~/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppDir/AppRun",
+  "runtime_preload": {
+    "path": "/lib/x86_64-linux-gnu/libglib-2.0.so.0",
+    "required_symbol": "g_string_free_and_steal",
+    "reason": "QGC AppDir GLib is older than Debian 13 libspeechd2 requirements"
+  },
   "listener": {
     "bind": "0.0.0.0",
     "port": 14550,

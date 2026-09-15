@@ -102,6 +102,43 @@ class MavlinkObserverGatewayPolicyTests(unittest.TestCase):
             installer.index("enable --now"),
         )
 
+    def test_ground_station_firewall_arms_rollback_before_enable(self) -> None:
+        installer = (
+            ROOT / "deploy" / "scripts" / "install_qgc_monitor_firewall.sh"
+        ).read_text(encoding="utf-8")
+        arm = installer.index("systemd-run")
+        verify_timer = installer.index(
+            "systemctl is-active --quiet efis-qgc-firewall-rollback.timer"
+        )
+        enable = installer.index(
+            "systemctl enable --now efis-qgc-monitor-firewall.service"
+        )
+        self.assertLess(arm, verify_timer)
+        self.assertLess(verify_timer, enable)
+        self.assertIn("--on-active=300s", installer)
+
+    def test_firewall_commit_verifies_before_cancelling_rollback(self) -> None:
+        script = (
+            ROOT / "deploy" / "scripts" / "commit_qgc_monitor_firewall.sh"
+        ).read_text(encoding="utf-8")
+        verify_service = script.index(
+            "systemctl is-active --quiet efis-qgc-monitor-firewall.service"
+        )
+        verify_table = script.index("nft list table inet efis_qgc_monitor")
+        verify_qgc = script.index("grep -Fq 'QGroundControl'")
+        cancel = script.index("systemctl stop efis-qgc-firewall-rollback.timer")
+        self.assertLess(verify_service, cancel)
+        self.assertLess(verify_table, cancel)
+        self.assertLess(verify_qgc, cancel)
+
+    def test_firewall_rollback_is_narrow(self) -> None:
+        script = (
+            ROOT / "deploy" / "scripts" / "rollback_qgc_monitor_firewall.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn("delete table inet efis_qgc_monitor", script)
+        self.assertIn("disable --now efis-qgc-monitor-firewall.service", script)
+        self.assertNotIn("flush ruleset", script)
+
     def test_ground_station_firewall_unit_has_no_forwarding_side_effect(self) -> None:
         unit = (
             ROOT / "deploy" / "systemd" / "efis-qgc-monitor-firewall.service"

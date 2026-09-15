@@ -2105,3 +2105,65 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Restano reboot/login grafico QGC, secondo reboot server, fault con
   perdita/jitter, endurance termica, alimentazione POWER1 definitiva e
   rimozione dell'USB di banco.
+
+### Aggiornamento 2026-09-15 — batch 50C con gate interattivi
+
+#### Implementato
+
+- La diagnostica Qt nel vero ambiente Wayland ha identificato la causa del
+  plugin QGC `speechd`: `/lib/x86_64-linux-gnu/libspeechd.so.2` richiede
+  `g_string_free_and_steal`, assente nella GLib inclusa nell'AppDir. La GLib
+  Debian 13 2.84.4 espone il simbolo.
+- Manifest e preflight verificano ora la libreria host assoluta e il simbolo
+  richiesto. L'unità applica `LD_PRELOAD` esclusivamente a QGC tramite
+  `/usr/bin/env`; AppDir e relativo digest restano immutati.
+- Aggiunti gate persistenti `qgc_reboot_acceptance.py` e
+  `server_observer_reboot_acceptance.py`. Entrambi separano la fase `arm`
+  dalla fase `check` e richiedono un boot ID realmente diverso.
+- L'installatore firewall laptop arma un rollback automatico di 300 secondi
+  prima dell'enable. La conferma annulla il rollback solo dopo servizio,
+  tabella e listener QGC validi; il rollback rimuove soltanto la tabella e il
+  servizio dedicati e non usa `flush ruleset`.
+
+#### Verificato solo software
+
+- I test coprono probing del simbolo fail-closed, preload dichiarato, reboot
+  non avvenuto, gate QGC/speech/linger, sink/firewall/freshness/container/Caddy
+  server e ordine rollback-before-enable/verify-before-commit.
+- La regressione mirata finale esegue 72 test: tutti `PASS`, con due casi POSIX
+  saltati sul runner Windows. `py_compile`, rigenerazione stato,
+  `generate_status.py --check` e `git diff --check` sono `PASS`.
+- I tre script firewall superano `sh -n` sul portatile Linux; l'unità supera
+  `systemd-analyze verify`. I file sono nello staging ma non sono stati
+  eseguiti con privilegi.
+
+#### Verificato su hardware reale
+
+- Il test Wayland isolato senza preload ha riprodotto `undefined symbol`;
+  quello con GLib host ha riportato `loaded library`. Dopo l'installazione,
+  QGC PID 49184 è `active/running`, `NRestarts=0`, unico listener UDP 14550,
+  preflight `PASS` e nessun warning speech nella nuova invocazione.
+- Il gate reboot QGC è armato `PASS` sul boot ID
+  `485d7f8b-9c44-4134-9f01-9f52dd6fa7e9`, con `Linger=no` verificato.
+- Il gate reboot server è armato `PASS` sul boot ID
+  `6182cee7-962f-4e92-86ab-0e9fb51d6059`: sink LIVE, firewall attivo, health
+  fresca, `Linger=yes`, 12 container presenti e Caddy protetto con HTTP 401.
+- L'acceptance Blackbox retrospettiva 3.600 s è `PASS`: 3.506 campioni
+  (97,39%), 26,279 Hz, +94.604 frame per observer, +71.976 record per display,
+  parità esatta, zero errori/restart, 47,7 °C e throttling zero.
+
+#### Interazione richiesta / non dichiarare DONE
+
+- Eseguire prima `sudo reboot` sul server e poi il `check`; non riavviare
+  contemporaneamente laptop o Blackbox.
+- Il controllo remoto successivo all'arming mostra ancora il boot ID baseline
+  `6182cee7-962f-4e92-86ab-0e9fb51d6059`: non esiste quindi evidenza del reboot
+  server e il relativo gate resta aperto.
+- Successivamente eseguire `sudo reboot` sul portatile, fare login grafico e
+  lanciare il relativo `check`.
+- Solo dopo i reboot provare il firewall laptop nella finestra di rollback,
+  verificarlo esternamente e confermarlo. Poi eseguire il fault WLAN con
+  recovery già armata.
+- POWER1 e rimozione USB richiedono ispezione fisica di alimentazione e non
+  vengono eseguite da remoto. La chiusura QGC resta bounded/SIGKILL e non
+  graceful; la sintesi speech caricata non equivale ad acceptance audio.

@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import hashlib
 import json
+import os
 from pathlib import Path
 import socket
 import sys
@@ -33,6 +34,14 @@ class QgcMonitorPreflightTests(unittest.TestCase):
         self.assertRegex(unit, r"(?m)^After=.*speech-dispatcher\.service$")
         self.assertRegex(unit, r"(?m)^Wants=.*speech-dispatcher\.service$")
         self.assertNotRegex(unit, r"(?m)^Requires=.*speech-dispatcher")
+
+    def test_systemd_preloads_approved_host_glib(self) -> None:
+        unit = UNIT.read_text(encoding="utf-8")
+        self.assertIn(
+            "ExecStart=/usr/bin/env LD_PRELOAD=/lib/x86_64-linux-gnu/"
+            "libglib-2.0.so.0 ",
+            unit,
+        )
 
     def test_blocked_exit_is_non_transient_configuration_failure(self) -> None:
         self.assertEqual(MODULE.BLOCKED_EXIT, 78)
@@ -128,9 +137,34 @@ class QgcMonitorPreflightTests(unittest.TestCase):
             },
             "legacy_unit": MODULE.DEFAULT_LEGACY_UNIT,
         }
+        if sys.platform != "win32":
+            manifest["runtime_preload"] = {
+                "path": "/lib/x86_64-linux-gnu/libglib-2.0.so.0",
+                "required_symbol": "g_string_free_and_steal",
+            }
+        else:
+            manifest["runtime_preload"] = {
+                "path": str(Path(os.environ["SystemRoot"]) / "System32" / "kernel32.dll"),
+                "required_symbol": "GetCurrentProcess",
+            }
         path = directory / "manifest.json"
         path.write_text(json.dumps(manifest), encoding="utf-8")
         return path
+
+    def test_library_symbol_probe_is_fail_closed(self) -> None:
+        class Library:
+            expected = object()
+
+        self.assertTrue(
+            MODULE.library_has_symbol(
+                Path("library"), "expected", loader=lambda unused: Library()
+            )
+        )
+        self.assertFalse(
+            MODULE.library_has_symbol(
+                Path("library"), "missing", loader=lambda unused: Library()
+            )
+        )
 
     def test_approved_artifacts_pass(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

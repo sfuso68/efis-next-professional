@@ -10,6 +10,7 @@ it does not create a connection or send a MAVLink datagram.
 from __future__ import annotations
 
 import argparse
+import ctypes
 from datetime import datetime, timezone
 import glob
 import hashlib
@@ -43,6 +44,20 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def library_has_symbol(
+    path: Path,
+    symbol: str,
+    *,
+    loader: Callable[[str], object] = ctypes.CDLL,
+) -> bool:
+    try:
+        library = loader(str(path))
+        getattr(library, symbol)
+    except (AttributeError, OSError):
+        return False
+    return True
+
+
 def inspect_artifacts(
     manifest_path: Path,
     *,
@@ -59,10 +74,13 @@ def inspect_artifacts(
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         appimage = manifest["appimage"]
         appdir = manifest["appdir"]
+        runtime_preload = manifest["runtime_preload"]
         listener = manifest["listener"]
         appimage_path = Path(appimage["path"]).expanduser()
         appdir_path = Path(appdir["path"]).expanduser()
         executable = Path(manifest["executable"]).expanduser()
+        preload_path = Path(runtime_preload["path"]).expanduser()
+        required_symbol = str(runtime_preload["required_symbol"])
         expected_sha256 = str(appimage["sha256"]).lower()
         if manifest["schema"] != MANIFEST_SCHEMA:
             raise ValueError("unsupported manifest schema")
@@ -83,6 +101,10 @@ def inspect_artifacts(
             raise ValueError("approved AppDir is missing or not a directory")
         if not executable.is_file() or not os.access(executable, os.X_OK):
             raise ValueError("approved AppRun is missing or not executable")
+        if not preload_path.is_absolute() or not preload_path.is_file():
+            raise ValueError("runtime preload library is missing or not absolute")
+        if not required_symbol or not library_has_symbol(preload_path, required_symbol):
+            raise ValueError("runtime preload required symbol is unavailable")
         try:
             executable.resolve(strict=True).relative_to(appdir_path.resolve(strict=True))
         except ValueError as error:
@@ -124,6 +146,10 @@ def inspect_artifacts(
             "appimage_sha256": actual_sha256,
             "appdir": actual_appdir,
             "executable": str(executable),
+            "runtime_preload": {
+                "path": str(preload_path),
+                "required_symbol": required_symbol,
+            },
             "allowed_source": listener["allowed_source"],
         }
     )
