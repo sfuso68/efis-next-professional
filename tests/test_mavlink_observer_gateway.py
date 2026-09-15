@@ -85,7 +85,10 @@ class MavlinkObserverGatewayPolicyTests(unittest.TestCase):
         self.assertIn("hook output priority -10; policy accept;", normalized)
         self.assertIn("ip daddr 192.168.1.39 udp dport 14550", normalized)
         self.assertIn("ip saddr != 192.168.1.47 counter drop", normalized)
-        self.assertIn("ip daddr 192.168.1.47 udp counter drop", normalized)
+        self.assertIn(
+            "ip daddr 192.168.1.47 meta l4proto udp counter drop", normalized
+        )
+        self.assertNotIn("ip daddr 192.168.1.47 udp counter", normalized)
         self.assertIn("ip daddr 10.77.10.0/24 counter drop", normalized)
         self.assertNotIn("hook forward", normalized)
         self.assertNotIn("type nat", normalized)

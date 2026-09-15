@@ -2222,3 +2222,36 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   backend mascherato e nessun processo speech.
 - Restano firewall QGC con rollback e conferma, fault WLAN e alimentazione
   POWER1/rimozione USB. Il lotto 50C resta quindi `IN PROGRESS`.
+
+### Aggiornamento 2026-09-15 — firewall Ground Station 50C
+
+#### Implementato
+
+- Corretta la sintassi nftables generica da `udp counter drop` a
+  `meta l4proto udp counter drop` e aggiunta regressione statica.
+- Corretto il helper di conferma per risolvere `ss` dal `PATH`, coerentemente
+  con Debian 13 (`/usr/bin/ss`). Il rollback continua a essere annullato solo
+  dopo servizio, tabella e listener QGC validi.
+
+#### Verificato su hardware reale
+
+- Il primo tentativo è fallito in `nft --check` prima di enable, tabella e
+  timer: firewall `disabled/inactive`, tabella e rollback assenti. Questo
+  fallimento non viene conteggiato come test riuscito.
+- Dopo la correzione, installazione con rollback 300 s riuscita. La regola
+  input ha bloccato 25 pacchetti/725 byte inviati dal server; la regola output
+  ha bloccato 445 pacchetti/21.065 byte diretti alla Blackbox.
+- La prima conferma ha fallito sul percorso `/usr/sbin/ss` mantenendo il timer
+  attivo. Installato il helper corretto, il commit ha prodotto
+  `QGC monitor firewall committed`; verifica successiva: timer `inactive`,
+  firewall `enabled/active`, status QGC `PASS`, PID 2976, listener unico e
+  `NRestarts=0`.
+- Il sink server è rimasto `active/running`, PID 999, `NRestarts=0`, LIVE,
+  RX-only, zero pacchetti rifiutati/errori e sorgente Blackbox valida.
+
+#### Aperto / non dichiarare DONE
+
+- La persistenza del firewall laptop dopo un ulteriore reboot non è ancora
+  stata provata dopo questa installazione.
+- Restano fault WLAN controllato e alimentazione POWER1/rimozione USB; il
+  lotto 50C rimane `IN PROGRESS`.

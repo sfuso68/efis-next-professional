@@ -67,7 +67,7 @@ runner Windows per i casi POSIX), `py_compile`, generatore stato,
 
 1. **PASS** — reboot server e `server_observer_reboot_acceptance.py check`;
 2. **PASS** — reboot/login laptop e `qgc_reboot_acceptance.py check`;
-3. installazione firewall con rollback, verifica esterna e commit;
+3. **PASS** — installazione firewall con rollback, verifica esterna e commit;
 4. fault WLAN con recupero temporizzato;
 5. alimentazione POWER1 definitiva e rimozione USB di banco.
 
@@ -84,3 +84,12 @@ QGC, listener, `Linger=no`, zero restart e mute sintetico sono `PASS`. La
 prima verifica ha scoperto che QGC aggirava il mask avviando direttamente
 Speech Dispatcher; il gate è stato corretto per richiedere anche
 `audioMuted=true` e nessun processo speech. Restano tre gate aperti.
+
+Il gate firewall laptop è stato chiuso dopo due correzioni fail-safe. Il primo
+`nft --check` ha rifiutato `ip daddr ... udp counter drop` prima di attivare
+regole o rollback; la regola valida usa `meta l4proto udp`. La prima conferma
+ha poi rilevato il percorso inesistente `/usr/sbin/ss` e ha lasciato attivo il
+rollback. Dopo la correzione, i contatori hanno provato 25 pacchetti/725 byte
+non autorizzati in ingresso e 445 pacchetti/21.065 byte QGC→Blackbox bloccati.
+Il commit ha annullato il timer; firewall `enabled/active`, QGC `PASS` e sink
+server LIVE senza restart. Restano due gate aperti.

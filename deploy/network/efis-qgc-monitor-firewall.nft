@@ -13,6 +13,6 @@ table inet efis_qgc_monitor {
         # no QGC UDP request may return to the Blackbox. TCP administration on
         # the service LAN remains outside this narrow table.
         ip daddr 10.77.10.0/24 counter drop
-        ip daddr 192.168.1.47 udp counter drop
+        ip daddr 192.168.1.47 meta l4proto udp counter drop
     }
 }

@@ -99,5 +99,13 @@ parità esatta, zero errori/restart e throttling zero. Il reboot server è
 listener, 12 container, Caddy protetto e zero restart. Il reboot/login della
 sessione grafica resta armato e richiede ancora l'azione dell'operatore.
 
+Il reboot/login della Ground Station e il firewall host sono ora `PASS`. La
+regola di ingresso ha bloccato esattamente i 25 datagrammi di prova inviati da
+una sorgente diversa dalla Blackbox; la regola di uscita ha bloccato 445
+datagrammi diretti dal laptop alla Blackbox, confermando che QGC tenta traffico
+di ritorno e che il filtro lo interrompe. QGC, listener e sink server sono
+rimasti attivi con zero restart. Il timer di rollback è stato annullato solo
+dopo la verifica.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

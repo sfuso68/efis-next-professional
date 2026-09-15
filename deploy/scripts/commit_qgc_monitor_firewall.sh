@@ -10,7 +10,7 @@ fi
 systemctl is-enabled --quiet efis-qgc-monitor-firewall.service
 systemctl is-active --quiet efis-qgc-monitor-firewall.service
 /usr/sbin/nft list table inet efis_qgc_monitor >/dev/null
-/usr/sbin/ss -H -lunp | grep -F ':14550' | grep -Fq 'QGroundControl'
+ss -H -lunp | grep -F ':14550' | grep -Fq 'QGroundControl'
 
 # Cancel rollback only after every verification above has passed.
 systemctl stop efis-qgc-firewall-rollback.timer 2>/dev/null || true

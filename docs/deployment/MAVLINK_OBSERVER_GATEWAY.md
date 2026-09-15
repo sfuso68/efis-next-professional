@@ -199,6 +199,11 @@ zero restart. Il mute QGC comprende anche gli avvisi audio della Ground
 Station. La futura voce naturale è una funzione EFIS distinta e viene
 allocata alla Blackbox o a un nodo audio dedicato secondo ADR-014.
 
+Nota di portabilità Debian 13: gli helper invocano `ss` tramite il `PATH` e non
+presuppongono `/usr/sbin/ss` (sul laptop è `/usr/bin/ss`). Le regole nftables
+che selezionano tutto UDP usano `meta l4proto udp`; il token `udp` da solo è
+valido soltanto quando seguito da un'espressione di header come `dport`.
+
 Per provare il gate porta senza dipendere da quoting shell, usare
 `tools/network/udp_port_holder.py` come unico listener temporaneo. Il tool non
 trasmette datagrammi, accetta una durata massima di dieci minuti e deve essere
