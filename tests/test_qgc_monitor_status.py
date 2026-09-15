@@ -26,6 +26,7 @@ QGC = {
     "NRestarts": "0",
 }
 FIREWALL = {"LoadState": "loaded", "ActiveState": "active"}
+SPEECH = {"LoadState": "loaded", "ActiveState": "active", "SubState": "running"}
 LISTENER = [
     'UNCONN 0 0 0.0.0.0:14550 0.0.0.0:* users:(("QGroundControl",pid=1,fd=1))'
 ]
@@ -40,6 +41,8 @@ class QgcMonitorStatusTests(unittest.TestCase):
             "listeners": LISTENER,
             "firewall_state": FIREWALL,
             "firewall_enabled": True,
+            "speech_state": SPEECH,
+            "qgc_runtime_warnings": [],
         }
         arguments.update(overrides)
         return MODULE.evaluate(**arguments)
@@ -57,6 +60,19 @@ class QgcMonitorStatusTests(unittest.TestCase):
     def test_failed_preflight_is_failure(self) -> None:
         report = self.evaluate(preflight={"status": "BLOCKED", "checks": {}})
         self.assertEqual(report["status"], "FAIL")
+
+    def test_missing_speech_backend_is_partial(self) -> None:
+        report = self.evaluate(
+            speech_state={"LoadState": "loaded", "ActiveState": "inactive"}
+        )
+        self.assertEqual(report["status"], "PARTIAL")
+
+    def test_qgc_speech_plugin_error_is_partial(self) -> None:
+        report = self.evaluate(
+            qgc_runtime_warnings=['Error loading text-to-speech plug-in "speechd"']
+        )
+        self.assertEqual(report["status"], "PARTIAL")
+        self.assertFalse(report["checks"]["qgc_speech_plugin_clean"])
 
     def test_restart_or_competing_listener_is_failure(self) -> None:
         restarted = dict(QGC)

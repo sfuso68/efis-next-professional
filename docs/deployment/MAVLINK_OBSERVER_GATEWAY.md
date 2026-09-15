@@ -111,7 +111,8 @@ exit 78 quando rileva almeno uno di questi casi:
 - qualsiasi `/dev/ttyACM*` o identità seriale Pixhawk/ArduPilot/PX4/FMU;
 - il vecchio `efis-mavlink-readonly-bridge.service` attivo;
 - UDP `0.0.0.0:14550` già occupata;
-- manifest, versione, AppRun o SHA-256 dell'AppImage non conformi.
+- manifest, versione, AppRun, SHA-256 dell'AppImage o digest completo
+  dell'AppDir non conformi.
 
 Il risultato atomico viene scritto in
 `~/.local/state/efis-next/qgc-monitor-preflight.json`. Il preflight non apre
@@ -143,6 +144,8 @@ Installare quindi i file mantenuti dal repository:
 install -d -m 0755 ~/.local/lib/efis-next ~/.config/systemd/user \
   ~/.local/share/applications
 install -d -m 0700 ~/.local/state/efis-next
+install -m 0755 tools/groundstation/qgc_appdir_digest.py \
+  ~/.local/lib/efis-next/qgc_appdir_digest.py
 install -m 0755 tools/groundstation/qgc_monitor_preflight.py \
   ~/.local/lib/efis-next/qgc_monitor_preflight.py
 install -m 0644 deploy/groundstation/qgc-monitor-manifest.json \
@@ -157,12 +160,23 @@ systemctl --user daemon-reload
 systemctl --user enable --now efis-qgc-monitor.service
 ```
 
+Il manifest V2 contiene anche il digest deterministico dell'albero AppDir:
+nomi, tipi, bit eseguibili, destinazioni dei link simbolici e contenuto di
+ogni file. Sul pacchetto approvato sono stati misurati 1.081 file, 74 link,
+336 directory, 471.337.419 byte e SHA-256 albero
+`34b0f67710f20ed380848185028dd8cbe5ad356caa1f99bfae7cc78a0f29271c`.
+Il calcolo reale richiede circa 0,67 secondi e viene ripetuto prima di ogni
+avvio.
+
 Verificare `status=PASS`, servizio `active/running`, un solo processo in bind
 su UDP 14550 e `NRestarts=0`. QGC 5.0.8 non ha risposto a SIGINT nel banco:
 systemd forza perciò la chiusura dopo otto secondi. È un arresto limitato nel
-tempo ma non graceful e resta una limitazione aperta. Anche il plugin Qt
-`speechd` mancante è registrato come gap non bloccante; non nascondere il log e
-non confonderlo con la futura catena voce EFIS.
+tempo ma non graceful e resta una limitazione aperta. Le librerie Qt/speechd,
+il socket, il servizio e le voci sono presenti e funzionanti, ma QGC continua
+a registrare `Error loading text-to-speech plug-in "speechd"`. L'unità ordina
+l'avvio del backend prima di QGC e il verificatore controlla il warning della
+sola invocazione corrente; il difetto del plugin resta aperto e non va confuso
+con la catena voce EFIS.
 
 Per provare il gate porta senza dipendere da quoting shell, usare
 `tools/network/udp_port_holder.py` come unico listener temporaneo. Il tool non
@@ -170,10 +184,10 @@ trasmette datagrammi, accetta una durata massima di dieci minuti e deve essere
 terminato prima di riavviare QGC.
 
 Il manifest autorizzato è parte del deployment e contiene versione, endpoint,
-sorgente Blackbox, percorso AppRun e SHA-256 dell'AppImage originale. Il
-preflight ricalcola l'hash prima di ogni avvio; non aggiornare il valore per
-far passare un file inatteso senza prima inventariare provenienza, versione e
-rollback.
+sorgente Blackbox, percorso AppRun, SHA-256 dell'AppImage originale e inventario
+completo dell'AppDir. Il preflight ricalcola entrambi gli hash prima di ogni
+avvio; non aggiornare i valori per far passare un file inatteso senza prima
+inventariare provenienza, versione e rollback.
 
 ### Firewall Ground Station in difesa di profondità
 
@@ -223,6 +237,26 @@ python3 tools/network/analyze_mavlink_observer_soak.py \
 
 Il test di 60 secondi è un controllo funzionale breve, non sostituisce il soak
 termico/endurance finale.
+
+Per il controllo integrato retrospettivo usare
+`blackbox_observer_acceptance.py`: produce atomicamente un report che unisce
+soak, parità ingresso/uscite, copertura campioni, stato/restart del broker,
+RSS, memoria disponibile, temperatura e flag di throttling. Il collector è
+read-only e non possiede funzioni di trasmissione:
+
+```bash
+python3 tools/network/blackbox_observer_acceptance.py \
+  --duration-seconds 600 --minimum-sample-coverage 0.9 \
+  --observer 192.168.1.39:14550 --observer 192.168.1.6:14550 \
+  --display 10.77.10.11:49002 --display 10.77.10.13:49002 \
+  --output ~/.local/state/efis-next/blackbox-observer-acceptance.json
+```
+
+Il 2026-09-15 il collector reale ha restituito `PASS`: copertura 97,33%,
+26,247 Hz MAVLink, parità esatta verso entrambi gli osservatori e display,
+zero errori/restart, 48,3 °C, throttling `0x0`, 3.813.163.008 byte di memoria
+disponibile e RSS broker 4.341.760 byte. Dieci minuti restano una prova
+estesa di banco, non l'endurance/termica finale.
 
 Sul server, per una prova senza dipendenze aggiuntive:
 

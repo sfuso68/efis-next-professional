@@ -58,9 +58,15 @@ def analyze(
     observers: list[str],
     displays: list[str],
     minimum_mavlink_hz: float,
+    expected_sample_period_seconds: float = 1.0,
+    minimum_sample_coverage: float = 0.9,
 ) -> dict[str, object]:
     if duration_seconds <= 0:
         raise ValueError("duration must be positive")
+    if expected_sample_period_seconds <= 0:
+        raise ValueError("expected sample period must be positive")
+    if not 0 < minimum_sample_coverage <= 1:
+        raise ValueError("minimum sample coverage must be in (0, 1]")
 
     broker = [item for item in records if item["event"] == "blackbox_broker_health"]
     fanout = [
@@ -98,9 +104,12 @@ def analyze(
         for endpoint, series in display_series.items()
     }
     mavlink_rate = float(mavlink["delta"]) / duration_seconds
+    expected_samples = max(2, int(duration_seconds / expected_sample_period_seconds))
+    sample_coverage = min(1.0, len(broker) / expected_samples)
 
     checks: dict[str, bool] = {
         "broker_has_multiple_samples": len(broker) >= 2,
+        "broker_sample_coverage": sample_coverage >= minimum_sample_coverage,
         "broker_counters_monotonic": all(
             bool(item["monotonic"]) for item in (mavlink, recorded, ddp)
         ),
@@ -119,6 +128,8 @@ def analyze(
             )
         ),
         "fanout_progress": int(fanout_datagrams["delta"]) > 0,
+        "fanout_parity": int(fanout_datagrams["delta"])
+        == int(mavlink["delta"]) * len(observers),
         "fanout_failures_zero": len(fanout) >= 2
         and all(integer(item, "failures") == 0 for item in fanout),
     }
@@ -132,6 +143,9 @@ def analyze(
         checks[f"observer_{endpoint}_failures_zero"] = len(series) >= 2 and all(
             integer(item, "failures") == 0 for item in series
         )
+        checks[f"observer_{endpoint}_parity"] = int(summary["delta"]) == int(
+            mavlink["delta"]
+        )
     for endpoint, series in display_series.items():
         summary = display_summaries[endpoint]
         checks[f"display_{endpoint}_progress"] = (
@@ -142,12 +156,18 @@ def analyze(
         checks[f"display_{endpoint}_failures_zero"] = len(series) >= 2 and all(
             integer(item, "failures") == 0 for item in series
         )
+        checks[f"display_{endpoint}_parity"] = int(summary["delta"]) == int(
+            recorded["delta"]
+        )
 
     return {
         "schema": "efis-next.mavlink-observer-soak.v1",
         "status": "PASS" if all(checks.values()) else "FAIL",
         "duration_seconds": duration_seconds,
         "minimum_mavlink_hz": minimum_mavlink_hz,
+        "expected_sample_period_seconds": expected_sample_period_seconds,
+        "minimum_sample_coverage": minimum_sample_coverage,
+        "sample_coverage": round(sample_coverage, 4),
         "measured_mavlink_hz": round(mavlink_rate, 3),
         "checks": checks,
         "broker": {
@@ -168,6 +188,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--observer", action="append", required=True)
     parser.add_argument("--display", action="append", required=True)
     parser.add_argument("--minimum-mavlink-hz", type=float, default=5.0)
+    parser.add_argument("--expected-sample-period-seconds", type=float, default=1.0)
+    parser.add_argument("--minimum-sample-coverage", type=float, default=0.9)
     parser.add_argument("--output", type=Path)
     return parser.parse_args()
 
@@ -185,6 +207,8 @@ def main() -> int:
             observers=args.observer,
             displays=args.display,
             minimum_mavlink_hz=args.minimum_mavlink_hz,
+            expected_sample_period_seconds=args.expected_sample_period_seconds,
+            minimum_sample_coverage=args.minimum_sample_coverage,
         )
     finally:
         if args.input != "-":

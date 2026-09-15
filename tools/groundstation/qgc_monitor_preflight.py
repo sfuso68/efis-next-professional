@@ -21,12 +21,14 @@ import subprocess
 import sys
 from typing import Callable
 
+from qgc_appdir_digest import digest_tree
+
 
 MODE = "MONITOR_ONLY_NO_PIXHAWK_RETURN"
 DEFAULT_LEGACY_UNIT = "efis-mavlink-readonly-bridge.service"
 DEFAULT_ALLOWED_SOURCE = "192.168.1.47"
 BLOCKED_EXIT = 78  # EX_CONFIG: operator action is required; do not restart-loop.
-MANIFEST_SCHEMA = "efis-next.qgc-monitor-manifest.v1"
+MANIFEST_SCHEMA = "efis-next.qgc-monitor-manifest.v2"
 
 
 def utc_now() -> str:
@@ -56,8 +58,10 @@ def inspect_artifacts(
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         appimage = manifest["appimage"]
+        appdir = manifest["appdir"]
         listener = manifest["listener"]
         appimage_path = Path(appimage["path"]).expanduser()
+        appdir_path = Path(appdir["path"]).expanduser()
         executable = Path(manifest["executable"]).expanduser()
         expected_sha256 = str(appimage["sha256"]).lower()
         if manifest["schema"] != MANIFEST_SCHEMA:
@@ -72,11 +76,41 @@ def inspect_artifacts(
             raise ValueError("legacy unit differs from unit arguments")
         if len(expected_sha256) != 64:
             raise ValueError("invalid expected SHA-256")
+        expected_tree_sha256 = str(appdir["tree_sha256"]).lower()
+        if len(expected_tree_sha256) != 64:
+            raise ValueError("invalid expected AppDir SHA-256")
+        if not appdir_path.is_dir():
+            raise ValueError("approved AppDir is missing or not a directory")
         if not executable.is_file() or not os.access(executable, os.X_OK):
             raise ValueError("approved AppRun is missing or not executable")
+        try:
+            executable.resolve(strict=True).relative_to(appdir_path.resolve(strict=True))
+        except ValueError as error:
+            raise ValueError("approved AppRun is outside AppDir") from error
         actual_sha256 = sha256_file(appimage_path)
         if actual_sha256 != expected_sha256:
             raise ValueError("AppImage SHA-256 mismatch")
+        actual_appdir = digest_tree(appdir_path)
+        expected_appdir = {
+            "tree_sha256": expected_tree_sha256,
+            "file_count": int(appdir["file_count"]),
+            "symlink_count": int(appdir["symlink_count"]),
+            "directory_count": int(appdir["directory_count"]),
+            "file_bytes": int(appdir["file_bytes"]),
+        }
+        if any(
+            expected_appdir[key] < 0
+            for key in (
+                "file_count",
+                "symlink_count",
+                "directory_count",
+                "file_bytes",
+            )
+        ):
+            raise ValueError("invalid negative AppDir inventory")
+        for key, expected in expected_appdir.items():
+            if actual_appdir[key] != expected:
+                raise ValueError(f"AppDir {key} mismatch")
     except (KeyError, TypeError, ValueError, OSError, json.JSONDecodeError) as error:
         result["reason"] = str(error)
         return result
@@ -88,6 +122,7 @@ def inspect_artifacts(
             "version": manifest["version"],
             "appimage": str(appimage_path),
             "appimage_sha256": actual_sha256,
+            "appdir": actual_appdir,
             "executable": str(executable),
             "allowed_source": listener["allowed_source"],
         }

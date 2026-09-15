@@ -53,8 +53,9 @@ Blackbox — e la sua mancata attivazione mantiene l'acceptance in stato
 `PARTIAL`.
 
 QGroundControl viene avviato soltanto dopo un `ExecCondition` fail-closed che
-verifica assenza USB/bridge, unicità della porta e identità SHA-256 del
-pacchetto approvato. Un errore di condizione salta l'avvio senza restart-loop.
+verifica assenza USB/bridge, unicità della porta, identità SHA-256
+dell'AppImage e digest completo deterministico dell'AppDir estratta. Un errore
+di condizione salta l'avvio senza restart-loop.
 
 ## Capacità e limite intenzionale
 
@@ -88,6 +89,10 @@ resta pienamente valido.
 - fault di portatile/server/rete WLAN senza effetti su broker, recorder,
   DDP/EDP e controllo di volo;
 - soak con misure perdita, jitter, CPU, memoria e temperatura.
+
+Il soak di banco da dieci minuti del 2026-09-15 copre rate, monotonia, parità
+fan-out/display, CPU/RSS, memoria, temperatura e throttling ed è `PASS`. Non
+copre ancora perdita/jitter introdotti, endurance termica o fault WLAN reale.
 
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

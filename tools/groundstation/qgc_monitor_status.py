@@ -59,6 +59,32 @@ def listener_lines(port: int) -> list[str]:
     ]
 
 
+def current_invocation_warnings(unit: str) -> list[str]:
+    state = run(["systemctl", "--user", "show", unit, "-p", "InvocationID"])
+    invocation_id = ""
+    for line in state.stdout.splitlines():
+        if line.startswith("InvocationID="):
+            invocation_id = line.split("=", 1)[1].strip()
+    if not invocation_id:
+        return ["QGC invocation ID unavailable"]
+    journal = run(
+        [
+            "journalctl",
+            "--user",
+            f"_SYSTEMD_INVOCATION_ID={invocation_id}",
+            "-o",
+            "cat",
+            "--no-pager",
+        ]
+    )
+    patterns = ("error loading text-to-speech",)
+    return [
+        line.strip()
+        for line in journal.stdout.splitlines()
+        if any(pattern in line.lower() for pattern in patterns)
+    ]
+
+
 def evaluate(
     *,
     preflight: dict[str, object],
@@ -67,7 +93,11 @@ def evaluate(
     listeners: list[str],
     firewall_state: dict[str, str],
     firewall_enabled: bool,
+    speech_state: dict[str, str] | None = None,
+    qgc_runtime_warnings: list[str] | None = None,
 ) -> dict[str, object]:
+    speech_state = speech_state or {}
+    qgc_runtime_warnings = qgc_runtime_warnings or []
     checks = {
         "preflight_pass": preflight.get("status") == "PASS",
         "artifact_integrity": bool(
@@ -86,6 +116,10 @@ def evaluate(
         "firewall_loaded": firewall_state.get("LoadState") == "loaded",
         "firewall_enabled": firewall_enabled,
         "firewall_active": firewall_state.get("ActiveState") == "active",
+        "speech_backend_loaded": speech_state.get("LoadState") == "loaded",
+        "speech_backend_running": speech_state.get("ActiveState") == "active"
+        and speech_state.get("SubState") == "running",
+        "qgc_speech_plugin_clean": not qgc_runtime_warnings,
     }
     critical = (
         "preflight_pass",
@@ -97,10 +131,17 @@ def evaluate(
         "single_udp_listener",
         "listener_is_qgroundcontrol",
     )
-    firewall = ("firewall_loaded", "firewall_enabled", "firewall_active")
+    supporting = (
+        "firewall_loaded",
+        "firewall_enabled",
+        "firewall_active",
+        "speech_backend_loaded",
+        "speech_backend_running",
+        "qgc_speech_plugin_clean",
+    )
     if not all(checks[name] for name in critical):
         status = "FAIL"
-    elif not all(checks[name] for name in firewall):
+    elif not all(checks[name] for name in supporting):
         status = "PARTIAL"
     else:
         status = "PASS"
@@ -111,6 +152,8 @@ def evaluate(
         "checks": checks,
         "qgc": qgc_state,
         "firewall": firewall_state,
+        "speech_backend": speech_state,
+        "qgc_runtime_warnings": qgc_runtime_warnings,
         "listeners": listeners,
     }
 
@@ -144,6 +187,8 @@ def main() -> int:
         listeners=listener_lines(args.port),
         firewall_state=systemctl_state("efis-qgc-monitor-firewall.service", user=False),
         firewall_enabled=is_enabled("efis-qgc-monitor-firewall.service", user=False),
+        speech_state=systemctl_state("speech-dispatcher.service", user=True),
+        qgc_runtime_warnings=current_invocation_warnings("efis-qgc-monitor.service"),
     )
     document = json.dumps(report, indent=2, sort_keys=True) + "\n"
     args.output.parent.mkdir(parents=True, exist_ok=True, mode=0o700)

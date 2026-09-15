@@ -2023,24 +2023,85 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   Risolvere/disabilitare esplicitamente
   `speechd` senza confonderlo con la voce EFIS e provare un nuovo login/reboot
   grafico per confermare l'avvio automatico.
-- Installare dalla console locale il firewall Ground Station in staging,
-  eseguire `nft --check`, verificare i contatori input/output con cattura
-  negativa e confermare che QGC continui a ricevere. Fino ad allora il report
+- Il firewall Ground Station in staging è stato esplicitamente fissato
+  `DEFERRED-BY-USER`: non installarlo né attivarlo finché l'utente non lo
+  richiede. Quando autorizzato, eseguire `nft --check`, contatori
+  input/output, cattura negativa e continuità QGC. Fino ad allora il report
   `qgc-monitor-status.json` deve restare `PARTIAL`.
-- Il manifest verifica SHA-256 dell'AppImage sorgente e presenza/eseguibilità
-  di AppRun, ma non ancora un digest completo dell'AppDir estratta da circa
-  453 MiB. Aggiungere un manifest di albero o un deployment atomico verificato
-  prima di trattare l'integrità del runtime estratto come chiusa.
 - Provare perdita della WLAN di servizio e del portatile intero senza effetti
   su ingestion, recorder, DDP/EDP o controllo di volo. I fault dei soli
   consumer server e QGC sono verificati; non equivalgono alla perdita completa
   dei nodi o della rete. L'harness con recupero temporizzato è installabile ma
   richiede l'esecuzione locale con `sudo`; dopo il recupero verificare anche
   QGC e l'avvio automatico della sessione grafica.
-- Eseguire soak con perdita, jitter, CPU, RAM e temperatura. UDP osservatori
-  non è autenticato: i consumer devono trattarlo come telemetria non autorevole
-  e filtrare la sorgente Blackbox.
+- Il soak integrato di dieci minuti con CPU/RSS, RAM, temperatura e throttling
+  è ora verificato; restano perdita/jitter introdotti ed endurance termica.
+  UDP osservatori non è autenticato: i consumer devono trattarlo come
+  telemetria non autorevole e filtrare la sorgente Blackbox.
 - Progettare separatamente l'eventuale manutenzione bidirezionale con
   interlock fisico a terra, disarmato verificato, allowlist, audit, timeout ed
   esclusione mutua. Questa funzione non è implementata e QGroundControl può
   solo osservare, non configurare il Pixhawk attraverso la Blackbox.
+
+### Aggiornamento 2026-09-15 — integrità runtime e acceptance 600 s
+
+#### Implementato
+
+- Aggiunto `qgc_appdir_digest.py`, che calcola un digest deterministico su
+  nomi, tipi, bit eseguibili, target dei link e contenuto dei file senza
+  seguire link simbolici e rifiutando entry speciali.
+- Promosso il manifest QGC allo schema V2 con inventario AppDir completo. Il
+  preflight rifiuta digest o contatori non conformi, valori negativi, AppDir
+  mancante e AppRun esterna all'albero approvato.
+- Esteso l'analizzatore observer con copertura dei campioni e parità numerica
+  ingresso→fan-out, ingresso→ogni observer e recorder→ogni display.
+- Aggiunto `blackbox_observer_acceptance.py`, collector read-only che unisce
+  soak, systemd, restart, PID/RSS, memoria, temperatura e throttling in un
+  report JSON atomico.
+- Esteso `qgc_monitor_status.py` con backend Speech Dispatcher e warning
+  `speechd` della sola invocazione QGC corrente. L'unità ordina il backend
+  prima di QGC senza renderlo una dipendenza critica (`Wants`, non
+  `Requires`).
+
+#### Verificato solo software
+
+- 59 test mirati sono `PASS`; due casi POSIX (mutazione symlink e bit
+  eseguibile) sono saltati sul runner Windows che non espone tali primitive.
+  Gli stessi cinque test del digest, inclusi i due casi POSIX, sono `PASS` sul
+  portatile Linux usando un albero temporaneo separato dal pacchetto operativo.
+- Sono coperti digest stabile, mutazione contenuto, radice mancante, AppRun
+  esterna, hash AppDir invalido, copertura insufficiente, parità observer
+  errata, limiti termici/memoria, throttling e restart.
+- Sintassi Python e `git diff --check` sono `PASS` per gli artefatti del lotto.
+
+#### Verificato su hardware reale
+
+- Sul portatile `Port-hp` la AppDir approvata contiene 1.081 file, 74 link,
+  336 directory e 471.337.419 byte; digest albero
+  `34b0f67710f20ed380848185028dd8cbe5ad356caa1f99bfae7cc78a0f29271c`,
+  calcolato in circa 0,67 s.
+- Manifest/preflight V2 hanno prodotto `PASS`; QGC è ripartito con PID 48441,
+  unico listener UDP 14550 e `NRestarts=0`. Il successivo processo PID 48587
+  è ancora `active/running`, unico listener e senza restart.
+- Speech Dispatcher 0.12.0, `libspeechd2`, socket e voci sono presenti e
+  funzionanti. Anche col backend `active/running`, QGC registra ancora
+  `Error loading text-to-speech plug-in "speechd"`; il nuovo status lo rileva
+  e rimane correttamente `PARTIAL`.
+- Sulla Blackbox il collector 600 s ha prodotto `PASS`: 584 campioni
+  (copertura 97,33%), 26,247 Hz, +15.748 MAVLink per ciascun observer,
+  +11.977 record per ciascun display, parità esatta, contatori monotoni e zero
+  errori. Broker PID 2448, `NRestarts=0`, 48,3 °C, throttling `0x0`,
+  3.813.163.008 byte disponibili e RSS 4.341.760 byte.
+
+#### Aperto / non dichiarare DONE
+
+- Firewall laptop e fault WLAN reale restano rinviati per richiesta esplicita
+  dell'utente; nessuna regola privilegiata è stata attivata in questo lotto.
+- Il plugin Qt QGC `speechd` resta guasto nonostante backend e dipendenze
+  disponibili: serve diagnosi ABI/runtime o disabilitazione esplicita. Non
+  confonderlo con riconoscimento/sintesi voce EFIS.
+- QGC continua a richiedere SIGKILL dopo otto secondi; il comportamento è
+  bounded ma non graceful.
+- Restano reboot/login grafico QGC, secondo reboot server, fault con
+  perdita/jitter, endurance termica, alimentazione POWER1 definitiva e
+  rimozione dell'USB di banco.

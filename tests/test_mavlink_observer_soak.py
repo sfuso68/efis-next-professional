@@ -54,6 +54,8 @@ class ObserverSoakTests(unittest.TestCase):
             observers=OBSERVERS,
             displays=DISPLAYS,
             minimum_mavlink_hz=5,
+            expected_sample_period_seconds=5,
+            minimum_sample_coverage=1.0,
         )
 
     def test_complete_progressing_fixture_passes(self) -> None:
@@ -82,6 +84,28 @@ class ObserverSoakTests(unittest.TestCase):
     def test_unrelated_journal_lines_are_ignored(self) -> None:
         records = MODULE.parse_lines(["kernel unrelated", *fixture()])
         self.assertEqual(len(records), 12)
+
+    def test_incomplete_sample_coverage_fails(self) -> None:
+        report = MODULE.analyze(
+            MODULE.parse_lines(fixture()),
+            duration_seconds=10,
+            observers=OBSERVERS,
+            displays=DISPLAYS,
+            minimum_mavlink_hz=5,
+            expected_sample_period_seconds=1,
+            minimum_sample_coverage=0.9,
+        )
+        self.assertEqual(report["status"], "FAIL")
+        self.assertFalse(report["checks"]["broker_sample_coverage"])
+
+    def test_observer_delta_mismatch_fails_parity(self) -> None:
+        lines = fixture()
+        lines[-4] = lines[-4].replace("datagrams=300", "datagrams=299")
+        report = self.analyze(lines)
+        self.assertEqual(report["status"], "FAIL")
+        self.assertFalse(
+            report["checks"][f"observer_{OBSERVERS[0]}_parity"]
+        )
 
 
 if __name__ == "__main__":
