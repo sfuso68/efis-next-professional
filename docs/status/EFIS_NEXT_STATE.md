@@ -2294,3 +2294,40 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   console locale, QGC attivo e monitor contemporaneo Blackbox/server.
 - POWER1 e rimozione USB restano fisici; modello del modulo, tensione/polarità
   e cablaggio devono essere identificati prima di qualsiasi prova.
+
+### Aggiornamento 2026-09-15 — fault WLAN 50D eseguito
+
+#### Verificato su hardware reale
+
+- Dopo il login grafico QGC era `active/running` con PID 2660, listener UDP
+  14550 unico, `NRestarts=0`, firewall V2 `PASS`, `audioMuted=true`, backend
+  speech mascherato e nessun processo Speech Dispatcher.
+- Eseguito dalla console locale il fault controllato di 45 s su `wlo1`, profilo
+  `CASA`, con recovery NetworkManager già armata. Dopo il ripristino il nodo è
+  tornato raggiungibile su `192.168.1.39`; QGC conservava lo stesso PID 2660,
+  `NRestarts=0`, listener unico, firewall e mute `PASS`.
+- Il collector Blackbox di 180 s è `PASS`: 176 campioni, copertura 97,78%,
+  MAVLink 26,156 Hz e delta +4708; entrambi gli observer +4708, entrambi i
+  display +3581, DDP +7162 e fan-out +9416. Nessuna regressione, errore,
+  restart o divergenza di parità; broker PID 2448, temperatura 47,7 °C,
+  `get_throttled=0` e memoria disponibile 3.815.587.840 byte.
+- Il sink server è rimasto PID 999, `active/running`, `NRestarts=0`, LIVE e
+  RX-only, con sorgente Blackbox e zero datagrammi malformati, errori socket o
+  sorgenti rifiutate.
+
+#### Limiti dell'evidenza
+
+- I contatori observer misurano invii Blackbox e non attestano ricezione QGC
+  durante l'assenza WLAN. Dimostrano invece che l'indisponibilità del laptop
+  non interrompe ingestion, recorder, DDP o fan-out.
+- I timestamp esatti di disconnessione e riconnessione NetworkManager non sono
+  disponibili: il transient recovery era raccolto con `--collect` e l'utente
+  non ha accesso al journal di sistema. Lo stesso PID QGC prima/dopo prova
+  qualifica la sopravvivenza senza restart, ma non misura il tempo di recovery.
+
+#### Aperto / non dichiarare DONE
+
+- POWER1 e rimozione USB restano bloccati fino all'identificazione del modulo,
+  verifica di tensione e polarità, schema del cablaggio e collaudo al banco.
+- Restano aperti perdita/jitter introdotti, endurance termica, autenticazione
+  del canale e qualificazione dello shutdown QGC.

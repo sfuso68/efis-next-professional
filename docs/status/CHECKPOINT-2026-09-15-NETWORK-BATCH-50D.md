@@ -59,10 +59,31 @@ Stato: IN PROGRESS / DEVELOPMENT / NON-CERT / NON FLIGHT APPROVED
 49. Rinviato il disconnect fino ad autostart QGC verificato.
 50. Mantenuto POWER1 bloccato fino a identificazione hardware e cablaggio.
 
-## Gate aperti
+## Esito gate
 
-1. login grafico e QGC/firewall/mute post-reboot;
-2. fault WLAN 45 s con monitor Blackbox/server e recovery;
-3. identificazione e collaudo POWER1, quindi rimozione USB di banco.
+1. `PASS` — login grafico e QGC/firewall/mute post-reboot;
+2. `PASS` — fault WLAN 45 s con monitor Blackbox/server e recovery;
+3. `OPEN` — identificazione e collaudo POWER1, quindi rimozione USB di banco.
 
-Nessuno dei gate aperti è dichiarato verificato senza evidenza reale.
+POWER1 non è dichiarato verificato senza evidenza reale.
+
+## Evidenza fault WLAN 50D
+
+- Dopo il ripristino `wlo1` è nuovamente `connected` al profilo `CASA` e il
+  laptop possiede nuovamente `192.168.1.39`.
+- QGC è rimasto `active/running` con lo stesso PID 2660 osservato prima del
+  fault, `NRestarts=0` e listener UDP 14550 unico. Firewall V2, mute e assenza
+  del processo Speech Dispatcher sono rimasti `PASS`.
+- Il collector Blackbox di 180 s ha acquisito 176 campioni (copertura 97,78%):
+  MAVLink 26,156 Hz e delta +4708, ciascun observer +4708, ciascun display
+  +3581, DDP +7162 e fan-out +9416. Monotonia, parità, errori e restart sono
+  tutti a zero; temperatura 47,7 °C e `get_throttled=0`.
+- Il broker Blackbox è rimasto PID 2448 con `NRestarts=0`. Il sink server è
+  rimasto PID 999, `active/running`, `NRestarts=0`, LIVE/RX-only, con sorgente
+  Blackbox e zero datagrammi malformati, errori socket o sorgenti rifiutate.
+- I contatori observer dimostrano continuità degli invii della Blackbox, non
+  ricezione sul laptop durante l'intervallo senza WLAN. I timestamp esatti di
+  disconnect/reconnect NetworkManager non sono disponibili: il collector
+  transitorio era `--collect` e l'utente non dispone dell'accesso al journal
+  di sistema. Il gate copre quindi fault, recupero e assenza di restart, non
+  una misura certificata del tempo di riconnessione.

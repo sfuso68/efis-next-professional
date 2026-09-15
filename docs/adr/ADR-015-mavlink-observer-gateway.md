@@ -107,5 +107,13 @@ di ritorno e che il filtro lo interrompe. QGC, listener e sink server sono
 rimasti attivi con zero restart. Il timer di rollback è stato annullato solo
 dopo la verifica.
 
+Il fault WLAN controllato da 45 s è ora `PASS` per isolamento e recupero del
+laptop: QGC ha conservato PID 2660 e `NRestarts=0`, mentre un collector
+Blackbox di 180 s ha misurato 26,156 Hz MAVLink, parità observer esatta, zero
+errori/restart e throttling zero. Il sink server è rimasto LIVE/RX-only. I
+contatori observer provano continuità degli invii e non ricezione QGC durante
+la perdita; i timestamp NetworkManager non sono disponibili, quindi il tempo
+di riconnessione non è qualificato da questa prova.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.
