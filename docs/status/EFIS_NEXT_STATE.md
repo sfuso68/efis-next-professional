@@ -2388,3 +2388,25 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Restano fault perdita/jitter confinato e con rollback, endurance sotto
   terreno/video worst-case, causa dei restart EMS, shutdown QGC e autenticazione.
 - POWER1 resta rinviato per scelta dell'operatore; il banco continua su USB.
+
+### Aggiornamento 2026-09-15 — power save Ground Station 50E
+
+#### Verificato su hardware reale
+
+- L'operatore ha applicato `802-11-wireless.powersave=disable` al profilo
+  `CASA`; runtime `Power save: off`, connessione e indirizzo `192.168.1.39`
+  sono rimasti attivi.
+- La matrice completa post-modifica è `PASS`. Ground Station 20/20, perdita
+  zero, RTT medio 7,528 ms e mdev 4,401 ms; Pixhawk/PFD/EMS/MFD restano senza
+  perdita e sotto 0,22 ms medi, server `PASS`.
+- La finestra estesa Ground Station è 200/200, perdita zero, RTT medio 10,352
+  ms, massimo 125,880 ms e mdev 17,390 ms. QGC conserva PID 2660,
+  `NRestarts=0`, coda/drop socket UDP zero e contatori host `InErrors`/
+  `RcvbufErrors` a zero; segnale finale -42 dBm.
+
+#### Aperto / non dichiarare DONE
+
+- Verificare dopo il prossimo reboot che profilo e runtime restino disabilitati.
+- ICMP non misura sequenza, freshness o jitter applicativo MAVLink. Il picco
+  RTT di 125,880 ms mantiene Ethernet come soluzione preferita per un ruolo
+  Ground Station operativo.

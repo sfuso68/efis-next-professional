@@ -124,5 +124,13 @@ zero incremento errori UDP: ICMP non viene quindi promosso a prova di perdita
 MAVLink. Il Wi-Fi resta da ottimizzare o sostituire con Ethernet per il ruolo
 operativo; la fault injection controllata di perdita/jitter resta aperta.
 
+Disabilitato il power save sul profilo e sul runtime Ground Station, la matrice
+è passata: 20/20 con RTT medio 7,528 ms/mdev 4,401 ms, quindi 200/200 con
+10,352 ms/mdev 17,390 ms e zero perdita. QGC ha conservato PID 2660, zero
+restart e zero drop socket. Il picco 125,880 ms e l'assenza di metriche di
+sequenza lato QGC mantengono Ethernet come preferenza operativa e impediscono
+di qualificare il Wi-Fi come canale deterministico. La persistenza dopo reboot
+resta da provare.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

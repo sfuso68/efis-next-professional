@@ -91,8 +91,8 @@ ricablare alimentazioni.
 
 ## Gate successivi
 
-1. disabilitare in modo reversibile il power save Wi-Fi del portatile e
-   ripetere la matrice; preferire Ethernet per un ruolo Ground Station stabile;
+1. verificare al prossimo reboot la persistenza del power save disabilitato;
+   preferire comunque Ethernet per un ruolo Ground Station stabile;
 2. aggiungere una misura applicativa di sequenza/freshness/jitter lato QGC, perché
    ICMP e contatori di invio Blackbox non provano la consegna MAVLink;
 3. preparare un fault perdita/jitter confinato al solo observer, con rollback
@@ -100,3 +100,26 @@ ricablare alimentazioni.
 4. ripetere endurance con terreno/video worst-case;
 5. investigare i restart EMS soltanto alla prossima finestra manutentiva;
 6. mantenere POWER1 aperto fino all'identificazione fisica richiesta.
+
+## Follow-up power save 50E
+
+#### Verificato su hardware reale
+
+- L'operatore ha impostato il profilo `CASA` su `disable` e il runtime riporta
+  `Power save: off`; la connessione è rimasta attiva su `192.168.1.39`.
+- La matrice completa successiva è `PASS`. Ground Station: 20/20, perdita 0%,
+  RTT medio 7,528 ms, massimo 21,355 ms e mdev 4,401 ms. I quattro endpoint
+  FLIGHT-DATA restano senza perdita e sotto 0,22 ms medi; server `PASS`.
+- La prova estesa Ground Station è `PASS`: 200/200, perdita 0%, RTT medio
+  10,352 ms, massimo 125,880 ms e mdev 17,390 ms.
+- QGC conserva PID 2660, `NRestarts=0`, socket UDP 14550 con coda/drop zero;
+  `InErrors` e `RcvbufErrors` host restano zero. Segnale -42 dBm e power save
+  runtime ancora `off` al termine.
+
+#### Limiti / aperto
+
+- Il miglioramento ICMP è forte ma non sostituisce una metrica di sequenza e
+  freshness MAVLink lato consumer. Il picco RTT di 125,880 ms conferma che
+  Ethernet resta preferibile per una Ground Station con ruolo operativo.
+- La persistenza dell'impostazione `disable` deve essere verificata dopo il
+  prossimo reboot del portatile; non viene dichiarata verificata ora.
