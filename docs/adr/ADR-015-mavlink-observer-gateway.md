@@ -94,9 +94,10 @@ Il soak di banco da dieci minuti del 2026-09-15 copre rate, monotonia, parità
 fan-out/display, CPU/RSS, memoria, temperatura e throttling ed è `PASS`. Non
 copre ancora perdita/jitter introdotti, endurance termica o fault WLAN reale.
 Una seconda analisi retrospettiva di 60 minuti è `PASS` con copertura 97,39%,
-parità esatta, zero errori/restart e throttling zero. I reboot di server e
-sessione grafica sono armati con baseline persistenti ma richiedono ancora
-l'azione privilegiata dell'operatore.
+parità esatta, zero errori/restart e throttling zero. Il reboot server è
+`PASS`: nuovo boot ID, sink e firewall persistenti, health LIVE/RX-only,
+listener, 12 container, Caddy protetto e zero restart. Il reboot/login della
+sessione grafica resta armato e richiede ancora l'azione dell'operatore.
 
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

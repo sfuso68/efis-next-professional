@@ -63,15 +63,17 @@ Verifica regressione del lotto: 72 test mirati `PASS` (`skipped=2` sul
 runner Windows per i casi POSIX), `py_compile`, generatore stato,
 `generate_status.py --check` e `git diff --check` tutti `PASS`.
 
-## Gate interattivi armati ma non ancora chiusi
+## Gate interattivi
 
-1. reboot server e `server_observer_reboot_acceptance.py check`;
+1. **PASS** — reboot server e `server_observer_reboot_acceptance.py check`;
 2. reboot/login laptop e `qgc_reboot_acceptance.py check`;
 3. installazione firewall con rollback, verifica esterna e commit;
 4. fault WLAN con recupero temporizzato;
 5. alimentazione POWER1 definitiva e rimozione USB di banco.
 
-Nessuno dei cinque gate è dichiarato verificato prima dell'evidenza reale.
-Il controllo del 2026-09-15 ha inoltre confermato che il server conserva il
-boot ID della baseline `6182cee7-962f-4e92-86ab-0e9fb51d6059`: il reboot non è
-ancora avvenuto e il primo gate resta aperto.
+Il gate server è stato chiuso il 2026-09-15: boot ID passato da
+`6182cee7-962f-4e92-86ab-0e9fb51d6059` a
+`078d8253-a220-4e4e-994d-ed1d7d5b526c`; sink, firewall, health LIVE/RX-only,
+listener, `Linger=yes`, 12 container e Caddy 401 sono tutti `PASS`, con
+`NRestarts=0`. Gli altri quattro gate non sono dichiarati verificati prima
+dell'evidenza reale.

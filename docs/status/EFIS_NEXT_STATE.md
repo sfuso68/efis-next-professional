@@ -2196,3 +2196,22 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   intelligibilità nel rumore non sono ancora selezionati né provati.
 - Il preload GLib resta per compatibilità del pacchetto QGC ma non riabilita
   Speech Dispatcher finché servizio e socket rimangono mascherati.
+
+### Aggiornamento 2026-09-15 — gate reboot server 50C
+
+#### Verificato su hardware reale
+
+- `server_observer_reboot_acceptance.py check` è `PASS`. Il boot ID è cambiato
+  dalla baseline `6182cee7-962f-4e92-86ab-0e9fb51d6059` a
+  `078d8253-a220-4e4e-994d-ed1d7d5b526c`.
+- Sink MAVLink `active/running/enabled`, PID 999 e `NRestarts=0`; firewall
+  `active/enabled`, listener presente, health fresca (4,424 s), LIVE, RX-only,
+  sorgente `192.168.1.47` e zero errori.
+- `Linger=yes`, tutti i 12 container richiesti attivi e endpoint Caddy protetto
+  con risposta HTTP 401.
+
+#### Aperto / non dichiarare DONE
+
+- Restano reboot/login del portatile, firewall QGC con rollback e conferma,
+  fault WLAN e alimentazione POWER1/rimozione USB. Il lotto 50C resta quindi
+  `IN PROGRESS`.
