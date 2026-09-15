@@ -2331,3 +2331,60 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   verifica di tensione e polarità, schema del cablaggio e collaudo al banco.
 - Restano aperti perdita/jitter introdotti, endurance termica, autenticazione
   del canale e qualificazione dello shutdown QGC.
+
+### Aggiornamento 2026-09-15 — network endurance e matrice endpoint 50E
+
+#### Implementato
+
+- Aggiunto `tools/network/network_endpoint_acceptance.py`, probe ICMP read-only
+  con target limitati alle subnet di banco, soglie esplicite per perdita, RTT
+  medio e RTT mdev, validazione fail-closed e report JSON atomico. L'mdev è
+  trattato come proxy di variabilità, non come jitter applicativo MAVLink.
+- Aggiunti 7 test per parsing Linux, policy subnet/limiti, soglie indipendenti,
+  failure del comando e scrittura atomica.
+
+#### Verificato solo software
+
+- I 7 test nuovi sono `PASS`. La regressione rete/Ground Station eseguita per
+  file totalizza altri 88 test `PASS` e 2 skip POSIX attesi su Windows. Il test
+  process-level del broker non è stato rilanciato perché questa workspace non
+  contiene il relativo eseguibile compilato; non è contato come `PASS`.
+
+#### Verificato su hardware reale
+
+- Un nuovo collector Blackbox di 3.600 s è `PASS`: 3.508 campioni, copertura
+  97,44%, MAVLink 26,293 Hz, +94.656 frame, +71.995 record per display,
+  +143.990 DDP e +189.312 fan-out; parità esatta, zero errori/restart, PID
+  2448, RSS 4.341.760 byte, 3.816.308.736 byte disponibili, 47,7 °C e
+  throttling zero.
+- Blackbox, Pixhawk, PFD, EMS e MFD hanno link FLIGHT-DATA gigabit/full duplex;
+  EEE è disattivato. Su 100 probe ciascuno: Pixhawk 0,163 ms, PFD 0,200 ms,
+  EMS 0,182 ms e MFD 0,202 ms medi, tutti con zero perdita. `ip_forward=0` e
+  non sono presenti bridge, bond o VRF.
+- PFD è attivo da due giorni con PID 31417/zero restart; MFD da 19 ore con PID
+  1330/zero restart. EMS è attivo da oltre una settimana con PID 4430 ma
+  conserva `NRestarts=2`; il journal originario è ruotato e la causa non è
+  attribuibile.
+- Il server è 100/100 a 4,226 ms medi; sink PID 999 LIVE/RX-only e zero errori.
+  QGC è `PASS`, PID 2660/zero restart, firewall e mute attivi; socket UDP 14550
+  con coda/drop zero e nessun incremento errori UDP in 20 s.
+- Il nuovo probe è stato distribuito ed eseguito sulla Blackbox. I quattro
+  target FLIGHT-DATA e il server sono `PASS`; Ground Station è `FAIL`: una
+  finestra 100 probe mostra 2% perdita/128,726 ms medi/94,590 ms mdev; una
+  seconda 20 probe mostra 20%/98,991 ms/89,104 ms mdev; la ripetizione col
+  tool definitivo mostra 0% ma 147,902 ms medi/100,342 ms mdev. Segnale
+  -40 dBm, VHT 5 GHz, power save attivo.
+
+#### Aperto / non dichiarare DONE
+
+- ICMP degradato non prova perdita MAVLink e il socket QGC non mostra drop;
+  serve misura applicativa lato consumer. Disabilitare reversibilmente il
+  power save e ripetere; per uso stabile preferire Ethernet alla Ground Station.
+- NetworkManager ha rifiutato il tentativo remoto non privilegiato prima di
+  ogni mutazione (`Insufficient privileges`): profilo `CASA` ancora `default`,
+  runtime ancora `Power save: on`. L'azione richiede comando locale `sudo`.
+- Gli errori UDP Blackbox cumulativi sono rimasti invariati a 111.985 per 20 s:
+  non sono un overflow attivo dimostrato, ma vanno monitorati.
+- Restano fault perdita/jitter confinato e con rollback, endurance sotto
+  terreno/video worst-case, causa dei restart EMS, shutdown QGC e autenticazione.
+- POWER1 resta rinviato per scelta dell'operatore; il banco continua su USB.

@@ -300,6 +300,28 @@ Una successiva finestra retrospettiva di 3.600 secondi è anch'essa `PASS`:
 +71.976 record per ciascun display, parità esatta e zero errori/restart;
 47,7 °C e throttling `0x0` al controllo finale.
 
+Per una matrice ripetibile di perdita, RTT e variazione RTT ICMP usare il probe read-only
+`network_endpoint_acceptance.py`. Ogni target dichiara identità, IPv4 e soglie;
+sono accettate soltanto le reti di banco `10.77.10.0/24` e `192.168.1.0/24`:
+
+```bash
+python3 tools/network/network_endpoint_acceptance.py \
+  --target pixhawk,10.77.10.3,0,2,1 \
+  --target pfd,10.77.10.11,0,2,1 \
+  --target ems,10.77.10.12,0,2,1 \
+  --target mfd,10.77.10.13,0,2,1 \
+  --target ground-station,192.168.1.39,1,100,50 \
+  --target server,192.168.1.6,0,20,10 \
+  --count 100 --interval-seconds 0.2 --timeout-seconds 1 \
+  --output ~/.local/state/efis-next/network-endpoints.json
+```
+
+L'ultimo limite di ogni target è l'`mdev` dell'RTT riportato da Linux `ping`:
+è un proxy di variabilità del collegamento, non il jitter applicativo MAVLink.
+Il report è atomico e fail-closed su output `ping` incompleto, target esterno
+alle subnet approvate, duplicati o soglia superata. È una misura di connettività
+e non sostituisce sequenza/freshness o jitter MAVLink, DDP o EDP lato consumer.
+
 I gate reboot vengono armati prima dell'azione privilegiata e verificati dopo
 il ritorno del nodo:
 
@@ -466,6 +488,33 @@ crescita di ingestion, recorder, DDP/EDP e fan-out server; sul server verificare
 sink `LIVE` e contatori crescenti. Dopo il recupero controllare indirizzo
 `192.168.1.39`, QGC ancora attivo e ricezione ripresa. Questa prova non
 sostituisce lo spegnimento fisico completo del portatile.
+
+Se la matrice endpoint mostra RTT molto variabile con segnale forte e
+`iw dev wlo1 get power_save` restituisce `on`, la prova reversibile va eseguita
+dalla console locale, annotando prima UUID e valore del profilo:
+
+```bash
+nmcli -g connection.uuid,802-11-wireless.powersave connection show CASA
+sudo nmcli connection modify uuid 7f55c93d-adc6-40f8-aa01-ac73f75c1e07 \
+  802-11-wireless.powersave 2
+sudo iw dev wlo1 set power_save off
+nmcli -g 802-11-wireless.powersave connection show uuid \
+  7f55c93d-adc6-40f8-aa01-ac73f75c1e07
+iw dev wlo1 get power_save
+```
+
+Questi comandi non devono disconnettere il profilo. Per il rollback alla
+baseline 50E (`default`/runtime `on`):
+
+```bash
+sudo nmcli connection modify uuid 7f55c93d-adc6-40f8-aa01-ac73f75c1e07 \
+  802-11-wireless.powersave 0
+sudo iw dev wlo1 set power_save on
+```
+
+L'UUID è quello verificato sul portatile del banco e non va riutilizzato su un
+altro host. Anche dopo un miglioramento ICMP, QGC necessita di una misura
+applicativa di sequenza/freshness prima di qualificare il collegamento.
 
 ## Rollback
 

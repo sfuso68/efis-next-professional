@@ -115,5 +115,14 @@ contatori observer provano continuità degli invii e non ricezione QGC durante
 la perdita; i timestamp NetworkManager non sono disponibili, quindi il tempo
 di riconnessione non è qualificato da questa prova.
 
+Il lotto 50E aggiunge un secondo soak retrospettivo di 3.600 secondi `PASS`:
+3.508 campioni, copertura 97,44%, 26,293 Hz, parità esatta e zero
+errori/restart. La matrice endpoint conferma FLIGHT-DATA senza perdita e sotto
+0,21 ms medi, ma rileva sulla Ground Station Wi-Fi finestre variabili dallo 0%
+al 20% di perdita ICMP e RTT mdev 89–100 ms. Il socket QGC mostra coda/drop zero e
+zero incremento errori UDP: ICMP non viene quindi promosso a prova di perdita
+MAVLink. Il Wi-Fi resta da ottimizzare o sostituire con Ethernet per il ruolo
+operativo; la fault injection controllata di perdita/jitter resta aperta.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.
