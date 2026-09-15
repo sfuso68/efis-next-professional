@@ -4,7 +4,7 @@ Data: 2026-09-15
 
 Branch: `work/mavlink-observer-gateway-v1`
 
-Stato: IN PROGRESS / SOFTWARE PASS / HARDWARE CAPTURE PENDING / NON-CERT
+Stato: IMPLEMENTED / SOFTWARE PASS / HARDWARE INTEGRITY PASS / TIMING OPEN / NON-CERT
 
 ID interessati: `NET-001`, `GS-001`.
 
@@ -60,8 +60,10 @@ ID interessati: `NET-001`, `GS-001`.
 48. Tool e dipendenza distribuiti sul portatile; `py_compile` Linux `PASS`.
 49. Prova non privilegiata terminata con exit 77 prima della cattura; QGC è
     rimasto PID 2660, attivo, zero restart, coda/drop UDP zero.
-50. Cattura hardware reale non ancora eseguita: richiede un solo comando
-    locale `sudo`; POWER1 e la rete operativa non sono stati modificati.
+50. Cattura hardware reale eseguita per 60,091 s con QGC attivo: 1.578
+    datagrammi/frame a 26,260 Hz, zero gap di sequenza, duplicati, riordino,
+    malformed ed errori socket; `CAPTURE_RC=0`. Il massimo interarrival di
+    1.012,999 ms mantiene aperta la qualifica timing.
 
 ## Comando di acceptance locale
 
@@ -88,12 +90,31 @@ echo "CAPTURE_RC=${PIPESTATUS[0]}"
 Il report non contiene payload MAVLink. `CAPTURE_RC=0` e `status=PASS` sono
 necessari ma non sufficienti per qualificare il Wi-Fi come deterministico.
 
+## Evidenza hardware acquisita
+
+- Report: `/home/stefano/.local/state/efis-next/mavlink-passive-50f.json`.
+- SHA-256: `fd51474f79ac474e235a6d7e560ad8ce219c4d58b017605ea7afcf8e2c319372`.
+- Timestamp UTC: `2026-09-15T20:07:15+00:00`; durata effettiva 60,091178 s.
+- Frequenza 26,260094 Hz; 1.578/1.578 datagrammi/frame; un solo stream
+  MAVLink `system=1/component=1`.
+- Integrità di sequenza: zero gap, duplicati e frame fuori ordine; zero
+  malformed ed errori socket; nessun payload persistito.
+- Timing: media 37,443 ms, p95 47,726 ms, massimo 1.012,999 ms e mdev
+  176,557 ms. La pausa massima non ha prodotto perdita di sequenza, ma non è
+  accettabile come prova di comportamento deterministico.
+- Dopo la prova, `efis-qgc-monitor.service` è `active/running`, PID 2660,
+  `NRestarts=0`, unico proprietario UDP 14550; coda socket e contatori kernel
+  `UdpInErrors`/`UdpRcvbufErrors` sono zero.
+- Blackbox `efis-blackbox-broker.service` è `active/running`, PID 2448,
+  `NRestarts=0`, bind esclusivo `10.77.10.2:14550`, throttling `0x0`; i log
+  mostrano fan-out paritario verso portatile e server e failure zero.
+
 ## Aperto / non dichiarare DONE
 
-- esecuzione hardware reale e confronto con i contatori Blackbox nello stesso
-  intervallo;
-- verifica che il modello per system/component non produca falsi gap sul
-  flusso ArduPlane reale;
+- ripetere la misura con un gate esplicito sull'interarrival e investigare la
+  pausa di 1.012,999 ms;
+- acquisire in modo sincronizzato i delta Blackbox nella stessa finestra; la
+  verifica post-prova conferma salute e parità, non il delta esatto dei 60 s;
 - persistenza power save dopo reboot;
 - fault perdita/jitter con rollback, shutdown QGC e preferenza Ethernet;
 - POWER1 resta rinviato.

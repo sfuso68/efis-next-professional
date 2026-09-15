@@ -140,5 +140,11 @@ hardware richiede `CAP_NET_RAW`/root e resta un'azione esplicita di banco. Il
 parser è strutturale, non sostituisce CRC/dialect Blackbox e non autorizza un
 percorso di ritorno.
 
+La prima cattura reale 50F conferma l'integrità per 60,091 s: 1.578 frame a
+26,260 Hz, zero gap, duplicati, riordino, malformed ed errori. Non qualifica
+però il timing: il massimo interarrival è 1.012,999 ms e il mdev 176,557 ms.
+Di conseguenza un gate timing esplicito e una ripetizione con delta Blackbox
+sincronizzato sono obbligatori prima di promuovere il collegamento Wi-Fi.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

@@ -2438,12 +2438,28 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Distribuiti tool e parser dipendente sul portatile. La prova negativa non
   privilegiata non ha interferito con QGC: PID 2660, `NRestarts=0`, listener
   UDP unico e coda/drop socket zero.
+- Eseguita cattura reale di 60,091 s su `wlo1`: 1.578 datagrammi e 1.578 frame
+  MAVLink2 a 26,260 Hz, stream `system=1/component=1`, zero gap di sequenza,
+  duplicati, riordino, malformed ed errori socket; `CAPTURE_RC=0`, status
+  `PASS` e nessun payload persistito. SHA-256 report
+  `fd51474f79ac474e235a6d7e560ad8ce219c4d58b017605ea7afcf8e2c319372`.
+- Dopo la prova l'unità corretta `efis-qgc-monitor.service` è
+  `active/running`, PID 2660, `NRestarts=0`; QGC è l'unico proprietario UDP
+  14550 e coda, `UdpInErrors` e `UdpRcvbufErrors` sono zero. Il precedente
+  controllo di `qgroundcontrol.service` era rivolto a un nome unità errato e
+  non rappresentava lo stato del processo.
+- Il broker Blackbox è `active/running`, PID 2448, `NRestarts=0`, bind
+  `10.77.10.2:14550`, throttling `0x0`; i log successivi mostrano fan-out
+  paritario portatile/server e failure zero.
 
 #### Aperto / non dichiarare DONE
 
-- La cattura raw di 60 s richiede esecuzione locale `sudo` e non è ancora
-  avvenuta. Vanno verificati sul flusso reale rate, gap, duplicati, riordino e
-  modello delle sequenze per system/component.
-- Confrontare la finestra con contatori Blackbox e stato QGC. Persistenza power
-  save, fault perdita/jitter, shutdown QGC ed Ethernet Ground Station restano
-  gate separati. POWER1 resta rinviato.
+- L'integrità applicativa della finestra è `PASS`, ma il timing non è
+  qualificato: interarrival medio 37,443 ms, p95 47,726 ms, massimo
+  1.012,999 ms e mdev 176,557 ms. Serve una soglia timing fail-closed e una
+  ripetizione per individuare la pausa di circa un secondo.
+- I contatori Blackbox sono stati verificati sani e paritari dopo la cattura,
+  non campionati ai due estremi della stessa finestra: la correlazione delta
+  sincronizzata resta aperta. Persistenza power save, fault perdita/jitter,
+  shutdown QGC ed Ethernet Ground Station restano gate separati. POWER1 resta
+  rinviato.
