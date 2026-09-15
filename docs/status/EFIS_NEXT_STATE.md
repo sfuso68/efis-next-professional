@@ -1,8 +1,26 @@
 # EFIS NEXT — stato verificato
 
-Aggiornamento: 2026-09-14
+Aggiornamento: 2026-09-15
 
 Branch di lavoro: `work/mavlink-observer-gateway-v1`
+
+### Correzione topologia Ground Station Ethernet — lotto 50K (2026-09-15)
+
+- Riesaminata la migrazione progettata nel lotto 50J contro ADR-010 e il piano
+  di rete: il Waveshare esistente appartiene a FLIGHT-DATA `10.77.10.0/24` e
+  non alla LAN di servizio.
+- La Ground Station `192.168.1.39` deve collegare `eno1` al router o a uno
+  switch della LAN `192.168.1.0/24`; collegarla al Waveshare avionico sarebbe
+  una topologia errata e non renderebbe raggiungibile la Blackbox `.47`.
+- Il preflight v2 mantiene i gate precedenti e, dopo lo switch, rifiuta una
+  route diretta FLIGHT-DATA su `eno1`, un percorso via gateway verso `.47` e
+  forwarding IPv4 attivo.
+- Verificato solo software: test unitari del preflight e controllo sintattico.
+  Non verificato su hardware: carrier, profilo NetworkManager, cambio route,
+  rollback e cattura MAVLink Ethernet.
+- Il tentativo SSH corrente raggiunge il portatile ma viene rifiutato per
+  autenticazione. Nessuna configurazione di rete e nessun parametro Pixhawk o
+  ArduPilot sono stati modificati.
 
 Base documentale letta prima delle modifiche: `CLAUDE_CODE_HANDOFF_2026-08-21.md`, `CHECKPOINT-2026-08-21.md`, `CHECKPOINT-2026-09-07-BLACKBOX-DDP.md` e ADR-001…ADR-015 pertinenti.
 

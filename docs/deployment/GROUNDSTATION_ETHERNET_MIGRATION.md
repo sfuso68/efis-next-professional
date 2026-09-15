@@ -3,6 +3,20 @@
 Stato: procedura progettata, preflight software verificato, migrazione hardware
 non eseguita. Uso di banco `NON-CERT`.
 
+## Correzione topologica obbligatoria (lotto 50K)
+
+La porta `eno1` della Ground Station deve essere collegata alla **LAN di
+servizio `192.168.1.0/24`**, cioe' a una porta LAN del router o a uno switch
+Ethernet appartenente alla stessa LAN. Non deve essere collegata al Waveshare
+FLIGHT-DATA, che trasporta esclusivamente `10.77.10.0/24`.
+
+Il Waveshare fotografato e gia' installato non e' uno switch LAN generico del
+progetto: e' il dominio avionico isolato fra Pixhawk, Blackbox e display.
+Assegnare `192.168.1.39` a una porta collegata a quel dispositivo non rende
+raggiungibile `192.168.1.47`; crea invece una topologia incoerente e rischia di
+confondere service plane e data plane. Non si deve aggiungere un alias
+`192.168.1.x` alla Blackbox Ethernet, ne' abilitare bridge, NAT o forwarding.
+
 ## Decisione
 
 La Ground Station conserva l'identità di servizio `192.168.1.39`, oggi
@@ -30,7 +44,8 @@ Wi-Fi, QGC attivo senza restart e un solo listener UDP 14550.
 
 ## Sequenza operativa progettata
 
-1. Collegare fisicamente `eno1` allo switch Waveshare della LAN di servizio.
+1. Collegare fisicamente `eno1` al router/switch della LAN di servizio; **non**
+   al Waveshare FLIGHT-DATA.
 2. Ripetere il preflight fisico e identificare porta, MAC e carrier.
 3. Creare un profilo NetworkManager Ethernet inattivo con indirizzo
    `192.168.1.39/24`; non attivarlo mentre Wi-Fi possiede l'indirizzo.
@@ -40,7 +55,9 @@ Wi-Fi, QGC attivo senza restart e un solo listener UDP 14550.
 6. Da console locale, disattivare Wi-Fi e attivare Ethernet come singola
    operazione controllata. La sessione SSH corrente può interrompersi.
 7. Verificare con `--phase post-switch`: indirizzo esclusivo su `eno1`, route
-   Blackbox via Ethernet, QGC attivo e listener unico.
+   Blackbox direttamente via Ethernet, QGC attivo e listener unico. Il gate
+   rifiuta inoltre forwarding IPv4 e una route diretta `10.77.10.0/24` su
+   `eno1`.
 8. Verificare firewall, telemetria passiva v3, broker e server observer.
 9. Annullare il rollback soltanto dopo tutti i gate.
 10. Registrare profilo, UUID, boot ID, hash dei report e risultati nella

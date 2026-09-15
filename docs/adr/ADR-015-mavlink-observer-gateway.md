@@ -184,5 +184,14 @@ preflight reale è `BLOCKED` soltanto perché `eno1` è `NO-CARRIER`: nessun
 profilo o cambio route è autorizzato prima del collegamento fisico e del
 rollback armato da console locale.
 
+Il lotto 50K corregge un'ambiguita' topologica del runbook 50J: `eno1` deve
+entrare nella LAN di servizio `192.168.1.0/24` tramite router/switch LAN, non
+nel Waveshare FLIGHT-DATA `10.77.10.0/24`. Il preflight v2 rifiuta nel
+post-switch una route FLIGHT-DATA diretta su `eno1`, un percorso instradato
+verso la Blackbox di servizio e `ip_forward=1`. Non sono ammessi alias di
+servizio sulla porta FLIGHT-DATA della Blackbox, bridge o NAT. L'accesso SSH
+della sessione di sviluppo alla Ground Station non e' disponibile; pertanto
+nessuna nuova prova hardware o mutazione di rete e' dichiarata.
+
 Fino a queste prove lo stato resta `PARTIAL` e il sistema non è approvato per
 il volo.

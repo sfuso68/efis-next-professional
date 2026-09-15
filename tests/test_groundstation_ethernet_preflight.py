@@ -32,7 +32,10 @@ def snapshot(*, carrier: bool, migrated: bool = False) -> dict[str, object]:
             "reachable": True,
             "device": "eno1" if migrated else "wlo1",
             "source": address,
+            "gateway": None,
         },
+        "flight_data_routes": [],
+        "ipv4_forwarding": False,
         "qgc": {
             "active": True, "pid": 2660, "restarts": 0,
             "udp_14550_listeners": 1, "listener_is_qgc": True,
@@ -65,6 +68,23 @@ class GroundStationEthernetPreflightTests(unittest.TestCase):
         state["route"]["device"] = "wlo1"
         result = MODULE.evaluate(state, "post-switch")
         self.assertFalse(result["checks"]["route_uses_ethernet"])
+
+    def test_post_switch_rejects_wrong_switch_or_routed_blackbox(self) -> None:
+        state = snapshot(carrier=True, migrated=True)
+        state["flight_data_routes"] = [{"dst": "10.77.10.0/24", "dev": "eno1"}]
+        result = MODULE.evaluate(state, "post-switch")
+        self.assertFalse(result["checks"]["no_direct_flight_data_route_on_ethernet"])
+
+        state = snapshot(carrier=True, migrated=True)
+        state["route"]["gateway"] = "192.168.1.1"
+        result = MODULE.evaluate(state, "post-switch")
+        self.assertFalse(result["checks"]["blackbox_is_on_service_lan"])
+
+    def test_post_switch_rejects_ip_forwarding(self) -> None:
+        state = snapshot(carrier=True, migrated=True)
+        state["ipv4_forwarding"] = True
+        result = MODULE.evaluate(state, "post-switch")
+        self.assertFalse(result["checks"]["ipv4_forwarding_disabled"])
 
     def test_qgc_restart_or_listener_collision_blocks_both_phases(self) -> None:
         for field, value in (("restarts", 1), ("udp_14550_listeners", 2)):
