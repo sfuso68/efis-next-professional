@@ -27,6 +27,7 @@ QGC = {
 }
 FIREWALL = {"LoadState": "loaded", "ActiveState": "active"}
 SPEECH = {"LoadState": "loaded", "ActiveState": "active", "SubState": "running"}
+SPEECH_MUTED = {"LoadState": "masked", "ActiveState": "inactive", "SubState": "dead"}
 LISTENER = [
     'UNCONN 0 0 0.0.0.0:14550 0.0.0.0:* users:(("QGroundControl",pid=1,fd=1))'
 ]
@@ -41,7 +42,10 @@ class QgcMonitorStatusTests(unittest.TestCase):
             "listeners": LISTENER,
             "firewall_state": FIREWALL,
             "firewall_enabled": True,
-            "speech_state": SPEECH,
+            "speech_state": SPEECH_MUTED,
+            "speech_socket_state": SPEECH_MUTED,
+            "speech_enablement": "masked",
+            "speech_socket_enablement": "masked",
             "qgc_runtime_warnings": [],
         }
         arguments.update(overrides)
@@ -61,17 +65,25 @@ class QgcMonitorStatusTests(unittest.TestCase):
         report = self.evaluate(preflight={"status": "BLOCKED", "checks": {}})
         self.assertEqual(report["status"], "FAIL")
 
-    def test_missing_speech_backend_is_partial(self) -> None:
+    def test_unmasked_speech_backend_is_partial(self) -> None:
         report = self.evaluate(
-            speech_state={"LoadState": "loaded", "ActiveState": "inactive"}
+            speech_state=SPEECH,
+            speech_socket_state={
+                "LoadState": "loaded",
+                "ActiveState": "active",
+                "SubState": "listening",
+            },
+            speech_enablement="enabled",
+            speech_socket_enablement="enabled",
         )
         self.assertEqual(report["status"], "PARTIAL")
+        self.assertFalse(report["checks"]["speech_output_muted"])
 
-    def test_qgc_speech_plugin_error_is_partial(self) -> None:
+    def test_qgc_speech_plugin_error_is_informational_when_muted(self) -> None:
         report = self.evaluate(
             qgc_runtime_warnings=['Error loading text-to-speech plug-in "speechd"']
         )
-        self.assertEqual(report["status"], "PARTIAL")
+        self.assertEqual(report["status"], "PASS")
         self.assertFalse(report["checks"]["qgc_speech_plugin_clean"])
 
     def test_restart_or_competing_listener_is_failure(self) -> None:

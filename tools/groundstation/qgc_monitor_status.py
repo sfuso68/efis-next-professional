@@ -49,6 +49,15 @@ def is_enabled(unit: str, *, user: bool) -> bool:
     return run(command).returncode == 0
 
 
+def enablement_state(unit: str, *, user: bool) -> str:
+    command = ["systemctl"]
+    if user:
+        command.append("--user")
+    command.extend(["is-enabled", unit])
+    result = run(command)
+    return result.stdout.strip()
+
+
 def listener_lines(port: int) -> list[str]:
     result = run(["ss", "-H", "-lunp"])
     suffix = f":{port}"
@@ -94,10 +103,20 @@ def evaluate(
     firewall_state: dict[str, str],
     firewall_enabled: bool,
     speech_state: dict[str, str] | None = None,
+    speech_socket_state: dict[str, str] | None = None,
+    speech_enablement: str = "",
+    speech_socket_enablement: str = "",
     qgc_runtime_warnings: list[str] | None = None,
 ) -> dict[str, object]:
     speech_state = speech_state or {}
+    speech_socket_state = speech_socket_state or {}
     qgc_runtime_warnings = qgc_runtime_warnings or []
+    speech_output_muted = (
+        speech_enablement == "masked"
+        and speech_socket_enablement == "masked"
+        and speech_state.get("ActiveState") == "inactive"
+        and speech_socket_state.get("ActiveState") == "inactive"
+    )
     checks = {
         "preflight_pass": preflight.get("status") == "PASS",
         "artifact_integrity": bool(
@@ -120,6 +139,7 @@ def evaluate(
         "speech_backend_running": speech_state.get("ActiveState") == "active"
         and speech_state.get("SubState") == "running",
         "qgc_speech_plugin_clean": not qgc_runtime_warnings,
+        "speech_output_muted": speech_output_muted,
     }
     critical = (
         "preflight_pass",
@@ -135,9 +155,7 @@ def evaluate(
         "firewall_loaded",
         "firewall_enabled",
         "firewall_active",
-        "speech_backend_loaded",
-        "speech_backend_running",
-        "qgc_speech_plugin_clean",
+        "speech_output_muted",
     )
     if not all(checks[name] for name in critical):
         status = "FAIL"
@@ -146,13 +164,17 @@ def evaluate(
     else:
         status = "PASS"
     return {
-        "schema": "efis-next.qgc-monitor-status.v1",
+        "schema": "efis-next.qgc-monitor-status.v2",
         "mode": "MONITOR_ONLY_NO_PIXHAWK_RETURN",
         "status": status,
         "checks": checks,
         "qgc": qgc_state,
         "firewall": firewall_state,
         "speech_backend": speech_state,
+        "speech_socket": speech_socket_state,
+        "speech_enablement": speech_enablement,
+        "speech_socket_enablement": speech_socket_enablement,
+        "speech_policy": "GROUND_STATION_SYNTHETIC_SPEECH_MUTED",
         "qgc_runtime_warnings": qgc_runtime_warnings,
         "listeners": listeners,
     }
@@ -188,6 +210,11 @@ def main() -> int:
         firewall_state=systemctl_state("efis-qgc-monitor-firewall.service", user=False),
         firewall_enabled=is_enabled("efis-qgc-monitor-firewall.service", user=False),
         speech_state=systemctl_state("speech-dispatcher.service", user=True),
+        speech_socket_state=systemctl_state("speech-dispatcher.socket", user=True),
+        speech_enablement=enablement_state("speech-dispatcher.service", user=True),
+        speech_socket_enablement=enablement_state(
+            "speech-dispatcher.socket", user=True
+        ),
         qgc_runtime_warnings=current_invocation_warnings("efis-qgc-monitor.service"),
     )
     document = json.dumps(report, indent=2, sort_keys=True) + "\n"

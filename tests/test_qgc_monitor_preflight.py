@@ -15,6 +15,9 @@ ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT / "tools" / "groundstation"))
 SCRIPT = ROOT / "tools" / "groundstation" / "qgc_monitor_preflight.py"
 UNIT = ROOT / "deploy" / "systemd" / "efis-qgc-monitor.user.service"
+SPEECH_DISABLE_SCRIPT = (
+    ROOT / "deploy" / "scripts" / "disable_qgc_synthetic_speech.sh"
+)
 SPEC = importlib.util.spec_from_file_location("qgc_monitor_preflight", SCRIPT)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -29,11 +32,18 @@ class QgcMonitorPreflightTests(unittest.TestCase):
         self.assertNotIn("ExecStartPre=", unit)
         self.assertNotIn("RestartPreventExitStatus=", unit)
 
-    def test_systemd_orders_optional_qgc_speech_backend(self) -> None:
+    def test_systemd_does_not_start_synthetic_speech_backend(self) -> None:
         unit = UNIT.read_text(encoding="utf-8")
-        self.assertRegex(unit, r"(?m)^After=.*speech-dispatcher\.service$")
-        self.assertRegex(unit, r"(?m)^Wants=.*speech-dispatcher\.service$")
-        self.assertNotRegex(unit, r"(?m)^Requires=.*speech-dispatcher")
+        self.assertNotRegex(unit, r"(?m)^(After|Wants|Requires)=.*speech-dispatcher")
+
+    def test_speech_disable_script_preserves_qgc_telemetry_gate(self) -> None:
+        script = SPEECH_DISABLE_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn(
+            "mask --now speech-dispatcher.service speech-dispatcher.socket", script
+        )
+        self.assertIn("is-active --quiet efis-qgc-monitor.service", script)
+        self.assertIn(":14550", script)
+        self.assertNotIn("stop efis-qgc-monitor", script)
 
     def test_systemd_preloads_approved_host_glib(self) -> None:
         unit = UNIT.read_text(encoding="utf-8")

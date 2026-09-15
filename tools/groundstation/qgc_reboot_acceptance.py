@@ -22,9 +22,7 @@ REQUIRED_STATUS_CHECKS = (
     "qgc_zero_restarts",
     "single_udp_listener",
     "listener_is_qgroundcontrol",
-    "speech_backend_loaded",
-    "speech_backend_running",
-    "qgc_speech_plugin_clean",
+    "speech_output_muted",
 )
 
 

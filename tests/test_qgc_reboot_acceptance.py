@@ -15,9 +15,9 @@ sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
-def status(*, speech_clean: bool = True) -> dict[str, object]:
+def status(*, speech_muted: bool = True) -> dict[str, object]:
     checks = {name: True for name in MODULE.REQUIRED_STATUS_CHECKS}
-    checks["qgc_speech_plugin_clean"] = speech_clean
+    checks["speech_output_muted"] = speech_muted
     checks.update(
         {"firewall_loaded": False, "firewall_enabled": False, "firewall_active": False}
     )
@@ -57,12 +57,12 @@ class QgcRebootAcceptanceTests(unittest.TestCase):
         )
         self.assertEqual(report["status"], "PASS")
 
-    def test_speech_warning_or_linger_fails(self) -> None:
+    def test_unmuted_speech_or_linger_fails(self) -> None:
         speech = MODULE.evaluate(
             phase="check",
             baseline_boot_id="boot-a",
             current_boot_id="boot-b",
-            status=status(speech_clean=False),
+            status=status(speech_muted=False),
             is_linger_disabled=True,
         )
         linger = MODULE.evaluate(

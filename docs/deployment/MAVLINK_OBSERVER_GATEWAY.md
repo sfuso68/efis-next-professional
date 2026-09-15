@@ -181,6 +181,21 @@ La prova reale ha caricato il plugin senza warning mantenendo immutata AppDir.
 Questo non sostituisce la catena voce EFIS né costituisce acceptance audio in
 cabina.
 
+### Politica voce della Ground Station
+
+La sintesi QGC sul portatile non fa parte della catena audio EFIS. Per scelta
+del proprietario è disabilitata in modo persistente mascherando sia
+`speech-dispatcher.service` sia `speech-dispatcher.socket`, senza fermare QGC:
+
+```sh
+sh deploy/scripts/disable_qgc_synthetic_speech.sh
+```
+
+Il gate richiede entrambi `masked/inactive` e continua a verificare QGC,
+listener e zero restart. Gli avvisi sonori non vocali di QGC non sono oggetto
+di questo mute. La futura voce naturale è una funzione EFIS distinta e viene
+allocata alla Blackbox o a un nodo audio dedicato secondo ADR-014.
+
 Per provare il gate porta senza dipendere da quoting shell, usare
 `tools/network/udp_port_holder.py` come unico listener temporaneo. Il tool non
 trasmette datagrammi, accetta una durata massima di dieci minuti e deve essere

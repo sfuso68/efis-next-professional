@@ -2167,3 +2167,32 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - POWER1 e rimozione USB richiedono ispezione fisica di alimentazione e non
   vengono eseguite da remoto. La chiusura QGC resta bounded/SIGKILL e non
   graceful; la sintesi speech caricata non equivale ad acceptance audio.
+
+### Aggiornamento 2026-09-15 — blocco sintesi QGC e target voce naturale
+
+#### Implementato
+
+- Rimossa dall'unità QGC l'attivazione automatica di Speech Dispatcher.
+- Aggiunto uno script idempotente che maschera servizio e socket speech senza
+  arrestare QGC e verifica telemetria UDP 14550 ancora attiva.
+- Status e gate reboot richiedono ora `speech_output_muted`; warning e plugin
+  TTS restano diagnostici e non sono confusi con la futura voce EFIS.
+- ADR-014 adotta un target ibrido: annunci critici registrati/versionati e TTS
+  neurale offline soltanto per contenuti dinamici non critici.
+
+#### Verificato su hardware reale
+
+- Sul portatile `Port-hp`, `speech-dispatcher.service` e `.socket` sono
+  `masked/inactive`. QGC è rimasto `active/running` con PID 49184,
+  `NRestarts=0` e unico listener UDP 14550.
+- Il nuovo status V2 è `PARTIAL` esclusivamente per il firewall rinviato e
+  riporta `speech_output_muted=true`; il gate reboot riarmato è `PASS` sulla
+  baseline `485d7f8b-9c44-4134-9f01-9f52dd6fa7e9`.
+
+#### Aperto / non dichiarare DONE
+
+- La persistenza del mute deve essere verificata nel reboot/login già armato.
+- Voce, lingua, registrazioni, motore TTS neurale, hardware audio/interfono e
+  intelligibilità nel rumore non sono ancora selezionati né provati.
+- Il preload GLib resta per compatibilità del pacchetto QGC ma non riabilita
+  Speech Dispatcher finché servizio e socket rimangono mascherati.

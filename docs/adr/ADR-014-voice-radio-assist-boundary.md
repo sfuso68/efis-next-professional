@@ -55,6 +55,14 @@ RPi5 riceve soltanto intenzioni e bozze strutturate. Un guasto del servizio
 voce lascia sempre disponibili touch e procedure cartacee. Prima del prodotto
 va rivalutato un nodo Voice/Audio dedicato per evitare il failure mode comune.
 
+QGroundControl e il portatile Ground Station non sono un nodo Voice/Audio
+EFIS. La loro sintesi generica resta mascherata: evita annunci sintetici non
+coordinati e non verificati in cabina. Per ottenere una voce naturale senza
+rendere probabilistico il percorso di allarme, il target è ibrido: annunci
+critici fissi registrati e versionati, valori dinamici non critici prodotti da
+TTS neurale offline sul nodo audio. Ogni clip conserva ID, lingua, voce,
+revisione, checksum e priorita'; il fallback resta sempre visuale.
+
 ## Alternative escluse
 
 - modello generativo nel percorso di comando o nella generazione della

@@ -1,8 +1,8 @@
 [Unit]
 Description=EFIS QGroundControl - MONITOR ONLY
 Documentation=file:/opt/efis-next/docs/deployment/MAVLINK_OBSERVER_GATEWAY.md
-After=graphical-session.target network-online.target speech-dispatcher.service
-Wants=network-online.target speech-dispatcher.service
+After=graphical-session.target network-online.target
+Wants=network-online.target
 PartOf=graphical-session.target
 ConditionPathExists=%h/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppDir/AppRun
 
