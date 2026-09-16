@@ -2717,6 +2717,13 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   switch.
 - Cinque test automatici PASS; porte, schema, freshness o autorità di comando
   divergenti vengono rifiutati fail-closed. Sintassi Python PASS.
+- La PR #11 ha completato con esito positivo entrambi i gate indipendenti
+  `EFIS Core CI / linux-core` e `EFIS Project Control / project-control` sul
+  confronto completo con `main`; GitHub non segnala conflitti. Il precedente
+  fallimento del solo evento `push` sul commit di formattazione documentale è
+  attribuito al guardrail per-commit: quel commit modificava
+  `docs/protocols/` senza aggiornare contestualmente questo stato. Non indica
+  un fallimento dei validatori del contratto o della build core.
 
 ### Verificato su hardware reale
 
