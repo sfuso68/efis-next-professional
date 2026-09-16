@@ -7,6 +7,8 @@
   V-speed, HSI, strumenti motore, flap, carrello ed elettrico.
 - Aggiunti validatore fail-closed e sei test negativi/positivi.
 - Integrato il controllo nel workflow Project Control.
+- Conservato il concept approvato in `assets/concepts/` con hash SHA-256 nel
+  documento di design; resta esplicitamente non operativo.
 
 ## Verificato solo software
 

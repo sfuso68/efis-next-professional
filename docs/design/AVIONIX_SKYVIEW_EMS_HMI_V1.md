@@ -3,7 +3,10 @@
 ## Stato e confini
 
 Questa specifica congela la direzione grafica delle schermate SkyView e EMS.
-Il mockup approvato è un riferimento di composizione, non un display operativo
+Il mockup approvato è conservato in
+`assets/concepts/avionix-skyview-ems-hmi-v1.png` (SHA-256
+`971dca214fafddba48bf66e1b1db5a0e091be34790fa6150e42783fda0320087`). È un
+riferimento di composizione, non un display operativo
 e non costituisce approvazione al volo. La sorgente macchina è
 `config/ui/avionix-hmi-v1.json`.
 
