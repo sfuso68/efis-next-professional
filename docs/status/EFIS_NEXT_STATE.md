@@ -2705,13 +2705,16 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   navigazione, EMS primario, airframe/fuel/electrical, degrado e prestazioni.
 - Aggiunti manifesto `config/ui/avionix-hmi-v1.json`, specifica HMI, validatore
   fail-closed, sei test e controllo CI dedicato.
+- Conservato il concept approvato come asset versionato con SHA-256 dichiarato
+  nella specifica; resta un riferimento visuale non operativo.
 - Resta vincolante ADR-013: SkyView su RPi5, EMS su RPi4 dedicato e VIDEO-CORE
   su un secondo RPi4. L'HMI è esclusivamente read-only.
 
 ### Verificato solo software
 
-- Validità sintattica JSON verificata. I test e il validatore Python devono
-  essere confermati dalla CI Linux prima di proporre integrazione.
+- Validità sintattica JSON verificata. Sul commit `13d8687` il workflow Project
+  Control, incluso validatore e sei test HMI, e la regressione EFIS Core CI
+  hanno entrambi completato con esito positivo.
 
 ### Verificato su hardware reale
 
