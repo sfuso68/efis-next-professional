@@ -1,0 +1,64 @@
+{
+  "schema": "efis-next.operational-seed.v2",
+  "profile_files": ["simulation-profile-v2.json"],
+  "profiles": [
+    {
+      "schema": "efis-next.operational-profile.v2",
+      "profile_key": "model.asso-v-jolly-912-ul",
+      "parent_profile": null,
+      "scope_type": "MODEL",
+      "scope_ref": "Vidor|Asso V Jolly|Rotax 912 UL",
+      "title": "Asso V Jolly / Rotax 912 UL — controlled simulation baseline",
+      "revision": 1,
+      "lifecycle_state": "SIMULATION",
+      "created_at": "2026-09-09T00:00:00Z",
+      "updated_at": "2026-09-09T00:00:00Z",
+      "default_disposition": "UNKNOWN",
+      "default_approval_status": "INDICATIVE",
+      "notes": "Preload only. Values are owner-declared or migrated from the legacy simulation profile; it is not approved aircraft data.",
+      "values": {
+        "identity.manufacturer": {"disposition":"VALUE","value":"Vidor","source":"owner-declaration-2026-09-09"},
+        "identity.model": {"disposition":"VALUE","value":"Asso V Jolly","source":"owner-declaration-2026-09-09"},
+        "identity.variant": {"disposition":"VALUE","value":"Owner-built; Pioneer 300 similarity declared, not substantiated","source":"owner-declaration-2026-09-09"},
+        "identity.category": {"disposition":"VALUE","value":"EXPERIMENTAL","source":"owner-declaration-2026-09-09"},
+        "identity.seats": {"disposition":"VALUE","value":2,"source":"owner-declaration-2026-09-09"},
+        "engine.manufacturer": {"disposition":"VALUE","value":"Rotax","source":"owner-declaration-2026-09-09"},
+        "engine.model": {"disposition":"VALUE","value":"912 UL","source":"owner-declaration-2026-09-09"},
+        "engine.cylinders": {"disposition":"VALUE","value":4,"source":"owner-declaration-2026-09-09"},
+        "engine.rated_power": {"disposition":"VALUE","value":80,"unit":"hp","source":"rotax-912-ul-manual-pending","rationale":"Value retained for simulation; exact manual revision and page must be attached before verification."},
+        "engine.takeoff_rpm": {"disposition":"VALUE","value":5800,"unit":"rpm","source":"rotax-912-ul-manual-pending","rationale":"Value retained for simulation; exact manual revision and page must be attached before verification."},
+        "flaps.installed": {"disposition":"VALUE","value":true,"source":"owner-declaration-2026-09-09"},
+        "flaps.detents": {"disposition":"VALUE","value":[0,10,15,20,30],"source":"owner-declaration-2026-09-09","rationale":"Legacy setup; actual detents and indication calibration remain to be measured."},
+        "landing_gear.type": {"disposition":"VALUE","value":"RETRACTABLE_TRICYCLE","source":"owner-declaration-2026-09-09"},
+        "electrical.nominal_voltage": {"disposition":"VALUE","value":12,"unit":"V","source":"owner-declaration-2026-09-09"},
+        "operating_units.airspeed": {"disposition":"VALUE","value":"kt","source":"owner-declaration-2026-09-09"},
+        "operating_units.altitude": {"disposition":"VALUE","value":"ft","source":"owner-declaration-2026-09-09"},
+        "operating_units.temperature": {"disposition":"VALUE","value":"degC","source":"owner-declaration-2026-09-09"},
+        "data_governance.unmapped_source_fields": {"disposition":"VALUE","value":["Complete AFM/POH field-by-field extraction pending","Installed equipment records pending","Weight-and-balance report pending"],"source":"owner-declaration-2026-09-09"}
+      }
+    },
+    {
+      "schema": "efis-next.operational-profile.v2",
+      "profile_key": "aircraft.asso-v-jolly-owner",
+      "parent_profile": "model.asso-v-jolly-912-ul",
+      "scope_type": "INSTALLED_AIRCRAFT",
+      "scope_ref": "REGISTRATION_PENDING|CONSTRUCTION_NUMBER_PENDING",
+      "title": "Installed Asso V Jolly — configuration pending survey",
+      "revision": 1,
+      "lifecycle_state": "SIMULATION",
+      "created_at": "2026-09-09T00:00:00Z",
+      "updated_at": "2026-09-09T00:00:00Z",
+      "default_disposition": "INHERIT",
+      "default_approval_status": "INDICATIVE",
+      "notes": "Individual-aircraft overlay. UNKNOWN overrides deliberately block registration, serials and release evidence.",
+      "values": {
+        "identity.registration": {"disposition":"UNKNOWN","approval_status":"INDICATIVE","rationale":"Must be entered from aircraft documents."},
+        "identity.construction_number": {"disposition":"UNKNOWN","approval_status":"INDICATIVE","rationale":"Must be entered from aircraft data plate."},
+        "engine.serial_number": {"disposition":"UNKNOWN","approval_status":"INDICATIVE","rationale":"Must be entered from engine data plate."},
+        "data_governance.owner_approval": {"disposition":"UNKNOWN","approval_status":"INDICATIVE","rationale":"Formal owner approval not yet recorded."},
+        "data_governance.technical_review": {"disposition":"UNKNOWN","approval_status":"INDICATIVE","rationale":"Independent technical review not yet performed."},
+        "data_governance.release_record": {"disposition":"UNKNOWN","approval_status":"INDICATIVE","rationale":"No operational release exists."}
+      }
+    }
+  ]
+}

@@ -1,24 +1,114 @@
 {
   "schema_version": 1,
-  "profile_id": "lsa-sim-bench",
+  "profile_id": "asso-v-jolly-912-ul",
   "revision": 1,
   "state": "SIMULATION",
   "catalog_version": "1.0.0-seed",
   "aircraft": {
-    "manufacturer": "EFIS NEXT",
-    "model": "LSA SIM",
-    "variant": "BENCH",
-    "registration": "EFIS-TEST",
-    "category": "LSA",
+    "manufacturer": "Vidor",
+    "model": "Asso V Jolly",
+    "variant": "Pioneer 300 equivalent / owner build",
+    "registration": "TO_BE_ENTERED",
+    "category": "EXPERIMENTAL",
     "mtow_kg": 600,
-    "empty_weight_kg": 300,
-    "fuel_capacity_l": 136.3
+    "empty_weight_kg": 285,
+    "fuel_capacity_l": 80,
+    "wingspan_m": 9.4,
+    "length_m": 6.55,
+    "wing_area_m2": 10.0,
+    "configuration_reference": "Alpi Aviation Pioneer 300",
+    "configuration_status": "OWNER_DECLARED_INDICATIVE"
   },
   "engine": {
     "manufacturer": "Rotax",
-    "model": "912 ULS",
+    "model": "912 UL",
     "cylinders": 4,
+    "power_hp": 80,
+    "rpm_max": 5800,
+    "serial_number": "TO_BE_ENTERED",
+    "manual_reference": "TO_BE_VERIFIED",
+    "limits": {
+      "status": "INDICATIVE_UNVERIFIED",
+      "rpm_max": 5800,
+      "oil_pressure_min_psi": 25,
+      "oil_pressure_max_psi": 100,
+      "oil_temperature_max_c": 120,
+      "cht_max_c": 230,
+      "egt_max_c": 920,
+      "fuel_pressure_min_psi": 2.2,
+      "fuel_pressure_max_psi": 5.8
+    },
+    "capabilities": {
+      "mixture_control": false,
+      "manifold_pressure_sensor": true,
+      "fuel_flow_sensor": true,
+      "individual_cht": true,
+      "individual_egt": true,
+      "carburetor_synchronization": true
+    },
+    "runtime_tracking": {
+      "engine_run_threshold_rpm": 500,
+      "tach_reference_rpm": 5000,
+      "initial_master_hours": 0.0,
+      "initial_engine_hours": 0.0,
+      "initial_tach_hours": 0.0,
+      "initial_flight_hours": 0.0,
+      "status": "TO_BE_CONFIRMED"
+    },
+    "sensors": [
+      {"signal": "RPM", "quantity": 1, "type": "TO_BE_SELECTED", "required": true},
+      {"signal": "OIL_PRESSURE", "quantity": 1, "type": "TO_BE_SELECTED", "required": true},
+      {"signal": "OIL_TEMPERATURE", "quantity": 1, "type": "TO_BE_SELECTED", "required": true},
+      {"signal": "COOLANT_TEMPERATURE", "quantity": 1, "type": "TO_BE_SELECTED", "required": true},
+      {"signal": "CHT", "quantity": 4, "type": "TO_BE_CONFIRMED", "required": false},
+      {"signal": "EGT", "quantity": 4, "type": "TO_BE_CONFIRMED", "required": false},
+      {"signal": "FUEL_PRESSURE", "quantity": 1, "type": "TO_BE_CONFIRMED", "required": false},
+      {"signal": "FUEL_FLOW", "quantity": 1, "type": "TO_BE_CONFIRMED", "required": false},
+      {"signal": "MANIFOLD_PRESSURE", "quantity": 1, "type": "TO_BE_CONFIRMED", "required": false}
+    ],
     "status": "INDICATIVE"
+  },
+  "systems": {
+    "landing_gear": {
+      "installed": true,
+      "retractable": true,
+      "positions": 3
+    },
+    "flaps": {
+      "installed": true,
+      "position_sensor": true,
+      "detents_deg": [0, 10, 15, 20, 30]
+    },
+    "fuel": {
+      "tank_count": 2,
+      "tank_capacity_l": [40, 40],
+      "level_sensor_type": "TO_BE_CONFIRMED"
+    },
+    "electrical": {
+      "architecture": "MAIN_AND_ESSENTIAL_BUS",
+      "nominal_voltage_v": 12,
+      "status": "OWNER_CONFIGURATION_TO_BE_CONFIRMED",
+      "buses": [
+        {"id": "MAIN", "label": "MAIN BUS", "critical": true},
+        {"id": "ESSENTIAL", "label": "ESSENTIAL BUS", "critical": true},
+        {"id": "AVIONICS", "label": "AVIONICS BUS", "critical": false}
+      ],
+      "sources": [
+        {"id": "BATTERY_MAIN", "type": "BATTERY", "bus": "MAIN", "installed": true},
+        {"id": "ALTERNATOR_MAIN", "type": "ALTERNATOR", "bus": "MAIN", "installed": true},
+        {"id": "BATTERY_BACKUP", "type": "BATTERY", "bus": "ESSENTIAL", "installed": false}
+      ],
+      "loads": [
+        {"id": "IGNITION_A", "label": "IGNITION A", "bus": "ESSENTIAL", "critical": true, "installed": true},
+        {"id": "IGNITION_B", "label": "IGNITION B", "bus": "ESSENTIAL", "critical": true, "installed": true},
+        {"id": "STARTER", "label": "STARTER", "bus": "MAIN", "critical": false, "installed": true},
+        {"id": "FUEL_PUMP_AUX", "label": "AUX FUEL PUMP", "bus": "ESSENTIAL", "critical": true, "installed": false, "status": "TO_BE_CONFIRMED"},
+        {"id": "EMS", "label": "ENGINE MONITOR", "bus": "ESSENTIAL", "critical": true, "installed": true},
+        {"id": "FLAPS", "label": "FLAPS", "bus": "MAIN", "critical": false, "installed": true},
+        {"id": "GEAR", "label": "LANDING GEAR", "bus": "MAIN", "critical": true, "installed": true},
+        {"id": "PITOT_HEAT", "label": "PITOT HEAT", "bus": "MAIN", "critical": false, "installed": false, "status": "TO_BE_CONFIRMED"}
+      ]
+    }
   },
   "speeds_kt": {
     "VSO": 39,
@@ -41,8 +131,7 @@
   },
   "evidence": {
     "status": "INDICATIVE",
-    "source": "Legacy EFIS catalog import",
-    "warning": "Simulation only. Replace with the current approved POH/AFM for the installed aircraft."
+    "source": "Owner declaration: Asso V Jolly equivalent to Pioneer 300; legacy Pioneer 300 catalog values",
+    "warning": "Simulation only. Confirm registration, measured weights, fuel capacity, speeds and limitations against the documents for this individual aircraft before activation."
   }
 }
-

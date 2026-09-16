@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodic EFIS signed CAN segment inventory
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=5min
+Persistent=true
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target

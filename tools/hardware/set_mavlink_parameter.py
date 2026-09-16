@@ -59,10 +59,45 @@ PROTECTED = {
 }
 
 TOLERANCE = 1e-4
+PYMAVLINK_MULTI_INSTANCE_ERROR = "'NoneType' object does not support item assignment"
 
 
 class ParameterError(RuntimeError):
     pass
+
+
+def receive_match(link, *, message_type: str, timeout: float):
+    """Riceve un messaggio senza estendere il timeout su frame malformati.
+
+    Alcune versioni di pymavlink possono sollevare un ``TypeError`` interno
+    mentre aggiornano la cache di un messaggio telemetrico multi-istanza. Il
+    frame e' gia' stato consumato e non riguarda necessariamente il tipo che
+    stiamo aspettando. Ignoriamo esclusivamente quella firma nota e continuiamo
+    entro la stessa scadenza; qualsiasi altro errore resta visibile.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        remaining = deadline - time.monotonic()
+        try:
+            message = link.recv_match(
+                type=message_type, blocking=True, timeout=min(0.5, remaining))
+        except TypeError as error:
+            if PYMAVLINK_MULTI_INSTANCE_ERROR not in str(error):
+                raise
+            continue
+        if message is not None:
+            return message
+    return None
+
+
+def wait_for_heartbeat(link, timeout: float):
+    message = receive_match(link, message_type="HEARTBEAT", timeout=timeout)
+    if message is not None:
+        # post_message normalmente valorizza gia' questi campi; assegnarli dal
+        # battito rende esplicito il destinatario anche dopo un frame scartato.
+        link.target_system = message.get_srcSystem()
+        link.target_component = message.get_srcComponent()
+    return message
 
 
 def parameter_id(name: str) -> bytes:
@@ -93,7 +128,9 @@ def read_parameter(link, name: str, timeout: float, retries: int):
                                          encoded, -1)
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
-            message = link.recv_match(type="PARAM_VALUE", blocking=True, timeout=0.5)
+            message = receive_match(
+                link, message_type="PARAM_VALUE",
+                timeout=min(0.5, max(0.0, deadline - time.monotonic())))
             if message is None:
                 continue
             received = bytes(message.param_id).rstrip(b"\x00").decode("ascii", "replace") \
@@ -112,7 +149,9 @@ def write_parameter(link, name: str, value: float, kind: int, timeout: float):
                             parameter_id(name), float(value), int(kind))
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        message = link.recv_match(type="PARAM_VALUE", blocking=True, timeout=0.5)
+        message = receive_match(
+            link, message_type="PARAM_VALUE",
+            timeout=min(0.5, max(0.0, deadline - time.monotonic())))
         if message is None:
             continue
         received = bytes(message.param_id).rstrip(b"\x00").decode("ascii", "replace") \
@@ -178,7 +217,7 @@ def main() -> int:
             "Se la modifica e' davvero voluta, ripetere con --allow-protected.")
 
     link = mavutil.mavlink_connection(args.device, baud=args.baud, source_system=254)
-    if link.wait_heartbeat(timeout=10) is None:
+    if wait_for_heartbeat(link, timeout=10) is None:
         raise SystemExit("nessun battito MAVLink: autopilota non raggiungibile")
     record["target_system"] = link.target_system
     record["target_component"] = link.target_component

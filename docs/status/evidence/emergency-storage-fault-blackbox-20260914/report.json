@@ -1,0 +1,18 @@
+{
+  "schema": "efis-next.emergency-storage-fault-hw-report.v1",
+  "target": "efisblackbox",
+  "test_filesystem": "isolated-ext4-loopback",
+  "production_service_touched": false,
+  "production_service_before": "active",
+  "production_service_after": "active",
+  "initial_write_http": 201,
+  "full_write_http": 507,
+  "full_write_persisted": false,
+  "health_while_full_http": 503,
+  "recovery_write_http": 201,
+  "records_before_sigkill": 2,
+  "records_after_restart": 2,
+  "quick_check_on_restart": "startup-pass",
+  "power_loss_verified": false,
+  "result": "PASS"
+}

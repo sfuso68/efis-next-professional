@@ -1,0 +1,95 @@
+{
+  "schema": "efis-next.emergency-procedure-source-registry.v1",
+  "updated": "2026-09-09",
+  "profile_id": "asso-v-jolly-912-ul",
+  "operational_release_allowed": false,
+  "blocking_reason": "Aircraft-specific controlled POH, revision, applicability and engine serial are not available",
+  "sources": [
+    {
+      "id": "AIRFRAME-OWN-POH",
+      "title": "Asso V Jolly manuale di impiego dell'esemplare",
+      "authority": "INSTALLED_AIRCRAFT",
+      "status": "REQUIRED_NOT_RECEIVED",
+      "required_metadata": [
+        "registration",
+        "construction_number",
+        "document_number",
+        "revision",
+        "effective_pages",
+        "file_sha256"
+      ]
+    },
+    {
+      "id": "AIRFRAME-OWN-WB",
+      "title": "Rapporto di pesata e centraggio corrente",
+      "authority": "INSTALLED_AIRCRAFT",
+      "status": "REQUIRED_NOT_RECEIVED"
+    },
+    {
+      "id": "ASSO-V-PUBLIC-MANUAL",
+      "title": "ASSO V Manuale d'impiego, copia pubblica",
+      "url": "https://it.scribd.com/document/522145774/manuale-di-impiego",
+      "authority": "THIRD_PARTY_COPY",
+      "status": "REFERENCE_UNCONTROLLED",
+      "operational_data_allowed": false,
+      "notes": "Contains blank configuration fields and a 912 ULS example; not tied to the installed aircraft"
+    },
+    {
+      "id": "ALPI-P300-CURRENT",
+      "title": "Alpi Aviation Pioneer 300 product page",
+      "url": "https://www.alpiaviation.com/en/airplane/pioneer-300/",
+      "authority": "MANUFACTURER",
+      "status": "OFFICIAL_REFERENCE_CURRENT",
+      "operational_data_allowed": false,
+      "notes": "Current page describes a 912 ULS configuration; useful for comparison only"
+    },
+    {
+      "id": "ALPI-CUSTOMER-AREA",
+      "title": "Alpi Aviation owner technical library",
+      "url": "https://customerarea.alpiaviation.com/en/new-account",
+      "authority": "MANUFACTURER",
+      "status": "ACCESS_REQUIRED",
+      "operational_data_allowed": false
+    },
+    {
+      "id": "P300-POH-PD9096-5",
+      "title": "Pioneer 300 POH and Flight Training Supplement",
+      "document_number": "PD9096-5",
+      "revision_date_claimed": "2015-06-01",
+      "url": "https://www.flugwelt.eu/images/Handbuecher/P300_Pilot_Operating_Handbook_1.pdf",
+      "authority": "THIRD_PARTY_COPY",
+      "status": "REFERENCE_UNCONTROLLED",
+      "operational_data_allowed": false,
+      "notes": "P300 KITE; revision and applicability must be confirmed through the manufacturer"
+    },
+    {
+      "id": "ENGINE-ROTAX-912-UL-PRODUCT",
+      "title": "Rotax 912 UL/A/F 80 HP product page",
+      "url": "https://www.flyrotax.com/products/912-ul-a-f",
+      "authority": "ENGINE_MANUFACTURER",
+      "status": "OFFICIAL_REFERENCE_CURRENT",
+      "operational_data_allowed": false
+    },
+    {
+      "id": "ENGINE-ROTAX-TECHDOC",
+      "title": "Rotax Technical Documentation Library",
+      "url": "https://www.flyrotax.com/p/service/technical-documentation",
+      "authority": "ENGINE_MANUFACTURER",
+      "status": "OFFICIAL_LIBRARY",
+      "operational_data_allowed": false,
+      "required_document": "OM-912 revision applicable to installed engine serial"
+    },
+    {
+      "id": "ENGINE-OWN-IDENTITY",
+      "title": "Installed Rotax 912 UL data plate and serial",
+      "authority": "INSTALLED_ENGINE",
+      "status": "REQUIRED_NOT_RECEIVED"
+    },
+    {
+      "id": "PROPELLER-OWN-MANUAL",
+      "title": "Installed propeller identification and manual",
+      "authority": "INSTALLED_AIRCRAFT",
+      "status": "REQUIRED_NOT_RECEIVED"
+    }
+  ]
+}

@@ -14,14 +14,14 @@ darebbe per scontato venendo dal RPi5.
 
 | | |
 |---|---|
-| Accesso | `pi@192.168.1.48`, hostname `efis`, alias `efis.local` |
+| Accesso | recovery WLAN `pi@192.168.1.36`; FLIGHT-DATA `10.77.10.12`; hostname `efis` |
 | Hardware | Raspberry Pi 4 Model B Rev 1.5, 4 core, 3,7 GiB |
 | Sistema | Debian 13 trixie, aarch64, gcc 14.2, cmake 3.31 |
 | Pannello | DSI collegato (`card1-DSI-1`); HDMI entrambi scollegati |
 | Target di default | `multi-user.target` — **nessuna sessione grafica** |
 | Qt | 6.8.2 già installato, con i moduli CMake che servono |
 | `ninja` | **assente** |
-| `sudo` | **richiede password** |
+| `sudo` | non interattivo verificato il 7 settembre 2026 |
 
 Le conseguenze, in ordine di importanza:
 
@@ -63,7 +63,7 @@ Il progetto va in `~/efis-next`, che non è né `~/efis` né `~/efis2`.
 Dalla macchina di sviluppo:
 
 ```sh
-git archive --format=tar HEAD | ssh pi@192.168.1.48 "mkdir -p ~/efis-next && tar -x -C ~/efis-next"
+git archive --format=tar HEAD | ssh pi@192.168.1.36 "mkdir -p ~/efis-next && tar -x -C ~/efis-next"
 ```
 
 Sul nodo, senza root:
@@ -125,8 +125,12 @@ Ritmo di rendering, in `logs/ems.log`:
 grep render_health ~/efis-next/logs/ems.log | tail -5
 ```
 
-Il nodo aggiorna il motore a 20 Hz e non ha terreno da disegnare: `fps` molto
-sotto 20 è un risultato da indagare, non da accettare.
+Il nodo aggiorna il motore a 20 Hz. `snapshot_hz` misura questa cadenza;
+`presentation_hz` conta invece soltanto le immagini effettivamente presentate
+dal scene graph e può essere inferiore quando i valori visibili non richiedono
+un ridisegno. Non usare `presentation_hz` come misura del tempo GPU. Per
+profilare il render thread usare temporaneamente `QSG_RENDER_TIMING=1` e
+controllare `syncAndRender`.
 
 ## Cattura della pagina
 
@@ -215,5 +219,38 @@ programmi, e li deve verificare entrambi. La ADR-006 lo pone come vincolo.
   all'avvio, ed è reversibile con una riga;
 - `efis-web.service` ed `efis-plan.service` restano attivi e non vanno toccati;
 - nessuna porta SSH esposta fuori dalla LAN;
-- il nodo usa solo dati simulati finché non viene dichiarato diversamente;
+- il feed EDP di banco usa dati simulati e li dichiara `LIVE • SIM`;
 - questo è un banco di sviluppo, non un'immagine di produzione.
+
+## Ethernet avionica verificata
+
+Il 7 settembre 2026 il RPi4 reale è stato identificato nuovamente dopo il
+reset. Il precedente lease `192.168.1.48` non appartiene più al nodo e non deve
+essere usato: il router lo assegna a un telefono. La WLAN di recupero corrente
+è `192.168.1.36`.
+
+Il profilo NetworkManager `Wired connection 1` assegna a `eth0`
+`10.77.10.12/24`, MTU 1500, senza gateway, DNS o IPv6. Collegato al Waveshare,
+il link reale ha negoziato 1000 Mbit/s full duplex e ha raggiunto Blackbox e
+PFD. Il servizio `efis-avionics-egress.service` applica lo stesso guard
+fail-closed degli altri nodi.
+
+Il processo EMS installato apre EDP V1 su `10.77.10.12:49003` e accetta soltanto
+il nodo Blackbox 47. DDP V2 continua a codificare lo snapshot di volo, non
+`EngineSnapshot`: l'EMS non va aggiunto alla lista `--display` del broker.
+L'arresto del publisher produce `STALE`, poi `SIM FALLBACK • LINK LOST`; il
+ripristino torna a `LIVE • SIM`. La qualifica `SIM` resta obbligatoria finché
+il publisher non riceve dati dal decoder CAN reale verificato.
+
+Il servizio CAN storico `/etc/systemd/system/fuso-can.service` aveva `[init]`
+al posto di `[Unit]`. systemd ignorava descrizione e dipendenze pur eseguendo
+la sezione `[Service]`; la versione corretta è ora conservata in
+`deploy/systemd/fuso-can.service`.
+
+Con renderer `eglfs` attivo e senza affinità sono stati misurati 13–15% di
+perdita ICMP e burst fino a 2.040 ms, pur con CPU totale libera, alimentazione
+sana (`get_throttled=0x0`) e zero errori PHY. Fermando il renderer la latenza è
+scesa a 0,18–0,22 ms. La prova equivalente con tutti i thread del renderer su
+CPU1–3, lasciando CPU0 ai due IRQ `bcmgenet`, ha dato 100/100 ping con massimo
+0,282 ms. Il drop-in `efis-ems-performance.override.conf` rende questa affinità
+parte del deployment; non è un'ottimizzazione estetica.

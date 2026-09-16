@@ -1,14 +1,28 @@
 [Unit]
 Description=EFIS Next Primary Flight Display
 Documentation=file:///home/efis/efis-next/README.md
-After=graphical-session.target
-PartOf=graphical-session.target
+# Raspberry Pi OS/Debian Wayland sessions do not consistently activate
+# graphical-session.target.  Start from the user manager's default target;
+# Restart=always below bridges the short interval before Wayland is ready.
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 WorkingDirectory=/home/efis/efis-next
+# default.target can be reached before the compositor creates its socket.
+# Reject that early attempt before Qt can start a portal activation without a
+# display; Restart=always retries against the real Wayland session.
+ExecStartPre=/usr/bin/test -S %t/wayland-0
+Environment=EFIS_KIOSK=1
+# The kiosk does not use desktop dialogs. Selecting the installed local Qt
+# theme prevents synchronous xdg-desktop-portal fallback during session boot.
+Environment=QT_QPA_PLATFORMTHEME=qt6ct
+Environment=EFIS_DDP_BIND_ADDRESS=0.0.0.0
+Environment=EFIS_DDP_LISTEN_PORT=49002
+Environment=EFIS_DDP_SOURCE_NODE=47
+Environment=EFIS_SIMULATION_ROLE=FALLBACK
 ExecStart=/home/efis/efis-next/deploy/scripts/run-pfd.sh
-Restart=on-failure
+Restart=always
 RestartSec=2
 TimeoutStopSec=5
 KillSignal=SIGTERM
@@ -16,4 +30,4 @@ StandardOutput=journal
 StandardError=journal
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=default.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=EFIS signed fuel blackbox archive maintenance
+After=efis-fuel-event-hub.service
+
+[Service]
+Type=oneshot
+User=blackbox
+Group=blackbox
+ExecStart=/usr/bin/python3 /opt/efis-blackbox/fuel_event_maintenance.py maintain --database /var/lib/blackbox/ethernet/fuel-events.sqlite3 --root /var/lib/blackbox/ethernet --key /etc/blackbox/archive-signing.key --retention-days 180
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/blackbox/ethernet
+

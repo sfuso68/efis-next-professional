@@ -158,6 +158,10 @@ private:
 
     NodeHealthPolicy policy_;
     std::vector<NodeStatus> nodes_;
+    // heartbeat() puo' riportare online un nodo prima della successiva update().
+    // La transizione resta qui finche' il ciclo di ingest non la raccoglie e la
+    // scrive nella black box.
+    std::vector<NodeStateChange> pending_changes_;
 };
 
 }  // namespace efis

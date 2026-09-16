@@ -25,6 +25,9 @@ User=pi
 WorkingDirectory=/home/pi/efis-next
 Environment=HOME=/home/pi
 Environment=QT_QPA_PLATFORM=eglfs
+Environment=EFIS_EDP_BIND=10.77.10.12
+Environment=EFIS_EDP_PORT=49003
+Environment=EFIS_EDP_SOURCE_NODE=47
 ExecStart=/home/pi/efis-next/deploy/scripts/run-ems.sh
 # Restart=always, non on-failure, e la ragione e' stata scoperta rompendo il
 # nodo il 21 agosto 2026. Un SIGTERM arrivato da fuori — un pkill sbagliato, un

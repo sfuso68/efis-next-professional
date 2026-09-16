@@ -44,6 +44,7 @@ secrets/
 *.BIN
 /data/recordings/
 /output/logs/
+/state/
 
 # Dati binari scaricati o generati: DEM Copernicus, texture Sentinel-2,
 # pacchetti terreno e ingest server. Tracciati tramite manifest di checksum,

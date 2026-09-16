@@ -395,8 +395,15 @@ int main() {
             "a returning node must be accepted again");
     require(monitor.status(engine_node)->state == efis::NodeState::online,
             "a returning node must come back online immediately");
+    const auto recovery_changes = monitor.update(epoch + 7s);
+    require(recovery_changes.size() == 1 &&
+                recovery_changes.front().node == engine_node &&
+                recovery_changes.front().previous == efis::NodeState::lost &&
+                recovery_changes.front().current == efis::NodeState::online &&
+                recovery_changes.front().timestamp == epoch + 7s,
+            "a recovery accepted by heartbeat must be returned for recording");
     require(monitor.update(epoch + 7s).empty(),
-            "the recovery is already recorded by the accepted heartbeat");
+            "a recorded recovery must not be emitted twice");
 
     // I salti di sequenza misurano i messaggi persi, non gli episodi.
     require(monitor.heartbeat(engine_node, epoch + 8s, 6) ==
@@ -942,7 +949,8 @@ int main() {
         written, {4097, efis::NodeState::online, efis::NodeState::stale, epoch + 4s});
     efis::recording::FlightRecordWriter::write_source_change(
         written, {efis::SourceId::simulation, efis::SourceId::pixhawk_primary,
-                  efis::SourceChangeReason::failover, epoch + 5s});
+                  efis::SourceChangeReason::failover, epoch + 5s,
+                  efis::SignalId::indicated_airspeed});
 
     std::istringstream to_read{written.str()};
     const auto replayed = efis::recording::read_flight_record(to_read);
@@ -953,6 +961,9 @@ int main() {
     require(replayed.node_events.size() == 1, "node events must survive the round trip");
     require(replayed.source_changes.size() == 1,
             "source changes must survive the round trip");
+    require(replayed.source_changes.front().signal ==
+                efis::SignalId::indicated_airspeed,
+            "a source change must retain the identity of the affected signal");
 
     const efis::RecordedSampleLookup found = find_recorded(
         replayed.samples, efis::SignalId::indicated_airspeed);

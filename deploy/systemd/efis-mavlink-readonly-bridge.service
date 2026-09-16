@@ -1,0 +1,29 @@
+[Unit]
+Description=EFIS Next Pixhawk receive-only MAVLink bridge
+Documentation=file:///home/stefano/.local/lib/efis-next/MAVLINK_READONLY_BRIDGE.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=EFIS_PIXHAWK_SERIAL=/dev/ttyACM0
+# Il default e' solo locale. L'ingest operativo arriva direttamente dal
+# Pixhawk alla Blackbox sulla rete FLIGHT-DATA; duplicarlo qui confonderebbe
+# provenienza, sequenze e metriche.
+Environment="EFIS_MAVLINK_DEST_ARGS=--destination 127.0.0.1:14550"
+EnvironmentFile=-%h/.config/efis/mavlink-readonly-bridge.env
+ExecStart=/usr/bin/python3 %h/.local/lib/efis-next/mavlink_readonly_forwarder.py --serial ${EFIS_PIXHAWK_SERIAL} $EFIS_MAVLINK_DEST_ARGS
+Restart=always
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+RestrictAddressFamilies=AF_UNIX AF_INET
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

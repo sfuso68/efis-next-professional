@@ -3,27 +3,38 @@
 #include "efis/core/flight_model.hpp"
 #include "efis/core/flight_source.hpp"
 #include "efis/providers/simulation_source.hpp"
+#include "efis/providers/ddp_udp_source.hpp"
 #include "efis/core/engine_source.hpp"
+#include "efis/core/engine_runtime.hpp"
 #include "efis/providers/engine_simulation_source.hpp"
+#include "efis/simulation/system_simulator.hpp"
+#include "efis/emergency/emergency_assist.hpp"
+#include "../../setup/operational_profile_model.hpp"
 
 #include <memory>
+#include <cstddef>
 
 #include <QObject>
 #include <QTimer>
 #include <QVariantList>
 #include <QVariantMap>
+#include <QStringList>
 
 class PfdController final : public QObject {
     Q_OBJECT
     Q_PROPERTY(double roll READ roll NOTIFY snapshotChanged)
     Q_PROPERTY(double pitch READ pitch NOTIFY snapshotChanged)
     Q_PROPERTY(double heading READ heading NOTIFY snapshotChanged)
+    Q_PROPERTY(bool attitudeValid READ attitudeValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool headingValid READ headingValid NOTIFY snapshotChanged)
     Q_PROPERTY(double airspeed READ airspeed NOTIFY snapshotChanged)
     Q_PROPERTY(double altitude READ altitude NOTIFY snapshotChanged)
     Q_PROPERTY(double verticalSpeed READ verticalSpeed NOTIFY snapshotChanged)
+    Q_PROPERTY(bool verticalSpeedValid READ verticalSpeedValid NOTIFY snapshotChanged)
     Q_PROPERTY(double groundSpeed READ groundSpeed NOTIFY snapshotChanged)
     Q_PROPERTY(double latitude READ latitude NOTIFY snapshotChanged)
     Q_PROPERTY(double longitude READ longitude NOTIFY snapshotChanged)
+    Q_PROPERTY(bool positionValid READ positionValid NOTIFY snapshotChanged)
     Q_PROPERTY(double commandedRoll READ commandedRoll NOTIFY snapshotChanged)
     Q_PROPERTY(double commandedPitch READ commandedPitch NOTIFY snapshotChanged)
     Q_PROPERTY(double selectedAltitude READ selectedAltitude NOTIFY snapshotChanged)
@@ -47,6 +58,15 @@ class PfdController final : public QObject {
     Q_PROPERTY(bool showingSimulatedData READ showingSimulatedData NOTIFY snapshotChanged)
     Q_PROPERTY(QString dataSourceState READ dataSourceState NOTIFY snapshotChanged)
     Q_PROPERTY(QString sensorNodeState READ sensorNodeState NOTIFY snapshotChanged)
+    Q_PROPERTY(QString ddpLinkState READ ddpLinkState NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong ddpAccepted READ ddpAccepted NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong ddpRejected READ ddpRejected NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong ddpSequenceGaps READ ddpSequenceGaps NOTIFY snapshotChanged)
+    Q_PROPERTY(qulonglong ddpSocketErrors READ ddpSocketErrors NOTIFY snapshotChanged)
+    Q_PROPERTY(QString nodeId READ nodeId CONSTANT)
+    Q_PROPERTY(QString nodePlatform READ nodePlatform CONSTANT)
+    Q_PROPERTY(QString nodeRole READ nodeRole CONSTANT)
+    Q_PROPERTY(QString systemProfile READ systemProfile CONSTANT)
     Q_PROPERTY(QString engineDataState READ engineDataState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
@@ -65,6 +85,34 @@ class PfdController final : public QObject {
     Q_PROPERTY(QVariantList egtValues READ egtValues NOTIFY snapshotChanged)
     Q_PROPERTY(int engineHealth READ engineHealth NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineFaultMode READ engineFaultMode NOTIFY snapshotChanged)
+    Q_PROPERTY(QString engineProfileName READ engineProfileName CONSTANT)
+    Q_PROPERTY(QString engineSerialNumber READ engineSerialNumber CONSTANT)
+    Q_PROPERTY(QVariantMap engineLimits READ engineLimits CONSTANT)
+    Q_PROPERTY(QVariantMap engineCapabilities READ engineCapabilities CONSTANT)
+    Q_PROPERTY(double masterHours READ masterHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double engineHours READ engineHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double tachHours READ tachHours NOTIFY snapshotChanged)
+    Q_PROPERTY(double flightHours READ flightHours NOTIFY snapshotChanged)
+    Q_PROPERTY(bool engineRunning READ engineRunning NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList engineSensorConfiguration READ engineSensorConfiguration NOTIFY sensorConfigurationChanged)
+    Q_PROPERTY(int calibrationRevision READ calibrationRevision NOTIFY sensorConfigurationChanged)
+    Q_PROPERTY(bool sensorCalibrationReady READ sensorCalibrationReady NOTIFY sensorConfigurationChanged)
+    Q_PROPERTY(QVariantList electricalLoads READ electricalLoads CONSTANT)
+    Q_PROPERTY(QVariantList electricalBuses READ electricalBuses CONSTANT)
+    Q_PROPERTY(QVariantList electricalSources READ electricalSources CONSTANT)
+    Q_PROPERTY(QString electricalTestMode READ electricalTestMode NOTIFY electricalTestChanged)
+    Q_PROPERTY(QVariantList maintenanceTasks READ maintenanceTasks NOTIFY maintenanceChanged)
+    Q_PROPERTY(QString maintenanceStatus READ maintenanceStatus NOTIFY maintenanceChanged)
+    Q_PROPERTY(bool landingGearInstalled READ landingGearInstalled CONSTANT)
+    Q_PROPERTY(bool retractableGear READ retractableGear CONSTANT)
+    Q_PROPERTY(bool gearNoseLocked READ gearNoseLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(bool gearLeftLocked READ gearLeftLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(bool gearRightLocked READ gearRightLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(QString gearState READ gearState NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flapsInstalled READ flapsInstalled CONSTANT)
+    Q_PROPERTY(QVariantList flapDetents READ flapDetents CONSTANT)
+    Q_PROPERTY(double flapAngle READ flapAngle NOTIFY snapshotChanged)
+    Q_PROPERTY(double flapCommandedAngle READ flapCommandedAngle NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantMap aircraftSpeedProfile READ aircraftSpeedProfile CONSTANT)
     Q_PROPERTY(QString aircraftProfileName READ aircraftProfileName CONSTANT)
     Q_PROPERTY(QString aircraftProfileState READ aircraftProfileState CONSTANT)
@@ -74,6 +122,18 @@ class PfdController final : public QObject {
     Q_PROPERTY(QVariantMap stagedAircraftProfile READ stagedAircraftProfile NOTIFY setupChanged)
     Q_PROPERTY(QString stagingStatus READ stagingStatus NOTIFY setupChanged)
     Q_PROPERTY(QString setupMessage READ setupMessage NOTIFY setupChanged)
+    Q_PROPERTY(QVariantList operationalProfiles READ operationalProfiles NOTIFY setupChanged)
+    Q_PROPERTY(QVariantList operationalDomains READ operationalDomains NOTIFY setupChanged)
+    Q_PROPERTY(QVariantList operationalFields READ operationalFields NOTIFY setupChanged)
+    Q_PROPERTY(QVariantList operationalDomainSummaries READ operationalDomainSummaries NOTIFY setupChanged)
+    Q_PROPERTY(QVariantList operationalValidationIssues READ operationalValidationIssues NOTIFY setupChanged)
+    Q_PROPERTY(QVariantMap operationalValidationReport READ operationalValidationReport NOTIFY setupChanged)
+    Q_PROPERTY(QVariantMap operationalSummary READ operationalSummary NOTIFY setupChanged)
+    Q_PROPERTY(QVariantMap operationalSelectedField READ operationalSelectedField NOTIFY setupChanged)
+    Q_PROPERTY(QString operationalSelectedProfile READ operationalSelectedProfile NOTIFY setupChanged)
+    Q_PROPERTY(QString operationalSelectedDomain READ operationalSelectedDomain NOTIFY setupChanged)
+    Q_PROPERTY(QString operationalCatalogStatus READ operationalCatalogStatus NOTIFY setupChanged)
+    Q_PROPERTY(QString operationalDraftPath READ operationalDraftPath NOTIFY setupChanged)
     Q_PROPERTY(QVariantMap stagedEngineProfile READ stagedEngineProfile NOTIFY setupChanged)
     Q_PROPERTY(QString engineStagingStatus READ engineStagingStatus NOTIFY setupChanged)
     Q_PROPERTY(QVariantList engineSensorMappings READ engineSensorMappings NOTIFY setupChanged)
@@ -85,6 +145,7 @@ class PfdController final : public QObject {
     Q_PROPERTY(double sensorTestRateHz READ sensorTestRateHz NOTIFY setupChanged)
     Q_PROPERTY(int sensorTestAgeMs READ sensorTestAgeMs NOTIFY setupChanged)
     Q_PROPERTY(bool sensorTestFault READ sensorTestFault NOTIFY setupChanged)
+    Q_PROPERTY(QString sensorTestDiagnostic READ sensorTestDiagnostic NOTIFY setupChanged)
     Q_PROPERTY(QString navigationDatabaseVersion READ navigationDatabaseVersion CONSTANT)
     Q_PROPERTY(QVariantList airportCatalog READ airportCatalog CONSTANT)
     Q_PROPERTY(QVariantMap selectedAirport READ selectedAirport NOTIFY navigationSetupChanged)
@@ -97,6 +158,47 @@ class PfdController final : public QObject {
     Q_PROPERTY(int imageryTileCount READ imageryTileCount NOTIFY imageryChanged)
     Q_PROPERTY(int imageryCoverageGaps READ imageryCoverageGaps NOTIFY imageryChanged)
     Q_PROPERTY(QString imageryAtlasSource READ imageryAtlasSource NOTIFY imageryChanged)
+    Q_PROPERTY(bool systemSimulationActive READ systemSimulationActive NOTIFY simulationChanged)
+    Q_PROPERTY(bool systemSimulationRunning READ systemSimulationRunning NOTIFY simulationChanged)
+    Q_PROPERTY(QString systemSimulationScenario READ systemSimulationScenario NOTIFY simulationChanged)
+    Q_PROPERTY(QString systemSimulationPhase READ systemSimulationPhase NOTIFY simulationChanged)
+    Q_PROPERTY(double systemSimulationProgress READ systemSimulationProgress NOTIFY simulationChanged)
+    Q_PROPERTY(double systemSimulationSpeed READ systemSimulationSpeed NOTIFY simulationChanged)
+    Q_PROPERTY(QString systemSimulationLastEvent READ systemSimulationLastEvent NOTIFY simulationChanged)
+    Q_PROPERTY(QString unitSystem READ unitSystem NOTIFY unitsChanged)
+    Q_PROPERTY(double fuelUsedGallons READ fuelUsedGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(double fuelReserveGallons READ fuelReserveGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(double fuelOnBoardGallons READ fuelOnBoardGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(double fuelRemainingGallons READ fuelRemainingGallons NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QVariantList fuelCalibrationLeft READ fuelCalibrationLeft NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QVariantList fuelCalibrationRight READ fuelCalibrationRight NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QString fuelLeakState READ fuelLeakState NOTIFY fuelComputerChanged)
+    Q_PROPERTY(double fuelLeakExcessGph READ fuelLeakExcessGph NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QVariantList fuelEventHistory READ fuelEventHistory NOTIFY fuelComputerChanged)
+    Q_PROPERTY(QString centralBlackBoxState READ centralBlackBoxState NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList centralBlackBoxNodes READ centralBlackBoxNodes NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList centralFuelEvents READ centralFuelEvents NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantMap centralBlackBoxMaintenance READ centralBlackBoxMaintenance NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantList centralBlackBoxArchives READ centralBlackBoxArchives NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantMap centralBlackBoxArchiveSummary READ centralBlackBoxArchiveSummary NOTIFY snapshotChanged)
+    Q_PROPERTY(bool emergencyAssistActive READ emergencyAssistActive NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyAssistState READ emergencyAssistState NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyAssistKind READ emergencyAssistKind NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyAssistHeadline READ emergencyAssistHeadline NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyFlyAdvisory READ emergencyFlyAdvisory NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyNavigationAdvisory READ emergencyNavigationAdvisory NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyCommunicationDraft READ emergencyCommunicationDraft NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyVoiceCue READ emergencyVoiceCue NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyDataQuality READ emergencyDataQuality NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(bool emergencySimulationOnly READ emergencySimulationOnly NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(bool emergencyProcedureAvailable READ emergencyProcedureAvailable NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyTargetSpeed READ emergencyTargetSpeed NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyGlideRange READ emergencyGlideRange NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QStringList emergencyDegradationReasons READ emergencyDegradationReasons NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QVariantList emergencyRankedAirports READ emergencyRankedAirports NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QVariantMap emergencyCurrentStep READ emergencyCurrentStep NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(QString emergencyEventSinkState READ emergencyEventSinkState NOTIFY emergencyAssistChanged)
+    Q_PROPERTY(int emergencyElapsedSeconds READ emergencyElapsedSeconds NOTIFY emergencyAssistChanged)
 
 public:
     explicit PfdController(QObject* parent = nullptr);
@@ -104,12 +206,16 @@ public:
     [[nodiscard]] double roll() const;
     [[nodiscard]] double pitch() const;
     [[nodiscard]] double heading() const;
+    [[nodiscard]] bool attitudeValid() const;
+    [[nodiscard]] bool headingValid() const;
     [[nodiscard]] double airspeed() const;
     [[nodiscard]] double altitude() const;
     [[nodiscard]] double verticalSpeed() const;
+    [[nodiscard]] bool verticalSpeedValid() const;
     [[nodiscard]] double groundSpeed() const;
     [[nodiscard]] double latitude() const;
     [[nodiscard]] double longitude() const;
+    [[nodiscard]] bool positionValid() const;
     [[nodiscard]] double commandedRoll() const;
     [[nodiscard]] double commandedPitch() const;
     [[nodiscard]] double selectedAltitude() const;
@@ -134,6 +240,15 @@ public:
     [[nodiscard]] bool showingSimulatedData() const;
     [[nodiscard]] QString dataSourceState() const;
     [[nodiscard]] QString sensorNodeState() const;
+    [[nodiscard]] QString ddpLinkState() const { return sensorNodeState(); }
+    [[nodiscard]] qulonglong ddpAccepted() const;
+    [[nodiscard]] qulonglong ddpRejected() const;
+    [[nodiscard]] qulonglong ddpSequenceGaps() const;
+    [[nodiscard]] qulonglong ddpSocketErrors() const;
+    [[nodiscard]] QString nodeId() const;
+    [[nodiscard]] QString nodePlatform() const;
+    [[nodiscard]] QString nodeRole() const;
+    [[nodiscard]] QString systemProfile() const;
     [[nodiscard]] QString engineDataState() const;
     Q_INVOKABLE void cycleSimulationRole();
     [[nodiscard]] qulonglong sequence() const;
@@ -153,6 +268,34 @@ public:
     [[nodiscard]] QVariantList egtValues() const;
     [[nodiscard]] int engineHealth() const;
     [[nodiscard]] QString engineFaultMode() const;
+    [[nodiscard]] QString engineProfileName() const { return engine_profile_name_; }
+    [[nodiscard]] QString engineSerialNumber() const { return engine_serial_number_; }
+    [[nodiscard]] QVariantMap engineLimits() const { return engine_limits_; }
+    [[nodiscard]] QVariantMap engineCapabilities() const { return engine_capabilities_; }
+    [[nodiscard]] double masterHours() const { return runtime_tracker_.totals().master_hours; }
+    [[nodiscard]] double engineHours() const { return runtime_tracker_.totals().engine_hours; }
+    [[nodiscard]] double tachHours() const { return runtime_tracker_.totals().tach_hours; }
+    [[nodiscard]] double flightHours() const { return runtime_tracker_.totals().flight_hours; }
+    [[nodiscard]] bool engineRunning() const { return runtime_tracker_.engine_running(); }
+    [[nodiscard]] QVariantList engineSensorConfiguration() const { return engine_sensor_configuration_; }
+    [[nodiscard]] int calibrationRevision() const { return calibration_revision_; }
+    [[nodiscard]] bool sensorCalibrationReady() const;
+    [[nodiscard]] QVariantList electricalLoads() const { return electrical_loads_; }
+    [[nodiscard]] QVariantList electricalBuses() const { return electrical_buses_; }
+    [[nodiscard]] QVariantList electricalSources() const { return electrical_sources_; }
+    [[nodiscard]] QString electricalTestMode() const { return electrical_test_mode_; }
+    [[nodiscard]] QVariantList maintenanceTasks() const { return maintenance_tasks_; }
+    [[nodiscard]] QString maintenanceStatus() const;
+    [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
+    [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
+    [[nodiscard]] bool gearNoseLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_nose_locked : true; }
+    [[nodiscard]] bool gearLeftLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_left_locked : true; }
+    [[nodiscard]] bool gearRightLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_right_locked : true; }
+    [[nodiscard]] QString gearState() const { return !landing_gear_installed_ ? QStringLiteral("NOT INSTALLED") : (gearNoseLocked() && gearLeftLocked() && gearRightLocked() ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("UP / TRANSIT")); }
+    [[nodiscard]] bool flapsInstalled() const { return flaps_installed_; }
+    [[nodiscard]] QVariantList flapDetents() const { return flap_detents_; }
+    [[nodiscard]] double flapAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_angle_deg : 15.0; }
+    [[nodiscard]] double flapCommandedAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_command_deg : 15.0; }
     Q_INVOKABLE void cycleEngineFault();
     [[nodiscard]] QVariantMap aircraftSpeedProfile() const { return aircraft_speed_profile_; }
     [[nodiscard]] QString aircraftProfileName() const { return aircraft_profile_name_; }
@@ -168,6 +311,30 @@ public:
                                           bool weightsConfirmed, bool engineConfirmed);
     Q_INVOKABLE bool applyStagedAircraft();
     Q_INVOKABLE bool rollbackAircraftProfile();
+    [[nodiscard]] QVariantList operationalProfiles() const { return operational_profile_model_.profiles(); }
+    [[nodiscard]] QVariantList operationalDomains() const { return operational_profile_model_.domains(); }
+    [[nodiscard]] QVariantList operationalFields() const { return operational_profile_model_.fields(); }
+    [[nodiscard]] QVariantList operationalDomainSummaries() const { return operational_profile_model_.domainSummaries(); }
+    [[nodiscard]] QVariantList operationalValidationIssues() const { return operational_profile_model_.validationIssues(); }
+    [[nodiscard]] QVariantMap operationalValidationReport() const { return operational_profile_model_.validationReport(); }
+    [[nodiscard]] QVariantMap operationalSummary() const { return operational_profile_model_.summary(); }
+    [[nodiscard]] QVariantMap operationalSelectedField() const { return operational_profile_model_.selectedField(); }
+    [[nodiscard]] QString operationalSelectedProfile() const { return operational_profile_model_.selectedProfileKey(); }
+    [[nodiscard]] QString operationalSelectedDomain() const { return operational_profile_model_.selectedDomain(); }
+    [[nodiscard]] QString operationalCatalogStatus() const { return operational_profile_model_.status(); }
+    [[nodiscard]] QString operationalDraftPath() const { return operational_profile_model_.draftPath(); }
+    Q_INVOKABLE bool selectOperationalProfile(const QString& profileKey);
+    Q_INVOKABLE bool selectOperationalDomain(const QString& domain);
+    Q_INVOKABLE bool selectOperationalField(const QString& parameterKey);
+    Q_INVOKABLE void filterOperationalFields(const QString& filter);
+    Q_INVOKABLE bool stageOperationalField(const QString& disposition, const QString& valueText,
+        const QString& rationale, const QString& sourceDocument,
+        const QString& sourceRevision, const QString& sourcePage);
+    Q_INVOKABLE bool selectNextOperationalIssue();
+    Q_INVOKABLE bool preloadOperationalSimulation(const QString& profileKey);
+    Q_INVOKABLE bool importOperationalDraft(const QString& path);
+    Q_INVOKABLE bool validateOperationalDraft();
+    Q_INVOKABLE bool discardOperationalDraft();
     [[nodiscard]] QVariantMap stagedEngineProfile() const { return staged_engine_profile_; }
     [[nodiscard]] QString engineStagingStatus() const { return engine_staging_status_; }
     Q_INVOKABLE bool stageEngine(int catalogId);
@@ -187,10 +354,15 @@ public:
     [[nodiscard]] double sensorTestRateHz() const { return sensor_test_rate_hz_; }
     [[nodiscard]] int sensorTestAgeMs() const { return sensor_test_age_ms_; }
     [[nodiscard]] bool sensorTestFault() const { return sensor_test_fault_; }
+    [[nodiscard]] QString sensorTestDiagnostic() const { return sensor_test_diagnostic_; }
     Q_INVOKABLE bool startEngineSensorTest(const QString& signal, bool benchSimulation);
     Q_INVOKABLE void stopEngineSensorTest();
     Q_INVOKABLE void setEngineSensorCalibration(double gain, double offset);
     Q_INVOKABLE void toggleEngineSensorTestFault();
+    Q_INVOKABLE void cycleSensorTestDiagnostic();
+    Q_INVOKABLE void cycleElectricalTestMode();
+    Q_INVOKABLE void cycleMaintenanceInterval(int index);
+    Q_INVOKABLE bool completeMaintenanceTask(int index);
     [[nodiscard]] QString navigationDatabaseVersion() const { return navigation_database_version_; }
     [[nodiscard]] QVariantList airportCatalog() const { return airport_catalog_; }
     [[nodiscard]] QVariantMap selectedAirport() const { return selected_airport_; }
@@ -204,12 +376,86 @@ public:
     [[nodiscard]] int imageryTileCount() const { return imagery_tile_count_; }
     [[nodiscard]] int imageryCoverageGaps() const { return imagery_coverage_gaps_; }
     [[nodiscard]] QString imageryAtlasSource() const { return imagery_atlas_source_; }
+    [[nodiscard]] bool systemSimulationActive() const { return system_simulation_active_; }
+    [[nodiscard]] bool systemSimulationRunning() const { return system_simulation_active_ && system_simulation_running_; }
+    [[nodiscard]] QString systemSimulationScenario() const;
+    [[nodiscard]] QString systemSimulationPhase() const;
+    [[nodiscard]] double systemSimulationProgress() const { return system_frame_.progress; }
+    [[nodiscard]] double systemSimulationSpeed() const { return system_simulation_speed_; }
+    [[nodiscard]] QString systemSimulationLastEvent() const { return system_simulation_last_event_; }
+    Q_INVOKABLE bool startSystemSimulation(const QString& scenario);
+    Q_INVOKABLE void toggleSystemSimulation();
+    Q_INVOKABLE void stopSystemSimulation();
+    Q_INVOKABLE void seekSystemSimulation(double progress);
+    Q_INVOKABLE void setSystemSimulationSpeed(double speed);
+    [[nodiscard]] QString unitSystem() const { return unit_system_; }
+    [[nodiscard]] double fuelUsedGallons() const { return engine_snapshot_.fuel_flow_gph.is_simulated() ? simulated_fuel_used_gallons_ : fuel_used_gallons_; }
+    [[nodiscard]] double fuelReserveGallons() const { return fuel_reserve_gallons_; }
+    [[nodiscard]] double fuelOnBoardGallons() const { return fuel_on_board_gallons_; }
+    [[nodiscard]] double fuelRemainingGallons() const { return qMax(0.0, fuel_on_board_gallons_ - fuelUsedGallons()); }
+    [[nodiscard]] QVariantList fuelCalibrationLeft() const { return fuel_calibration_left_; }
+    [[nodiscard]] QVariantList fuelCalibrationRight() const { return fuel_calibration_right_; }
+    [[nodiscard]] QString fuelLeakState() const { return fuel_leak_state_; }
+    [[nodiscard]] double fuelLeakExcessGph() const { return fuel_leak_excess_gph_; }
+    [[nodiscard]] QVariantList fuelEventHistory() const { return fuel_event_history_; }
+    [[nodiscard]] QString centralBlackBoxState() const { return central_blackbox_state_; }
+    [[nodiscard]] QVariantList centralBlackBoxNodes() const { return central_blackbox_nodes_; }
+    [[nodiscard]] QVariantList centralFuelEvents() const { return central_fuel_events_; }
+    [[nodiscard]] QVariantMap centralBlackBoxMaintenance() const { return central_blackbox_maintenance_; }
+    [[nodiscard]] QVariantList centralBlackBoxArchives() const { return central_blackbox_archives_; }
+    [[nodiscard]] QVariantMap centralBlackBoxArchiveSummary() const { return central_blackbox_archive_summary_; }
+    Q_INVOKABLE bool setUnitSystem(const QString& system);
+    Q_INVOKABLE bool cycleSensorCalibration(int index);
+    Q_INVOKABLE bool cycleSensorType(int index);
+    Q_INVOKABLE bool cycleSensorInput(int index);
+    Q_INVOKABLE bool captureSensorPoint(int index, const QString& point);
+    Q_INVOKABLE bool setFuelReserveGallons(double gallons);
+    Q_INVOKABLE bool setFuelOnBoardGallons(double gallons);
+    Q_INVOKABLE bool captureFuelCalibrationPoint(const QString& tank);
+    Q_INVOKABLE bool clearFuelCalibration(const QString& tank);
+    Q_INVOKABLE bool requestCentralBlackBoxAction(const QString& action);
+    Q_INVOKABLE void resetFuelUsed();
+    [[nodiscard]] bool emergencyAssistActive() const;
+    [[nodiscard]] QString emergencyAssistState() const;
+    [[nodiscard]] QString emergencyAssistKind() const;
+    [[nodiscard]] QString emergencyAssistHeadline() const;
+    [[nodiscard]] QString emergencyFlyAdvisory() const;
+    [[nodiscard]] QString emergencyNavigationAdvisory() const;
+    [[nodiscard]] QString emergencyCommunicationDraft() const;
+    [[nodiscard]] QString emergencyVoiceCue() const;
+    [[nodiscard]] QString emergencyDataQuality() const;
+    [[nodiscard]] bool emergencySimulationOnly() const;
+    [[nodiscard]] bool emergencyProcedureAvailable() const;
+    [[nodiscard]] QString emergencyTargetSpeed() const;
+    [[nodiscard]] QString emergencyGlideRange() const;
+    [[nodiscard]] QStringList emergencyDegradationReasons() const;
+    [[nodiscard]] QVariantList emergencyRankedAirports() const;
+    [[nodiscard]] QVariantMap emergencyCurrentStep() const;
+    [[nodiscard]] QString emergencyEventSinkState() const { return emergency_event_sink_state_; }
+    [[nodiscard]] int emergencyElapsedSeconds() const;
+    Q_INVOKABLE void activateEmergencyAssist(const QString& kind, const QString& trigger);
+    Q_INVOKABLE void confirmEmergencyAssist(const QString& kind);
+    Q_INVOKABLE void dismissEmergencySuspicion();
+    Q_INVOKABLE void acknowledgeEmergencyFly();
+    Q_INVOKABLE void completeEmergencyStep();
+    Q_INVOKABLE void skipEmergencyStep();
+    Q_INVOKABLE void repeatEmergencyCue();
+    Q_INVOKABLE void reportEmergencyPowerRecovered();
+    Q_INVOKABLE void continueEmergencyMonitoring();
+    Q_INVOKABLE void cancelEmergencyAssist(const QString& reason);
 
 signals:
     void snapshotChanged();
     void setupChanged();
     void navigationSetupChanged();
     void imageryChanged();
+    void simulationChanged();
+    void unitsChanged();
+    void sensorConfigurationChanged();
+    void electricalTestChanged();
+    void maintenanceChanged();
+    void fuelComputerChanged();
+    void emergencyAssistChanged();
 
 private slots:
     void updateSnapshot();
@@ -220,6 +466,17 @@ private:
     void loadNavigationIndex();
     void loadRadionavigationIndex();
     void loadImageryStatus();
+    void loadUnitSystem();
+    void loadMaintenance();
+    void loadFuelComputer();
+    void persistFuelComputer();
+    void updateFuelLeakMonitor(efis::MonoTime now);
+    void loadFuelEventHistory();
+    void recordFuelEvent(const QString& state);
+    void loadCentralBlackBoxCache();
+    void updateEmergencyAssist(efis::MonoTime now);
+    void flushEmergencyEvents();
+    void updateEmergencyEventSinkState(efis::MonoTime now);
     void updateNearestAirports();
     [[nodiscard]] QString activeProfilePath() const;
     [[nodiscard]] QString stagingProfilePath() const;
@@ -231,6 +488,7 @@ private:
     // significhera' registrare una sorgente in piu', non toccare questa classe.
     std::shared_ptr<efis::SimulationSource> simulation_{
         std::make_shared<efis::SimulationSource>(42)};
+    std::shared_ptr<efis::DdpUdpFlightSource> ddp_source_;
     efis::FlightSourceRouter router_{};
     std::shared_ptr<efis::EngineSimulationSource> engine_simulation_{
         std::make_shared<efis::EngineSimulationSource>(84)};
@@ -239,6 +497,8 @@ private:
     efis::MonoTime started_at_{efis::MonoClock::now()};
     efis::FlightSnapshot snapshot_{};
     efis::engine::EngineSnapshot engine_snapshot_{};
+    efis::engine::RuntimeTracker runtime_tracker_{};
+    efis::MonoTime last_runtime_update_{};
     QTimer timer_;
     double previous_airspeed_{};
     double airspeed_trend_{};
@@ -253,10 +513,23 @@ private:
     QString catalog_version_{QStringLiteral("UNAVAILABLE")};
     QVariantList aircraft_catalog_;
     QVariantList engine_catalog_;
+    QString engine_profile_name_{QStringLiteral("UNCONFIGURED")};
+    QString engine_serial_number_{QStringLiteral("TO BE ENTERED")};
+    QVariantMap engine_limits_;
+    QVariantMap engine_capabilities_;
+    QVariantList engine_sensor_configuration_;
+    QVariantList electrical_loads_;
+    QVariantList electrical_buses_;
+    QVariantList electrical_sources_;
+    bool landing_gear_installed_{};
+    bool retractable_gear_{};
+    bool flaps_installed_{};
+    QVariantList flap_detents_;
     QVariantMap staged_aircraft_profile_;
     QString staging_status_{QStringLiteral("NO_SELECTION")};
     QString setup_message_{QStringLiteral("Select an aircraft from the catalog")};
     QString latest_backup_path_;
+    OperationalProfileModel operational_profile_model_;
     QVariantMap staged_engine_profile_;
     QString engine_staging_status_{QStringLiteral("NO_SELECTION")};
     QVariantList engine_sensor_mappings_;
@@ -272,6 +545,9 @@ private:
     double sensor_test_gain_{1.0};
     double sensor_test_offset_{};
     qulonglong sensor_test_ticks_{};
+    QString sensor_test_diagnostic_{QStringLiteral("NORMAL")};
+    QString electrical_test_mode_{QStringLiteral("NORMAL")};
+    QVariantList maintenance_tasks_;
     QString navigation_database_version_{QStringLiteral("UNAVAILABLE")};
     QVariantList airport_catalog_;
     QVariantMap selected_airport_;
@@ -285,4 +561,51 @@ private:
     int imagery_tile_count_{};
     int imagery_coverage_gaps_{};
     QString imagery_atlas_source_;
+    efis::simulation::SystemSimulator system_simulator_{};
+    efis::simulation::SimulationFrame system_frame_{};
+    bool system_simulation_active_{};
+    bool system_simulation_running_{};
+    double system_simulation_speed_{1.0};
+    double system_simulation_elapsed_ms_{};
+    efis::MonoTime system_simulation_last_tick_{};
+    QString system_simulation_last_event_{QStringLiteral("READY")};
+    QString unit_system_{QStringLiteral("AVIATION")};
+    double fuel_used_gallons_{};
+    double simulated_fuel_used_gallons_{};
+    double fuel_reserve_gallons_{5.0};
+    double fuel_on_board_gallons_{};
+    bool fuel_on_board_initialized_{};
+    bool fuel_persistence_dirty_{};
+    QVariantList fuel_calibration_left_;
+    QVariantList fuel_calibration_right_;
+    QString fuel_leak_state_{QStringLiteral("INITIALIZING")};
+    double fuel_leak_excess_gph_{};
+    double fuel_leak_last_measured_{};
+    efis::MonoTime fuel_leak_last_update_{};
+    efis::MonoTime fuel_leak_alarm_since_{};
+    efis::MonoTime fuel_leak_suppressed_until_{};
+    QString fuel_event_log_path_;
+    QVariantList fuel_event_history_;
+    QString central_blackbox_cache_path_;
+    QString central_blackbox_state_{QStringLiteral("OFFLINE")};
+    QVariantList central_blackbox_nodes_;
+    QVariantList central_fuel_events_;
+    QVariantMap central_blackbox_maintenance_;
+    QVariantList central_blackbox_archives_;
+    QVariantMap central_blackbox_archive_summary_;
+    QString central_blackbox_request_path_;
+    efis::MonoTime last_central_blackbox_check_{};
+    efis::MonoTime last_fuel_update_{};
+    efis::MonoTime last_fuel_save_{};
+    efis::MonoTime last_fuel_notify_{};
+    int calibration_revision_{};
+    efis::emergency::EmergencyAssist emergency_assist_{};
+    QString emergency_event_log_path_;
+    QString emergency_forwarder_state_path_;
+    QString emergency_event_session_id_;
+    QString emergency_event_sink_state_{QStringLiteral("LOCAL SPOOL")};
+    std::size_t emergency_event_cursor_{};
+    efis::MonoTime emergency_activated_at_{};
+    efis::MonoTime last_emergency_sink_check_{};
+    int emergency_notify_ticks_{};
 };

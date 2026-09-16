@@ -1,0 +1,45 @@
+[Unit]
+Description=EFIS NEXT MFD/Canvas (direct DRM/EGLFS)
+Documentation=file:///home/pi/efis-next-current/docs/deployment/RPI5_PFD.md
+Wants=network-online.target
+After=network-online.target
+Conflicts=lightdm.service fuso-sv3d.service fuso-sv3d-sim.service efis-next-pfd-direct.service
+StartLimitBurst=5
+StartLimitIntervalSec=60
+ConditionPathExists=/home/pi/efis-next-current/build-rpi5/efis-pfd-qt
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+SupplementaryGroups=video render input
+WorkingDirectory=/home/pi/efis-next-current
+Environment=HOME=/home/pi
+Environment=QT_QPA_PLATFORM=eglfs
+Environment=QT_QPA_EGLFS_KMS_CONFIG=/etc/efis/eglfs-kms.json
+Environment=QSG_RENDER_LOOP=threaded
+Environment=EFIS_KIOSK=1
+Environment=EFIS_START_PAGE=CANVAS
+Environment=EFIS_NODE_ID=MFD-01
+Environment=EFIS_NODE_PLATFORM=RPi5
+Environment="EFIS_NODE_ROLE=MULTIFUNCTION DISPLAY"
+Environment=EFIS_SYSTEM_PROFILE=PROFESSIONAL
+Environment=EFIS_BLACKBOX_STATUS_MODE=DDP_LINK
+Environment=EFIS_DDP_BIND_ADDRESS=0.0.0.0
+Environment=EFIS_DDP_LISTEN_PORT=49002
+Environment=EFIS_DDP_SOURCE_NODE=47
+Environment=EFIS_SIMULATION_ROLE=FALLBACK
+Environment=EFIS_TERRAIN_GPU_ROOT=/home/pi/efis-data/terrain/gpu
+Environment=EFIS_IMAGERY_TEXTURE_ROOT=/home/pi/efis-data/imagery/active-textures
+Environment=EFIS_IMAGERY_ACTIVE_PACKAGE=/home/pi/efis-data/imagery/active-package.json
+ExecStartPre=/usr/bin/sleep 1
+ExecStart=/home/pi/efis-next-current/build-rpi5/efis-pfd-qt
+Restart=always
+RestartSec=3
+TimeoutStopSec=5
+KillSignal=SIGTERM
+StandardOutput=append:/home/pi/efis-next-current/logs/mfd.log
+StandardError=append:/home/pi/efis-next-current/logs/mfd.log
+
+[Install]
+WantedBy=multi-user.target

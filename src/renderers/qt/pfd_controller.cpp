@@ -12,9 +12,14 @@
 #include <QJsonObject>
 #include <QSaveFile>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QTextStream>
 #include <QSet>
+#include <QSettings>
+#include <QStringList>
+#include <QList>
 #include <QUrl>
+#include <QUuid>
 
 #include <utility>
 #include <chrono>
@@ -24,13 +29,75 @@
 
 using namespace std::chrono_literals;
 
+namespace {
+efis::emergency::EmergencyKind emergencyKind(const QString& value) {
+    const auto normalized = value.trimmed().toUpper();
+    using Kind = efis::emergency::EmergencyKind;
+    if (normalized == QStringLiteral("ENGINE_POWER_LOSS")) return Kind::engine_power_loss;
+    if (normalized == QStringLiteral("ABNORMAL_ATTITUDE")) return Kind::abnormal_attitude;
+    if (normalized == QStringLiteral("UNSAFE_AIRSPEED")) return Kind::unsafe_airspeed;
+    if (normalized == QStringLiteral("ELECTRICAL_FAILURE")) return Kind::electrical_failure;
+    if (normalized == QStringLiteral("SMOKE_OR_FIRE")) return Kind::smoke_or_fire;
+    if (normalized == QStringLiteral("WEATHER_OR_TERRAIN")) return Kind::weather_or_terrain;
+    if (normalized == QStringLiteral("SENSOR_OR_PFD_LOSS")) return Kind::sensor_or_pfd_loss;
+    if (normalized == QStringLiteral("PILOT_INCAPACITATION")) return Kind::pilot_incapacitation;
+    return Kind::none;
+}
+
+double calibratedFuel(double raw, const QVariantList& curve) {
+    if (curve.size() < 5) return qMax(0.0, raw);
+    std::vector<std::pair<double,double>> points;
+    for (const auto& entry : curve) { const auto p=entry.toMap(); points.emplace_back(p.value("raw").toDouble(),p.value("gallons").toDouble()); }
+    std::sort(points.begin(),points.end());
+    if (raw<=points.front().first) return qMax(0.0,points.front().second);
+    if (raw>=points.back().first) return qMax(0.0,points.back().second);
+    for (std::size_t i=1;i<points.size();++i) if(raw<=points[i].first){const auto& a=points[i-1];const auto& b=points[i];const double d=b.first-a.first;if(std::abs(d)<1e-9)return qMax(0.0,b.second);return qMax(0.0,a.second+(raw-a.first)*(b.second-a.second)/d);}
+    return qMax(0.0,raw);
+}
+}
+
 PfdController::PfdController(QObject* parent) : QObject(parent) {
+    loadUnitSystem();
     // La simulazione resta registrata sempre: senza sensori collegati e' cio'
     // che permette di continuare a sviluppare, e con i sensori collegati copre
     // le grandezze che non forniscono. Il ruolo predefinito e' il ripiego, non
     // la precedenza: il dato reale, quando c'e', vince.
     router_.set_simulation(simulation_);
     engine_router_.set_simulation(engine_simulation_);
+
+    bool ddpPortValid = false;
+    const int ddpPort = qEnvironmentVariableIntValue("EFIS_DDP_LISTEN_PORT",
+                                                     &ddpPortValid);
+    if (ddpPortValid && ddpPort > 0 && ddpPort <= 65535) {
+        bool nodeValid = false;
+        const int expectedNode = qEnvironmentVariableIntValue(
+            "EFIS_DDP_SOURCE_NODE", &nodeValid);
+        if (!nodeValid || expectedNode <= 0 || expectedNode > 65535) {
+            qCritical().noquote()
+                << "event=ddp_receiver_failed reason=invalid_or_missing_source_node";
+        } else {
+            efis::DdpUdpSourceConfig config{};
+            config.local.address = qEnvironmentVariable(
+                "EFIS_DDP_BIND_ADDRESS", "0.0.0.0").toStdString();
+            config.local.port = static_cast<std::uint16_t>(ddpPort);
+            config.consumer.expected_source_node =
+                static_cast<std::uint32_t>(expectedNode);
+            try {
+                ddp_source_ = std::make_shared<efis::DdpUdpFlightSource>(config);
+                router_.add_source(ddp_source_);
+                qInfo().noquote() << "event=ddp_receiver_start bind="
+                                  << QString::fromStdString(config.local.address)
+                                  << "port=" << ddpPort
+                                  << "source_node="
+                                  << config.consumer.expected_source_node
+                                  << "receive_buffer_bytes="
+                                  << ddp_source_->receive_buffer_bytes();
+            } catch (const std::exception& error) {
+                qCritical().noquote()
+                    << "event=ddp_receiver_failed reason=" << error.what();
+            }
+        }
+    }
 
     // Il ruolo iniziale e' configurabile dall'ambiente, cosi' il banco puo'
     // partire senza dato simulato e vedere cosa il quadro dichiara quando non
@@ -43,17 +110,163 @@ PfdController::PfdController(QObject* parent) : QObject(parent) {
                                             : efis::SimulationRole::fallback;
     applySimulationRole(chosen);
     loadAircraftProfile();
+    loadMaintenance();
+    loadFuelComputer();
+    fuel_event_log_path_=qEnvironmentVariable("EFIS_BLACKBOX_FUEL_EVENTS","state/blackbox-fuel-events.jsonl");
+    loadFuelEventHistory();
+    central_blackbox_cache_path_=qEnvironmentVariable("EFIS_CENTRAL_BLACKBOX_CACHE",QStringLiteral("/var/lib/efis/fuel-central-cache.json"));
+    central_blackbox_request_path_=qEnvironmentVariable("EFIS_CENTRAL_BLACKBOX_REQUEST",QStringLiteral("/var/lib/efis/fuel-maintenance-request.jsonl"));
+    emergency_event_log_path_ = qEnvironmentVariable(
+        "EFIS_EMERGENCY_EVENT_LOG", QStringLiteral("state/emergency-assist-events.jsonl"));
+    emergency_forwarder_state_path_ = qEnvironmentVariable(
+        "EFIS_EMERGENCY_FORWARDER_STATE",
+        QStringLiteral("/var/lib/efis/emergency-forwarder-state.json"));
+    emergency_event_session_id_ = QUuid::createUuid().toString(QUuid::WithoutBraces);
     loadCatalogIndex();
     loadNavigationIndex();
     loadRadionavigationIndex();
     loadImageryStatus();
     recorder_status_path_ = qEnvironmentVariable("EFIS_RECORDER_STATUS",
                                                  "run/recorder.status");
+    connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+            this, &PfdController::persistFuelComputer);
     timer_.setTimerType(Qt::PreciseTimer);
     timer_.setInterval(20);
     connect(&timer_, &QTimer::timeout, this, &PfdController::updateSnapshot);
     updateSnapshot();
     timer_.start();
+}
+
+void PfdController::loadUnitSystem() {
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-units")};
+    const auto value = settings.value(QStringLiteral("display/unitSystem"),
+                                      QStringLiteral("AVIATION")).toString().toUpper();
+    if (value == QStringLiteral("AVIATION") || value == QStringLiteral("METRIC") ||
+        value == QStringLiteral("IMPERIAL")) unit_system_ = value;
+}
+
+bool PfdController::setUnitSystem(const QString& system) {
+    const auto value = system.trimmed().toUpper();
+    if (value != QStringLiteral("AVIATION") && value != QStringLiteral("METRIC") &&
+        value != QStringLiteral("IMPERIAL")) return false;
+    if (unit_system_ == value) return true;
+    unit_system_ = value;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-units")};
+    settings.setValue(QStringLiteral("display/unitSystem"), unit_system_);
+    settings.sync();
+    qInfo().noquote() << "event=ems_unit_system system=" << unit_system_;
+    emit unitsChanged();
+    emit snapshotChanged();
+    return settings.status() == QSettings::NoError;
+}
+
+void PfdController::loadFuelComputer() {
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
+    fuel_used_gallons_ = qMax(0.0, settings.value(QStringLiteral("real/used_gallons"), 0.0).toDouble());
+    fuel_reserve_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/reserve_gallons"), 5.0).toDouble(), 100.0);
+    fuel_on_board_initialized_ = settings.contains(QStringLiteral("pilot/on_board_gallons"));
+    fuel_on_board_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/on_board_gallons"), 0.0).toDouble(), 100.0);
+    fuel_calibration_left_ = settings.value(QStringLiteral("calibration/left_points")).toList();
+    fuel_calibration_right_ = settings.value(QStringLiteral("calibration/right_points")).toList();
+}
+
+void PfdController::persistFuelComputer() {
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
+    settings.setValue(QStringLiteral("real/used_gallons"), fuel_used_gallons_);
+    settings.setValue(QStringLiteral("pilot/reserve_gallons"), fuel_reserve_gallons_);
+    settings.setValue(QStringLiteral("pilot/on_board_gallons"), fuel_on_board_gallons_);
+    settings.setValue(QStringLiteral("calibration/left_points"), fuel_calibration_left_);
+    settings.setValue(QStringLiteral("calibration/right_points"), fuel_calibration_right_);
+    settings.sync();
+}
+
+bool PfdController::setFuelReserveGallons(double gallons) {
+    if (!std::isfinite(gallons)) return false;
+    fuel_reserve_gallons_ = qBound(0.0, gallons, 100.0);
+    persistFuelComputer(); emit fuelComputerChanged(); return true;
+}
+
+bool PfdController::setFuelOnBoardGallons(double gallons) {
+    if (!std::isfinite(gallons)) return false;
+    fuel_on_board_gallons_ = qBound(0.0, gallons, 100.0);
+    fuel_on_board_initialized_ = true;
+    fuel_used_gallons_ = 0.0;
+    simulated_fuel_used_gallons_ = 0.0;
+    persistFuelComputer(); emit fuelComputerChanged(); return true;
+}
+
+bool PfdController::captureFuelCalibrationPoint(const QString& tank) {
+    const bool left=tank.trimmed().toUpper()==QStringLiteral("LEFT");
+    const bool right=tank.trimmed().toUpper()==QStringLiteral("RIGHT"); if(!left&&!right)return false;
+    auto& curve=left?fuel_calibration_left_:fuel_calibration_right_; if(curve.size()>=5)return false;
+    const double raw=left?engine_snapshot_.fuel_left_gal.value:engine_snapshot_.fuel_right_gal.value;
+    if(!curve.isEmpty()&&std::abs(raw-curve.constLast().toMap().value(QStringLiteral("raw")).toDouble())<0.01)return false;
+    const double capacity=qMax(0.1,fuel_on_board_gallons_/2.0);
+    QVariantMap point; point.insert(QStringLiteral("percent"),curve.size()*25); point.insert(QStringLiteral("raw"),raw); point.insert(QStringLiteral("gallons"),capacity*curve.size()/4.0); curve.append(point);
+    persistFuelComputer(); emit fuelComputerChanged(); return true;
+}
+
+bool PfdController::clearFuelCalibration(const QString& tank) {
+    const auto normalized=tank.trimmed().toUpper(); if(normalized==QStringLiteral("LEFT"))fuel_calibration_left_.clear();else if(normalized==QStringLiteral("RIGHT"))fuel_calibration_right_.clear();else return false;
+    persistFuelComputer(); emit fuelComputerChanged(); return true;
+}
+
+void PfdController::loadFuelEventHistory() {
+    fuel_event_history_.clear(); QFile file(fuel_event_log_path_); if(!file.open(QIODevice::ReadOnly|QIODevice::Text))return;
+    while(!file.atEnd()){const auto doc=QJsonDocument::fromJson(file.readLine());if(doc.isObject())fuel_event_history_.append(doc.object().toVariantMap());if(fuel_event_history_.size()>50)fuel_event_history_.removeFirst();}
+}
+
+void PfdController::recordFuelEvent(const QString& state) {
+    QVariantMap event{{QStringLiteral("utc"),QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},{QStringLiteral("state"),state},{QStringLiteral("rpm"),engine_snapshot_.rpm.value},{QStringLiteral("left_gal"),fuelLeft()},{QStringLiteral("right_gal"),fuelRight()},{QStringLiteral("remaining_gal"),fuelRemainingGallons()},{QStringLiteral("flow_gph"),engine_snapshot_.fuel_flow_gph.value},{QStringLiteral("excess_gph"),fuel_leak_excess_gph_},{QStringLiteral("simulated"),engine_snapshot_.fuel_flow_gph.is_simulated()}};
+    QDir().mkpath(QFileInfo(fuel_event_log_path_).absolutePath()); QFile file(fuel_event_log_path_); if(file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text)){file.write(QJsonDocument(QJsonObject::fromVariantMap(event)).toJson(QJsonDocument::Compact));file.write("\n");file.flush();}
+    fuel_event_history_.append(event);if(fuel_event_history_.size()>50)fuel_event_history_.removeFirst();
+}
+
+void PfdController::loadCentralBlackBoxCache() {
+    QFileInfo info(central_blackbox_cache_path_); if(!info.exists()){central_blackbox_state_=QStringLiteral("OFFLINE");return;}
+    const qint64 age=info.lastModified().msecsTo(QDateTime::currentDateTime()); QFile file(central_blackbox_cache_path_); if(!file.open(QIODevice::ReadOnly)){central_blackbox_state_=QStringLiteral("OFFLINE");return;}
+    const auto root=QJsonDocument::fromJson(file.readAll()).object(); central_blackbox_nodes_=root.value("health").toObject().value("nodes").toArray().toVariantList();central_blackbox_maintenance_=root.value("health").toObject().value("maintenance").toObject().toVariantMap();const auto archives=root.value("archives").toObject();central_blackbox_archives_=archives.value("archives").toArray().toVariantList();central_blackbox_archive_summary_=archives.value("summary").toObject().toVariantMap(); central_fuel_events_.clear();
+    for(const auto& item:root.value("events").toObject().value("events").toArray()){auto outer=item.toObject();auto event=outer.value("event").toObject().toVariantMap();event.insert("source",outer.value("source").toString());event.insert("received_utc",outer.value("received_utc").toString());central_fuel_events_.append(event);}
+    central_blackbox_state_=age<=10000?QStringLiteral("ONLINE"):QStringLiteral("LINK LOST");
+}
+
+bool PfdController::requestCentralBlackBoxAction(const QString& action) {
+    const auto normalized=action.trimmed().toUpper();if(normalized!=QStringLiteral("CREATE_INCIDENT")&&normalized!=QStringLiteral("VERIFY_SIGNATURES")&&normalized!=QStringLiteral("EXPORT_USB"))return false;
+    QDir().mkpath(QFileInfo(central_blackbox_request_path_).absolutePath());QFile file(central_blackbox_request_path_);if(!file.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text))return false;
+    QJsonObject request{{"action",normalized},{"request_id",QString::number(QDateTime::currentMSecsSinceEpoch())}};file.write(QJsonDocument(request).toJson(QJsonDocument::Compact));file.write("\n");file.flush();return true;
+}
+
+void PfdController::updateFuelLeakMonitor(efis::MonoTime now) {
+    const double measured=fuelLeft()+fuelRight();
+    auto setState=[this](const QString& state){if(fuel_leak_state_==state)return;fuel_leak_state_=state;recordFuelEvent(state);qInfo().noquote()<<"event=fuel_leak_monitor state="<<state<<"excess_gph="<<fuel_leak_excess_gph_;emit fuelComputerChanged();};
+    if(fuel_leak_last_update_==efis::MonoTime{}){fuel_leak_last_update_=now;fuel_leak_last_measured_=measured;setState(QStringLiteral("INITIALIZING"));return;}
+    const double seconds=std::chrono::duration<double>(now-fuel_leak_last_update_).count(); if(seconds<1.0)return;
+    const double actualDrop=fuel_leak_last_measured_-measured;
+    fuel_leak_last_update_=now;fuel_leak_last_measured_=measured;
+    const bool calibrated=fuel_calibration_left_.size()==5&&fuel_calibration_right_.size()==5;
+    if(!calibrated&&!engine_snapshot_.fuel_left_gal.is_simulated()){fuel_leak_excess_gph_=0;fuel_leak_alarm_since_={};setState(QStringLiteral("CALIBRATION REQUIRED"));return;}
+    if(actualDrop < -0.15){fuel_leak_suppressed_until_=now+120s;fuel_leak_excess_gph_=0;fuel_leak_alarm_since_={};setState(QStringLiteral("REFUEL DETECTED"));return;}
+    if(std::abs(actualDrop)>0.20){fuel_leak_suppressed_until_=now+20s;fuel_leak_excess_gph_=0;fuel_leak_alarm_since_={};setState(QStringLiteral("MOTION SUPPRESSED"));return;}
+    if(now<fuel_leak_suppressed_until_){setState(QStringLiteral("SUPPRESSED"));return;}
+    if(engine_snapshot_.rpm.value<400.0){fuel_leak_excess_gph_=0;fuel_leak_alarm_since_={};setState(QStringLiteral("STANDBY"));return;}
+    const double expected=engine_snapshot_.fuel_flow_gph.value*seconds/3600.0;
+    const double sample=qBound(-20.0,(actualDrop-expected)*3600.0/seconds,20.0);
+    const double alpha=1.0-std::exp(-seconds/45.0); fuel_leak_excess_gph_+=(sample-fuel_leak_excess_gph_)*alpha;
+    const double threshold=fuel_leak_excess_gph_>5.0?5.0:2.0;
+    if(fuel_leak_excess_gph_<=2.0){fuel_leak_alarm_since_={};setState(QStringLiteral("MONITORING"));return;}
+    if(fuel_leak_alarm_since_==efis::MonoTime{})fuel_leak_alarm_since_=now;
+    const double confirmed=std::chrono::duration<double>(now-fuel_leak_alarm_since_).count();
+    setState(confirmed>=(threshold>2.0?10.0:30.0)?(threshold>2.0?QStringLiteral("FUEL LEAK WARNING"):QStringLiteral("POSSIBLE LEAK")):QStringLiteral("VERIFYING"));
+}
+
+void PfdController::resetFuelUsed() {
+    if (engine_snapshot_.fuel_flow_gph.is_simulated()) simulated_fuel_used_gallons_ = 0.0;
+    else { fuel_used_gallons_ = 0.0; persistFuelComputer(); }
+    emit fuelComputerChanged();
 }
 
 void PfdController::loadImageryStatus() {
@@ -190,6 +403,9 @@ void PfdController::loadCatalogIndex() {
         const auto root = document.object();
         aircraft_catalog_ = root.value("aircraft").toArray().toVariantList();
         engine_catalog_ = root.value("engines").toArray().toVariantList();
+        const auto draftPath = qEnvironmentVariable("EFIS_OPERATIONAL_PROFILE_DRAFT",
+            QDir::current().filePath("config/staging/operational-profile-draft.json"));
+        operational_profile_model_.load(path, draftPath);
         if (catalog_version_ == QStringLiteral("UNAVAILABLE"))
             catalog_version_ = root.value("catalog_version").toString(QStringLiteral("UNKNOWN"));
         qInfo().noquote() << "event=catalog_index_loaded aircraft=" << aircraft_catalog_.size()
@@ -197,6 +413,76 @@ void PfdController::loadCatalogIndex() {
         return;
     }
     qWarning().noquote() << "event=catalog_index_unavailable";
+}
+
+bool PfdController::selectOperationalProfile(const QString& profileKey) {
+    const bool result = operational_profile_model_.selectProfile(profileKey);
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::selectOperationalDomain(const QString& domain) {
+    const bool result = operational_profile_model_.selectDomain(domain);
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::selectOperationalField(const QString& parameterKey) {
+    const bool result = operational_profile_model_.selectField(parameterKey);
+    emit setupChanged();
+    return result;
+}
+
+void PfdController::filterOperationalFields(const QString& filter) {
+    operational_profile_model_.setFilter(filter);
+    emit setupChanged();
+}
+
+bool PfdController::stageOperationalField(const QString& disposition, const QString& valueText,
+    const QString& rationale, const QString& sourceDocument,
+    const QString& sourceRevision, const QString& sourcePage) {
+    const bool result = operational_profile_model_.stageSelectedField(disposition, valueText,
+        rationale, sourceDocument, sourceRevision, sourcePage);
+    appendSetupAudit(QStringLiteral("OPERATIONAL_FIELD_STAGE"), result ? QStringLiteral("SAVED") : QStringLiteral("REJECTED"),
+        operational_profile_model_.selectedField().value("key").toString());
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::selectNextOperationalIssue() {
+    const bool result = operational_profile_model_.selectNextIssue();
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::preloadOperationalSimulation(const QString& profileKey) {
+    const bool result = operational_profile_model_.preloadSimulationProfile(profileKey);
+    appendSetupAudit(QStringLiteral("OPERATIONAL_SIM_PRELOAD"), result ? QStringLiteral("SAVED") : QStringLiteral("REJECTED"), profileKey);
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::importOperationalDraft(const QString& path) {
+    const bool result = operational_profile_model_.importDraft(path);
+    appendSetupAudit(QStringLiteral("OPERATIONAL_DRAFT_IMPORT"), result ? QStringLiteral("IMPORTED") : QStringLiteral("REJECTED"), path);
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::validateOperationalDraft() {
+    const bool result = operational_profile_model_.validateDraft();
+    appendSetupAudit(QStringLiteral("OPERATIONAL_DRAFT_CHECK"), result ? QStringLiteral("REVIEW_READY") : QStringLiteral("BLOCKED"),
+        operational_profile_model_.validationReport().value("state").toString());
+    emit setupChanged();
+    return result;
+}
+
+bool PfdController::discardOperationalDraft() {
+    const bool result = operational_profile_model_.discardDraft();
+    appendSetupAudit(QStringLiteral("OPERATIONAL_DRAFT_DISCARD"), result ? QStringLiteral("SUCCESS") : QStringLiteral("REJECTED"),
+        operational_profile_model_.selectedProfileKey());
+    emit setupChanged();
+    return result;
 }
 
 bool PfdController::stageAircraft(int catalogId) {
@@ -518,12 +804,15 @@ bool PfdController::startEngineSensorTest(const QString& signal, bool benchSimul
     bool known = false;
     for (const auto& item : engine_sensor_mappings_)
         if (item.toMap().value("signal").toString() == signal) { known = true; break; }
+    for (const auto& item : engine_sensor_configuration_)
+        if (item.toMap().value("signal").toString() == signal) { known = true; break; }
     if (!known) {
         sensor_test_status_ = QStringLiteral("UNKNOWN_SIGNAL"); emit setupChanged(); return false;
     }
     sensor_test_signal_ = signal;
     sensor_test_bench_ = benchSimulation;
     sensor_test_fault_ = false;
+    sensor_test_diagnostic_ = QStringLiteral("NORMAL");
     sensor_test_ticks_ = 0;
     sensor_test_raw_ = sensor_test_value_ = sensor_test_rate_hz_ = 0.0;
     sensor_test_age_ms_ = 0;
@@ -562,6 +851,26 @@ void PfdController::toggleEngineSensorTestFault() {
     emit setupChanged();
 }
 
+void PfdController::cycleSensorTestDiagnostic() {
+    if (!sensor_test_bench_) return;
+    static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("TIMEOUT"),QStringLiteral("OPEN CIRCUIT"),QStringLiteral("SHORT CIRCUIT"),QStringLiteral("UNSTABLE")};
+    sensor_test_diagnostic_=modes.at((modes.indexOf(sensor_test_diagnostic_)+1)%modes.size());
+    sensor_test_fault_=sensor_test_diagnostic_==QStringLiteral("TIMEOUT"); emit setupChanged();
+}
+
+void PfdController::cycleElectricalTestMode(){
+    static const QStringList modes{QStringLiteral("NORMAL"),QStringLiteral("ALTERNATOR OFFLINE"),QStringLiteral("MAIN BUS LOW"),QStringLiteral("ESSENTIAL BUS ISOLATED"),QStringLiteral("BATTERY LOW")};
+    electrical_test_mode_=modes.at((modes.indexOf(electrical_test_mode_)+1)%modes.size());emit electricalTestChanged();
+}
+
+void PfdController::loadMaintenance(){const QStringList ids{"OIL_FILTER","ENGINE_INSPECTION","SPARK_PLUGS","COOLING_SYSTEM","GEARBOX_CLUTCH","ANNUAL_INSPECTION"};const QStringList labels{"OIL / FILTER SERVICE","ENGINE INSPECTION","SPARK PLUG INSPECTION","COOLING SYSTEM","GEARBOX / CLUTCH","ANNUAL INSPECTION"};QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};for(int i=0;i<ids.size();++i){QVariantMap t{{"id",ids[i]},{"label",labels[i]}};const auto b=QStringLiteral("tasks/%1/").arg(ids[i]);t["interval_hours"]=s.value(b+"interval_hours",0).toInt();t["last_hours"]=s.value(b+"last_hours",0.0).toDouble();t["last_utc"]=s.value(b+"last_utc",QStringLiteral("NEVER")).toString();maintenance_tasks_<<t;}}
+
+QString PfdController::maintenanceStatus() const{for(const auto& item:maintenance_tasks_){const auto t=item.toMap();const int interval=t.value("interval_hours").toInt();if(interval<=0)return QStringLiteral("PROGRAM REQUIRED");if(engineHours()>=t.value("last_hours").toDouble()+interval)return QStringLiteral("SERVICE DUE");}return QStringLiteral("CURRENT");}
+
+void PfdController::cycleMaintenanceInterval(int index){if(index<0||index>=maintenance_tasks_.size())return;static const QList<int> values{0,25,50,100,200,600};auto t=maintenance_tasks_[index].toMap();const int current=t.value("interval_hours").toInt();t["interval_hours"]=values[(values.indexOf(current)+1)%values.size()];maintenance_tasks_[index]=t;QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};s.setValue(QStringLiteral("tasks/%1/interval_hours").arg(t.value("id").toString()),t.value("interval_hours"));s.sync();emit maintenanceChanged();}
+
+bool PfdController::completeMaintenanceTask(int index){if(index<0||index>=maintenance_tasks_.size())return false;auto t=maintenance_tasks_[index].toMap();if(t.value("interval_hours").toInt()<=0)return false;t["last_hours"]=engineHours();t["last_utc"]=QDateTime::currentDateTimeUtc().toString(Qt::ISODate);maintenance_tasks_[index]=t;QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};const auto b=QStringLiteral("tasks/%1/").arg(t.value("id").toString());s.setValue(b+"last_hours",t.value("last_hours"));s.setValue(b+"last_utc",t.value("last_utc"));s.sync();emit maintenanceChanged();return s.status()==QSettings::NoError;}
+
 void PfdController::loadAircraftProfile() {
     aircraft_speed_profile_ = {{"vso",39.0},{"vs1",45.0},{"vfe",85.0},{"vx",62.0},
         {"vy",68.0},{"va",105.0},{"vno",120.0},{"vne",140.0},{"bestGlide",65.0},{"vref",55.0}};
@@ -578,6 +887,55 @@ void PfdController::loadAircraftProfile() {
         if (!document.isObject()) continue;
         const auto root = document.object();
         const auto aircraft = root.value("aircraft").toObject();
+        const auto engine = root.value("engine").toObject();
+        engine_profile_name_ = engine.value("manufacturer").toString() +
+            QStringLiteral(" ") + engine.value("model").toString();
+        engine_serial_number_ = engine.value("serial_number").toString(QStringLiteral("TO BE ENTERED"));
+        engine_limits_ = engine.value("limits").toObject().toVariantMap();
+        engine_capabilities_ = engine.value("capabilities").toObject().toVariantMap();
+        const auto runtime = engine.value("runtime_tracking").toObject();
+        runtime_tracker_ = efis::engine::RuntimeTracker{
+            {runtime.value("engine_run_threshold_rpm").toDouble(500.0),
+             runtime.value("tach_reference_rpm").toDouble(5000.0)},
+            {runtime.value("initial_master_hours").toDouble(), runtime.value("initial_engine_hours").toDouble(),
+             runtime.value("initial_tach_hours").toDouble(), runtime.value("initial_flight_hours").toDouble()}};
+        engine_sensor_configuration_.clear();
+        QSettings calibration{QSettings::IniFormat, QSettings::UserScope,
+                              QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-calibration")};
+        calibration_revision_ = calibration.value(QStringLiteral("revision"), 0).toInt();
+        for (const auto item : engine.value("sensors").toArray()) {
+            auto sensor = item.toObject().toVariantMap();
+            const auto signal = sensor.value(QStringLiteral("signal")).toString();
+            sensor.insert(QStringLiteral("calibration_state"),
+                          calibration.value(QStringLiteral("sensors/%1/state").arg(signal),
+                                            QStringLiteral("NOT CONFIGURED")).toString());
+            sensor.insert(QStringLiteral("configured_type"),
+                          calibration.value(QStringLiteral("sensors/%1/type").arg(signal),
+                                            sensor.value(QStringLiteral("type"))).toString());
+            sensor.insert(QStringLiteral("input"),
+                          calibration.value(QStringLiteral("sensors/%1/input").arg(signal),
+                                            QStringLiteral("UNASSIGNED")).toString());
+            sensor.insert(QStringLiteral("zero_raw"), calibration.value(QStringLiteral("sensors/%1/zero_raw").arg(signal)));
+            sensor.insert(QStringLiteral("span_raw"), calibration.value(QStringLiteral("sensors/%1/span_raw").arg(signal)));
+            sensor.insert(QStringLiteral("gain"), calibration.value(QStringLiteral("sensors/%1/gain").arg(signal), 1.0));
+            sensor.insert(QStringLiteral("offset"), calibration.value(QStringLiteral("sensors/%1/offset").arg(signal), 0.0));
+            sensor.insert(QStringLiteral("calibration_source"), calibration.value(QStringLiteral("sensors/%1/source").arg(signal), QStringLiteral("NONE")));
+            engine_sensor_configuration_ << sensor;
+        }
+        electrical_loads_.clear(); electrical_buses_.clear(); electrical_sources_.clear();
+        const auto electrical=root.value("systems").toObject().value("electrical").toObject();
+        for(const auto item:electrical.value("buses").toArray())electrical_buses_<<item.toObject().toVariantMap();
+        for(const auto item:electrical.value("sources").toArray())electrical_sources_<<item.toObject().toVariantMap();
+        for (const auto item : electrical.value("loads").toArray())
+            electrical_loads_ << item.toObject().toVariantMap();
+        const auto systems = root.value("systems").toObject();
+        const auto gear = systems.value("landing_gear").toObject();
+        landing_gear_installed_ = gear.value("installed").toBool(false);
+        retractable_gear_ = gear.value("retractable").toBool(false);
+        const auto flaps = systems.value("flaps").toObject();
+        flaps_installed_ = flaps.value("installed").toBool(false);
+        flap_detents_.clear();
+        for (const auto detent : flaps.value("detents_deg").toArray()) flap_detents_ << detent.toDouble();
         const auto speeds = root.value("speeds_kt").toObject();
         if (speeds.isEmpty()) continue;
         const QMap<QString,QString> mapping{{"VSO","vso"},{"VS1","vs1"},{"VFE","vfe"},
@@ -595,15 +953,119 @@ void PfdController::loadAircraftProfile() {
     qWarning().noquote() << "event=aircraft_profile_fallback reason=no_valid_profile";
 }
 
+bool PfdController::sensorCalibrationReady() const {
+    for (const auto& item : engine_sensor_configuration_) {
+        const auto sensor = item.toMap();
+        if (sensor.value(QStringLiteral("required")).toBool() &&
+            sensor.value(QStringLiteral("calibration_state")).toString() != QStringLiteral("VERIFIED")) return false;
+    }
+    return !engine_sensor_configuration_.isEmpty();
+}
+
+bool PfdController::cycleSensorCalibration(int index) {
+    if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
+    auto sensor = engine_sensor_configuration_[index].toMap();
+    const auto current = sensor.value(QStringLiteral("calibration_state")).toString();
+    const bool liveCalibration = sensor.value(QStringLiteral("calibration_source")).toString() == QStringLiteral("LIVE") && sensor.value(QStringLiteral("zero_raw")).isValid() && sensor.value(QStringLiteral("span_raw")).isValid();
+    const auto next = current == QStringLiteral("NOT CONFIGURED") ? QStringLiteral("CONFIGURED")
+                    : current == QStringLiteral("CONFIGURED") && liveCalibration ? QStringLiteral("VERIFIED")
+                    : current == QStringLiteral("CONFIGURED") ? QStringLiteral("CONFIGURED")
+                                                              : QStringLiteral("NOT CONFIGURED");
+    sensor.insert(QStringLiteral("calibration_state"), next);
+    engine_sensor_configuration_[index] = sensor;
+    ++calibration_revision_;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-calibration")};
+    settings.setValue(QStringLiteral("sensors/%1/state").arg(sensor.value(QStringLiteral("signal")).toString()), next);
+    settings.setValue(QStringLiteral("revision"), calibration_revision_);
+    settings.sync();
+    emit sensorConfigurationChanged();
+    qInfo().noquote() << "event=ems_sensor_calibration signal=" << sensor.value("signal").toString()
+                      << "state=" << next << "revision=" << calibration_revision_;
+    return settings.status() == QSettings::NoError;
+}
+
+bool PfdController::cycleSensorType(int index) {
+    if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
+    static const QStringList types{QStringLiteral("UNSELECTED"), QStringLiteral("FREQUENCY"),
+        QStringLiteral("THERMOCOUPLE K"), QStringLiteral("PT1000"), QStringLiteral("VDO RESISTIVE"),
+        QStringLiteral("0-5 V"), QStringLiteral("CAN DIGITAL")};
+    auto sensor = engine_sensor_configuration_[index].toMap();
+    const auto current = sensor.value(QStringLiteral("configured_type")).toString();
+    const auto next = types.at((types.indexOf(current) + 1 + types.size()) % types.size());
+    sensor.insert(QStringLiteral("configured_type"), next);
+    sensor.insert(QStringLiteral("calibration_state"), QStringLiteral("NOT CONFIGURED"));
+    engine_sensor_configuration_[index] = sensor; ++calibration_revision_;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-calibration")};
+    const auto signal = sensor.value(QStringLiteral("signal")).toString();
+    settings.setValue(QStringLiteral("sensors/%1/type").arg(signal), next);
+    settings.setValue(QStringLiteral("sensors/%1/state").arg(signal), QStringLiteral("NOT CONFIGURED"));
+    settings.setValue(QStringLiteral("revision"), calibration_revision_); settings.sync();
+    emit sensorConfigurationChanged(); return settings.status() == QSettings::NoError;
+}
+
+bool PfdController::cycleSensorInput(int index) {
+    if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
+    static const QStringList inputs{QStringLiteral("UNASSIGNED"), QStringLiteral("CAN A"),
+        QStringLiteral("CAN B"), QStringLiteral("ADC 1"), QStringLiteral("ADC 2"),
+        QStringLiteral("FREQ 1"), QStringLiteral("FREQ 2")};
+    auto sensor = engine_sensor_configuration_[index].toMap();
+    const auto current = sensor.value(QStringLiteral("input")).toString();
+    const auto next = inputs.at((inputs.indexOf(current) + 1 + inputs.size()) % inputs.size());
+    sensor.insert(QStringLiteral("input"), next);
+    sensor.insert(QStringLiteral("calibration_state"), QStringLiteral("NOT CONFIGURED"));
+    engine_sensor_configuration_[index] = sensor; ++calibration_revision_;
+    QSettings settings{QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-calibration")};
+    const auto signal = sensor.value(QStringLiteral("signal")).toString();
+    settings.setValue(QStringLiteral("sensors/%1/input").arg(signal), next);
+    settings.setValue(QStringLiteral("sensors/%1/state").arg(signal), QStringLiteral("NOT CONFIGURED"));
+    settings.setValue(QStringLiteral("revision"), calibration_revision_); settings.sync();
+    emit sensorConfigurationChanged(); return settings.status() == QSettings::NoError;
+}
+
+bool PfdController::captureSensorPoint(int index, const QString& point) {
+    if (index < 0 || index >= engine_sensor_configuration_.size()) return false;
+    auto sensor=engine_sensor_configuration_[index].toMap(); const auto signal=sensor.value("signal").toString();
+    double raw=0, spanReference=100; bool simulated=true;
+    if(signal=="RPM"){raw=engine_snapshot_.rpm.value;simulated=engine_snapshot_.rpm.is_simulated();spanReference=5000;}
+    else if(signal=="OIL_PRESSURE"){raw=engine_snapshot_.oil_pressure_psi.value;simulated=engine_snapshot_.oil_pressure_psi.is_simulated();spanReference=100;}
+    else if(signal=="OIL_TEMPERATURE"||signal=="COOLANT_TEMPERATURE"){raw=engine_snapshot_.oil_temperature_c.value;simulated=engine_snapshot_.oil_temperature_c.is_simulated();spanReference=120;}
+    else if(signal=="CHT"){raw=engine_snapshot_.cht_c.front().value;simulated=engine_snapshot_.cht_c.front().is_simulated();spanReference=200;}
+    else if(signal=="EGT"){raw=engine_snapshot_.egt_c.front().value;simulated=engine_snapshot_.egt_c.front().is_simulated();spanReference=900;}
+    else if(signal=="FUEL_PRESSURE"){raw=engine_snapshot_.fuel_pressure_psi.value;simulated=engine_snapshot_.fuel_pressure_psi.is_simulated();spanReference=10;}
+    else if(signal=="FUEL_FLOW"){raw=engine_snapshot_.fuel_flow_gph.value;simulated=engine_snapshot_.fuel_flow_gph.is_simulated();spanReference=20;}
+    else if(signal=="MANIFOLD_PRESSURE"){raw=engine_snapshot_.manifold_pressure_inhg.value;simulated=engine_snapshot_.manifold_pressure_inhg.is_simulated();spanReference=40;} else return false;
+    const auto normalized=point.trimmed().toUpper(); if(normalized!="ZERO"&&normalized!="SPAN")return false;
+    sensor.insert(normalized=="ZERO"?"zero_raw":"span_raw",raw); sensor.insert("calibration_source",simulated?"BENCH":"LIVE");
+    const auto zero=sensor.value("zero_raw"),span=sensor.value("span_raw"); if(zero.isValid()&&span.isValid()&&std::abs(span.toDouble()-zero.toDouble())>1e-9){const double gain=spanReference/(span.toDouble()-zero.toDouble());sensor.insert("gain",gain);sensor.insert("offset",-zero.toDouble()*gain);sensor.insert("calibration_state","CONFIGURED");}
+    engine_sensor_configuration_[index]=sensor;++calibration_revision_;QSettings settings{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-calibration"};const auto base=QStringLiteral("sensors/%1/").arg(signal);settings.setValue(base+(normalized=="ZERO"?"zero_raw":"span_raw"),raw);settings.setValue(base+"source",sensor.value("calibration_source"));settings.setValue(base+"gain",sensor.value("gain"));settings.setValue(base+"offset",sensor.value("offset"));settings.setValue(base+"state",sensor.value("calibration_state"));settings.setValue("revision",calibration_revision_);settings.sync();emit sensorConfigurationChanged();return settings.status()==QSettings::NoError;
+}
+
 double PfdController::roll() const { return snapshot_.attitude.roll_deg.value; }
 double PfdController::pitch() const { return snapshot_.attitude.pitch_deg.value; }
 double PfdController::heading() const { return snapshot_.attitude.heading_deg.value; }
+bool PfdController::attitudeValid() const {
+    return snapshot_.attitude.roll_deg.usable() &&
+           snapshot_.attitude.pitch_deg.usable();
+}
+bool PfdController::headingValid() const {
+    return snapshot_.attitude.heading_deg.usable();
+}
 double PfdController::airspeed() const { return snapshot_.air_data.indicated_airspeed_kt.value; }
 double PfdController::altitude() const { return snapshot_.air_data.pressure_altitude_ft.value; }
 double PfdController::verticalSpeed() const { return snapshot_.air_data.vertical_speed_fpm.value; }
+bool PfdController::verticalSpeedValid() const {
+    return snapshot_.air_data.vertical_speed_fpm.usable();
+}
 double PfdController::groundSpeed() const { return snapshot_.position.ground_speed_kt.value; }
 double PfdController::latitude() const { return snapshot_.position.latitude_deg.value; }
 double PfdController::longitude() const { return snapshot_.position.longitude_deg.value; }
+bool PfdController::positionValid() const {
+    return snapshot_.position.latitude_deg.usable() &&
+           snapshot_.position.longitude_deg.usable();
+}
 double PfdController::commandedRoll() const { return snapshot_.guidance.commanded_roll_deg.value; }
 double PfdController::commandedPitch() const { return snapshot_.guidance.commanded_pitch_deg.value; }
 double PfdController::selectedAltitude() const { return snapshot_.guidance.selected_altitude_ft.value; }
@@ -659,6 +1121,8 @@ QString PfdController::attitudeSource() const {
         case efis::SourceId::dlvr_legacy: return QStringLiteral("DLVR");
         case efis::SourceId::nav_rf: return QStringLiteral("NAV RF");
         case efis::SourceId::nav_synthetic: return QStringLiteral("NAV SYN");
+        case efis::SourceId::blackbox_broker: return QStringLiteral("BLACKBOX");
+        case efis::SourceId::pilot_setting: return QStringLiteral("PILOT");
         case efis::SourceId::unknown: break;
     }
     return QStringLiteral("NONE");
@@ -705,10 +1169,53 @@ QString PfdController::dataSourceState() const {
 // sorgente reale, ma ora e' una conseguenza dello stato e non una didascalia:
 // cambiera' da solo quando il collegamento verso il nodo di ingestion esistera'.
 QString PfdController::sensorNodeState() const {
-    if (router_.source_count() == 0) return QStringLiteral("NOT INSTALLED");
-    return attitudeSource() == QStringLiteral("PIXHAWK")
-        ? QStringLiteral("LIVE")
-        : QStringLiteral("READY FOR DATA");
+    if (!ddp_source_) return QStringLiteral("NOT INSTALLED");
+    switch (ddp_source_->link_state(efis::MonoClock::now())) {
+        case efis::protocol::ddp::LinkState::waiting:
+            return QStringLiteral("WAITING");
+        case efis::protocol::ddp::LinkState::live:
+            return QStringLiteral("LIVE");
+        case efis::protocol::ddp::LinkState::stale:
+            return QStringLiteral("STALE");
+        case efis::protocol::ddp::LinkState::lost:
+            return QStringLiteral("LOST");
+    }
+    return QStringLiteral("LOST");
+}
+
+qulonglong PfdController::ddpAccepted() const {
+    return ddp_source_ ? ddp_source_->metrics().accepted : 0;
+}
+
+qulonglong PfdController::ddpRejected() const {
+    if (!ddp_source_) return 0;
+    const auto& metrics = ddp_source_->metrics();
+    return metrics.decode_rejected + metrics.identity_rejected +
+           metrics.duplicates + metrics.reversed;
+}
+
+qulonglong PfdController::ddpSequenceGaps() const {
+    return ddp_source_ ? ddp_source_->metrics().sequence_gaps : 0;
+}
+
+qulonglong PfdController::ddpSocketErrors() const {
+    return ddp_source_ ? ddp_source_->socket_errors() : 0;
+}
+
+QString PfdController::nodeId() const {
+    return qEnvironmentVariable("EFIS_NODE_ID", "PFD-01");
+}
+
+QString PfdController::nodePlatform() const {
+    return qEnvironmentVariable("EFIS_NODE_PLATFORM", "RPi5");
+}
+
+QString PfdController::nodeRole() const {
+    return qEnvironmentVariable("EFIS_NODE_ROLE", "PRIMARY DISPLAY");
+}
+
+QString PfdController::systemProfile() const {
+    return qEnvironmentVariable("EFIS_SYSTEM_PROFILE", "PROFESSIONAL");
 }
 
 // Il ruolo vale per volo e motore insieme: e' una sola scelta dell'operatore, e
@@ -760,7 +1267,25 @@ void PfdController::cycleFault() {
     qInfo().noquote() << "event=fault_injection mode=" << faultMode();
 }
 qulonglong PfdController::sequence() const { return snapshot_.sequence; }
-QString PfdController::blackBoxState() const { return black_box_state_; }
+QString PfdController::blackBoxState() const {
+    // Un display remoto non possiede il file di stato del recorder. Quando il
+    // profilo sceglie DDP_LINK mostriamo quindi soltanto lo stato verificabile
+    // del collegamento col broker, senza chiamarlo impropriamente RECORDING.
+    if (qEnvironmentVariable("EFIS_BLACKBOX_STATUS_MODE").trimmed().toUpper() ==
+            QStringLiteral("DDP_LINK") && ddp_source_) {
+        switch (ddp_source_->link_state(efis::MonoClock::now())) {
+            case efis::protocol::ddp::LinkState::waiting:
+                return QStringLiteral("WAITING");
+            case efis::protocol::ddp::LinkState::live:
+                return QStringLiteral("LINK LIVE");
+            case efis::protocol::ddp::LinkState::stale:
+                return QStringLiteral("STALE");
+            case efis::protocol::ddp::LinkState::lost:
+                return QStringLiteral("LOST");
+        }
+    }
+    return black_box_state_;
+}
 qulonglong PfdController::blackBoxRecords() const { return black_box_records_; }
 double PfdController::engineRpm() const { return engine_snapshot_.rpm.value; }
 double PfdController::manifoldPressure() const { return engine_snapshot_.manifold_pressure_inhg.value; }
@@ -768,8 +1293,8 @@ double PfdController::oilPressure() const { return engine_snapshot_.oil_pressure
 double PfdController::oilTemperature() const { return engine_snapshot_.oil_temperature_c.value; }
 double PfdController::fuelPressure() const { return engine_snapshot_.fuel_pressure_psi.value; }
 double PfdController::fuelFlow() const { return engine_snapshot_.fuel_flow_gph.value; }
-double PfdController::fuelLeft() const { return engine_snapshot_.fuel_left_gal.value; }
-double PfdController::fuelRight() const { return engine_snapshot_.fuel_right_gal.value; }
+double PfdController::fuelLeft() const { return calibratedFuel(engine_snapshot_.fuel_left_gal.value,fuel_calibration_left_); }
+double PfdController::fuelRight() const { return calibratedFuel(engine_snapshot_.fuel_right_gal.value,fuel_calibration_right_); }
 double PfdController::busVoltage() const { return engine_snapshot_.bus_voltage_v.value; }
 double PfdController::alternatorCurrent() const { return engine_snapshot_.alternator_current_a.value; }
 QVariantList PfdController::chtValues() const {
@@ -781,7 +1306,9 @@ QVariantList PfdController::egtValues() const {
 int PfdController::engineHealth() const { return static_cast<int>(engine_snapshot_.health); }
 QString PfdController::engineFaultMode() const {
     using efis::engine::EngineFault;
-    switch (engine_simulation_->fault()) {
+    const auto fault = system_simulation_active_
+        ? system_frame_.engine.injected_fault : engine_simulation_->fault();
+    switch (fault) {
         case EngineFault::none: return QStringLiteral("NONE");
         case EngineFault::low_oil_pressure: return QStringLiteral("LOW OIL PRESS");
         case EngineFault::high_cht: return QStringLiteral("HIGH CHT 3");
@@ -802,7 +1329,71 @@ void PfdController::cycleEngineFault() {
     qInfo().noquote() << "event=engine_fault_injection mode=" << engineFaultMode();
 }
 
+QString PfdController::systemSimulationScenario() const {
+    return QString::fromLatin1(efis::simulation::scenario_name(system_simulator_.scenario()));
+}
+
+QString PfdController::systemSimulationPhase() const {
+    return QString::fromLatin1(efis::simulation::phase_name(system_frame_.phase));
+}
+
+bool PfdController::startSystemSimulation(const QString& scenario) {
+    try {
+        system_simulator_.reset(efis::simulation::parse_scenario(
+            scenario.toStdString()));
+    } catch (const std::exception&) {
+        return false;
+    }
+    system_simulation_active_ = true;
+    system_simulation_running_ = true;
+    system_simulation_elapsed_ms_ = 0.0;
+    system_simulation_last_tick_ = efis::MonoClock::now();
+    system_simulation_last_event_ = QStringLiteral("SCENARIO STARTED");
+    qInfo().noquote() << "event=system_simulation_start scenario=" << scenario;
+    emit simulationChanged();
+    return true;
+}
+
+void PfdController::toggleSystemSimulation() {
+    if (!system_simulation_active_) {
+        startSystemSimulation(QStringLiteral("full-flight"));
+        return;
+    }
+    system_simulation_running_ = !system_simulation_running_;
+    system_simulation_last_tick_ = efis::MonoClock::now();
+    system_simulation_last_event_ = system_simulation_running_
+        ? QStringLiteral("RESUMED") : QStringLiteral("PAUSED");
+    emit simulationChanged();
+}
+
+void PfdController::stopSystemSimulation() {
+    system_simulation_active_ = false;
+    system_simulation_running_ = false;
+    system_simulation_elapsed_ms_ = 0.0;
+    system_simulation_last_event_ = QStringLiteral("STOPPED");
+    qInfo().noquote() << "event=system_simulation_stop";
+    emit simulationChanged();
+}
+
+void PfdController::seekSystemSimulation(double progress) {
+    if (!system_simulation_active_) return;
+    const double bounded = std::clamp(progress, 0.0, 1.0);
+    system_simulation_elapsed_ms_ = bounded *
+        static_cast<double>(system_simulator_.duration().count());
+    system_simulation_last_tick_ = efis::MonoClock::now();
+    system_simulation_last_event_ = QStringLiteral("TIMELINE SEEK");
+    emit simulationChanged();
+}
+
+void PfdController::setSystemSimulationSpeed(double speed) {
+    system_simulation_speed_ = std::clamp(speed, 0.25, 20.0);
+    system_simulation_last_event_ = QStringLiteral("SPEED CHANGED");
+    emit simulationChanged();
+}
+
 void PfdController::updateSnapshot() {
+    QElapsedTimer callbackElapsed;
+    callbackElapsed.start();
     const auto now = efis::MonoClock::now();
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - started_at_);
     // Il display non sceglie piu' la sorgente: consuma cio' che il router
@@ -811,9 +1402,68 @@ void PfdController::updateSnapshot() {
     // dal nodo di ingestion, come stabilito dalla ADR-003. Quando quel
     // collegamento esistera' sara' una sorgente in piu', e qui non cambiera'
     // nulla.
-    auto input = router_.poll(now, elapsed);
-    snapshot_ = model_.normalize(std::move(input), now);
-    engine_snapshot_ = engine_router_.poll(now, elapsed);
+    if (system_simulation_active_) {
+        if (system_simulation_last_tick_ == efis::MonoTime{})
+            system_simulation_last_tick_ = now;
+        if (system_simulation_running_) {
+            const auto delta = std::chrono::duration<double, std::milli>(
+                now - system_simulation_last_tick_).count();
+            system_simulation_elapsed_ms_ += delta * system_simulation_speed_;
+        }
+        system_simulation_last_tick_ = now;
+        const auto duration_ms = static_cast<double>(system_simulator_.duration().count());
+        system_simulation_elapsed_ms_ = std::clamp(system_simulation_elapsed_ms_, 0.0, duration_ms);
+        system_frame_ = system_simulator_.sample(
+            now, std::chrono::milliseconds{static_cast<long long>(system_simulation_elapsed_ms_)});
+        snapshot_ = model_.normalize(system_frame_.flight, now);
+        engine_snapshot_ = system_frame_.engine;
+        if (!system_frame_.events.empty())
+            system_simulation_last_event_ = QString::fromStdString(system_frame_.events.back());
+        if (system_frame_.complete) system_simulation_running_ = false;
+        emit simulationChanged();
+    } else {
+        auto input = router_.poll(now, elapsed);
+        snapshot_ = model_.normalize(std::move(input), now);
+        engine_snapshot_ = engine_router_.poll(now, elapsed);
+    }
+    if (last_runtime_update_ != efis::MonoTime{}) {
+        const auto seconds = std::chrono::duration<double>(now - last_runtime_update_).count();
+        const bool airborne = snapshot_.position.ground_speed_kt.usable() &&
+                              snapshot_.position.ground_speed_kt.value > 35.0;
+        const double accountable_rpm = engine_snapshot_.rpm.is_simulated()
+            ? 0.0 : engine_snapshot_.rpm.value;
+        runtime_tracker_.update(accountable_rpm, seconds, airborne && !showingSimulatedData());
+    }
+    last_runtime_update_ = now;
+    if (!fuel_on_board_initialized_) {
+        fuel_on_board_gallons_ = fuelLeft() + fuelRight();
+        fuel_on_board_initialized_ = true;
+        emit fuelComputerChanged();
+    }
+    if (last_fuel_update_ != efis::MonoTime{}) {
+        const auto seconds = std::chrono::duration<double>(now - last_fuel_update_).count();
+        if (engine_snapshot_.rpm.value > 400.0 && engine_snapshot_.fuel_flow_gph.value > 0.0) {
+            const double consumed = engine_snapshot_.fuel_flow_gph.value * seconds / 3600.0;
+            if (engine_snapshot_.fuel_flow_gph.is_simulated()) simulated_fuel_used_gallons_ += consumed;
+            else {
+                fuel_used_gallons_ += consumed;
+                fuel_persistence_dirty_ = true;
+            }
+            if (last_fuel_notify_ == efis::MonoTime{} || now - last_fuel_notify_ >= 1s) {
+                last_fuel_notify_ = now; emit fuelComputerChanged();
+            }
+        }
+    }
+    last_fuel_update_ = now;
+    updateFuelLeakMonitor(now);
+    if(last_central_blackbox_check_==efis::MonoTime{}||now-last_central_blackbox_check_>=1s){last_central_blackbox_check_=now;loadCentralBlackBoxCache();}
+    if (last_fuel_save_ == efis::MonoTime{}) {
+        last_fuel_save_ = now;
+    } else if (fuel_persistence_dirty_ && now - last_fuel_save_ >= 10s) {
+        last_fuel_save_ = now;
+        persistFuelComputer();
+        fuel_persistence_dirty_ = false;
+    }
     if (trend_initialized_) {
         const auto six_second_projection = (snapshot_.air_data.indicated_airspeed_kt.value -
                                             previous_airspeed_) * 300.0;
@@ -843,21 +1493,30 @@ void PfdController::updateSnapshot() {
     }
     if (sensor_test_bench_) {
         ++sensor_test_ticks_;
-        if (sensor_test_fault_) {
+        if (sensor_test_diagnostic_ == QStringLiteral("TIMEOUT")) {
             sensor_test_age_ms_ += 20;
             sensor_test_rate_hz_ = 0.0;
         } else {
             const double phase = static_cast<double>(sensor_test_ticks_) * 0.04;
             double base = 1000.0;
-            if (sensor_test_signal_ == QStringLiteral("RPM")) base = 2450.0;
-            else if (sensor_test_signal_ == QStringLiteral("MAP")) base = 24.0;
-            else if (sensor_test_signal_ == QStringLiteral("OIL_PRESS")) base = 72.0;
-            else if (sensor_test_signal_ == QStringLiteral("OIL_TEMP")) base = 92.0;
-            else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESS")) base = 4.8;
-            else if (sensor_test_signal_ == QStringLiteral("FUEL_FLOW")) base = 18.0;
+            if (sensor_test_signal_ == QStringLiteral("RPM")) base = 5000.0;
+            else if (sensor_test_signal_ == QStringLiteral("MAP")) base = 24.5;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_PRESS")) base = 58.0;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_PRESSURE")) base = 58.0;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_TEMP")) base = 96.0;
+            else if (sensor_test_signal_ == QStringLiteral("OIL_TEMPERATURE") || sensor_test_signal_ == QStringLiteral("COOLANT_TEMPERATURE")) base = 96.0;
+            else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESS")) base = 4.6;
+            else if (sensor_test_signal_ == QStringLiteral("FUEL_PRESSURE")) base = 4.6;
+            else if (sensor_test_signal_ == QStringLiteral("FUEL_FLOW")) base = 4.8;
             else if (sensor_test_signal_.startsWith(QStringLiteral("CHT_"))) base = 108.0;
-            else if (sensor_test_signal_.startsWith(QStringLiteral("EGT_"))) base = 720.0;
-            sensor_test_raw_ = base + std::sin(phase) * qMax(1.0, base * 0.015);
+            else if (sensor_test_signal_ == QStringLiteral("CHT")) base = 105.0;
+            else if (sensor_test_signal_.startsWith(QStringLiteral("EGT_"))) base = 780.0;
+            else if (sensor_test_signal_ == QStringLiteral("EGT")) base = 780.0;
+            else if (sensor_test_signal_ == QStringLiteral("MANIFOLD_PRESSURE")) base = 24.5;
+            if(sensor_test_diagnostic_==QStringLiteral("OPEN CIRCUIT")){sensor_test_raw_=4095.0;sensor_test_status_=QStringLiteral("BENCH_OPEN_CIRCUIT");}
+            else if(sensor_test_diagnostic_==QStringLiteral("SHORT CIRCUIT")){sensor_test_raw_=0.0;sensor_test_status_=QStringLiteral("BENCH_SHORT_CIRCUIT");}
+            else if(sensor_test_diagnostic_==QStringLiteral("UNSTABLE")){sensor_test_raw_=base+std::sin(phase*11.0)*base*.28;sensor_test_status_=QStringLiteral("BENCH_UNSTABLE_SIGNAL");}
+            else {sensor_test_raw_ = base + std::sin(phase) * qMax(1.0, base * 0.015);sensor_test_status_=QStringLiteral("BENCH_SIM_ACTIVE");}
             sensor_test_value_ = sensor_test_raw_ * sensor_test_gain_ + sensor_test_offset_;
             sensor_test_rate_hz_ = 50.0;
             sensor_test_age_ms_ = 0;
@@ -868,5 +1527,319 @@ void PfdController::updateSnapshot() {
         navigation_update_ticks_ = 0;
         updateNearestAirports();
     }
+    updateEmergencyAssist(now);
     emit snapshotChanged();
+    const auto callbackMilliseconds = callbackElapsed.elapsed();
+    if (callbackMilliseconds >= 100) {
+        qWarning().noquote()
+            << "event=callback_stall callback=pfd_update_snapshot duration_ms="
+            << callbackMilliseconds;
+    }
+}
+
+bool PfdController::emergencyAssistActive() const {
+    using State = efis::emergency::AssistState;
+    const auto state = emergency_assist_.output().state;
+    return state != State::idle && state != State::dismissed && state != State::cancelled;
+}
+
+QString PfdController::emergencyAssistState() const {
+    return QString::fromLatin1(efis::emergency::state_name(emergency_assist_.output().state));
+}
+
+QString PfdController::emergencyAssistKind() const {
+    return QString::fromLatin1(efis::emergency::kind_name(emergency_assist_.output().kind));
+}
+
+QString PfdController::emergencyAssistHeadline() const {
+    return QString::fromStdString(emergency_assist_.output().headline);
+}
+
+QString PfdController::emergencyFlyAdvisory() const {
+    return QString::fromStdString(emergency_assist_.output().fly_advisory);
+}
+
+QString PfdController::emergencyNavigationAdvisory() const {
+    return QString::fromStdString(emergency_assist_.output().navigation_advisory);
+}
+
+QString PfdController::emergencyCommunicationDraft() const {
+    return QString::fromStdString(emergency_assist_.output().communication_draft);
+}
+
+QString PfdController::emergencyVoiceCue() const {
+    return QString::fromStdString(emergency_assist_.output().voice_cue);
+}
+
+QString PfdController::emergencyDataQuality() const {
+    const auto& output = emergency_assist_.output();
+    if (output.simulation_only) return QStringLiteral("SIMULATION ONLY");
+    if (!output.degradation_reasons.empty()) return QStringLiteral("DEGRADED");
+    return QStringLiteral("VALIDATED INPUTS");
+}
+
+bool PfdController::emergencySimulationOnly() const {
+    return emergency_assist_.output().simulation_only;
+}
+
+bool PfdController::emergencyProcedureAvailable() const {
+    return emergency_assist_.output().procedure_available;
+}
+
+QString PfdController::emergencyTargetSpeed() const {
+    const auto value = emergency_assist_.output().target_speed_kt;
+    return value ? QStringLiteral("%1 KT").arg(*value, 0, 'f', 0)
+                 : QStringLiteral("NOT APPROVED");
+}
+
+QString PfdController::emergencyGlideRange() const {
+    const auto value = emergency_assist_.output().conservative_range_nm;
+    if (!value) return QStringLiteral("NOT AVAILABLE");
+    const auto prefix = emergency_assist_.output().authoritative_reachability
+        ? QString{} : QStringLiteral("SIM ");
+    return prefix + QStringLiteral("%1 NM").arg(*value, 0, 'f', 1);
+}
+
+QStringList PfdController::emergencyDegradationReasons() const {
+    QStringList values;
+    for (const auto& reason : emergency_assist_.output().degradation_reasons)
+        values << QString::fromStdString(reason);
+    return values;
+}
+
+QVariantList PfdController::emergencyRankedAirports() const {
+    QVariantList values;
+    for (const auto& ranked : emergency_assist_.output().ranked_airports) {
+        values << QVariantMap{
+            {QStringLiteral("icao"), QString::fromStdString(ranked.airport.identifier)},
+            {QStringLiteral("name"), QString::fromStdString(ranked.airport.name)},
+            {QStringLiteral("distance_nm"), ranked.airport.distance_nm},
+            {QStringLiteral("bearing_deg"), ranked.airport.bearing_deg},
+            {QStringLiteral("assessment"), QString::fromLatin1(
+                efis::emergency::assessment_name(ranked.assessment))},
+            {QStringLiteral("arrival_margin_ft"), ranked.estimated_arrival_margin_ft},
+            {QStringLiteral("reason"), QString::fromStdString(ranked.reason)}};
+    }
+    return values;
+}
+
+QVariantMap PfdController::emergencyCurrentStep() const {
+    const auto& step = emergency_assist_.output().current_step;
+    if (!step) return {};
+    return {{QStringLiteral("id"), QString::fromStdString(step->id)},
+            {QStringLiteral("phase"), QString::fromStdString(step->phase)},
+            {QStringLiteral("text"), QString::fromStdString(step->text)},
+            {QStringLiteral("confirmation_required"), step->confirmation_required}};
+}
+
+int PfdController::emergencyElapsedSeconds() const {
+    if (emergency_activated_at_ == efis::MonoTime{}) return 0;
+    return static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(
+        efis::MonoClock::now() - emergency_activated_at_).count());
+}
+
+void PfdController::activateEmergencyAssist(const QString& kind, const QString& trigger) {
+    const auto now = efis::MonoClock::now();
+    emergency_activated_at_ = now;
+    emergency_assist_.activate_manual(emergencyKind(kind), trigger.toStdString(), now);
+    flushEmergencyEvents();
+    emit emergencyAssistChanged();
+}
+
+void PfdController::confirmEmergencyAssist(const QString& kind) {
+    emergency_assist_.confirm(emergencyKind(kind), efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::dismissEmergencySuspicion() {
+    emergency_assist_.dismiss_suspicion(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::acknowledgeEmergencyFly() {
+    emergency_assist_.acknowledge_fly(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::completeEmergencyStep() {
+    emergency_assist_.complete_step(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::skipEmergencyStep() {
+    emergency_assist_.skip_step(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::repeatEmergencyCue() {
+    emergency_assist_.repeat_cue(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::reportEmergencyPowerRecovered() {
+    emergency_assist_.report_power_recovered(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::continueEmergencyMonitoring() {
+    emergency_assist_.continue_monitoring(efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::cancelEmergencyAssist(const QString& reason) {
+    emergency_assist_.cancel(reason.toStdString(), efis::MonoClock::now());
+    flushEmergencyEvents(); emit emergencyAssistChanged();
+}
+
+void PfdController::updateEmergencyAssist(efis::MonoTime now) {
+    efis::emergency::AssistInput input{};
+    input.flight = snapshot_;
+    input.engine = engine_snapshot_;
+    input.environment.position_valid = snapshot_.position.latitude_deg.usable() &&
+                                       snapshot_.position.longitude_deg.usable();
+    input.environment.in_flight_known = snapshot_.position.ground_speed_kt.usable();
+    input.environment.in_flight = input.environment.in_flight_known &&
+                                  snapshot_.position.ground_speed_kt.value > 35.0;
+    const auto displayed_blackbox_state = blackBoxState();
+    input.environment.blackbox_link_valid =
+        displayed_blackbox_state == QStringLiteral("LINK LIVE") ||
+        displayed_blackbox_state == QStringLiteral("RECORDING") ||
+        displayed_blackbox_state == QStringLiteral("ONLINE");
+    input.environment.airport_database_valid = !airport_catalog_.isEmpty();
+
+    // Solo lo scenario esplicito puo' usare assunzioni sintetiche. Nel runtime
+    // normale AGL, vento, terrain-route clearance e polar restano fail-closed.
+    if (system_simulation_active_) {
+        input.environment.agl_ft = qMax(0.0, altitude() - 300.0);
+        input.environment.agl_valid = true;
+        input.environment.terrain_valid = true;
+        input.environment.obstacles_valid = true;
+        input.environment.wind_valid = true;
+        input.environment.weather_valid = true;
+        input.environment.wind_range_factor = 0.82;
+        input.performance.approved = true;
+        input.performance.simulated = true;
+        input.performance.best_glide_kt = aircraft_speed_profile_.value("bestGlide").toDouble();
+        input.performance.conservative_glide_ratio = 8.0;
+        input.performance.terrain_clearance_reserve_ft = 500.0;
+        input.performance.manoeuvre_loss_ft = 300.0;
+        input.performance.model_uncertainty_ft = 300.0;
+        input.performance.final_approach_reserve_ft = 500.0;
+        input.procedure = {"SIM-EMERGENCY-UI", "1", "EFIS SOFTWARE TEST VECTOR",
+            "SIM-NOT-FOR-FLIGHT", true,
+            {{"SIM-1", "FLY", "SIM TEST - CONFIRM FLY PANEL REVIEWED", true},
+             {"SIM-2", "NAVIGATE", "SIM TEST - CONFIRM LANDING OPTIONS REVIEWED", true},
+             {"SIM-3", "COMMUNICATE", "SIM TEST - CONFIRM COMMUNICATION DRAFT REVIEWED", true}}};
+        for (const auto& entry : nearest_airports_.mid(0, 6)) {
+            const auto airport = entry.toMap();
+            input.airports.push_back({airport.value("icao").toString().toStdString(),
+                airport.value("name").toString().toStdString(),
+                airport.value("distance_nm").toDouble(), 0.0,
+                airport.value("elevation_ft").toDouble(), 800.0, 20.0, 0.0,
+                true, true, true});
+        }
+    }
+
+    (void)emergency_assist_.update(input, now);
+    flushEmergencyEvents();
+    updateEmergencyEventSinkState(now);
+    if (++emergency_notify_ticks_ >= 12) {
+        emergency_notify_ticks_ = 0;
+        emit emergencyAssistChanged();
+    }
+}
+
+void PfdController::flushEmergencyEvents() {
+    const auto& events = emergency_assist_.events();
+    if (emergency_event_cursor_ >= events.size()) return;
+    QDir{}.mkpath(QFileInfo{emergency_event_log_path_}.absolutePath());
+    QFile file{emergency_event_log_path_};
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+        emergency_event_sink_state_ = QStringLiteral("UNAVAILABLE");
+        return;
+    }
+    for (; emergency_event_cursor_ < events.size(); ++emergency_event_cursor_) {
+        const auto& event = events[emergency_event_cursor_];
+        const auto sample = [](const efis::Sample<double>& value) {
+            return QJsonObject{{"value", value.value},
+                {"usable", efis::is_usable(value.validity)},
+                {"simulated", value.origin.simulated},
+                {"signal", QString::fromLatin1(efis::signal_name(value.origin.signal))}};
+        };
+        const QJsonObject decisionContext{
+            {"flight_snapshot_sequence", static_cast<qint64>(snapshot_.sequence)},
+            {"engine_snapshot_sequence", static_cast<qint64>(engine_snapshot_.sequence)},
+            {"roll_deg", sample(snapshot_.attitude.roll_deg)},
+            {"pitch_deg", sample(snapshot_.attitude.pitch_deg)},
+            {"heading_deg", sample(snapshot_.attitude.heading_deg)},
+            {"ias_kt", sample(snapshot_.air_data.indicated_airspeed_kt)},
+            {"pressure_altitude_ft", sample(snapshot_.air_data.pressure_altitude_ft)},
+            {"vertical_speed_fpm", sample(snapshot_.air_data.vertical_speed_fpm)},
+            {"latitude_deg", sample(snapshot_.position.latitude_deg)},
+            {"longitude_deg", sample(snapshot_.position.longitude_deg)},
+            {"engine_rpm", sample(engine_snapshot_.rpm)},
+            {"manifold_pressure_inhg", sample(engine_snapshot_.manifold_pressure_inhg)},
+            {"bus_voltage_v", sample(engine_snapshot_.bus_voltage_v)}};
+        const QJsonObject assistOutput{
+            {"headline", emergencyAssistHeadline()},
+            {"fly_advisory", emergencyFlyAdvisory()},
+            {"navigation_advisory", emergencyNavigationAdvisory()},
+            {"communication_draft", emergencyCommunicationDraft()},
+            {"voice_cue", emergencyVoiceCue()},
+            {"procedure_available", emergencyProcedureAvailable()},
+            {"data_quality", emergencyDataQuality()},
+            {"degradation_reasons",
+                QJsonArray::fromStringList(emergencyDegradationReasons())}};
+        const QJsonObject object{
+            {"schema", QStringLiteral("efis-next.emergency-event.v1")},
+            {"session_id", emergency_event_session_id_},
+            {"event_sequence", static_cast<qint64>(event.sequence)},
+            {"event_mono_ns", static_cast<qint64>(
+                 std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     event.at.time_since_epoch()).count())},
+            {"written_utc", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},
+            {"code", QString::fromStdString(event.code)},
+            {"detail", QString::fromStdString(event.detail)},
+            {"assist_state", emergencyAssistState()},
+            {"emergency_kind", emergencyAssistKind()},
+            {"simulation", emergencySimulationOnly()},
+            {"source_node", nodeId()},
+            {"snapshot_sequence", static_cast<qint64>(sequence())},
+            {"ddp_state", ddpLinkState()},
+            {"engine_data_state", engineDataState()},
+            {"blackbox_state", black_box_state_},
+            {"decision_context", decisionContext},
+            {"assist_output", assistOutput}};
+        file.write(QJsonDocument{object}.toJson(QJsonDocument::Compact));
+        file.write("\n");
+    }
+    file.flush();
+    emergency_event_sink_state_ = QStringLiteral("LOCAL SPOOL");
+}
+
+void PfdController::updateEmergencyEventSinkState(efis::MonoTime now) {
+    if (last_emergency_sink_check_ != efis::MonoTime{} &&
+        now - last_emergency_sink_check_ < 1s) return;
+    last_emergency_sink_check_ = now;
+    QFile file{emergency_forwarder_state_path_};
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+    const auto document = QJsonDocument::fromJson(file.readAll());
+    if (!document.isObject()) {
+        emergency_event_sink_state_ = QStringLiteral("FORWARDER STATE INVALID");
+        return;
+    }
+    const auto state = document.object();
+    if (state.value("schema").toString() !=
+        QStringLiteral("efis-next.emergency-forwarder-state.v1")) {
+        emergency_event_sink_state_ = QStringLiteral("FORWARDER STATE INVALID");
+        return;
+    }
+    const auto acknowledgedSession = state.value("last_session_id").toString();
+    const auto acknowledgedSequence = state.value("last_event_sequence").toInteger();
+    if (acknowledgedSession == emergency_event_session_id_ && acknowledgedSequence > 0) {
+        emergency_event_sink_state_ =
+            QStringLiteral("BLACKBOX ACK #%1").arg(acknowledgedSequence);
+    } else {
+        emergency_event_sink_state_ = QStringLiteral("LOCAL SPOOL • ACK PENDING");
+    }
 }

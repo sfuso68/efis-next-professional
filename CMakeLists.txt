@@ -9,13 +9,25 @@ option(EFIS_BUILD_TESTS "Build EFIS Next tests" ON)
 option(EFIS_BUILD_QT_RENDERER "Build the Qt Quick PFD when Qt is available" ON)
 option(EFIS_REQUIRE_QT_RENDERER "Fail configuration if the Qt Quick PFD cannot be built" OFF)
 
+if(MSVC)
+    # Core, adapters and applications use standard C++ exceptions for
+    # fail-closed validation and per-destination fault isolation.
+    add_compile_options(/EHsc)
+endif()
+
 add_library(efis_core
     src/core/alert_engine.cpp
+    src/emergency/emergency_assist.cpp
+    src/emergency/emergency_input.cpp
+    src/emergency/emergency_audio.cpp
+    src/voice/voice_assist.cpp
     src/core/flight_model.cpp
     src/core/node_health.cpp
     src/core/snapshot_arbitrator.cpp
     src/core/flight_source.cpp
     src/core/engine_source.cpp
+    src/core/engine_runtime.cpp
+    src/core/engine_runtime_store.cpp
     src/core/stasis_monitor.cpp
     src/core/cross_check.cpp
     src/recording/flight_record.cpp
@@ -25,7 +37,11 @@ add_library(efis_core
     src/display/display_model.cpp
     src/providers/simulation_provider.cpp
     src/providers/simulation_source.cpp
+    src/providers/ddp_udp_source.cpp
+    src/providers/ddp_udp_publisher.cpp
+    src/providers/edp_udp.cpp
     src/providers/engine_simulation_provider.cpp
+    src/simulation/system_simulator.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
     src/providers/esp32_can_adapter.cpp
@@ -34,11 +50,17 @@ add_library(efis_core
     src/io/socketcan_source.cpp
     src/ingest/mavlink_pipeline.cpp
     src/ingest/recording_session.cpp
+    src/ingest/blackbox_publisher_session.cpp
     src/io/byte_source.cpp
+    src/io/udp_datagram.cpp
+    src/io/readonly_udp_fanout.cpp
     src/bench/sensor_bench.cpp
     src/core/altimetry.cpp
     src/core/flight_dynamics.cpp
     src/core/signal_access.cpp
+    src/protocol/ddp_v2.cpp
+    src/protocol/ddp_session.cpp
+    src/protocol/edp_v1.cpp
     src/instruments/dial.cpp
     src/instruments/panel.cpp
     src/instruments/panel_store.cpp
@@ -47,6 +69,9 @@ add_library(efis_core
 )
 target_include_directories(efis_core PUBLIC include)
 target_compile_features(efis_core PUBLIC cxx_std_20)
+if(WIN32)
+    target_link_libraries(efis_core PRIVATE ws2_32)
+endif()
 
 if(MSVC)
     target_compile_options(efis_core PRIVATE /W4 /permissive-)
@@ -62,6 +87,15 @@ target_link_libraries(efis-can-monitor PRIVATE efis_core)
 
 add_executable(efis-recorder src/apps/efis_recorder_main.cpp)
 target_link_libraries(efis-recorder PRIVATE efis_core)
+
+add_executable(efis-simulator src/apps/efis_simulator_main.cpp)
+target_link_libraries(efis-simulator PRIVATE efis_core)
+
+add_executable(efis-ddp-bench-publisher src/apps/efis_ddp_bench_publisher_main.cpp)
+target_link_libraries(efis-ddp-bench-publisher PRIVATE efis_core)
+
+add_executable(efis-blackbox-broker src/apps/efis_blackbox_broker_main.cpp)
+target_link_libraries(efis-blackbox-broker PRIVATE efis_core)
 
 add_library(efis_reference_renderer src/display/svg_pfd_renderer.cpp)
 target_include_directories(efis_reference_renderer PUBLIC include)
@@ -96,6 +130,8 @@ if(EFIS_BUILD_QT_RENDERER)
             src/renderers/qt/weather_service.hpp
             src/renderers/qt/sensor_bench_controller.cpp
             src/renderers/qt/sensor_bench_controller.hpp
+            src/setup/operational_profile_model.cpp
+            src/setup/operational_profile_model.hpp
         )
         qt_add_qml_module(efis-pfd-qt
             URI EfisNext
@@ -121,6 +157,9 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/AdaptiveFpvView.qml
                 qml/AdaptiveShell.qml
                 qml/AdaptiveEmsView.qml
+                qml/EmsSetupOverlay.qml
+                qml/OperationalProfileSetup.qml
+                qml/EfisTouchKeyboard.qml
                 qml/Theme.qml
                 qml/GpuMapSurface.qml
                 qml/WeatherRadarOverlay.qml
@@ -131,7 +170,14 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/TerrainTile3D.qml
                 qml/ProfessionalSystemsDeck.qml
                 qml/ProfessionalCircularGauge.qml
+                qml/EmsGaugeV3.qml
+                qml/EngineTemperatureBars.qml
+                qml/EmsVectorIcon.qml
                 qml/AdaptiveCanvasView.qml
+                qml/SystemSimulatorOverlay.qml
+                qml/EmergencyFlightSupport.qml
+                qml/EmergencyAssistView.qml
+                qml/RadioAssistView.qml
             RESOURCES
                 qml/shaders/terrain_taws.frag
         )
@@ -237,6 +283,42 @@ if(EFIS_BUILD_TESTS)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)
     add_test(NAME efis_safety_tests COMMAND efis_safety_tests)
 
+    add_executable(efis_emergency_assist_tests tests/emergency_assist_tests.cpp)
+    target_link_libraries(efis_emergency_assist_tests PRIVATE efis_core)
+    add_test(NAME efis_emergency_assist_tests COMMAND efis_emergency_assist_tests)
+
+    add_executable(efis_emergency_io_tests tests/emergency_io_tests.cpp)
+    target_link_libraries(efis_emergency_io_tests PRIVATE efis_core)
+    add_test(NAME efis_emergency_io_tests COMMAND efis_emergency_io_tests)
+
+    add_executable(efis_voice_assist_tests tests/voice_assist_tests.cpp)
+    target_link_libraries(efis_voice_assist_tests PRIVATE efis_core)
+    add_test(NAME efis_voice_assist_tests COMMAND efis_voice_assist_tests)
+
+    find_package(Python3 QUIET COMPONENTS Interpreter)
+    if(Python3_Interpreter_FOUND)
+        add_test(NAME efis_emergency_event_transport_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/blackbox/test_emergency_event_transport.py)
+        add_test(NAME efis_voice_replay_adapter_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/voice/test_vosk_replay_adapter.py)
+        add_test(NAME efis_mavlink_observer_policy_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_gateway.py)
+        add_test(NAME efis_mavlink_observer_sink_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_sink.py)
+        add_test(NAME efis_qgc_monitor_preflight_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_qgc_monitor_preflight.py)
+        add_test(NAME efis_udp_port_holder_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_udp_port_holder.py)
+        add_test(NAME efis_mavlink_observer_soak_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_soak.py)
+        add_test(NAME efis_qgc_monitor_status_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_qgc_monitor_status.py)
+        add_test(NAME efis_blackbox_broker_observer_tests
+            COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_blackbox_broker_observer.py
+                $<TARGET_FILE:efis-blackbox-broker>)
+    endif()
+
     add_executable(efis_ingest_tests tests/ingest_tests.cpp)
     target_link_libraries(efis_ingest_tests PRIVATE efis_core)
     target_compile_definitions(efis_ingest_tests PRIVATE
@@ -261,6 +343,28 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_arbitration_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_arbitration_tests COMMAND efis_arbitration_tests)
+
+    add_executable(efis_system_simulator_tests tests/system_simulator_tests.cpp)
+    target_link_libraries(efis_system_simulator_tests PRIVATE efis_core)
+    add_test(NAME efis_system_simulator_tests COMMAND efis_system_simulator_tests)
+
+    add_executable(efis_ddp_v2_tests tests/ddp_v2_tests.cpp)
+    target_link_libraries(efis_ddp_v2_tests PRIVATE efis_core)
+    add_test(NAME efis_ddp_v2_tests COMMAND efis_ddp_v2_tests)
+
+    add_executable(efis_ddp_udp_tests tests/ddp_udp_tests.cpp)
+    target_link_libraries(efis_ddp_udp_tests PRIVATE efis_core)
+    add_test(NAME efis_ddp_udp_tests COMMAND efis_ddp_udp_tests)
+
+    add_executable(efis_mavlink_observer_fanout_tests
+        tests/mavlink_observer_fanout_tests.cpp)
+    target_link_libraries(efis_mavlink_observer_fanout_tests PRIVATE efis_core)
+    add_test(NAME efis_mavlink_observer_fanout_tests
+        COMMAND efis_mavlink_observer_fanout_tests)
+
+    add_executable(efis_edp_v1_tests tests/edp_v1_tests.cpp)
+    target_link_libraries(efis_edp_v1_tests PRIVATE efis_core)
+    add_test(NAME efis_edp_v1_tests COMMAND efis_edp_v1_tests)
 endif()
 
 # --- Nodo EMS ---------------------------------------------------------------
@@ -287,6 +391,8 @@ if(EFIS_BUILD_EMS_NODE)
             src/nodes/ems/capture_request.hpp
             src/renderers/qt/circular_gauge_item.cpp
             src/renderers/qt/circular_gauge_item.hpp
+            src/setup/operational_profile_model.cpp
+            src/setup/operational_profile_model.hpp
         )
         qt_add_qml_module(efis-ems-qt
             URI EfisNextEms
@@ -296,6 +402,12 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/AdaptiveEmsView.qml
                 qml/CommandRail.qml
                 qml/ProfessionalCircularGauge.qml
+                qml/EmsGaugeV3.qml
+                qml/EngineTemperatureBars.qml
+                qml/EmsVectorIcon.qml
+                qml/EmsSetupOverlay.qml
+                qml/OperationalProfileSetup.qml
+                qml/EfisTouchKeyboard.qml
                 qml/Theme.qml
         )
         target_include_directories(efis-ems-qt PRIVATE
@@ -320,4 +432,24 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_engine_tests tests/engine_tests.cpp)
     target_link_libraries(efis_engine_tests PRIVATE efis_core)
     add_test(NAME efis_engine_tests COMMAND efis_engine_tests)
+
+    add_executable(efis_engine_runtime_tests tests/engine_runtime_tests.cpp)
+    target_link_libraries(efis_engine_runtime_tests PRIVATE efis_core)
+    add_test(NAME efis_engine_runtime_tests COMMAND efis_engine_runtime_tests)
+
+    add_executable(efis_engine_runtime_store_tests tests/engine_runtime_store_tests.cpp)
+    target_link_libraries(efis_engine_runtime_store_tests PRIVATE efis_core)
+    add_test(NAME efis_engine_runtime_store_tests COMMAND efis_engine_runtime_store_tests)
+
+    if(TARGET Qt6::Core)
+        add_executable(efis_operational_profile_model_tests
+            tests/operational_profile_model_tests.cpp
+            src/setup/operational_profile_model.cpp
+            src/setup/operational_profile_model.hpp)
+        target_include_directories(efis_operational_profile_model_tests PRIVATE src/setup)
+        target_link_libraries(efis_operational_profile_model_tests PRIVATE Qt6::Core)
+        target_compile_definitions(efis_operational_profile_model_tests PRIVATE
+            EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+        add_test(NAME efis_operational_profile_model_tests COMMAND efis_operational_profile_model_tests)
+    endif()
 endif()

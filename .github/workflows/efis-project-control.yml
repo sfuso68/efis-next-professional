@@ -1,0 +1,52 @@
+name: EFIS Project Control
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'work/**'
+      - 'integration/**'
+      - 'docs/**'
+
+permissions:
+  contents: read
+
+jobs:
+  project-control:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Validate matrix and generated status
+        run: python tools/project_status/generate_status.py --check
+
+      - name: Determine changed files
+        id: changes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+              BASE="HEAD^"
+            fi
+          fi
+          git diff --name-only "$BASE" HEAD > /tmp/efis_changed_files.txt
+          cat /tmp/efis_changed_files.txt
+
+      - name: Require project status update for subsystem changes
+        run: |
+          python tools/project_status/check_status_update.py --file-list /tmp/efis_changed_files.txt
+
+      - name: Show generated summary
+        run: cat docs/status/EFIS_NEXT_STATUS_GENERATED.md

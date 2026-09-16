@@ -1,6 +1,7 @@
 #include "efis/core/node_health.hpp"
 
 #include <algorithm>
+#include <utility>
 
 namespace efis {
 
@@ -48,11 +49,15 @@ HeartbeatVerdict NodeHealthMonitor::heartbeat(NodeId node, MonoTime at,
         return HeartbeatVerdict::regressed;
     }
 
+    const NodeState previous = status->state;
     const std::uint64_t gap = sequence - status->last_sequence - 1;
     ++status->accepted;
     status->last_sequence = sequence;
     status->last_accepted = at;
     status->state = NodeState::online;
+    if (previous == NodeState::stale || previous == NodeState::lost) {
+        pending_changes_.push_back({node, previous, NodeState::online, at});
+    }
     if (gap > 0) {
         status->missed += gap;
         return HeartbeatVerdict::accepted_after_gap;
@@ -61,7 +66,11 @@ HeartbeatVerdict NodeHealthMonitor::heartbeat(NodeId node, MonoTime at,
 }
 
 std::vector<NodeStateChange> NodeHealthMonitor::update(MonoTime now) {
-    std::vector<NodeStateChange> changes;
+    // Le riprese sono prodotte dal battito, i peggioramenti dal trascorrere del
+    // tempo. Restituiamo entrambi nello stesso canale affinche' adapter,
+    // recorder e diagnostica non possano perdere meta' della sequenza.
+    std::vector<NodeStateChange> changes = std::move(pending_changes_);
+    pending_changes_.clear();
     for (NodeStatus& status : nodes_) {
         // Un nodo mai sentito resta `unknown`: il tempo trascorso non lo rende
         // "perso", perche' non c'e' stato nulla da perdere. Uscira' da questo

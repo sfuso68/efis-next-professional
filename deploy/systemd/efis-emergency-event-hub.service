@@ -1,0 +1,21 @@
+[Unit]
+Description=EFIS Emergency Assist event persistence hub
+After=network.target
+
+[Service]
+Type=simple
+User=blackbox
+Group=blackbox
+ExecStart=/usr/bin/python3 /opt/efis-blackbox/emergency_event_hub.py --bind 10.77.10.2 --port 18094 --database /var/lib/blackbox/emergency/emergency-events.sqlite3 --tokens /etc/blackbox/emergency-event-tokens.json
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+UMask=0027
+ReadWritePaths=/var/lib/blackbox/emergency
+RestrictAddressFamilies=AF_UNIX AF_INET
+
+[Install]
+WantedBy=blackbox.target

@@ -112,9 +112,12 @@ FlightSnapshot SnapshotArbitrator::combine(
     std::span<const SnapshotContribution> contributions, MonoTime now) {
     FlightSnapshot out{};
 
-    auto record = [&](const std::optional<SourceChangeEvent>& change) {
+    auto record = [&](SignalId signal,
+                      const std::optional<SourceChangeEvent>& change) {
         if (!change.has_value()) return;
-        events_.push_back(*change);
+        SourceChangeEvent event = *change;
+        event.signal = signal;
+        events_.push_back(event);
         switch (change->reason) {
             case SourceChangeReason::failover: ++statistics_.failovers; break;
             case SourceChangeReason::reversion: ++statistics_.reversions; break;
@@ -144,7 +147,7 @@ FlightSnapshot SnapshotArbitrator::combine(
         }
         auto result = numeric_[field].select(numeric_candidates, now);
         access.write(out) = result.selected;
-        record(result.change);
+        record(access.signal, result.change);
     }
 
     std::vector<Sample<bool>> discrete_candidates;
@@ -159,7 +162,7 @@ FlightSnapshot SnapshotArbitrator::combine(
         }
         auto result = discrete_[field].select(discrete_candidates, now);
         access.write(out) = result.selected;
-        record(result.change);
+        record(access.signal, result.change);
     }
 
     // Salute e allarmi non si arbitrano: dipendono dal risultato dell'arbitrato

@@ -1,6 +1,7 @@
 #include "weather_service.hpp"
 
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QFile>
 #include <QJsonArray>
@@ -22,6 +23,14 @@ QNetworkRequest weatherRequest(const QUrl& url) {
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("EFIS-Next/0.1 weather-service"));
     request.setTransferTimeout(12000);
     return request;
+}
+
+QString simulationPath(const QString& name) {
+    auto root = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    if (root.isEmpty()) root = QDir::tempPath();
+    root += QStringLiteral("/efis-next/weather-simulation");
+    QDir().mkpath(root);
+    return root + QLatin1Char('/') + name;
 }
 }
 
@@ -146,6 +155,8 @@ void WeatherService::updateScenario(int stage) {
 
 void WeatherService::generateSimulation() {
     if (!simulation_) return;
+    QElapsedTimer callbackElapsed;
+    callbackElapsed.start();
     QImage image(256, 256, QImage::Format_ARGB32_Premultiplied);
     image.fill(Qt::transparent);
     QPainter painter(&image);
@@ -164,10 +175,11 @@ void WeatherService::generateSimulation() {
     drawCell(QPoint(205-drift/3,196),28,cappi?QColor(80,100,220,120):QColor(30,200,80,115),QColor(255,170,20,185));
     painter.end();
     const auto filename = QStringLiteral("radar-sim-%1.png").arg(radar_product_.toLower());
-    QSaveFile file(cachePath(filename));
+    const auto framePath = simulationPath(filename);
+    QSaveFile file(framePath);
     if (file.open(QIODevice::WriteOnly) && image.save(&file,"PNG") && file.commit()) {
         radar_time_ = QDateTime::currentDateTimeUtc();
-        radar_source_ = QUrl::fromLocalFile(cachePath(filename)).toString()+QStringLiteral("?v=")+QString::number(++simulation_phase_);
+        radar_source_ = QUrl::fromLocalFile(framePath).toString()+QStringLiteral("?v=")+QString::number(++simulation_phase_);
         radar_state_ = QStringLiteral("SIMULATED");
         radar_message_ = QStringLiteral("Animated training weather • not observed data");
     }
@@ -180,6 +192,12 @@ void WeatherService::generateSimulation() {
         QVariantMap{{QStringLiteral("icao"),QStringLiteral("LIPZ")},{QStringLiteral("metar"),QStringLiteral("SIM METAR LIPZ 181950Z 15011KT 8000 SCT020 22/18 Q1011")},{QStringLiteral("category"),QStringLiteral("MVFR")},{QStringLiteral("observed"),QStringLiteral("SIM")},{QStringLiteral("taf"),QStringLiteral("SIM TAF LIPZ 181700Z 1818/1918 16012KT 7000 SHRA SCT018 TEMPO 1821/1903 TSRA BKN010CB")},{QStringLiteral("simulated"),true}}
     };
     emit changed();
+    const auto callbackMilliseconds = callbackElapsed.elapsed();
+    if (callbackMilliseconds >= 100) {
+        qWarning().noquote()
+            << "event=callback_stall callback=weather_simulation duration_ms="
+            << callbackMilliseconds;
+    }
 }
 
 void WeatherService::updatePosition(double latitude, double longitude) {

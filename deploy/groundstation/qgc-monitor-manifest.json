@@ -1,0 +1,30 @@
+{
+  "schema": "efis-next.qgc-monitor-manifest.v2",
+  "mode": "MONITOR_ONLY_NO_PIXHAWK_RETURN",
+  "application": "QGroundControl",
+  "version": "5.0.8",
+  "appimage": {
+    "path": "~/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppImage",
+    "sha256": "06969c67ef58ea063def0a8271447a1cc385438c4a7df36813315b4475146737"
+  },
+  "appdir": {
+    "path": "~/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppDir",
+    "tree_sha256": "34b0f67710f20ed380848185028dd8cbe5ad356caa1f99bfae7cc78a0f29271c",
+    "file_count": 1081,
+    "symlink_count": 74,
+    "directory_count": 336,
+    "file_bytes": 471337419
+  },
+  "executable": "~/EFIS-ArduPilot/qgroundcontrol/QGroundControl-5.0.8-x86_64.AppDir/AppRun",
+  "runtime_preload": {
+    "path": "/lib/x86_64-linux-gnu/libglib-2.0.so.0",
+    "required_symbol": "g_string_free_and_steal",
+    "reason": "QGC AppDir GLib is older than Debian 13 libspeechd2 requirements"
+  },
+  "listener": {
+    "bind": "0.0.0.0",
+    "port": 14550,
+    "allowed_source": "192.168.1.47"
+  },
+  "legacy_unit": "efis-mavlink-readonly-bridge.service"
+}

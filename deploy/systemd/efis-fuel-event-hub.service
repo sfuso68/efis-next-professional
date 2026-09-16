@@ -1,0 +1,20 @@
+[Unit]
+Description=EFIS central fuel event blackbox hub
+After=network.target
+
+[Service]
+Type=simple
+User=blackbox
+Group=blackbox
+ExecStart=/usr/bin/python3 /opt/efis-blackbox/fuel_event_hub.py --bind 0.0.0.0 --port 18093 --database /var/lib/blackbox/ethernet/fuel-events.sqlite3 --tokens /etc/blackbox/fuel-event-tokens.json --maintenance-script /opt/efis-blackbox/fuel_event_maintenance.py --root /var/lib/blackbox/ethernet --key /etc/blackbox/archive-signing.key --export-root /media/blackbox/EFIS_EXPORT
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/blackbox/ethernet
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=blackbox.target

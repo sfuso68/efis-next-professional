@@ -1,0 +1,17 @@
+table inet efis_avionics {
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+
+        # Avionics nodes are endpoints, never routers between operational and
+        # recovery/service networks. The counter provides fault evidence.
+        counter
+    }
+
+    chain output {
+        type filter hook output priority filter; policy accept;
+
+        # Never let FLIGHT-DATA destinations follow a recovery/default route.
+        # The counter is part of the operational evidence and fault diagnostics.
+        ip daddr 10.77.10.0/24 oifname != "eth0" counter reject with icmp type admin-prohibited
+    }
+}

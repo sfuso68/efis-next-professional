@@ -1,0 +1,22 @@
+[Unit]
+Description=EFIS Emergency Assist event forwarder
+After=network-online.target
+
+[Service]
+Type=simple
+User=EFIS_USER
+Group=EFIS_USER
+StateDirectory=efis
+EnvironmentFile=/etc/efis/emergency-event-forwarder.conf
+ExecStart=/usr/bin/python3 /opt/efis/emergency_event_forwarder.py --journal ${EFIS_EMERGENCY_JOURNAL} --state /var/lib/efis/emergency-forwarder-state.json --url http://10.77.10.2:18094 --source ${EFIS_NODE_ID} --token-file /etc/efis/emergency-event.token
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+UMask=0027
+ReadWritePaths=/var/lib/efis
+RestrictAddressFamilies=AF_UNIX AF_INET
+
+[Install]
+WantedBy=multi-user.target

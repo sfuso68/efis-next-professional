@@ -1,5 +1,5 @@
 {
-  "catalog_version": "1.0.0-seed",
+  "catalog_version": "2.0.0-seed",
   "generated_from": "EFIS NEXT controlled seed",
   "sources": [
     {
@@ -8,9 +8,48 @@
       "publisher": "Fuso Avionics",
       "document_ref": "AircraftDB.h / EngineDB.h",
       "source_class": "LEGACY"
+    },
+    {
+      "key": "owner-declaration-2026-09-09",
+      "title": "Asso V Jolly installed-aircraft owner declaration",
+      "publisher": "Aircraft owner",
+      "document_ref": "EFIS NEXT configuration interview",
+      "revision": "2026-09-09",
+      "retrieved_at": "2026-09-09",
+      "source_class": "OWNER"
+    },
+    {
+      "key": "rotax-912-ul-manual-pending",
+      "title": "ROTAX 912 UL operating and installation documents",
+      "publisher": "BRP-Rotax",
+      "document_ref": "Exact current document/revision/page set required before VERIFIED",
+      "source_class": "OFFICIAL"
+    },
+    {
+      "key": "simulation-analogue-2026-09-09",
+      "title": "EFIS NEXT synthetic Asso V Jolly simulation dataset",
+      "publisher": "EFIS NEXT project",
+      "document_ref": "Generated simulation scenario using non-applicable analogue cues; never valid for flight",
+      "revision": "1",
+      "url": "https://www.alpiaviation.com/en/airplane/pioneer-300/",
+      "retrieved_at": "2026-09-09",
+      "source_class": "SECONDARY"
     }
   ],
   "engines": [
+    {
+      "manufacturer": "Rotax",
+      "family": "912",
+      "model": "912 UL",
+      "variant": "",
+      "cylinders": 4,
+      "power_hp": 80,
+      "rpm_max": 5800,
+      "fuel_type": "MOGAS/AVGAS",
+      "status": "INDICATIVE",
+      "source": "legacy-indicative",
+      "limits": []
+    },
     {
       "manufacturer": "Rotax",
       "family": "912",
@@ -55,4 +94,3 @@
     }
   ]
 }
-

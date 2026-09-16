@@ -1,0 +1,15 @@
+[Unit]
+Description=FUSO AVIONICS - Attivazione CAN bus (can1)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=-/sbin/ip link set can1 down
+ExecStart=/sbin/ip link set can1 up type can bitrate 500000
+ExecStart=/sbin/ip link set can1 txqueuelen 1000
+ExecStop=/sbin/ip link set can1 down
+
+[Install]
+WantedBy=multi-user.target

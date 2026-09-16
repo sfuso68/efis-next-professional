@@ -32,6 +32,7 @@ void CircularGaugeItem::assign(double& target,double value){if(qFuzzyCompare(tar
 void CircularGaugeItem::setValue(double v){assign(value_,v);} void CircularGaugeItem::setMinimum(double v){assign(minimum_,v);}
 void CircularGaugeItem::setMaximum(double v){assign(maximum_,v);} void CircularGaugeItem::setGreenStart(double v){assign(green_start_,v);}
 void CircularGaugeItem::setGreenEnd(double v){assign(green_end_,v);}
+void CircularGaugeItem::setMajorStep(double v){assign(major_step_,v);} void CircularGaugeItem::setMinorStep(double v){assign(minor_step_,v);}
 
 QSGNode* CircularGaugeItem::updatePaintNode(QSGNode* oldNode,UpdatePaintNodeData*){
     delete oldNode; auto* root=new QSGNode; const double w=width(),h=height(); if(w<=0||h<=0)return root;
@@ -48,9 +49,21 @@ QSGNode* CircularGaugeItem::updatePaintNode(QSGNode* oldNode,UpdatePaintNodeData
     root->appendChildNode(line(arc(c,radius,gs,ge),QColor{"#62D347"},rangeWidth));
     if(ge<.9)root->appendChildNode(line(arc(c,radius,ge,.9),QColor{"#E6A72E"},rangeWidth));
     root->appendChildNode(line(arc(c,radius,std::max(.9,ge),1),QColor{"#DF4138"},rangeWidth));
-    Points ticks;
-    for(int i=0;i<=30;++i){const double a=gaugeAngle(i/30.0);const double inner=radius-(i%5==0?10:5);ticks.emplace_back(c.x()+std::cos(a)*inner,c.y()+std::sin(a)*inner);ticks.emplace_back(c.x()+std::cos(a)*(radius+1),c.y()+std::sin(a)*(radius+1));}
-    root->appendChildNode(line(ticks,QColor{"#E8F1F3"},radius<35?0.75F:1.0F,QSGGeometry::DrawLines));
+    Points minorTicks, mediumTicks, majorTicks;
+    const auto step = std::max(0.001, minor_step_);
+    const int tickCount = std::min(160, static_cast<int>(std::floor(span / step + .5)));
+    for(int i=0;i<=tickCount;++i){
+        const double tickValue=minimum_+i*step; const double f=(tickValue-minimum_)/span;
+        const double a=gaugeAngle(f); const double majorRatio=major_step_/step;
+        const bool major=majorRatio>0.5 && std::abs(i/majorRatio-std::round(i/majorRatio))<.08;
+        const bool medium=!major && i%5==0; const double length=major?radius*.19:medium?radius*.13:radius*.075;
+        auto& target=major?majorTicks:medium?mediumTicks:minorTicks;
+        target.emplace_back(c.x()+std::cos(a)*(radius-length),c.y()+std::sin(a)*(radius-length));
+        target.emplace_back(c.x()+std::cos(a)*(radius+1),c.y()+std::sin(a)*(radius+1));
+    }
+    if(!minorTicks.empty()) root->appendChildNode(line(minorTicks,QColor{"#AFC2CB"},.8F,QSGGeometry::DrawLines));
+    if(!mediumTicks.empty()) root->appendChildNode(line(mediumTicks,QColor{"#D9E8ED"},1.2F,QSGGeometry::DrawLines));
+    if(!majorTicks.empty()) root->appendChildNode(line(majorTicks,QColor{"#FFFFFF"},1.8F,QSGGeometry::DrawLines));
     const double a=gaugeAngle((value_-minimum_)/span);
     const float needleWidth=static_cast<float>(std::clamp(radius*.045,1.2,2.8));
     root->appendChildNode(line({{c.x()+1,c.y()+1},{c.x()+std::cos(a)*(radius-10)+1,c.y()+std::sin(a)*(radius-10)+1}},QColor{"#55000000"},needleWidth+1.5F,QSGGeometry::DrawLines));

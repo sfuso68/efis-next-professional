@@ -121,8 +121,10 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: tape.rightSide ? parent.right : undefined
         anchors.left: tape.rightSide ? undefined : parent.left
-        // ALT owns the inner 89 px; the outer 34 px are reserved for VS.
-        anchors.rightMargin: tape.rightSide ? 39*tape.uiScale : 0
+        // ALT e VS devono restare due letture distinte anche sul 1024x600: una
+        // fascia vuota separa i due riquadri invece di farli sembrare un unico
+        // numero composto.
+        anchors.rightMargin: tape.rightSide ? 45*tape.uiScale : 0
         anchors.leftMargin: tape.rightSide ? 0 : 5*tape.uiScale
         width: (tape.role === "IAS" ? 66 : 76)*tape.uiScale; height: 50*tape.uiScale
         color: "#A0061018"; border.color: "transparent"; border.width: 0; radius: 2*tape.uiScale
@@ -164,7 +166,8 @@ Rectangle {
     }
 
     Rectangle { visible: tape.rightSide; anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
-        width: 34*tape.uiScale; color: "transparent"; border.color: "#55476171"
+        width: 31*tape.uiScale; color: "transparent"; border.color: "transparent"
+        Rectangle { anchors { left: parent.left; top: parent.top; bottom: parent.bottom } width: 1*tape.uiScale; color: "#7A91A1" }
         Text { anchors { top: parent.top; horizontalCenter: parent.horizontalCenter; topMargin: 8*tape.uiScale } text: "VS"; color: theme.secondary; font.pixelSize: 7*tape.uiScale; font.bold: true }
         Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 36*tape.uiScale;
             color: "#F003080D"; border.color: theme.borderBright

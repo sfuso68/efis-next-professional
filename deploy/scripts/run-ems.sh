@@ -34,6 +34,12 @@ if [ "$QT_QPA_PLATFORM" = wayland ]; then
 fi
 export EFIS_KIOSK=1
 export QSG_RENDER_LOOP="${QSG_RENDER_LOOP:-threaded}"
+# Il nodo EMS di banco ascolta soltanto sull'interfaccia FLIGHT-DATA. I valori
+# possono essere sostituiti dal servizio, ma non devono ricadere su 0.0.0.0 o
+# sulla WLAN di recovery se il drop-in locale non e' ancora installato.
+export EFIS_EDP_BIND="${EFIS_EDP_BIND:-10.77.10.12}"
+export EFIS_EDP_PORT="${EFIS_EDP_PORT:-49003}"
+export EFIS_EDP_SOURCE_NODE="${EFIS_EDP_SOURCE_NODE:-47}"
 
 printf '%s event=launcher_start node=ems binary=%s\n' \
     "$(date --iso-8601=seconds)" "$binary" >> "$log_dir/ems.log"

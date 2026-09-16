@@ -1,0 +1,19 @@
+{
+  "schema": "efis-next.voice-assist-config.v1",
+  "enabled": false,
+  "profile": "DEVELOPMENT",
+  "activation": "PUSH_TO_TALK_ONLY",
+  "recognizer_adapter": "NONE",
+  "audio_input_adapter": "NONE",
+  "audio_output_adapter": "NONE",
+  "raw_audio_retention": "DISABLED",
+  "minimum_confidence": 0.82,
+  "minimum_confidence_status": "SIMULATION_DEFAULT_NOT_VALIDATED",
+  "free_form_command_execution": false,
+  "radio_transmission_allowed": false,
+  "pixhawk_command_allowed": false,
+  "actuation_allowed": false,
+  "languages": ["it-IT", "en-GB"],
+  "deployment_candidate": "BLACKBOX_RPI5_RESOURCE_LIMITED",
+  "fallback": "TOUCH_AND_PAPER_PROCEDURES"
+}

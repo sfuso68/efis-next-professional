@@ -43,22 +43,24 @@ engine::EngineSnapshot EngineSimulationProvider::sample(
     const double phase = seconds + static_cast<double>(seed_ % 90U);
     engine::EngineSnapshot out;
     out.sequence = sequence_; out.timestamp = now; out.injected_fault = fault_;
-    out.rpm = simulated(2380.0 + 35.0 * std::sin(phase * 0.22), SignalId::engine_rpm, Unit::revolutions_per_minute, now, sequence_);
-    out.manifold_pressure_inhg = simulated(23.7 + 0.25 * std::sin(phase * 0.13), SignalId::manifold_pressure, Unit::inch_mercury, now, sequence_);
-    out.oil_pressure_psi = simulated(72.0 + 1.5 * std::sin(phase * 0.31), SignalId::oil_pressure, Unit::pound_per_square_inch, now, sequence_);
-    out.oil_temperature_c = simulated(94.0 + 2.0 * std::sin(phase * 0.07), SignalId::oil_temperature, Unit::celsius, now, sequence_);
-    out.fuel_pressure_psi = simulated(5.2 + 0.08 * std::sin(phase * 0.41), SignalId::fuel_pressure, Unit::pound_per_square_inch, now, sequence_);
-    out.fuel_flow_gph = simulated(9.6 + 0.15 * std::sin(phase * 0.17), SignalId::fuel_flow, Unit::gallon_per_hour, now, sequence_);
-    out.fuel_left_gal = simulated(std::max(0.0, 18.0 - seconds / 7200.0), SignalId::fuel_quantity_left, Unit::gallon, now, sequence_);
-    out.fuel_right_gal = simulated(std::max(0.0, 18.0 - seconds / 7200.0), SignalId::fuel_quantity_right, Unit::gallon, now, sequence_);
+    // Banco Rotax 912 UL indicativo: questi valori servono a provare scale,
+    // trend e allarmi. Non sostituiscono i limiti del manuale del motore.
+    out.rpm = simulated(5000.0 + 65.0 * std::sin(phase * 0.22), SignalId::engine_rpm, Unit::revolutions_per_minute, now, sequence_);
+    out.manifold_pressure_inhg = simulated(24.5 + 0.25 * std::sin(phase * 0.13), SignalId::manifold_pressure, Unit::inch_mercury, now, sequence_);
+    out.oil_pressure_psi = simulated(58.0 + 1.5 * std::sin(phase * 0.31), SignalId::oil_pressure, Unit::pound_per_square_inch, now, sequence_);
+    out.oil_temperature_c = simulated(96.0 + 2.0 * std::sin(phase * 0.07), SignalId::oil_temperature, Unit::celsius, now, sequence_);
+    out.fuel_pressure_psi = simulated(4.6 + 0.08 * std::sin(phase * 0.41), SignalId::fuel_pressure, Unit::pound_per_square_inch, now, sequence_);
+    out.fuel_flow_gph = simulated(4.8 + 0.15 * std::sin(phase * 0.17), SignalId::fuel_flow, Unit::gallon_per_hour, now, sequence_);
+    out.fuel_left_gal = simulated(std::max(0.0, 10.57 - seconds * 2.4 / 3600.0), SignalId::fuel_quantity_left, Unit::gallon, now, sequence_);
+    out.fuel_right_gal = simulated(std::max(0.0, 10.57 - seconds * 2.4 / 3600.0), SignalId::fuel_quantity_right, Unit::gallon, now, sequence_);
     out.bus_voltage_v = simulated(14.1 + 0.08 * std::sin(phase * 0.19), SignalId::bus_voltage, Unit::volt, now, sequence_);
     out.alternator_current_a = simulated(18.0 + 1.2 * std::sin(phase * 0.27), SignalId::alternator_current, Unit::ampere, now, sequence_);
     for (std::size_t index = 0; index < out.cht_c.size(); ++index) {
-        out.cht_c[index] = simulated(178.0 + static_cast<double>(index) * 3.0 +
+        out.cht_c[index] = simulated(105.0 + static_cast<double>(index) * 1.5 +
             2.0 * std::sin(phase * 0.09 + static_cast<double>(index)),
             cylinder_signal(SignalId::cylinder_head_temperature_1, index),
             Unit::celsius, now, sequence_);
-        out.egt_c[index] = simulated(730.0 + static_cast<double>(index) * 6.0 +
+        out.egt_c[index] = simulated(780.0 + static_cast<double>(index) * 6.0 +
             5.0 * std::sin(phase * 0.11 + static_cast<double>(index)),
             cylinder_signal(SignalId::exhaust_gas_temperature_1, index),
             Unit::celsius, now, sequence_);

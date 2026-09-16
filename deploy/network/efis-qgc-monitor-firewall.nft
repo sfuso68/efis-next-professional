@@ -1,0 +1,18 @@
+table inet efis_qgc_monitor {
+    chain input {
+        type filter hook input priority -10; policy accept;
+
+        # QGC may receive the observer copy only from the Blackbox service LAN.
+        ip daddr 192.168.1.39 udp dport 14550 ip saddr != 192.168.1.47 counter drop
+    }
+
+    chain output {
+        type filter hook output priority -10; policy accept;
+
+        # Defense in depth: the Ground Station never reaches FLIGHT-DATA and
+        # no QGC UDP request may return to the Blackbox. TCP administration on
+        # the service LAN remains outside this narrow table.
+        ip daddr 10.77.10.0/24 counter drop
+        ip daddr 192.168.1.47 meta l4proto udp counter drop
+    }
+}

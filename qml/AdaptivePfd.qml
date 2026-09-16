@@ -58,5 +58,5 @@ Item {
     }
 
     ProfessionalSystemsDeck { id: dock; engineDataState: controller.engineDataState; anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
-        height: 140*root.uiScale; uiScale: root.uiScale; controller: root.controller }
+        height: 155*root.uiScale; uiScale: root.uiScale; controller: root.controller }
 }

@@ -1,0 +1,113 @@
+{
+  "areas": {
+    "AIR": {
+      "items": 3,
+      "progress": 33.3
+    },
+    "BBX": {
+      "items": 4,
+      "progress": 50.0
+    },
+    "CFG": {
+      "items": 1,
+      "progress": 50.0
+    },
+    "CORE": {
+      "items": 4,
+      "progress": 87.5
+    },
+    "EMS": {
+      "items": 4,
+      "progress": 50.0
+    },
+    "ESP": {
+      "items": 2,
+      "progress": 25.0
+    },
+    "FPV": {
+      "items": 3,
+      "progress": 16.7
+    },
+    "GNSS": {
+      "items": 2,
+      "progress": 50.0
+    },
+    "GS": {
+      "items": 3,
+      "progress": 66.7
+    },
+    "INST": {
+      "items": 2,
+      "progress": 87.5
+    },
+    "LEG": {
+      "items": 2,
+      "progress": 100.0
+    },
+    "MFD": {
+      "items": 1,
+      "progress": 50.0
+    },
+    "NAV": {
+      "items": 3,
+      "progress": 50.0
+    },
+    "NET": {
+      "items": 1,
+      "progress": 50.0
+    },
+    "PAN": {
+      "items": 4,
+      "progress": 12.5
+    },
+    "PFD": {
+      "items": 3,
+      "progress": 50.0
+    },
+    "PIX": {
+      "items": 3,
+      "progress": 33.3
+    },
+    "PROD": {
+      "items": 5,
+      "progress": 20.0
+    },
+    "SRV": {
+      "items": 3,
+      "progress": 50.0
+    },
+    "SV": {
+      "items": 3,
+      "progress": 50.0
+    },
+    "VER": {
+      "items": 5,
+      "progress": 20.0
+    },
+    "VOI": {
+      "items": 3,
+      "progress": 33.3
+    },
+    "WX": {
+      "items": 2,
+      "progress": 50.0
+    }
+  },
+  "blocked": [
+    "PAN-002",
+    "PAN-003"
+  ],
+  "requirements": 66,
+  "status_counts": {
+    "BLOCKED": 2,
+    "DONE": 6,
+    "LEGACY": 2,
+    "PARTIAL": 41,
+    "TODO": 14,
+    "VERIFY-HW": 1
+  },
+  "verify_hw": [
+    "INST-001"
+  ],
+  "weighted_progress": 44.3
+}

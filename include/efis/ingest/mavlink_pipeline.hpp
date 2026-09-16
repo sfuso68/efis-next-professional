@@ -4,6 +4,8 @@
 #include "efis/core/flight_snapshot.hpp"
 #include "efis/core/node_health.hpp"
 #include "efis/core/snapshot_arbitrator.hpp"
+#include "efis/providers/can_frame.hpp"
+#include "efis/providers/esp32_can_adapter.hpp"
 #include "efis/providers/mavlink_adapter.hpp"
 
 #include <cstdint>
@@ -44,6 +46,11 @@ struct PipelinePolicy final {
     // Identita' della sorgente attribuita a questo adapter nell'arbitrato.
     // Quando si aggiungeranno altri bus, ciascuno portera' la propria.
     SourceId source{SourceId::pixhawk_primary};
+
+    // Seconda catena indipendente: sensori, alimentazione, bus e firmware non
+    // sono quelli del Pixhawk. Rimane una sorgente di sola lettura dell'EFIS.
+    SourceId esp32_source{SourceId::esp32_legacy};
+    NodeId esp32_node{21};
 };
 
 class MavlinkPipeline final {
@@ -52,6 +59,12 @@ public:
 
     // Consuma byte grezzi e ricalcola lo stato protetto.
     void consume(std::span<const std::uint8_t> bytes, MonoTime now);
+
+    // Consuma frame gia' letti dal trasporto SocketCAN. Il trasporto resta
+    // fuori dalla pipeline e dal core: qui entrano frame normalizzati, non
+    // file descriptor Linux.
+    void consume_can(std::span<const can::Frame> frames, MonoTime now);
+    void consume_can(const can::Frame& frame, MonoTime now);
 
     // Fa avanzare il tempo senza nuovi dati.
     //
@@ -68,6 +81,9 @@ public:
     [[nodiscard]] const FlightSnapshot& state() const noexcept { return state_; }
 
     [[nodiscard]] const MavlinkAdapter& adapter() const noexcept { return adapter_; }
+    [[nodiscard]] const Esp32CanAdapter& esp32_adapter() const noexcept {
+        return esp32_adapter_;
+    }
     [[nodiscard]] const FlightModel& model() const noexcept { return model_; }
     [[nodiscard]] const SnapshotArbitrator& arbitrator() const noexcept {
         return arbitrator_;
@@ -84,9 +100,7 @@ public:
     // Eventi destinati alla black box: transizioni di stato dei nodi e cambi di
     // sorgente, raccolti in un punto solo perche' chi registra non debba sapere
     // da quale pezzo della catena provengano.
-    [[nodiscard]] const std::vector<NodeStateChange>& node_events() const noexcept {
-        return adapter_.node_events();
-    }
+    [[nodiscard]] std::vector<NodeStateChange> node_events() const;
     [[nodiscard]] const std::vector<SourceChangeEvent>& source_events() const noexcept {
         return arbitrator_.events();
     }
@@ -97,6 +111,7 @@ private:
 
     PipelinePolicy policy_;
     MavlinkAdapter adapter_;
+    Esp32CanAdapter esp32_adapter_;
     SnapshotArbitrator arbitrator_;
     FlightModel model_;
     FlightSnapshot state_{};

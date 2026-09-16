@@ -1,0 +1,61 @@
+{
+  "schema": "efis-next.avionics-network.v1",
+  "status": "BENCH_NOT_FLIGHT_APPROVED",
+  "segments": [
+    {
+      "id": "flight-data",
+      "cidr": "10.77.10.0/24",
+      "dhcp": false,
+      "default_gateway": null,
+      "mtu": 1500,
+      "physical_isolation_required": true
+    },
+    {
+      "id": "video",
+      "cidr": "10.77.20.0/24",
+      "dhcp": false,
+      "default_gateway": null,
+      "mtu": 1500,
+      "physical_isolation_required": true
+    }
+  ],
+  "nodes": [
+    {"id": "blackbox", "role": "broker-recorder", "application": "blackbox", "platform": "rpi5", "physical_host": "blackbox-rpi5-01", "addresses": {"flight-data": "10.77.10.2"}},
+    {"id": "pixhawk-6x", "role": "flight-source", "application": "flight-control", "platform": "pixhawk-6x", "physical_host": "pixhawk-6x-01", "addresses": {"flight-data": "10.77.10.3"}},
+    {"id": "pfd-01", "role": "display", "application": "pfd", "platform": "rpi5", "physical_host": "pfd-rpi5-01", "addresses": {"flight-data": "10.77.10.11"}},
+    {"id": "ems-01", "role": "display", "application": "ems", "platform": "rpi4", "physical_host": "ems-rpi4-01", "addresses": {"flight-data": "10.77.10.12"}},
+    {"id": "mfd-01", "role": "future-display", "application": "mfd", "platform": "rpi5", "physical_host": "mfd-rpi5-01", "addresses": {"flight-data": "10.77.10.13"}},
+    {"id": "video-core", "role": "video-aggregator", "application": "fpv", "platform": "rpi4", "physical_host": "fpv-rpi4-01", "addresses": {"flight-data": "10.77.10.20", "video": "10.77.20.2"}},
+    {"id": "maintenance", "role": "ground-only", "application": "maintenance", "platform": "ground-computer", "physical_host": "maintenance-01", "addresses": {"flight-data": "10.77.10.50"}},
+    {"id": "cam-01", "role": "camera", "application": "camera", "platform": "ip-camera", "physical_host": "cam-01", "addresses": {"video": "10.77.20.11"}},
+    {"id": "cam-02", "role": "camera", "application": "camera", "platform": "ip-camera", "physical_host": "cam-02", "addresses": {"video": "10.77.20.12"}},
+    {"id": "cam-03", "role": "camera", "application": "camera", "platform": "ip-camera", "physical_host": "cam-03", "addresses": {"video": "10.77.20.13"}},
+    {"id": "cam-04", "role": "camera", "application": "camera", "platform": "ip-camera", "physical_host": "cam-04", "addresses": {"video": "10.77.20.14"}}
+  ],
+  "flows": [
+    {"id": "pixhawk-mavlink", "source": "pixhawk-6x", "destination": "blackbox", "segment": "flight-data", "transport": "udp", "port": 14550, "unicast": true, "direction": "one-way"},
+    {"id": "blackbox-ddp-pfd", "source": "blackbox", "destination": "pfd-01", "segment": "flight-data", "transport": "udp", "port": 49002, "unicast": true, "direction": "one-way"},
+    {"id": "blackbox-ddp-mfd", "source": "blackbox", "destination": "mfd-01", "segment": "flight-data", "transport": "udp", "port": 49002, "unicast": true, "direction": "one-way"},
+    {"id": "blackbox-edp-ems", "source": "blackbox", "destination": "ems-01", "segment": "flight-data", "transport": "udp", "port": 49003, "unicast": true, "direction": "one-way"}
+  ],
+  "switches": [
+    {
+      "id": "flight-switch",
+      "manufacturer": "Waveshare",
+      "model": "Gigabit-Switch-5P (EU)",
+      "management": "unmanaged",
+      "hardware_label_verified": "2026-09-07",
+      "prototype_ports": 5,
+      "minimum_operational_ports": 6,
+      "segment": "flight-data",
+      "allowed_roles": ["broker-recorder", "flight-source", "display", "future-display", "video-aggregator", "ground-only"]
+    },
+    {
+      "id": "video-switch",
+      "model": "NOT_SELECTED",
+      "minimum_operational_ports": 6,
+      "segment": "video",
+      "allowed_roles": ["video-aggregator", "camera"]
+    }
+  ]
+}

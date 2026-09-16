@@ -1,0 +1,21 @@
+[Unit]
+Description=EFIS fuel event forwarder
+After=network-online.target
+
+[Service]
+Type=simple
+User=EFIS_USER
+Group=EFIS_USER
+StateDirectory=efis
+EnvironmentFile=/etc/efis/fuel-event-forwarder.conf
+ExecStart=/usr/bin/python3 /opt/efis/fuel_event_forwarder.py --journal ${EFIS_FUEL_JOURNAL} --state /var/lib/efis/fuel-forwarder.offset --cache /var/lib/efis/fuel-central-cache.json --commands /var/lib/efis/fuel-maintenance-request.jsonl --url http://192.168.1.47:18093 --source ${EFIS_NODE_ID} --token-file /etc/efis/fuel-event.token
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/efis
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target
