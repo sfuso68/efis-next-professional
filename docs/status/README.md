@@ -57,3 +57,16 @@ La CI e `tools/project_status/generate_status.py`:
 - generare un report Markdown/JSON senza duplicare manualmente le informazioni.
 
 I documenti storici `CHECKPOINT-*`, handoff, ADR e specifiche restano evidenze; non sostituiscono questi due documenti di controllo.
+
+## Programma AVIONIX NEXT
+
+La baseline programmatica e il backlog per gate sono mantenuti in
+`docs/project/`:
+
+- `AVIONIX_NEXT_MASTER_PROJECT_BRIEF_CODEX_R0.md`;
+- `AVIONIX_NEXT_DOCUMENT_INDEX.md`;
+- `AVIONIX_NEXT_EXECUTION_BACKLOG.md`.
+
+Il brief definisce obiettivi e gate, ma non sostituisce la matrice, lo stato
+verificato o le ADR accettate. L'indice documentale stabilisce l'ordine di
+autorità e registra i conflitti aperti.
