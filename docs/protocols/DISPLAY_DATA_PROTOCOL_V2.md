@@ -83,6 +83,10 @@ priorità e non genera autonomamente condizioni avioniche.
     configurazione di deployment, non costanti del codec.
 16. La sorgente UDP del display è esclusivamente ricevente. Al timeout marca i
     campioni `stale` e poi `unavailable`; non mantiene verde l'ultimo valore.
+17. La policy consumer predefinita di banco è `LIVE` fino a 250 ms dall'ultimo
+    datagramma accettato, `STALE` oltre 250 ms e fino a 1000 ms, quindi `LOST`.
+    Le soglie appartengono alla configurazione del consumer e ogni loro modifica
+    deve restare coerente con il manifesto AVIONIX Data Contract.
 
 ## Evidenza corrente
 

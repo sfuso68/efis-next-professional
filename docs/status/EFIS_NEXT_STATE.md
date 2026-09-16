@@ -2695,3 +2695,37 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   stato creato/attivato e nessuna route è stata cambiata.
 - Dopo carrier PASS serviranno profilo inattivo, rollback armato, switch da
   console locale, post-check e nuova cattura MAVLink v3.
+
+## AVIONIX offline gates — 2026-09-16
+
+### Implementato
+
+- Congelata la ricognizione `AVX-G1-01/02`: `192.168.1.89` risponde, ma nessuna
+  delle chiavi disponibili è autorizzata per `avionix`, `pi` o `efis`. Nessun
+  login e nessuna modifica sul nodo o sulle quattro Sequent.
+- Formalizzato `AVX-G2-01` con manifesto macchina DDP V2/EDP V1, documento ICD
+  unificato e validatore di coerenza con header C++, specifiche wire e piano di
+  rete.
+- La policy congelata mantiene Blackbox nodo logico 47, UDP unicast read-only,
+  DDP/49002 verso PFD-MFD, EDP/49003 verso EMS e freshness 250/1000 ms.
+
+### Verificato solo software
+
+- Validazione contratto PASS: due contratti, tre flussi e dieci costanti dal
+  sorgente controllate.
+- Validazione piano rete PASS: due segmenti, undici nodi, quattro flussi e due
+  switch.
+- Cinque test automatici PASS; porte, schema, freshness o autorità di comando
+  divergenti vengono rifiutati fail-closed. Sintassi Python PASS.
+
+### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware in questo pacchetto. La sola raggiungibilità
+  ICMP del candidato ASSO5 non prova identità, OS o schede Sequent.
+
+### Aperto
+
+- Autorizzare la chiave SSH dal terminale locale ASSO5 e riprendere l'inventario
+  read-only.
+- Verificare contratto e test su ARM64, aggiungere vettori wire indipendenti e
+  replay; la verticale reale G2-02 resta dipendente da G1.

@@ -34,6 +34,8 @@ con una nuova ADR o con una revisione esplicita del brief.
 | `docs/status/EFIS_NEXT_STATE.md` | stato verificato e livelli di evidenza | autorevole |
 | `docs/status/EFIS_NEXT_MASTER_MATRIX.md` | requisiti, stato e criteri di chiusura | autorevole |
 | `docs/adr/ADR-001` … `ADR-015` | decisioni architetturali | vigenti secondo stato ADR |
+| `docs/protocols/AVIONIX_DATA_CONTRACT_V1.md` | contratto unificato DDP/EDP e invarianti | banco, non flight-approved |
+| `config/protocol/avionix-data-contract-v1.json` | autorità macchina del contratto dati | validata offline |
 | `CLAUDE_CODE_HANDOFF_2026-08-21.md` | handoff storico | riferimento |
 | `CHECKPOINT-*` | evidenze e checkpoint cronologici | riferimento |
 
@@ -68,7 +70,7 @@ presunto.
 
 ## Evidenza dell'audit R0
 
-- GitHub Professional `main`: `d9231f4b00f3821da530553925166569861dd435`;
+- GitHub Professional `main`: `4416ee25ebcaeb32695913a0f95ca2702baea9a6`;
 - NAS `professional/main`: stesso commit;
 - branch storico `sv3d-fondamenta`: `62d7be0eb4a0c3eb393a7314e335b24d59afc1c6`;
 - PFD, MFD, EMS, Blackbox, server, portatile e NAS raggiunti in SSH in sola
@@ -77,3 +79,11 @@ presunto.
 - generatore stato `--check`: PASS;
 - nessuna modifica software o hardware eseguita durante l'audit.
 
+## Evidenza offline successiva al merge G0
+
+- `AVX-G1-01/02` congelato: candidato `.89` raggiungibile ma accesso SSH non
+  autorizzato; nessuna verifica di identità e nessuna modifica hardware;
+- AVIONIX Data Contract verificato contro due header, tre flussi di rete e dieci
+  costanti sorgente;
+- cinque test fail-closed e validatore del piano di rete PASS;
+- dettaglio in `docs/status/CHECKPOINT-2026-09-16-AVIONIX-OFFLINE-GATES.md`.
