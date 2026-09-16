@@ -29,6 +29,11 @@ jobs:
       - name: Validate matrix and generated status
         run: python tools/project_status/generate_status.py --check
 
+      - name: Validate SkyView and EMS HMI contract
+        run: |
+          python tools/ui/validate_hmi_contract.py
+          python -m unittest tests.test_avionix_hmi_contract -v
+
       - name: Determine changed files
         id: changes
         shell: bash

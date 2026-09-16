@@ -1,0 +1,55 @@
+{
+  "schema": "avionix.hmi-contract.v1",
+  "status": "DESIGN_BASELINE_NOT_FLIGHT_APPROVED",
+  "logical_canvas": {"width": 1024, "height": 600},
+  "targets": [
+    {"role": "SKYVIEW", "platform": "RPi5", "resolutions": [[1024, 600], [1280, 800], [1920, 1080]]},
+    {"role": "EMS", "platform": "RPi4", "resolutions": [[800, 480], [1024, 600], [1280, 800]]}
+  ],
+  "design_tokens": {
+    "minimum_touch_px": 44,
+    "minimum_primary_text_px": 34,
+    "minimum_secondary_text_px": 18,
+    "minimum_stroke_px": 1.5,
+    "palette": {
+      "background": "#03111C",
+      "foreground": "#F4F8FC",
+      "cyan": "#28D7E8",
+      "normal": "#39D353",
+      "caution": "#FFC928",
+      "warning": "#FF3B30",
+      "navigation": "#F238E6",
+      "invalid": "#8A96A3"
+    }
+  },
+  "data_states": ["LIVE", "STALE", "LOST", "DEGRADED", "FAIL", "SIM"],
+  "freshness_ms": {"live_max": 250, "stale_max": 1000},
+  "skyview": {
+    "zones": ["status_rail", "synthetic_vision", "airspeed_tape", "altitude_tape", "heading_ribbon", "hsi_arc", "context_panel", "engine_strip"],
+    "v_speed_labels": ["VS0", "VS1", "VX", "VY", "VFE", "VNO", "VNE"],
+    "hsi_visible_half_angle_deg": 35,
+    "terrain": {"source_required": true, "age_required": true, "runway_context_only": true},
+    "overlays": ["weather", "traffic", "obstacles", "route"],
+    "minimum_fps": 40,
+    "target_fps": 50
+  },
+  "ems": {
+    "primary_gauges": ["RPM", "MAP"],
+    "secondary_gauges": ["OIL_PRESS", "OIL_TEMP", "FUEL_FLOW"],
+    "cylinders": 4,
+    "cylinder_channels": ["CHT", "EGT"],
+    "flap_detents_deg": [0, 10, 15, 20, 30],
+    "gear_channels": ["NOSE", "LEFT", "RIGHT"],
+    "pages": ["ENGINE", "LEAN", "FUEL", "TREND", "CHECKLIST", "MAINTENANCE", "SETTINGS"],
+    "electrical_channels": ["BATTERY", "ALTERNATOR", "MAIN_BUS", "ESS_BUS", "FUEL_PUMP", "IGNITION_A", "IGNITION_B"],
+    "minimum_fps": 40,
+    "target_fps": 50
+  },
+  "degraded_mode": {
+    "colour_is_not_only_cue": true,
+    "last_value_may_remain_visible": true,
+    "last_value_must_show_age": true,
+    "sim_always_visible": true,
+    "no_control_authority": true
+  }
+}

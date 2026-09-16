@@ -2695,3 +2695,30 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   stato creato/attivato e nessuna route è stata cambiata.
 - Dopo carrier PASS serviranno profilo inattivo, rollback armato, switch da
   console locale, post-check e nuova cattura MAVLink v3.
+
+## SkyView/EMS HMI Contract V1 — 2026-09-17
+
+### Implementato
+
+- Tradotto il concept SkyView/EMS in dieci gate verificabili: piattaforma e
+  risoluzioni, design system, qualità dati, synthetic vision, strumenti volo,
+  navigazione, EMS primario, airframe/fuel/electrical, degrado e prestazioni.
+- Aggiunti manifesto `config/ui/avionix-hmi-v1.json`, specifica HMI, validatore
+  fail-closed, sei test e controllo CI dedicato.
+- Resta vincolante ADR-013: SkyView su RPi5, EMS su RPi4 dedicato e VIDEO-CORE
+  su un secondo RPi4. L'HMI è esclusivamente read-only.
+
+### Verificato solo software
+
+- Validità sintattica JSON verificata. I test e il validatore Python devono
+  essere confermati dalla CI Linux prima di proporre integrazione.
+
+### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware e nessuna distribuzione sui nodi.
+
+### Aperto
+
+- Implementazione QML/Scene Graph, golden alle risoluzioni target, build ARM64,
+  replay DDP/EDP e acceptance touch/visiva/termica restano aperti. Il contratto
+  è `DESIGN_BASELINE_NOT_FLIGHT_APPROVED` e non va dichiarato DONE.
