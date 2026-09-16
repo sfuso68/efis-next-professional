@@ -1,6 +1,6 @@
 # AVIONIX NEXT — Data Contract V1
 
-Stato: **congelato per integrazione di banco, non approvato per il volo**.  
+Stato: **congelato per integrazione di banco, non approvato per il volo**.
 Autorità macchina: `config/protocol/avionix-data-contract-v1.json`.
 
 ## Scopo
