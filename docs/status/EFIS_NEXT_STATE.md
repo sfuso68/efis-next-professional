@@ -2,7 +2,52 @@
 
 Aggiornamento: 2026-09-15
 
-Branch di lavoro: `work/mavlink-observer-gateway-v1`
+Baseline repository verificata: `origin/main` al commit
+`d9231f4b00f3821da530553925166569861dd435`.
+
+### Baseline documentale AVIONIX NEXT WS0/G0 — 2026-09-16
+
+Branch dedicato: `docs/avionix-master-baseline-r0`.
+
+#### Implementato
+
+- Importato integralmente nel repository Professional il Master Project Brief
+  R0 proveniente da `sfuso68/efis-evolved`, senza unire le due genealogie Git.
+- Creato `docs/project/AVIONIX_NEXT_DOCUMENT_INDEX.md` con ordine di autorità,
+  indice delle fonti, nove conflitti iniziali e lista dei cinque riferimenti
+  non reperiti.
+- Creato `docs/project/AVIONIX_NEXT_EXECUTION_BACKLOG.md` con attività ordinate
+  per gate G0–G7, dipendenze, rischi, criteri di accettazione, file, test e
+  stime relative.
+- Aggiunte alla Master Matrix le righe `PRJ-001` e `PRJ-002`; nessuna voce è
+  stata promossa a `DONE`.
+
+#### Verificato solo software/documentazione
+
+- Repository Professional `origin/main` e NAS `professional/main` osservati
+  allo stesso commit `d9231f4b00f3821da530553925166569861dd435`.
+- Il branch storico `sv3d-fondamenta` è divergente e non condivide genealogia
+  con il repository Professional; resta `LEGACY`, non base di merge.
+- Il generatore stato è stato rigenerato da 68 requisiti e ha superato
+  `--check` dopo l'aggiunta delle nuove righe; avanzamento pesato 44,5%.
+
+#### Verificato su hardware reale in sola lettura
+
+- PFD `.45`, MFD `.49`, EMS `.36`, Blackbox `.47`, server `.6`, portatile
+  `.39` e NAS `.22` raggiunti via SSH il 2026-09-16 senza mutazioni.
+- Pixhawk `10.77.10.3` raggiunto dalla Blackbox; broker MAVLink e fan-out
+  monitor-only osservati attivi.
+- Rilevato `get_throttled=0x50000` sulla Blackbox: evidenza storica di
+  undervoltage/throttling, non chiusa da questa attività.
+
+#### Aperto / non dichiarare DONE
+
+- Nodo RPi4 ASSO5 dedicato, quattro Sequent e DIP non identificati.
+- Cinque documenti richiamati dal brief non reperiti.
+- Naming AVIONIX NEXT/EFIS NEXT, bare NAS duplicato e revisione R1 del brief
+  richiedono decisione.
+- Restano prevalenti ADR-010/013/015: reti FLIGHT-DATA/VIDEO separate, EMS e
+  VIDEO-CORE su RPi4 distinti, Blackbox senza bridge/NAT/routing.
 
 ### Correzione topologia Ground Station Ethernet — lotto 50K (2026-09-15)
 
