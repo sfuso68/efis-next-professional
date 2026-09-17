@@ -3144,3 +3144,30 @@ mantiene sempre
   correlando DATA LINK, journal EMS, cattura passiva e assessment.
 - Ripetere successivamente con il publisher Blackbox reale e con fault fisico
   Ethernet. EMS-002 e BBX-003 restano `PARTIAL`.
+
+### Readiness documentale G2 — 2026-09-17
+
+È stato eseguito un confronto in sola lettura fra DDP V2, EDP V1, ADR-008…011,
+implementazione, test e strumenti di evidenza. Il risultato è registrato in
+`docs/project/AVIONIX_G2_FREEZE_READINESS.md`. Non costituisce il freeze
+dell'ICD e non autorizza modifiche al wire protocol.
+
+#### Verificato solo software
+
+- Test C++ mirati DDP/EDP: 3/3 PASS.
+- Suite Python EDP cattura/assessment/replay: 26/26 PASS.
+- Sono stati identificati nove disallineamenti documentali o decisioni aperte,
+  inclusi testi DDP storici, assenza di un ICD sovraordinato, test vector e
+  schema evidence bundle non ancora congelati.
+
+#### Verificato su hardware reale
+
+- Nulla in questa attività. Le evidenze installative pregresse restano
+  storiche e non sono state reinterpretate come acceptance corrente.
+
+#### Aperto / non dichiarare DONE
+
+- `AVX-G2-01` resta `OPEN/IN_PROGRESS-SW`: il freeze documentale richiede
+  conferma esplicita dell'utente.
+- `AVX-G2-02` resta `PROPOSED` e dipendente dall'inventario G1 e dalla sorgente
+  CAN reale. Nessun nodo, servizio, rete o deployment è stato modificato.
