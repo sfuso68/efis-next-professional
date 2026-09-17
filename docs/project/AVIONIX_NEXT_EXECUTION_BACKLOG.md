@@ -1,6 +1,6 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
-Aggiornamento: 2026-09-16  
+Aggiornamento: 2026-09-17
 Stato: controllato da WS0/G0; nessuna attività hardware autorizzata da questo documento.
 
 Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
@@ -34,3 +34,15 @@ Dopo il merge documentale WS0/G0, la prima attività tecnica resta
 AVX-G1-01/02 in sola ricognizione: identificazione del nodo RPi4 ASSO5 e delle
 quattro Sequent. Non include cablaggi, scritture EEPROM/DIP, installazioni o
 comandi su uscite.
+
+## Registro avanzamenti successivi alla baseline
+
+| Data | Gate/attività | Evidenza | Esito e limite |
+|---|---|---|---|
+| 2026-09-17 | AVX-G3-04 | `13d8687`…`caf1b3e`, golden/HMI/EDP diagnostics | IN_PROGRESS; software e CI verificati, pannelli/touch aperti |
+| 2026-09-17 | AVX-G2-01 | `96245b1`, `0b779fb`, `dfb3510` | IN_PROGRESS; observer, assessment e replay EDP verificati, ICD non congelato |
+| 2026-09-17 | AVX-G2-02 | EDP SIM Blackbox→EMS già operativo; replay deterministico disponibile | resta PROPOSED per il verticale reale, dipendente da G1 e CAN reale |
+
+Il prossimo blocco implementativo proposto è il freeze documentale
+AVX-G2-01 dell'ICD e dell'evidence bundle. Lo stato è **PROPOSTO / NON
+AUTORIZZATO** fino a conferma esplicita dell'utente.

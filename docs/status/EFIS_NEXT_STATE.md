@@ -5,6 +5,23 @@ Aggiornamento: 2026-09-15
 Baseline repository verificata: `origin/main` al commit
 `d9231f4b00f3821da530553925166569861dd435`.
 
+### Riesame audit AVIONIX NEXT — 2026-09-17
+
+- Persistito in `docs/project/AVIONIX_NEXT_PROJECT_AUDIT.md` il blocco completo
+  richiesto dalla sezione 24: repository, sistemi, gap WS0–WS12, conflitti,
+  blocchi, gate, prima modifica sicura e decisioni richieste.
+- Il branch `work/skyview-ems-hmi-contract-v1` è a `dfb3510`, 18 commit avanti
+  e zero indietro rispetto a `origin/main`; Project Control #85 e Core CI #69
+  sono PASS.
+- Il backlog registra gli avanzamenti software G2/G3 senza promuovere il
+  verticale reale o i requisiti hardware.
+- La prossima modifica proposta è il freeze documentale dell'ICD AVIONIX e
+  dell'evidence bundle. È esplicitamente **non autorizzata** finché l'utente
+  non la approva.
+- Nessun software avionico, nodo, rete, servizio, merge o deployment è stato
+  modificato in questo riesame. Le evidenze hardware restano quelle datate già
+  presenti nello stato e non sono state reinterpretate come verifiche odierne.
+
 ### Baseline documentale AVIONIX NEXT WS0/G0 — 2026-09-16
 
 Branch dedicato: `docs/avionix-master-baseline-r0`.

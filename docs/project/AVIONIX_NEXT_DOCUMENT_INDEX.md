@@ -1,6 +1,6 @@
 # AVIONIX NEXT — indice documentale e regole di autorità
 
-Aggiornamento: 2026-09-16  
+Aggiornamento: 2026-09-17
 Stato: baseline documentale WS0/G0, DEVELOPMENT / NON-CERT
 
 ## Repository autorevole
@@ -31,6 +31,8 @@ con una nuova ADR o con una revisione esplicita del brief.
 | Documento | Ruolo | Stato |
 |---|---|---|
 | `AVIONIX_NEXT_MASTER_PROJECT_BRIEF_CODEX_R0.md` | specifica e piano generale AVIONIX Next | importato integralmente |
+| `AVIONIX_NEXT_PROJECT_AUDIT.md` | audit completo sezione 24 e proposta successiva | aggiornato all'HEAD del branch di lavoro |
+| `AVIONIX_NEXT_EXECUTION_BACKLOG.md` | attività ordinate per gate e registro evidenze | controllato |
 | `docs/status/EFIS_NEXT_STATE.md` | stato verificato e livelli di evidenza | autorevole |
 | `docs/status/EFIS_NEXT_MASTER_MATRIX.md` | requisiti, stato e criteri di chiusura | autorevole |
 | `docs/adr/ADR-001` … `ADR-015` | decisioni architetturali | vigenti secondo stato ADR |
@@ -77,3 +79,11 @@ presunto.
 - generatore stato `--check`: PASS;
 - nessuna modifica software o hardware eseguita durante l'audit.
 
+## Riesame operativo 2026-09-17
+
+L'audit completo richiesto dalla sezione 24 è ora conservato in
+`AVIONIX_NEXT_PROJECT_AUDIT.md`. Il riesame non sostituisce l'evidenza hardware
+del 16 settembre: aggiorna repository, branch, divergenza, component map,
+workstream, gate e attività software successive. L'HEAD `dfb3510` ha superato
+EFIS Project Control #85 ed EFIS Core CI #69. Non è stato autorizzato alcun
+merge, deployment o nuovo intervento hardware.
