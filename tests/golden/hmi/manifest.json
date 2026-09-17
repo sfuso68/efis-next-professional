@@ -1,0 +1,33 @@
+{
+  "schema": "avionix.hmi-golden-manifest.v1",
+  "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
+  "generated_utc": "2026-09-17T12:52:49.266642+00:00",
+  "platform": "windows",
+  "fixture": "HmiGoldenController.qml",
+  "images": [
+    {
+      "file": "ems-800x480.png",
+      "width": 800,
+      "height": 480,
+      "bytes": 225040,
+      "sha256": "56ccd1821e954bab3ff1669dafd112691cbd358b0e76dd0355a99068c6296fad",
+      "pixel_sha256": "359d34885673a27fc849296ba4d593607b35d0c0ec9c62e89d3ac07f63af49c5"
+    },
+    {
+      "file": "ems-1024x600.png",
+      "width": 1024,
+      "height": 600,
+      "bytes": 310691,
+      "sha256": "de521942466a1ce8164f258bb60f2ae7a1c8a26537438af6caacf234b708f990",
+      "pixel_sha256": "77703a77ca6c243049a874b8559b902f0d3969dcb308145ee4432f1da74b63c3"
+    },
+    {
+      "file": "ems-1280x800.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 459781,
+      "sha256": "4fbda2d0c91ad2738fff5b3544d71c33ee293161fcb4886f75d04ba7ba70af3c",
+      "pixel_sha256": "4a3256a64ff0883d092f90e3f11e11cb82f96978e9e6cad906f31552c208f5a9"
+    }
+  ]
+}

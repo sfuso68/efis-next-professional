@@ -65,3 +65,35 @@ assente.
 Verifica software dell'incremento: `qmllint` Qt 6.11.1 PASS; validatore HMI
 PASS; 7/7 test dedicati PASS; build incrementale MSVC/Qt dei target PFD ed EMS
 75/75 step con entrambi i link finali PASS.
+
+## Incremento golden multi-risoluzione — cinque passi
+
+- Aggiunto controller QML congelato con dati Rotax 912 UL simulati, stato SIM,
+  Blackbox online e orologio fisso; non riceve dati avionici e non ha autorità.
+- Aggiunta modalità renderer `--hmi-golden`, separata dall'avvio operativo, con
+  normalizzazione DPI e cattura alle dimensioni richieste.
+- Aggiunto tool di cattura ripetibile per 800×480, 1024×600 e 1280×800.
+- Aggiunto validatore fail-closed di schema, risoluzioni, dimensione minima e
+  SHA-256, con test positivo e prova di manomissione.
+- Versionate tre golden Windows native e collegata la validazione alla CI
+  Project Control.
+
+### Evidenza software
+
+- QML AOT e build PFD: 117 step, link PASS; rebuild dopo normalizzazione DPI:
+  4/4 step PASS.
+- `py_compile` dei tool PASS; suite HMI congiunta 10/10 PASS; validatore
+  contratto PASS; validatore golden PASS.
+- Una seconda cattura indipendente differisce soltanto per rumore raster
+  subpixel (delta massimo 7/255 e frazione modificata sotto 0,00006 a 800×480):
+  comparatore visuale con tolleranze chiuse PASS. L'hash file continua a
+  proteggere gli artefatti versionati, mentre il confronto visuale usa i pixel.
+- Ispezione visiva software: nessun taglio strutturale nelle tre immagini,
+  cerchi non ellittici e moduli fuel/electrical/airframe/cilindri presenti.
+
+### Limite rilevato
+
+- A 800×480 diverse etichette secondarie rimangono troppo piccole per dichiarare
+  acceptance ergonomica. Le immagini sono baseline di regressione software,
+  non prova di leggibilità in cabina, sunlight, touch o frame-rate.
+- Nessuna verifica hardware, ARM64 o pannello è stata eseguita.

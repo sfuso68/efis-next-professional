@@ -2772,3 +2772,31 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   touch, 40 FPS minimi, termica e prova fault di 60 minuti sui pannelli reali.
 - Approvazione dei limiti motore da manuale applicabile prima di chiudere
   EMS-004.
+
+### Incremento software — golden EMS multi-risoluzione
+
+- Aggiunti fixture QML deterministico, ingresso `--hmi-golden`, cattura
+  normalizzata rispetto al DPI e tool Python di generazione/validazione.
+- Versionate baseline native Windows a 800×480, 1024×600 e 1280×800 con
+  manifesto, provenienza, dimensioni e SHA-256. La CI verifica anche una prova
+  negativa di manomissione.
+
+#### Verificato solo software
+
+- QML AOT/build PFD 117 step e link PASS; rebuild C++ 4/4 PASS.
+- `py_compile` PASS; test HMI congiunti 10/10 PASS; validatori contratto e
+  golden PASS. Ispezione visiva: nessun taglio strutturale e cerchi non
+  ellittici. Seconda cattura indipendente: confronto pixel tollerante PASS;
+  differenze limitate al rumore subpixel dell'anti-aliasing Windows.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento.
+
+#### Aperto / non dichiarare DONE
+
+- A 800×480 le etichette secondarie risultano ancora troppo piccole per
+  acceptance ergonomica. Servono una variante compact progettata, prova sul
+  pannello RPi4, font/contrasto diurno-notturno, touch, 40 FPS e soak termico.
+- Le golden sono `SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE`; non qualificano
+  limiti motore, dati reali o impiego in volo.

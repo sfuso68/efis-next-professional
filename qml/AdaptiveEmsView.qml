@@ -3,6 +3,7 @@ import QtQuick
 Item {
     id: root
     required property var controller
+    property string clockOverride:""
     property real uiScale: Math.min(width/1024, height/600)
     readonly property color cyan: "#28D9F4"
     readonly property color green: "#52DE36"
@@ -167,8 +168,8 @@ Item {
         width: 54*root.uiScale; height: 25*root.uiScale; radius: 4; color: "#08751B"
             Text { anchors.centerIn: parent; text: controller.dataSourceState === "SIM" ? "SIM" : "LIVE"; color: "white"; font.pixelSize: 12*root.uiScale } }
         Text { id: clock; anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 18*root.uiScale }
-        text: Qt.formatTime(new Date(),"hh:mm:ss")+"   LOCAL     24 °C  OAT     1013 HPA  QNH"; color: "#E8ECEE"; font.pixelSize: 11*root.uiScale; font.bold: true }
-        Timer { interval: 1000; running: true; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+"   LOCAL     24 °C  OAT     1013 HPA  QNH" }
+        text: (root.clockOverride.length?root.clockOverride:Qt.formatTime(new Date(),"hh:mm:ss"))+"   LOCAL     24 °C  OAT     1013 HPA  QNH"; color: "#E8ECEE"; font.pixelSize: 11*root.uiScale; font.bold: true }
+        Timer { interval: 1000; running: root.clockOverride.length===0; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+"   LOCAL     24 °C  OAT     1013 HPA  QNH" }
         Item { x:0; y:0; width:105*root.uiScale; height:parent.height
             TapHandler { longPressThreshold:1.2; onLongPressed:root.openSetup(0) }
         }
