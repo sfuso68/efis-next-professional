@@ -83,6 +83,16 @@ class AvionixHmiContractTests(unittest.TestCase):
             start = ems.index(component)
             self.assertIn("dataAgeMs:root.dataAgeMs", ems[start:start + 900])
 
+    def test_operational_ems_exposes_edp_state_and_age(self):
+        header = (ROOT / "src/nodes/ems/ems_controller.hpp").read_text(encoding="utf-8")
+        source = (ROOT / "src/nodes/ems/ems_controller.cpp").read_text(encoding="utf-8")
+        self.assertIn("Q_PROPERTY(int dataAgeMs READ dataAgeMs", header)
+        self.assertIn("engine_network_source_->data_age(now)", source)
+        for state in ("LIVE", "STALE", "LOST", "SIM"):
+            self.assertIn(f'QStringLiteral("{state}")', source)
+        self.assertNotIn('data_source_state_ = QStringLiteral("NETWORK")', source)
+        self.assertNotIn('QStringLiteral("SIMULATION")', header)
+
 
 if __name__ == "__main__":
     unittest.main()

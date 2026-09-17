@@ -2858,3 +2858,35 @@ Con sorgente `LOST/FAIL` il CAS segnala prioritariamente la perdita dati;
 convalidano valori non utilizzabili. Cilindri, airframe, fuel ed electrical
 ricevono stato ed età coerenti. Verificati soltanto codice, test e build desktop;
 fault EDP fisico e comportamento sul pannello RPi4 restano aperti.
+
+### Incremento software — stato ed età EDP operativi EMS
+
+- Il consumer EDP espone l'età monotona dell'ultimo datagramma accettato;
+  prima del primo campione restituisce assenza e protegge da regressioni
+  dell'orologio saturando l'età a zero.
+- `EdpUdpEngineSource` propaga questa informazione senza modificare payload,
+  frequenze, autorità o protocollo wire.
+- Il controller EMS pubblica `dataAgeMs` a QML e usa il vocabolario HMI
+  `LIVE/STALE/LOST/SIM` al posto del precedente valore ambiguo `NETWORK`.
+- In attesa non viene inventata un'età (`-1`); a link perso resta visibile
+  l'età dell'ultimo dato EDP, mentre la simulazione senza sorgente EDP torna a
+  `SIM` con età non applicabile. I dati di fallback sotto `LOST` restano
+  esclusi dalle funzioni derivate dalla logica fail-closed già presente.
+
+#### Verificato solo software
+
+- `efis_edp_v1_tests` compilato ed eseguito su loopback UDP: PASS.
+- Test contratto HMI 14/14: PASS.
+- Build MSVC/Qt 6.11.1 di `efis-pfd-qt` e `efis-ems-qt`, inclusi QML AOT e
+  link finali: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessuna distribuzione o fault injection su
+  Blackbox/RPi4/RPi5.
+
+#### Aperto / non dichiarare DONE
+
+- Replay EDP dalla Blackbox reale e verifica temporale `LIVE → STALE → LOST`
+  sul pannello EMS RPi4.
+- Acceptance visiva dell'età, frame-rate, touch, termica e soak/fault test.

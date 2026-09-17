@@ -16,6 +16,7 @@
 #include <QList>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 using namespace std::chrono_literals;
@@ -55,7 +56,7 @@ EmsController::EmsController(QObject* parent) : QObject(parent) {
         config.consumer.expected_source_node = static_cast<std::uint32_t>(node_ok ? node : 47);
         engine_network_source_ = std::make_unique<efis::EdpUdpEngineSource>(std::move(config));
         engine_data_state_ = QStringLiteral("WAITING");
-        data_source_state_ = QStringLiteral("NETWORK");
+        data_source_state_ = QStringLiteral("LOST");
         sensor_node_state_ = QStringLiteral("BLACKBOX WAITING");
     }
     loadUnitSystem();
@@ -617,13 +618,18 @@ void EmsController::updateSnapshot() {
     bool use_simulation = true;
     if (engine_network_source_) {
         const auto network = engine_network_source_->poll(now);
+        const auto network_age = engine_network_source_->data_age(now);
+        data_age_ms_ = network_age
+            ? static_cast<int>(qMin<std::int64_t>(network_age->count(),
+                  std::numeric_limits<int>::max()))
+            : -1;
         switch (engine_network_source_->link_state(now)) {
             case efis::protocol::edp::LinkState::live:
                 engine_snapshot_ = network;
                 engine_data_state_ = network.rpm.is_simulated()
                     ? QStringLiteral("LIVE • SIM") : QStringLiteral("LIVE");
                 data_source_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("NETWORK • SIM") : QStringLiteral("NETWORK");
+                    ? QStringLiteral("SIM") : QStringLiteral("LIVE");
                 sensor_node_state_ = network.rpm.is_simulated()
                     ? QStringLiteral("BLACKBOX 47 • SIM") : QStringLiteral("BLACKBOX 47");
                 use_simulation = false;
@@ -632,26 +638,31 @@ void EmsController::updateSnapshot() {
                 engine_snapshot_ = network;
                 engine_data_state_ = network.rpm.is_simulated()
                     ? QStringLiteral("STALE • SIM") : QStringLiteral("STALE");
-                data_source_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("NETWORK • SIM") : QStringLiteral("NETWORK");
+                data_source_state_ = QStringLiteral("STALE");
                 sensor_node_state_ = network.rpm.is_simulated()
                     ? QStringLiteral("BLACKBOX STALE • SIM") : QStringLiteral("BLACKBOX STALE");
                 use_simulation = false;
                 break;
             case efis::protocol::edp::LinkState::waiting:
                 engine_data_state_ = QStringLiteral("SIM FALLBACK • WAITING");
+                data_source_state_ = QStringLiteral("LOST");
+                data_age_ms_ = -1;
                 sensor_node_state_ = QStringLiteral("BLACKBOX WAITING");
                 break;
             case efis::protocol::edp::LinkState::lost:
                 engine_data_state_ = QStringLiteral("SIM FALLBACK • LINK LOST");
+                data_source_state_ = QStringLiteral("LOST");
                 sensor_node_state_ = QStringLiteral("BLACKBOX LINK LOST");
                 break;
         }
     }
     if (use_simulation) {
         engine_snapshot_ = engine_provider_.sample(now, elapsed);
-        data_source_state_ = QStringLiteral("SIMULATION");
-        if (!engine_network_source_) sensor_node_state_ = QStringLiteral("SIMULATED");
+        if (!engine_network_source_) {
+            data_source_state_ = QStringLiteral("SIM");
+            data_age_ms_ = -1;
+            sensor_node_state_ = QStringLiteral("SIMULATED");
+        }
     }
     if (engine_data_state_ != last_logged_engine_data_state_) {
         last_logged_engine_data_state_ = engine_data_state_;

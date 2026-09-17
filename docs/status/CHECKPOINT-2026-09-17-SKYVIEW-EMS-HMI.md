@@ -134,3 +134,17 @@ hardware implicita.
 - Età e stato sono propagati anche a cilindri, airframe, fuel ed electrical.
 
 Verifiche esclusivamente software; nessun fault fisico o pannello reale incluso.
+
+## Incremento EDP operativo stato/età — cinque passi
+
+- Aggiunta età monotona opzionale al consumer EDP.
+- Propagata l'età attraverso la sorgente UDP senza cambiare il wire protocol.
+- Esposti `dataAgeMs` e stati HMI canonici dal controller EMS operativo.
+- Definiti reset fail-closed: attesa senza età, link perso con ultima età nota,
+  simulazione autonoma `SIM/-1`.
+- Aggiunti test protocollo/loopback e contratto controller-QML.
+
+Evidenza software: `efis_edp_v1_tests` PASS, contratto HMI 14/14 PASS e build
+PFD/EMS MSVC/Qt con link finale PASS. Non sono stati eseguiti replay Blackbox,
+deployment ARM64, fault fisici o acceptance sul pannello RPi4; pertanto lo
+stato di requisito non viene promosso a DONE.

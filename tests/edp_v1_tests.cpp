@@ -38,8 +38,11 @@ int main() {
             efis::protocol::edp::DecodeError::crc_mismatch,
         "CRC rejects corruption");
   efis::protocol::edp::Consumer consumer{{250ms, 1000ms, 47}};
+  check(!consumer.age(now), "age absent before first accepted snapshot");
   check(consumer.consume(wire, now) == efis::protocol::edp::DecodeError::none,
         "consumer accepts expected publisher");
+  check(consumer.age(now - 1ms) == 0ms, "age clamps clock reversal to zero");
+  check(consumer.age(now + 200ms) == 200ms, "age follows accepted snapshot");
   check(consumer.state(now + 200ms) == efis::protocol::edp::LinkState::live,
         "link live");
   check(consumer.state(now + 500ms) == efis::protocol::edp::LinkState::stale,
@@ -78,6 +81,7 @@ int main() {
   efis::EdpUdpEngineSource source{source_config};
   check(source.local_endpoint().port != 0,
         "UDP receiver exposes ephemeral port");
+  check(!source.data_age(now), "UDP source age absent while waiting");
   efis::EdpUdpPublisher udp{
       {{"127.0.0.1", source.local_endpoint().port}, {47, 5678, 1}}};
   udp.publish(snapshot, now);
@@ -89,8 +93,12 @@ int main() {
     std::this_thread::sleep_for(1ms);
   }
   check(received.rpm.usable(), "UDP loopback receives engine snapshot");
+  check(source.data_age(now).value_or(1ms) == 0ms,
+        "UDP source exposes fresh sample age");
   check(received.rpm.is_simulated(), "UDP preserves simulation marker");
   received = source.poll(now + 100ms);
+  check(source.data_age(now + 100ms).value_or(0ms) == 100ms,
+        "UDP source exposes stale sample age");
   check(received.rpm.validity == efis::Validity::stale,
         "UDP source marks stale samples");
   received = source.poll(now + 200ms);

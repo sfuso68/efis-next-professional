@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <optional>
 #include <span>
 #include <vector>
 
@@ -92,6 +93,8 @@ public:
   [[nodiscard]] DecodeError consume(std::span<const std::uint8_t> datagram,
                                     MonoTime received_at);
   [[nodiscard]] LinkState state(MonoTime now) const noexcept;
+  [[nodiscard]] std::optional<std::chrono::milliseconds>
+  age(MonoTime now) const noexcept;
   [[nodiscard]] const engine::EngineSnapshot *latest() const noexcept;
   [[nodiscard]] const ConsumerMetrics &metrics() const noexcept {
     return metrics_;

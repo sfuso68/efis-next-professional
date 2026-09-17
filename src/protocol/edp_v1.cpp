@@ -420,6 +420,15 @@ LinkState Consumer::state(MonoTime now) const noexcept {
     return LinkState::stale;
   return LinkState::lost;
 }
+std::optional<std::chrono::milliseconds>
+Consumer::age(MonoTime now) const noexcept {
+  if (!has_snapshot_)
+    return std::nullopt;
+  if (now <= last_received_)
+    return std::chrono::milliseconds::zero();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(now -
+                                                               last_received_);
+}
 const engine::EngineSnapshot *Consumer::latest() const noexcept {
   return has_snapshot_ ? &latest_ : nullptr;
 }
