@@ -304,3 +304,43 @@ finestra osservata. `flight_approval` resta sempre `false`. Un restart del
 publisher rende intenzionalmente il gate rosso salvo che la prova specifica
 usi un limite diverso e lo documenti. Non eseguire questa misura come
 sostituzione dei fault test fisici `LIVE → STALE → LOST → LIVE`.
+
+## Replay EDP deterministico di banco
+
+`replay_edp_session.py` prepara scenari riproducibili senza memorizzare payload.
+L'esecuzione predefinita è soltanto un piano `DRY_RUN` e non apre socket:
+
+```sh
+python3 tools/network/replay_edp_session.py \
+  --scenario clean \
+  --frames 40 \
+  --rate-hz 20 \
+  --output /home/pi/.local/state/efis-next/edp-replay-plan.json
+```
+
+Gli scenari disponibili sono `clean`, `gap`, `duplicate`, `reversed`,
+`restart`, `bad-crc`, `wrong-source`, `mixed-provenance`, `real-only` e
+`loss-recovery`. Ciascun fault è isolato dagli altri; il manifesto dichiara
+l'effetto atteso, i digest SHA-256 del wire stream e della pianificazione e
+conserva sempre
+`flight_approval=false` e `raw_payload_persisted=false`.
+
+La trasmissione è ammessa esclusivamente su banco isolato, con motore e
+attuatori non alimentati. Loopback richiede soltanto `--send`; una destinazione
+privata diversa da loopback richiede anche l'abilitazione esplicita:
+
+```sh
+python3 tools/network/replay_edp_session.py \
+  --scenario loss-recovery \
+  --frames 40 \
+  --rate-hz 20 \
+  --target 10.77.10.12 \
+  --port 49003 \
+  --send \
+  --allow-bench-network \
+  --output /home/pi/.local/state/efis-next/edp-replay-loss-recovery.json
+```
+
+Non usare il replay durante il volo, con sistemi di controllo collegati o come
+sostituto del publisher Blackbox reale. La sequenza raccomandata è: `clean`,
+fault singoli, `loss-recovery`, quindi cattura passiva e assessment indipendente.

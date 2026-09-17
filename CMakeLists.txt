@@ -328,6 +328,8 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_capture_edp_observer.py)
         add_test(NAME efis_edp_capture_assessment_tests
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_assess_edp_capture.py)
+        add_test(NAME efis_edp_replay_session_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_replay_edp_session.py)
         add_test(NAME efis_hmi_golden_tools_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_hmi_golden_tools)
         set_tests_properties(efis_hmi_golden_tools_tests PROPERTIES

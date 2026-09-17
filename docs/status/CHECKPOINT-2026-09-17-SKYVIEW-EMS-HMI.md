@@ -241,6 +241,47 @@ incluso e nessun requisito viene promosso a DONE.
 - Nessun requisito viene promosso a `DONE`; EMS-002 e BBX-003 restano
   `PARTIAL`.
 
+## Incremento replay EDP deterministico — venti passi
+
+1. Implementato encoder completo dei 18 campioni EDP V1.
+2. Conservati magic, schema, envelope, dimensioni e ordinamento big-endian.
+3. Calcolato CRC32C del payload per ogni frame.
+4. Aggiunto scenario nominale `clean` a 20 Hz.
+5. Aggiunto fault isolato di gap di sequenza.
+6. Aggiunto fault isolato di duplicato senza gap collaterale.
+7. Aggiunto fault isolato di inversione senza gap collaterale.
+8. Aggiunto restart con nuova publisher instance e sequenza riavviata.
+9. Aggiunto CRC errato con payload altrimenti conforme.
+10. Aggiunta sorgente non autorevole per verificare il gate node 47.
+11. Aggiunta provenienza mista a livello di singolo campione.
+12. Aggiunto feed interamente reale, sempre qualificato soltanto per banco.
+13. Aggiunta pausa deterministica oltre la soglia `LOST` e recovery.
+14. Imposti limiti a frame, frequenza, pausa, identità e porta.
+15. Limitata la trasmissione non-loopback a IPv4 private e opzione esplicita.
+16. Resi non trasmissivi per default CLI e piano `DRY_RUN`.
+17. Aggiunto manifesto atomico senza payload, con digest di wire e scheduling.
+18. Dichiarati effetto atteso, trasmissione, frame inviati e target.
+19. Imposti invarianti `raw_payload_persisted=false` e
+    `flight_approval=false`.
+20. Collegati nove test a CTest e documentata la procedura di banco sicura.
+
+### Evidenza software
+
+- Suite replay: 9/9 test PASS; suite EDP complessiva: 26/26 PASS.
+- `py_compile`: PASS.
+- CLI `clean` da quattro frame: `DRY_RUN`, zero frame trasmessi e manifesto
+  coerente.
+- La prima regressione ha rilevato e fatto correggere gap collaterali negli
+  scenari duplicato/inversione; i fault risultano ora indipendenti.
+
+### Hardware reale e aperto
+
+- Nessun datagramma è stato inviato sulla rete avionica e nessun nodo è stato
+  modificato.
+- Replay su EMS RPi4, osservazione DATA LINK, journal, cattura passiva e
+  assessment restano da eseguire in una finestra di banco isolata.
+- EMS-002 e BBX-003 restano `PARTIAL`; il replay non è approvazione al volo.
+
 ## Incremento qualificazione indipendente evidenza EDP — venti passi
 
 1. I limiti di accettazione applicati dalla cattura sono inclusi nel report.

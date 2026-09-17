@@ -3091,3 +3091,39 @@ come evidenza di banco.
   indipendente, correlando esito, pagina DATA LINK e journal Blackbox.
 - Ripetere con fault Ethernet, recovery, reboot ed endurance. EMS-002 e BBX-003
   restano `PARTIAL` fino alle evidenze hardware previste dalla master matrix.
+
+### Incremento software — replay EDP deterministico e fail-closed
+
+È disponibile un generatore di sessioni EDP V1 riproducibili per il banco EMS.
+Produce frame completi con 18 campioni e scenari separati: nominale, gap,
+duplicato, inversione, restart, CRC errato, sorgente non autorevole, provenienza
+mista, dati reali e perdita con recovery. Duplicato e inversione sono costruiti
+senza introdurre gap collaterali, così l'esito osservato resta attribuibile al
+fault scelto.
+
+Il comando opera in `DRY_RUN` salvo `--send`. Loopback è consentito
+esplicitamente; per una destinazione diversa serve anche
+`--allow-bench-network` e sono ammesse soltanto reti IPv4 private. Frame,
+frequenza, pausa, identità e porta hanno limiti rigidi. Il manifesto atomico
+non contiene payload, include SHA-256 del wire stream e dello scheduling e
+mantiene sempre
+`flight_approval=false`.
+
+#### Verificato solo software
+
+- Nove test replay PASS; suite EDP cattura/assessment/replay 26/26 PASS.
+- Parser indipendente compatibile con frame SIM, reali e misti; fault di
+  sequenza, autorità, CRC e restart osservabili secondo il contratto.
+- `py_compile` PASS e prova CLI offline `clean` PASS con zero trasmissioni.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun datagramma è stato inviato sulla rete
+  avionica e nessun servizio è stato modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Eseguire gli scenari sul banco isolato, con motore e attuatori non alimentati,
+  correlando DATA LINK, journal EMS, cattura passiva e assessment.
+- Ripetere successivamente con il publisher Blackbox reale e con fault fisico
+  Ethernet. EMS-002 e BBX-003 restano `PARTIAL`.
