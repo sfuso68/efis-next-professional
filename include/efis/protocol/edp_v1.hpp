@@ -130,6 +130,7 @@ struct ConsumerMetrics final {
 // publisher is authoritative, but cannot change that authority.
 struct ConsumerDiagnostics final {
   LinkStatus link{};
+  ConsumerPolicy policy{};
   ConsumerMetrics metrics{};
   std::uint32_t source_node{};
   std::uint64_t publisher_instance{};
@@ -137,6 +138,15 @@ struct ConsumerDiagnostics final {
   DecodeError last_rejection{DecodeError::none};
   std::optional<std::chrono::milliseconds> last_rejection_age{};
 };
+
+[[nodiscard]] inline bool rejection_is_recent(
+    const ConsumerDiagnostics &diagnostics,
+    std::chrono::milliseconds window = std::chrono::seconds(5)) noexcept {
+  return window >= std::chrono::milliseconds::zero() &&
+         diagnostics.last_rejection != DecodeError::none &&
+         diagnostics.last_rejection_age &&
+         *diagnostics.last_rejection_age <= window;
+}
 
 class Consumer final {
 public:

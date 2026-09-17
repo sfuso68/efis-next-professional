@@ -104,7 +104,9 @@ class AvionixHmiContractTests(unittest.TestCase):
         for metric in ("crcRejected", "identityRejected", "sequenceGaps",
                        "publisherRestarts", "sourceNode", "publisherInstance",
                        "sequence", "lastRejection", "lastRejectionAgeMs",
-                       "validPercent", "sessionStatus"):
+                       "validPercent", "sessionStatus", "recentRejection",
+                       "expectedSourceNode", "authorityStatus",
+                       "staleAfterMs", "lostAfterMs"):
             self.assertIn(metric, source)
             self.assertIn(metric, setup)
         self.assertIn('"DATA LINK"', setup)
@@ -117,9 +119,12 @@ class AvionixHmiContractTests(unittest.TestCase):
 
         link_page = setup[setup.index("Item { id:linkPage"):setup.index(
             "OperationalProfileSetup", setup.index("Item { id:linkPage"))]
-        self.assertIn("SOURCE NODE", link_page)
+        self.assertIn("ACTIVE", link_page)
         self.assertIn("PUBLISHER", link_page)
         self.assertIn("LAST REJECT", link_page)
+        self.assertIn("AUTHORITY", link_page)
+        self.assertIn("STALE/LOST", link_page)
+        self.assertIn("RECENT", link_page)
         self.assertNotIn("TapHandler", link_page)
         self.assertNotIn("onClicked", link_page)
 

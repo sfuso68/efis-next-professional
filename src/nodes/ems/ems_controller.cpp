@@ -141,7 +141,12 @@ QVariantMap EmsController::engineLinkDiagnostics() const {
         {QStringLiteral("lastRejection"), QStringLiteral("NONE")},
         {QStringLiteral("lastRejectionAgeMs"), -1},
         {QStringLiteral("validPercent"), 0.0},
-        {QStringLiteral("sessionStatus"), QStringLiteral("NOT CONFIGURED")}
+        {QStringLiteral("sessionStatus"), QStringLiteral("NOT CONFIGURED")},
+        {QStringLiteral("recentRejection"), false},
+        {QStringLiteral("expectedSourceNode"), QStringLiteral("N/A")},
+        {QStringLiteral("authorityStatus"), QStringLiteral("NOT CONFIGURED")},
+        {QStringLiteral("staleAfterMs"), 0},
+        {QStringLiteral("lostAfterMs"), 0}
     };
     if (!engine_network_source_) return diagnostics;
     const auto snapshot = engine_network_source_->diagnostics(efis::MonoClock::now());
@@ -182,6 +187,21 @@ QVariantMap EmsController::engineLinkDiagnostics() const {
     diagnostics.insert(QStringLiteral("sessionStatus"),
         session_anomalies ? QStringLiteral("SESSION ANOMALIES")
                           : QStringLiteral("SESSION CLEAN"));
+    diagnostics.insert(QStringLiteral("recentRejection"),
+        efis::protocol::edp::rejection_is_recent(snapshot));
+    diagnostics.insert(QStringLiteral("expectedSourceNode"),
+        snapshot.policy.expected_source_node
+            ? QString::number(snapshot.policy.expected_source_node)
+            : QStringLiteral("ANY"));
+    diagnostics.insert(QStringLiteral("authorityStatus"),
+        !snapshot.policy.expected_source_node ? QStringLiteral("UNRESTRICTED")
+        : !snapshot.source_node ? QStringLiteral("WAITING")
+        : snapshot.source_node == snapshot.policy.expected_source_node
+            ? QStringLiteral("MATCH") : QStringLiteral("MISMATCH"));
+    diagnostics.insert(QStringLiteral("staleAfterMs"),
+        int(snapshot.policy.stale_after.count()));
+    diagnostics.insert(QStringLiteral("lostAfterMs"),
+        int(snapshot.policy.lost_after.count()));
     return diagnostics;
 }
 

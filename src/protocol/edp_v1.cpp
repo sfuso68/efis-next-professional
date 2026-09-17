@@ -442,6 +442,7 @@ LinkStatus Consumer::status(MonoTime now) const noexcept {
 ConsumerDiagnostics Consumer::diagnostics(MonoTime now) const noexcept {
   ConsumerDiagnostics out;
   out.link = status(now);
+  out.policy = policy_;
   out.metrics = metrics_;
   if (has_snapshot_) {
     out.source_node = last_.source_node;

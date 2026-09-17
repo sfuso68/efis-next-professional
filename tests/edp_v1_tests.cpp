@@ -64,6 +64,11 @@ int main() {
                 efis::protocol::edp::DecodeError::none &&
             !waiting_diagnostics.last_rejection_age,
         "waiting diagnostics do not invent publisher or rejection identity");
+  check(waiting_diagnostics.policy.expected_source_node == 47 &&
+            waiting_diagnostics.policy.stale_after == 250ms &&
+            waiting_diagnostics.policy.lost_after == 1000ms &&
+            !efis::protocol::edp::rejection_is_recent(waiting_diagnostics),
+        "diagnostics expose policy without inventing a recent rejection");
   check(transition.consume(wire, now) ==
             efis::protocol::edp::DecodeError::none,
         "transition accepts first sample");
@@ -88,6 +93,9 @@ int main() {
             efis::protocol::edp::decode_error_name(
                 rejected.last_rejection) == "CRC_MISMATCH",
         "rejection diagnostics retain accepted authority and rejection age");
+  check(efis::protocol::edp::rejection_is_recent(rejected, 10ms) &&
+            !efis::protocol::edp::rejection_is_recent(rejected, 9ms),
+        "recent rejection window has an inclusive deterministic boundary");
   const auto still_lost = transition.status(now + 1500ms);
   check(still_lost.state == efis::protocol::edp::LinkState::lost &&
             still_lost.age == 1500ms,
@@ -111,6 +119,9 @@ int main() {
                 efis::protocol::edp::DecodeError::crc_mismatch &&
             recovered_diagnostics.last_rejection_age == 100ms,
         "recovery changes publisher identity without erasing fault evidence");
+  check(!efis::protocol::edp::rejection_is_recent(
+            transition.diagnostics(now + 6601ms)),
+        "historical rejection does not remain a recent warning forever");
   check(consumer.consume(wire, now + 10ms) ==
             efis::protocol::edp::DecodeError::duplicate_sequence,
         "duplicate rejected");

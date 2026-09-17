@@ -209,3 +209,34 @@ incluso e nessun requisito viene promosso a DONE.
   `LIVE → STALE → LOST → LIVE`.
 - Nessun requisito viene promosso a `DONE`; EMS-002 e BBX-003 restano
   `PARTIAL` fino alle evidenze hardware già definite nella matrice.
+
+## Incremento autorità e policy EDP — cinque passi
+
+1. Lo snapshot diagnostico espone la policy effettiva del consumer, inclusa
+   l'autorità `expected_source_node` configurata.
+2. Il controller pubblica sorgente attesa, sorgente attiva e risultato
+   `UNRESTRICTED/WAITING/MATCH/MISMATCH` senza modificare l'autorità avionica.
+3. Le soglie operative `stale_after` e `lost_after` sono esposte in
+   millisecondi dalla stessa policy usata per classificare il collegamento.
+4. L'ultimo rifiuto resta evidenza cumulativa, mentre `recentRejection`
+   identifica separatamente soltanto un rifiuto avvenuto negli ultimi 5 s.
+5. La pagina Setup `DATA LINK` mostra autorità, soglie, publisher, sequenza e
+   marcatore `RECENT`; continua a non contenere azioni di comando.
+
+### Evidenza software
+
+- `efis_edp_v1_tests`: PASS, inclusi policy snapshot, limite inclusivo della
+  finestra recente ed estinzione del marcatore dopo 5 s.
+- Contratto HMI: 15/15 PASS e pagina DATA LINK confermata read-only.
+- `qmllint` Qt 6.11.1: nessun errore; restano warning preesistenti sugli
+  accessi QML non qualificati.
+- Build MSVC/Qt 6.11.1 dei target `efis-pfd-qt` ed `efis-ems-qt`: link PASS.
+
+### Hardware reale e aperto
+
+- Nessuna distribuzione o verifica su RPi4, RPi5 o Blackbox in questo
+  incremento.
+- Autorità, soglie e finestra `RECENT` devono essere confrontate con broker e
+  journal reali durante traffico valido, source node errato, perdita e recovery.
+- Nessun requisito viene promosso a `DONE`; EMS-002 e BBX-003 restano
+  `PARTIAL`.

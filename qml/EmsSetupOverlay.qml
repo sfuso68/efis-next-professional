@@ -202,9 +202,10 @@ Rectangle {
                     }
                 }
             }
-            Rectangle { y:312*setup.uiScale; width:772*setup.uiScale; height:52*setup.uiScale; color:"#10232D"; border.color:setup.line
-                Text { x:10*setup.uiScale; y:7*setup.uiScale; text:"SOURCE NODE  "+String(linkPage.link.sourceNode||"N/A")+"   •   PUBLISHER  "+String(linkPage.link.publisherInstance||"N/A")+"   •   SEQUENCE  "+String(linkPage.link.sequence||"N/A"); color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
-                Text { x:10*setup.uiScale; y:29*setup.uiScale; text:"LAST REJECT  "+String(linkPage.link.lastRejection||"NONE")+(Number(linkPage.link.lastRejectionAgeMs)>=0?("   •   "+String(linkPage.link.lastRejectionAgeMs)+" ms AGO"):""); color:String(linkPage.link.lastRejection||"NONE")==="NONE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+            Rectangle { y:312*setup.uiScale; width:772*setup.uiScale; height:70*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:10*setup.uiScale; y:6*setup.uiScale; text:"AUTHORITY  EXPECTED "+String(linkPage.link.expectedSourceNode||"N/A")+"   •   ACTIVE "+String(linkPage.link.sourceNode||"N/A")+"   •   "+String(linkPage.link.authorityStatus||"NOT CONFIGURED")+"   •   STALE/LOST "+String(linkPage.link.staleAfterMs||0)+"/"+String(linkPage.link.lostAfterMs||0)+" ms"; color:String(linkPage.link.authorityStatus)==="MATCH"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+                Text { x:10*setup.uiScale; y:27*setup.uiScale; text:"PUBLISHER  "+String(linkPage.link.publisherInstance||"N/A")+"   •   SEQUENCE  "+String(linkPage.link.sequence||"N/A"); color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
+                Text { x:10*setup.uiScale; y:49*setup.uiScale; text:"LAST REJECT  "+String(linkPage.link.lastRejection||"NONE")+(Number(linkPage.link.lastRejectionAgeMs)>=0?("   •   "+String(linkPage.link.lastRejectionAgeMs)+" ms AGO"):'')+(linkPage.link.recentRejection?"   •   RECENT":""); color:String(linkPage.link.lastRejection||"NONE")==="NONE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
             }
             Text { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; bottomMargin:6*setup.uiScale } horizontalAlignment:Text.AlignHCenter; wrapMode:Text.WordWrap; text:"READ-ONLY DIAGNOSTICS • counters reset at process start • rejected traffic never refreshes data age"; color:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
         }

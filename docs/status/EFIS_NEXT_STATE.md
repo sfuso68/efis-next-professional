@@ -2990,3 +2990,36 @@ stessa identità e l'ultimo rifiuto.
   perdita, traffico rifiutato, restart e recovery.
 - Verificare resa/touch 800×480, reboot, fault Ethernet ed endurance. EMS-002
   e BBX-003 restano `PARTIAL`.
+
+### Incremento software — autorità, soglie e recenza EDP
+
+Lo snapshot diagnostico del consumer include ora la policy realmente applicata.
+Il controller EMS espone separatamente source node atteso e attivo, risultato
+dell'autorità (`UNRESTRICTED/WAITING/MATCH/MISMATCH`) e soglie monotone
+`stale/lost`. Questi valori derivano dalla configurazione operativa e non da
+costanti duplicate nel QML.
+
+L'ultimo rifiuto rimane disponibile come evidenza cumulativa della sessione.
+Un indicatore distinto `recentRejection` vale invece soltanto nella finestra
+deterministica di 5 s dal fault, così un'anomalia storica non appare come un
+allarme corrente. La pagina DATA LINK mostra policy, identità, publisher,
+sequenza e marcatore `RECENT` ed è ancora strettamente read-only.
+
+#### Verificato solo software
+
+- `efis_edp_v1_tests`: PASS per copia della policy, confine inclusivo della
+  finestra recente ed estinzione oltre 5 s.
+- Contratto HMI: 15/15 PASS.
+- `qmllint` Qt 6.11.1 senza errori; warning preesistenti non bloccanti.
+- Build e link MSVC/Qt 6.11.1 di `efis-pfd-qt` ed `efis-ems-qt`: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessuna distribuzione su RPi4/RPi5 o Blackbox.
+
+#### Aperto / non dichiarare DONE
+
+- Confrontare autorità, soglie, `RECENT`, contatori e journal sulla rete reale
+  durante publisher valido, source node errato, `STALE`, `LOST` e recovery.
+- Verificare leggibilità e touch della pagina a 800×480, reboot, fault Ethernet
+  ed endurance. EMS-002 e BBX-003 restano `PARTIAL`.
