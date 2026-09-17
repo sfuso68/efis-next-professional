@@ -22,7 +22,7 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | AVX-G3-01 | G3 | Correggere LOD/proiezione SV | renderer e dataset | qualità primo piano accettabile | benchmark/dataset | medio | acceptance visuale e frame-rate | renderer/terrain | screenshot/replay/HW | L | OPEN |
 | AVX-G3-02 | G3 | Integrare MGL RS-232 passivo | MGL, pinout, protocollo | parser e confronto EMS | documenti mancanti | alto | MGL indipendente, timeout corretti | adapter/test | parser/HW | L | BLOCKED |
 | AVX-G3-03 | G3 | Acceptance touch PFD/MFD/EMS | display reali | checklist operatore | touch disponibile | medio | nessuna sovrapposizione e fail-state leggibili | evidence/status | touch/scenari | M | OPEN |
-| AVX-G3-04 | G3 | Congelare contratto HMI SkyView/EMS | concept approvato e design esistente | manifesto macchina, 10 gate e test fail-closed | G0 | medio | stessa semantica a tutte le risoluzioni | config/ui, docs/design, tools/ui | validator/golden/CI | M | IN_PROGRESS |
+| AVX-G3-04 | G3 | Congelare contratto HMI SkyView/EMS | concept approvato e design esistente | manifesto macchina, 10 gate, 20 controlli fail-closed e test | G0 | medio | stessa semantica a tutte le risoluzioni | config/ui, docs/design, tools/ui | validator/golden/CI/HW | M | IN_PROGRESS |
 | AVX-G4-01 | G4 | PSU, harness, enclosure e schema filo-per-filo | inventario finale | prototipo installabile | G1/G3 | alto | design review e brownout test | hardware docs | electrical/environmental | XL | PROPOSED |
 | AVX-G5-01 | G5 | HIL e fault injection integrati | G3/G4 | matrice prove ripetibile | gate precedenti | molto alto | fault obbligatori con evidenza | tests/evidence | HIL | XL | PROPOSED |
 | AVX-G6-01 | G6 | Congelare baseline EFIS Next | G0–G5 | release/config/recovery controllati | tutti i gate | alto | configuration index e rollback | release docs | acceptance completa | L | PROPOSED |
@@ -40,7 +40,9 @@ comandi su uscite.
 | Data | Gate/attività | Evidenza | Esito e limite |
 |---|---|---|---|
 | 2026-09-17 | AVX-G3-04 | `13d8687`…`caf1b3e`, golden/HMI/EDP diagnostics | IN_PROGRESS; software e CI verificati, pannelli/touch aperti |
+| 2026-09-17 | AVX-G3-04 | `AVIONIX_G3_HMI_BATCH20.md`, HMI-B20-01…20 e 17 test | IMPLEMENTED-SW; contratto chiuso in CTest, SkyView golden e acceptance hardware aperti |
 | 2026-09-17 | AVX-G2-01 | `AVIONIX_DATA_ICD_V1.md`, specifica JSON, schema evidence bundle, due vettori e validator indipendente | FROZEN-SW; test workstation PASS, replay ARM64 e hardware aperti |
+| 2026-09-17 | AVX-G2-01 | `CHECKPOINT-2026-09-17-G2-ARM64-PENDING.md` | verifica ARM64 autorizzata ma non eseguita; accesso SSH workstation rifiutato, zero evidenza hardware |
 | 2026-09-17 | AVX-G2-02 | EDP SIM Blackbox→EMS già operativo; replay deterministico disponibile | resta PROPOSED per il verticale reale, dipendente da G1 e CAN reale |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto

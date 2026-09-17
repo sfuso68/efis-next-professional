@@ -3246,3 +3246,57 @@ ricalcola dimensione e SHA-256 degli artifact.
 - Il bundle registra Project Control #89 e Core CI #73 PASS, ma conserva livello
   `VERIFIED_SW` e tre limitazioni esplicite.
 - Nessuna nuova evidenza hardware: `PRJ-003` resta `VERIFY-HW`.
+
+### Checkpoint G2 ARM64 pendente — 2026-09-17
+
+Il proprietario ha autorizzato la verifica read-only sui tre nodi ARM64. Il
+tentativo SSH dal workstation è stato respinto su PFD `.45`, EMS `.36` e MFD
+`.49`; nessuna autenticazione è stata aggirata e nessun nodo è stato cambiato.
+La procedura da eseguire dal PFD è stata predisposta e il punto è congelato in
+`CHECKPOINT-2026-09-17-G2-ARM64-PENDING.md`.
+
+#### Verificato su hardware reale
+
+- Nulla: non esiste ancora un report ARM64 acquisito.
+
+#### Aperto / non dichiarare DONE
+
+- Acquisire `/tmp/avionix-g2-arm64-results.txt` completo per PFD, EMS e MFD.
+- `PRJ-003` resta `VERIFY-HW`; autorizzazione e preparazione non costituiscono
+  evidence.
+
+### Incremento G3 — venti controlli HMI fail-closed
+
+Il manifesto HMI SkyView/EMS è ora verificato da venti controlli stabili
+`HMI-B20-01`…`HMI-B20-20`. Il validatore rifiuta proprietà sconosciute,
+ordinamenti o matrici alterati, allocazioni di piattaforma errate, minimi
+grafici insufficienti, semantica dati incompleta e qualunque indebolimento
+delle invarianti degradate. La suite è registrata in CTest.
+
+#### Implementato
+
+- Contratto chiuso per canvas, target, risoluzioni, token e palette.
+- Controlli per stati/freshness, zone/V-speed/HSI/terrain/overlay SkyView.
+- Controlli per FPS, compact mode, gauge, cilindri, flap/carrello, pagine ed
+  elettrico EMS.
+- Invarianti degradate esatte, inclusa assenza di autorità di comando.
+- Documento `docs/project/AVIONIX_G3_HMI_BATCH20.md` con mappatura completa.
+
+#### Verificato solo software
+
+- Validatore HMI: PASS, 2 target, 10 gate e 20 controlli.
+- Suite `tests.test_avionix_hmi_contract`: 17/17 PASS, incluse venti mutazioni
+  isolate e radice non-oggetto.
+- `py_compile`: PASS; test registrato come
+  `efis_avionix_hmi_contract_tests` in CTest.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun deployment, riavvio o modifica ai nodi.
+
+#### Aperto / non dichiarare DONE
+
+- Completare le golden SkyView, inclusa 1920×1080.
+- Verificare su RPi4/RPi5 leggibilità, touch, sunlight/night, ≥40 FPS,
+  termica e fault.
+- `PRJ-004` resta `VERIFY-HW` e `AVX-G3-04` resta `IN_PROGRESS`.

@@ -14,6 +14,44 @@ class AvionixHmiContractTests(unittest.TestCase):
     def test_baseline_passes(self):
         self.assertEqual(validate(copy.deepcopy(BASE)), [])
 
+    def test_batch20_all_contract_controls_fail_closed(self):
+        mutations = []
+
+        def case(control, mutate):
+            data = copy.deepcopy(BASE)
+            mutate(data)
+            mutations.append((control, data))
+
+        case(1, lambda data: data.update({"unexpected": True}))
+        case(2, lambda data: data["logical_canvas"].update(width=1000))
+        case(3, lambda data: data["targets"][0].update(platform="RPi4"))
+        case(4, lambda data: data["targets"][0]["resolutions"].pop())
+        case(5, lambda data: data["design_tokens"].update(minimum_stroke_px=1.0))
+        case(6, lambda data: data["design_tokens"]["palette"].update(normal="#39d353"))
+        case(7, lambda data: data["data_states"].remove("SIM"))
+        case(8, lambda data: data["freshness_ms"].update(stale_max=999))
+        case(9, lambda data: data["skyview"]["zones"].reverse())
+        case(10, lambda data: data["skyview"]["v_speed_labels"].reverse())
+        case(11, lambda data: data["skyview"].update(hsi_visible_half_angle_deg=45))
+        case(12, lambda data: data["skyview"]["terrain"].update(age_required=False))
+        case(13, lambda data: data["skyview"]["overlays"].reverse())
+        case(14, lambda data: data["skyview"].update(target_fps=float("nan")))
+        case(15, lambda data: data["ems"]["compact_mode"].update(minimum_micro_text_px=6))
+        case(16, lambda data: data["ems"]["secondary_gauges"].reverse())
+        case(17, lambda data: data["ems"]["cylinder_channels"].reverse())
+        case(18, lambda data: data["ems"]["flap_detents_deg"].pop())
+        case(19, lambda data: data["ems"]["pages"].remove("SETTINGS"))
+        case(20, lambda data: data["degraded_mode"].update(no_control_authority=False))
+
+        self.assertEqual(len(mutations), 20)
+        for control, data in mutations:
+            with self.subTest(control=control):
+                marker = f"[HMI-B20-{control:02d}]"
+                self.assertTrue(any(error.startswith(marker) for error in validate(data)))
+
+    def test_non_object_contract_fails_closed_without_exception(self):
+        self.assertTrue(validate([]))
+
     def test_repository_components_are_registered(self):
         self.assertEqual(validate_repository(ROOT), [])
 

@@ -334,6 +334,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_hmi_golden_tools)
         set_tests_properties(efis_hmi_golden_tools_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_avionix_hmi_contract_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_avionix_hmi_contract)
+        set_tests_properties(efis_avionix_hmi_contract_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         add_test(NAME efis_avionix_icd_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_avionix_icd)
         set_tests_properties(efis_avionix_icd_tests PROPERTIES
