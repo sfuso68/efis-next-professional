@@ -19,6 +19,7 @@ Item {
     property int dataAgeMs: -1
     property bool limitsVerified: true
     readonly property bool usable: dataState !== "LOST" && dataState !== "FAIL"
+    readonly property bool degraded: dataState === "STALE" || dataState === "DEGRADED"
 
     HmiTokens { id: tokens }
     EmsGaugeV3 {
@@ -36,14 +37,14 @@ Item {
         uiScale: gauge.uiScale
         dominant: gauge.dominant
         compact: gauge.compact
-        normalRangesVisible: gauge.usable
-        opacity: gauge.usable ? 1.0 : 0.34
+        normalRangesVisible: gauge.usable && !gauge.degraded
+        opacity: gauge.usable ? (gauge.degraded ? 0.72 : 1.0) : 0.34
     }
     Rectangle {
         anchors.fill: parent
-        visible: !gauge.usable
+        visible: gauge.degraded || !gauge.usable
         color: "transparent"
-        border.color: tokens.warning
+        border.color: gauge.degraded ? tokens.caution : tokens.warning
         border.width: Math.max(2, 2 * gauge.uiScale)
         radius: width / 2
     }

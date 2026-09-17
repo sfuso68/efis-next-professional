@@ -37,6 +37,7 @@ con una nuova ADR o con una revisione esplicita del brief.
 | `AVIONIX_G3_HMI_BATCH20.md` | venti controlli fail-closed del contratto SkyView/EMS | IMPLEMENTED-SW; hardware aperto |
 | `AVIONIX_G3_SKYVIEW_GOLDEN_BATCH20.md` | bundle golden V2 EMS/SkyView e venti controlli di integrità | VERIFIED-SW; hardware aperto |
 | `AVIONIX_G3_SKYVIEW_RESPONSIVE_BATCH20.md` | venti controlli responsive e correzione overlay meteo SkyView | VERIFIED-SW; hardware aperto |
+| `AVIONIX_G3_EMS_STATE_BATCH20.md` | sei stati EMS compact e venti controlli fail-closed | VERIFIED-SW; hardware aperto |
 | `AVIONIX_NEXT_DECISION_REGISTER.md` | decisioni G0/G1/G2 separate da evidenze e implementazione | DEC-G2-001 approvata; altre aperte |
 | `AVIONIX_NEXT_EXECUTION_BACKLOG.md` | attività ordinate per gate e registro evidenze | controllato |
 | `docs/status/EFIS_NEXT_STATE.md` | stato verificato e livelli di evidenza | autorevole |

@@ -127,3 +127,13 @@ secondaria. Sopra il breakpoint usa 178×103 e conserva badge e avviso separati.
 Entrambi i profili iniziano 62 px logici sotto la FMA, così la heading ribbon
 resta libera a 1024×600, 1280×800 e 1920×1080. Le invarianti sono verificate dai
 controlli `HMI-R20-01`…`HMI-R20-20`.
+
+## Matrice stati EMS V1
+
+Il contratto `avionix.ems-state-presentation.v1` congela la presentazione
+compact 800×480 di `LIVE`, `STALE`, `DEGRADED`, `LOST`, `FAIL` e `SIM`.
+`STALE/DEGRADED` conservano valori ed età ma rimuovono la normalizzazione verde;
+`LOST/FAIL` inibiscono endurance, hottest cylinder e spread e mostrano
+indisponibilità esplicita. Sei golden firmate verificano i controlli
+`HMI-E20-01`…`HMI-E20-20`. La matrice resta software-only e non sostituisce
+replay EDP, fault fisico e acceptance sul pannello RPi4.

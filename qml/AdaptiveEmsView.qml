@@ -245,7 +245,7 @@ Item {
             HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs }
             Item { width:parent.width*.18; height:parent.height
                 Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"ENDURANCE"; color:root.cyan; font.pixelSize:hmiTokens.legibleText(8,root.textScale,8); font.bold:true }
-                Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.fuelEnduranceHours.toFixed(1)+" HR"; color:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:hmiTokens.legibleText(17,root.textScale,15); font.bold:true }
+                Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.dataUsable?root.fuelEnduranceHours.toFixed(1)+" HR":"—"; color:!root.dataUsable?hmiTokens.invalid:root.dataDegraded?root.amber:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:hmiTokens.legibleText(17,root.textScale,15); font.bold:true }
             }
             HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs }
         } }

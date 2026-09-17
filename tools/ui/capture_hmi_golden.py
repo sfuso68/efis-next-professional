@@ -168,7 +168,7 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--platform", default="offscreen")
     parser.add_argument("--delay-ms", type=int, default=800)
-    parser.add_argument("--state", choices=("LIVE", "STALE", "LOST", "FAIL", "SIM"), default="SIM")
+    parser.add_argument("--state", choices=("LIVE", "STALE", "DEGRADED", "LOST", "FAIL", "SIM"), default="SIM")
     parser.add_argument("--age-ms", type=int, default=0)
     parser.add_argument("--role", choices=tuple(SIZES_BY_ROLE), default="ems")
     parser.add_argument("--manifest-only", action="store_true",

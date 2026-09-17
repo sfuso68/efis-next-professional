@@ -15,6 +15,8 @@ Rectangle {
     property int dataAgeMs: -1
     function stateLabel() { return dataState+((dataState==="STALE"||dataState==="LOST")&&dataAgeMs>=0?" "+(dataAgeMs/1000).toFixed(1)+"s":"") }
     property bool limitsVerified: false
+    readonly property bool dataUsable:dataState!=="LOST"&&dataState!=="FAIL"
+    readonly property bool dataDegraded:dataState==="STALE"||dataState==="DEGRADED"
     readonly property color cyan: "#28D7E8"
     readonly property color normal: "#39D353"
     readonly property color caution: "#FFC928"
@@ -49,8 +51,8 @@ Rectangle {
             delegate:Rectangle {
                 id:cylinder; required property int index
                 width:(cylinderRow.width-3*cylinderRow.spacing)/4; height:cylinderRow.height; radius:3*root.uiScale
-                color:"#081820"; border.width:(root.hottestCht===index||root.hottestEgt===index)?2:1
-                border.color:(root.hottestCht===index||root.hottestEgt===index)?root.caution:"#314650"
+                color:"#081820"; border.width:root.dataUsable&&(root.hottestCht===index||root.hottestEgt===index)?2:1
+                border.color:root.dataUsable&&(root.hottestCht===index||root.hottestEgt===index)?root.caution:"#314650"
                 Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:3*root.uiScale }
                     text:"CYL "+(cylinder.index+1); color:"#F4F8FC"; font.pixelSize:root.textSize(7,8); font.bold:true }
                 Row {
@@ -67,7 +69,7 @@ Rectangle {
                             width:(channelRow.width-channelRow.spacing)/2; height:channelRow.height
                             readonly property bool channelValid:isFinite(modelData.value) && root.dataState!=="LOST" && root.dataState!=="FAIL"
                             readonly property real fraction:channelValid?Math.max(0,Math.min(1,modelData.value/modelData.high)):0
-                            readonly property color channelColor:!channelValid?root.invalid:modelData.value>=modelData.warning?root.warning:modelData.value>=modelData.caution?root.caution:root.normal
+                            readonly property color channelColor:!channelValid?root.invalid:root.dataDegraded?root.caution:modelData.value>=modelData.warning?root.warning:modelData.value>=modelData.caution?root.caution:root.normal
                             Text { anchors.horizontalCenter:parent.horizontalCenter; text:channel.modelData.name; color:root.cyan; font.pixelSize:root.textSize(5.5,8); font.bold:true }
                             Rectangle { id:track; anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:10*root.uiScale; bottom:reading.top; bottomMargin:2*root.uiScale }
                                 width:10*root.uiScale; color:"#14242D"; border.color:"#64757E"
@@ -84,7 +86,7 @@ Rectangle {
         }
     }
     Item { id:footer; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:16*root.uiScale
-        Text { x:8*root.uiScale; text:"HOT CHT  "+(root.hottestCht>=0?"CYL "+(root.hottestCht+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.chtValues)))+root.temperatureUnit; color:root.caution; font.pixelSize:root.textSize(6,8); font.bold:true }
-        Text { anchors.right:parent.right; anchors.rightMargin:8*root.uiScale; text:"HOT EGT  "+(root.hottestEgt>=0?"CYL "+(root.hottestEgt+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.egtValues)))+root.temperatureUnit; color:root.caution; font.pixelSize:root.textSize(6,8); font.bold:true }
+        Text { x:8*root.uiScale; text:root.dataUsable?"HOT CHT  "+(root.hottestCht>=0?"CYL "+(root.hottestCht+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.chtValues)))+root.temperatureUnit:"CHT UNAVAILABLE"; color:root.dataUsable?root.caution:root.invalid; font.pixelSize:root.textSize(6,8); font.bold:true }
+        Text { anchors.right:parent.right; anchors.rightMargin:8*root.uiScale; text:root.dataUsable?"HOT EGT  "+(root.hottestEgt>=0?"CYL "+(root.hottestEgt+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.egtValues)))+root.temperatureUnit:"EGT UNAVAILABLE"; color:root.dataUsable?root.caution:root.invalid; font.pixelSize:root.textSize(6,8); font.bold:true }
     }
 }

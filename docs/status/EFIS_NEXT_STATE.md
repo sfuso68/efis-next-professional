@@ -3374,3 +3374,41 @@ heading ribbon.
   sunlight/night, termica e stati meteo LIVE/CACHED/STALE/EXPIRED.
 - Terrain golden sintetico non qualifica DEM, texture, LOD o proiezione reali.
 - `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS`.
+
+### Incremento G3 — stati EMS fail-closed, venti punti
+
+La pagina EMS compact dispone ora di una matrice deterministica a sei stati:
+`LIVE`, `STALE`, `DEGRADED`, `LOST`, `FAIL` e `SIM`. Il contratto
+`avionix.ems-state-presentation.v1` e i controlli `HMI-E20-01`…`HMI-E20-20`
+rendono verificabili severità, età, uso del colore, funzioni derivate e assenza
+di autorità di comando.
+
+#### Implementato
+
+- `STALE/DEGRADED` mostrano età, cue ambra e valori leggibili, ma non archi,
+  riempimenti o consensi verdi normali.
+- `LOST/FAIL` mostrano warning rosso e invalidità esplicita; endurance non è
+  più presentata e i footer CHT/EGT non calcolano hottest channel o spread.
+- Sei golden native Windows 800×480 sono versionate con manifesto, dimensioni
+  e SHA-256.
+- Generatore, validatore, test dedicato, registrazione CTest e controllo Project
+  Control sono inclusi.
+
+#### Verificato solo software
+
+- Build MSVC/Qt 6.11.1 PFD ed EMS, QML AOT e link: PASS.
+- Sei catture ispezionate: cue distinti, età visibile per STALE/DEGRADED/LOST,
+  derivate assenti in LOST/FAIL e SIM sempre riconoscibile.
+- Validatore con venti controlli fail-closed: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo, servizio, rete o cablaggio è stato
+  contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Ripetere la matrice con replay EDP e fault fisico sul pannello EMS RPi4.
+- Verificare touch, sunlight/night, ≥40 FPS, reboot, endurance e termica.
+- `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
+  conserva limiti `UNVERIFIED`.

@@ -20,7 +20,7 @@ Rectangle {
     Text {
         id: label
         anchors.centerIn: parent
-        text: badge.dataState + ((badge.dataState === "STALE" || badge.dataState === "LOST") && badge.ageMs >= 0
+        text: badge.dataState + ((badge.dataState === "STALE" || badge.dataState === "DEGRADED" || badge.dataState === "LOST") && badge.ageMs >= 0
                              ? "  " + (badge.ageMs / 1000).toFixed(1) + "s" : "")
         color: tokens.stateColor(badge.dataState)
         font.pixelSize: Math.max(10, 11 * badge.uiScale)

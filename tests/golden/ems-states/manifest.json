@@ -1,0 +1,55 @@
+{
+  "schema": "avionix.ems-state-golden.v1",
+  "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
+  "generated_utc": "2026-09-17T22:29:42.143015+00:00",
+  "platform": "windows",
+  "role": "ems",
+  "resolution": [
+    800,
+    480
+  ],
+  "images": [
+    {
+      "state": "LIVE",
+      "age_ms": 0,
+      "file": "ems-800x480-live.png",
+      "bytes": 234211,
+      "sha256": "496893e8bc6471631440d23c598266ebcde75ad7c483368902d7a873a6445c90"
+    },
+    {
+      "state": "STALE",
+      "age_ms": 600,
+      "file": "ems-800x480-stale.png",
+      "bytes": 271408,
+      "sha256": "5cfd70fea5215389e3eaa61935e5f9df2a85dfcfc4215ad4d54a311a0dd2e284"
+    },
+    {
+      "state": "DEGRADED",
+      "age_ms": 600,
+      "file": "ems-800x480-degraded.png",
+      "bytes": 273423,
+      "sha256": "3a6ef033ba1da05d8675cf0571e81cabf9c7ce4f17554e7ba8fd021085cfd419"
+    },
+    {
+      "state": "LOST",
+      "age_ms": 1500,
+      "file": "ems-800x480-lost.png",
+      "bytes": 237703,
+      "sha256": "e2be3b39923364934c857428a8cc9030cefe1b452ee34567d0348582dfb993ac"
+    },
+    {
+      "state": "FAIL",
+      "age_ms": 0,
+      "file": "ems-800x480-fail.png",
+      "bytes": 235210,
+      "sha256": "8e1d29990353e3223ac87cbdd68ec25934592ef92b6c73bc7f188523ef112685"
+    },
+    {
+      "state": "SIM",
+      "age_ms": 0,
+      "file": "ems-800x480-sim.png",
+      "bytes": 237591,
+      "sha256": "49eceddfdbd771c8689b4d82c4cf79b191cedf4190ea1d8db87fcc1012528ca4"
+    }
+  ]
+}
