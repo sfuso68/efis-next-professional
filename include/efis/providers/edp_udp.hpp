@@ -40,6 +40,10 @@ public:
   link_state(MonoTime now) const noexcept {
     return consumer_.state(now);
   }
+  [[nodiscard]] protocol::edp::LinkStatus
+  link_status(MonoTime now) const noexcept {
+    return consumer_.status(now);
+  }
   [[nodiscard]] std::optional<std::chrono::milliseconds>
   data_age(MonoTime now) const noexcept {
     return consumer_.age(now);

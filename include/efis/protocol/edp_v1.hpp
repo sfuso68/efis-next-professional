@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <optional>
 #include <span>
+#include <string_view>
 #include <vector>
 
 namespace efis::protocol::edp {
@@ -58,6 +59,26 @@ encode_snapshot(const engine::EngineSnapshot &snapshot,
 
 enum class LinkState : std::uint8_t { waiting, live, stale, lost };
 
+[[nodiscard]] constexpr std::string_view
+link_state_name(LinkState state) noexcept {
+  switch (state) {
+  case LinkState::waiting:
+    return "WAITING";
+  case LinkState::live:
+    return "LIVE";
+  case LinkState::stale:
+    return "STALE";
+  case LinkState::lost:
+    return "LOST";
+  }
+  return "LOST";
+}
+
+struct LinkStatus final {
+  LinkState state{LinkState::waiting};
+  std::optional<std::chrono::milliseconds> age{};
+};
+
 struct PublisherConfig final {
   std::uint32_t source_node{};
   std::uint64_t publisher_instance{};
@@ -95,6 +116,7 @@ public:
   [[nodiscard]] LinkState state(MonoTime now) const noexcept;
   [[nodiscard]] std::optional<std::chrono::milliseconds>
   age(MonoTime now) const noexcept;
+  [[nodiscard]] LinkStatus status(MonoTime now) const noexcept;
   [[nodiscard]] const engine::EngineSnapshot *latest() const noexcept;
   [[nodiscard]] const ConsumerMetrics &metrics() const noexcept {
     return metrics_;

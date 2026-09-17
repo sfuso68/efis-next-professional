@@ -2890,3 +2890,33 @@ fault EDP fisico e comportamento sul pannello RPi4 restano aperti.
 - Replay EDP dalla Blackbox reale e verifica temporale `LIVE → STALE → LOST`
   sul pannello EMS RPi4.
 - Acceptance visiva dell'età, frame-rate, touch, termica e soak/fault test.
+
+### Incremento software — transizioni e recovery EDP deterministiche
+
+- Introdotto `LinkStatus`, snapshot atomico di stato ed età: il controller non
+  effettua più due letture separate dello stesso collegamento.
+- Definiti nomi diagnostici stabili `WAITING/LIVE/STALE/LOST`, utilizzabili in
+  log e strumenti di banco senza replicare conversioni locali.
+- Verificati esattamente i confini: 250 ms resta `LIVE`, 251 ms è `STALE`,
+  1.000 ms resta `STALE` e oltre il limite lo stato è `LOST`.
+- Un datagramma con CRC errato durante la perdita viene rifiutato e non aggiorna
+  l'età. Un publisher valido successivo produce recovery atomica `LIVE/0 ms`.
+- La stessa sequenza di perdita e recovery è provata sul trasporto UDP loopback,
+  inclusa la nuova disponibilità del campione dopo il recupero.
+
+#### Verificato solo software
+
+- `efis_edp_v1_tests`: PASS con transizioni, CRC fault e recovery UDP.
+- Contratto HMI: 14/14 PASS.
+- Build MSVC/Qt 6.11.1 PFD ed EMS, link finali: PASS.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica. Le prove usano tempo deterministico e loopback locale.
+
+#### Aperto / non dichiarare DONE
+
+- Ripetere la medesima sequenza con broker Blackbox e pannello EMS RPi4,
+  raccogliendo timestamp e schermate degli stati.
+- Fault fisico Ethernet, reboot, endurance e acceptance grafica/touch restano
+  gate hardware separati.

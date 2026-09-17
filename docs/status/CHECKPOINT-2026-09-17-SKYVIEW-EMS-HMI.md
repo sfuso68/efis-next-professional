@@ -148,3 +148,15 @@ Evidenza software: `efis_edp_v1_tests` PASS, contratto HMI 14/14 PASS e build
 PFD/EMS MSVC/Qt con link finale PASS. Non sono stati eseguiti replay Blackbox,
 deployment ARM64, fault fisici o acceptance sul pannello RPi4; pertanto lo
 stato di requisito non viene promosso a DONE.
+
+## Incremento transizioni/recovery EDP — cinque passi
+
+- Snapshot atomico `LinkStatus` per stato ed età.
+- Nomi diagnostici canonici dei quattro stati di collegamento.
+- Controller EMS convertito a una sola osservazione per ciclo.
+- Test dei confini temporali e del mancato refresh su CRC errato.
+- Recovery verificata sia nel consumer sia nel trasporto UDP loopback.
+
+Evidenza esclusivamente software: test EDP PASS, contratto HMI 14/14 PASS e
+build/link PFD+EMS PASS. Nessuna prova Blackbox/RPi4, fault Ethernet, reboot o
+endurance è inclusa; EMS-002 e BBX-003 non cambiano stato nella master matrix.

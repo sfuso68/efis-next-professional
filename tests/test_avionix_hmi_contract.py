@@ -87,7 +87,8 @@ class AvionixHmiContractTests(unittest.TestCase):
         header = (ROOT / "src/nodes/ems/ems_controller.hpp").read_text(encoding="utf-8")
         source = (ROOT / "src/nodes/ems/ems_controller.cpp").read_text(encoding="utf-8")
         self.assertIn("Q_PROPERTY(int dataAgeMs READ dataAgeMs", header)
-        self.assertIn("engine_network_source_->data_age(now)", source)
+        self.assertIn("engine_network_source_->link_status(now)", source)
+        self.assertNotIn("engine_network_source_->data_age(now)", source)
         for state in ("LIVE", "STALE", "LOST", "SIM"):
             self.assertIn(f'QStringLiteral("{state}")', source)
         self.assertNotIn('data_source_state_ = QStringLiteral("NETWORK")', source)

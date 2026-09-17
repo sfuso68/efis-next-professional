@@ -412,22 +412,24 @@ DecodeError Consumer::consume(std::span<const std::uint8_t> d, MonoTime now) {
   return DecodeError::none;
 }
 LinkState Consumer::state(MonoTime now) const noexcept {
+  return status(now).state;
+}
+LinkStatus Consumer::status(MonoTime now) const noexcept {
   if (!has_snapshot_)
-    return LinkState::waiting;
-  if (now <= last_received_ || now - last_received_ <= policy_.stale_after)
-    return LinkState::live;
-  if (now - last_received_ <= policy_.lost_after)
-    return LinkState::stale;
-  return LinkState::lost;
+    return {};
+  const auto sample_age = now <= last_received_
+                              ? std::chrono::milliseconds::zero()
+                              : std::chrono::duration_cast<
+                                    std::chrono::milliseconds>(now - last_received_);
+  if (sample_age <= policy_.stale_after)
+    return {LinkState::live, sample_age};
+  if (sample_age <= policy_.lost_after)
+    return {LinkState::stale, sample_age};
+  return {LinkState::lost, sample_age};
 }
 std::optional<std::chrono::milliseconds>
 Consumer::age(MonoTime now) const noexcept {
-  if (!has_snapshot_)
-    return std::nullopt;
-  if (now <= last_received_)
-    return std::chrono::milliseconds::zero();
-  return std::chrono::duration_cast<std::chrono::milliseconds>(now -
-                                                               last_received_);
+  return status(now).age;
 }
 const engine::EngineSnapshot *Consumer::latest() const noexcept {
   return has_snapshot_ ? &latest_ : nullptr;

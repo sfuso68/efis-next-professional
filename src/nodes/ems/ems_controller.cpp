@@ -618,12 +618,12 @@ void EmsController::updateSnapshot() {
     bool use_simulation = true;
     if (engine_network_source_) {
         const auto network = engine_network_source_->poll(now);
-        const auto network_age = engine_network_source_->data_age(now);
-        data_age_ms_ = network_age
-            ? static_cast<int>(qMin<std::int64_t>(network_age->count(),
+        const auto link = engine_network_source_->link_status(now);
+        data_age_ms_ = link.age
+            ? static_cast<int>(qMin<std::int64_t>(link.age->count(),
                   std::numeric_limits<int>::max()))
             : -1;
-        switch (engine_network_source_->link_state(now)) {
+        switch (link.state) {
             case efis::protocol::edp::LinkState::live:
                 engine_snapshot_ = network;
                 engine_data_state_ = network.rpm.is_simulated()
