@@ -2920,3 +2920,38 @@ fault EDP fisico e comportamento sul pannello RPi4 restano aperti.
   raccogliendo timestamp e schermate degli stati.
 - Fault fisico Ethernet, reboot, endurance e acceptance grafica/touch restano
   gate hardware separati.
+
+### Incremento software — diagnostica operativa EDP nel Setup EMS
+
+- Il controller espone `engineLinkDiagnostics` read-only con trasporto, bind,
+  porta, stato, età e contatori EDP: datagrammi, accettati, decode/CRC/identity
+  reject, duplicati, inversioni, gap di sequenza e restart del publisher.
+- I log producono `ems_edp_link_transition` soltanto quando cambia lo stato
+  canonico o lo stato motore; l'evento include età e contatori critici senza
+  generare log a ogni refresh da 50 ms.
+- Il Setup EMS dispone ora della settima sezione `DATA LINK`, separata dalla
+  pagina di volo, con stato, freshness, rapporto validi/totali e anomalie.
+- `AIRCRAFT DATA` è stato spostato coerentemente all'indice 6 e le modalità di
+  anteprima sono state aggiornate; aggiunto `--setup-edp-preview`.
+- La diagnostica è esplicitamente informativa: nessun pulsante modifica rete,
+  sorgente, contatori o autorità avionica.
+
+#### Verificato solo software
+
+- Contratto HMI 15/15: PASS; `qmllint` senza errori, con warning preesistenti
+  sugli accessi non qualificati.
+- Build MSVC/Qt 6.11.1 PFD ed EMS, QML AOT e link finali: PASS.
+- Il tentativo di cattura `--setup-edp-preview` su backend offscreen Windows è
+  rimasto bloccato ed è stato interrotto; nessuna immagine viene dichiarata.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; pagina e contatori non sono stati osservati sul
+  pannello RPi4.
+
+#### Aperto / non dichiarare DONE
+
+- Catturare la pagina DATA LINK su RPi4 durante `LIVE → STALE → LOST → LIVE` e
+  confrontare contatori UI, journal e broker Blackbox.
+- Verificare leggibilità/touch a 800×480 e persistenza dei log attraverso reboot
+  e fault fisico Ethernet.

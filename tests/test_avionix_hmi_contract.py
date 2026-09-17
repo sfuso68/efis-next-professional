@@ -94,6 +94,25 @@ class AvionixHmiContractTests(unittest.TestCase):
         self.assertNotIn('data_source_state_ = QStringLiteral("NETWORK")', source)
         self.assertNotIn('QStringLiteral("SIMULATION")', header)
 
+    def test_ems_setup_exposes_read_only_edp_diagnostics(self):
+        header = (ROOT / "src/nodes/ems/ems_controller.hpp").read_text(encoding="utf-8")
+        source = (ROOT / "src/nodes/ems/ems_controller.cpp").read_text(encoding="utf-8")
+        setup = (ROOT / "qml/EmsSetupOverlay.qml").read_text(encoding="utf-8")
+        main = (ROOT / "qml/EmsMain.qml").read_text(encoding="utf-8")
+        self.assertIn("Q_PROPERTY(QVariantMap engineLinkDiagnostics", header)
+        self.assertIn("event=ems_edp_link_transition", source)
+        for metric in ("crcRejected", "identityRejected", "sequenceGaps",
+                       "publisherRestarts"):
+            self.assertIn(metric, source)
+            self.assertIn(metric, setup)
+        self.assertIn('"DATA LINK"', setup)
+        self.assertIn("READ-ONLY DIAGNOSTICS", setup)
+        self.assertIn("height:rail.height/7", setup)
+        self.assertIn("visible:setup.section===6", setup)
+        self.assertIn('indexOf("--setup-edp-preview")', main)
+        self.assertIn("if (edpPreview) setupSection = 5", main)
+        self.assertIn("if (operationalPreview) setupSection = 6", main)
+
 
 if __name__ == "__main__":
     unittest.main()

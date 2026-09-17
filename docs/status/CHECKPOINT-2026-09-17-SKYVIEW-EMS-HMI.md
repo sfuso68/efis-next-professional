@@ -160,3 +160,16 @@ stato di requisito non viene promosso a DONE.
 Evidenza esclusivamente software: test EDP PASS, contratto HMI 14/14 PASS e
 build/link PFD+EMS PASS. Nessuna prova Blackbox/RPi4, fault Ethernet, reboot o
 endurance è inclusa; EMS-002 e BBX-003 non cambiano stato nella master matrix.
+
+## Incremento diagnostica DATA LINK EMS — cinque passi
+
+- Esposta mappa read-only completa delle metriche EDP.
+- Aggiunto evento journal strutturato sulle sole transizioni.
+- Creata pagina Setup `DATA LINK` con freshness e contatori.
+- Riallineati gli indici Setup e aggiunta anteprima dedicata.
+- Aggiunto test fail-closed del contratto diagnostico.
+
+Verifica software: HMI 15/15 PASS, `qmllint` senza errori e build/link PFD+EMS
+PASS. La cattura offscreen Windows non ha terminato ed è stata interrotta, quindi
+non esiste nuova evidenza grafica. Nessun deployment o test RPi4/Blackbox è
+incluso e nessun requisito viene promosso a DONE.

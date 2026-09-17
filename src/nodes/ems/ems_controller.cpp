@@ -120,6 +120,40 @@ bool EmsController::setUnitSystem(const QString& system) {
     return settings.status() == QSettings::NoError;
 }
 
+QVariantMap EmsController::engineLinkDiagnostics() const {
+    QVariantMap diagnostics{
+        {QStringLiteral("transport"), QStringLiteral("EDP V1 / UDP")},
+        {QStringLiteral("configured"), bool(engine_network_source_)},
+        {QStringLiteral("state"), data_source_state_},
+        {QStringLiteral("ageMs"), data_age_ms_},
+        {QStringLiteral("datagrams"), qulonglong(0)},
+        {QStringLiteral("accepted"), qulonglong(0)},
+        {QStringLiteral("decodeRejected"), qulonglong(0)},
+        {QStringLiteral("crcRejected"), qulonglong(0)},
+        {QStringLiteral("identityRejected"), qulonglong(0)},
+        {QStringLiteral("duplicates"), qulonglong(0)},
+        {QStringLiteral("reversed"), qulonglong(0)},
+        {QStringLiteral("sequenceGaps"), qulonglong(0)},
+        {QStringLiteral("publisherRestarts"), qulonglong(0)}
+    };
+    if (!engine_network_source_) return diagnostics;
+    const auto& metrics = engine_network_source_->metrics();
+    const auto& endpoint = engine_network_source_->local_endpoint();
+    diagnostics.insert(QStringLiteral("bindAddress"),
+                       QString::fromStdString(endpoint.address));
+    diagnostics.insert(QStringLiteral("port"), int(endpoint.port));
+    diagnostics.insert(QStringLiteral("datagrams"), qulonglong(metrics.datagrams));
+    diagnostics.insert(QStringLiteral("accepted"), qulonglong(metrics.accepted));
+    diagnostics.insert(QStringLiteral("decodeRejected"), qulonglong(metrics.decode_rejected));
+    diagnostics.insert(QStringLiteral("crcRejected"), qulonglong(metrics.crc_rejected));
+    diagnostics.insert(QStringLiteral("identityRejected"), qulonglong(metrics.identity_rejected));
+    diagnostics.insert(QStringLiteral("duplicates"), qulonglong(metrics.duplicates));
+    diagnostics.insert(QStringLiteral("reversed"), qulonglong(metrics.reversed));
+    diagnostics.insert(QStringLiteral("sequenceGaps"), qulonglong(metrics.sequence_gaps));
+    diagnostics.insert(QStringLiteral("publisherRestarts"), qulonglong(metrics.publisher_restarts));
+    return diagnostics;
+}
+
 void EmsController::loadFuelComputer() {
     QSettings settings{QSettings::IniFormat, QSettings::UserScope,
                        QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
@@ -664,10 +698,20 @@ void EmsController::updateSnapshot() {
             sensor_node_state_ = QStringLiteral("SIMULATED");
         }
     }
-    if (engine_data_state_ != last_logged_engine_data_state_) {
+    if (engine_data_state_ != last_logged_engine_data_state_ ||
+        data_source_state_ != last_logged_data_source_state_) {
         last_logged_engine_data_state_ = engine_data_state_;
-        qInfo().noquote() << "event=ems_engine_data_state state=" << engine_data_state_
-                          << "source=" << data_source_state_
+        last_logged_data_source_state_ = data_source_state_;
+        const auto diagnostics = engineLinkDiagnostics();
+        qInfo().noquote() << "event=ems_edp_link_transition"
+                          << "state=" << data_source_state_
+                          << "engine_state=" << engine_data_state_
+                          << "age_ms=" << data_age_ms_
+                          << "accepted=" << diagnostics.value("accepted").toULongLong()
+                          << "rejected=" << diagnostics.value("decodeRejected").toULongLong()
+                          << "crc_rejected=" << diagnostics.value("crcRejected").toULongLong()
+                          << "sequence_gaps=" << diagnostics.value("sequenceGaps").toULongLong()
+                          << "publisher_restarts=" << diagnostics.value("publisherRestarts").toULongLong()
                           << "node=" << sensor_node_state_;
     }
     if (!fuel_on_board_initialized_) {
