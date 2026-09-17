@@ -37,10 +37,14 @@ Item {
         verticalSpeed: controller.verticalSpeed }
 
     WeatherRadarOverlay {
+        id: weatherOverlay
         z: 3
-        anchors { right: altitudeTape.left; top: fma.bottom; rightMargin: 8*root.uiScale; topMargin: 9*root.uiScale }
-        width: 178*root.uiScale; height: 103*root.uiScale
+        readonly property bool compactSkyView: root.width <= 1100
+        anchors { right: altitudeTape.left; top: fma.bottom; rightMargin: 8*root.uiScale; topMargin: 62*root.uiScale }
+        width: (compactSkyView ? 154 : 178)*root.uiScale
+        height: (compactSkyView ? 64 : 103)*root.uiScale
         uiScale: root.uiScale; radarOpacity: 0.72
+        compactLayout: compactSkyView
         weatherProvider: root.goldenMode ? root.controller : weather
         interactive: !root.goldenMode
     }

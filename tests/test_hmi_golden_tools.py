@@ -8,7 +8,10 @@ import tempfile
 import unittest
 import zlib
 
-from tools.ui.capture_hmi_golden import SIZES_BY_ROLE, png_pixel_sha256, png_size
+from tools.ui.capture_hmi_golden import (
+    SIZES_BY_ROLE, png_pixel_sha256, png_size,
+    write_manifest as build_manifest,
+)
 from tools.ui.compare_hmi_golden import difference
 from tools.ui.validate_hmi_golden import validate
 
@@ -78,6 +81,14 @@ class HmiGoldenToolsTests(unittest.TestCase):
             write_manifest(directory, manifest)
             self.assertEqual(validate(directory), [])
             self.assertIn((1920, 1080), SIZES_BY_ROLE["skyview"])
+
+    def test_manifest_can_be_built_from_direct_captures(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            fake_bundle(directory, "skyview")
+            manifest = build_manifest(directory, "test", "SIM", 0, "skyview")
+            self.assertEqual(manifest["role"], "skyview")
+            self.assertEqual(validate(directory), [])
 
     def test_batch20_all_golden_controls_fail_closed(self):
         def mutate(control, manifest, directory):

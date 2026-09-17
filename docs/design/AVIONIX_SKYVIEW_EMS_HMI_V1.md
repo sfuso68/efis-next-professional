@@ -117,3 +117,13 @@ evitare dipendenze dalla rete o dai dataset installati. Questa superficie
 verifica geometria e regressioni HMI, non qualità DEM/texture né prestazioni del
 renderer 3D operativo. I bundle restano marcati
 `SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE`.
+
+## Profilo responsive SkyView V1
+
+La geometria meteo è congelata anche nel contratto
+`avionix.skyview-responsive.v1`. A larghezza fino a 1100 px il pannello usa il
+profilo compact 154×64, integra il messaggio no-data e sopprime la legenda
+secondaria. Sopra il breakpoint usa 178×103 e conserva badge e avviso separati.
+Entrambi i profili iniziano 62 px logici sotto la FMA, così la heading ribbon
+resta libera a 1024×600, 1280×800 e 1920×1080. Le invarianti sono verificate dai
+controlli `HMI-R20-01`…`HMI-R20-20`.

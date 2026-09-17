@@ -33,6 +33,7 @@ jobs:
         run: |
           python tools/ui/validate_hmi_contract.py
           python -m unittest tests.test_avionix_hmi_contract -v
+          python -m unittest tests.test_skyview_responsive -v
           python -m unittest tests.test_hmi_golden_tools -v
           python tools/ui/validate_hmi_golden.py tests/golden/hmi
           python tools/ui/validate_hmi_golden.py tests/golden/skyview

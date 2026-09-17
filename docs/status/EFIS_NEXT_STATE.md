@@ -3338,3 +3338,39 @@ dipende da rete, DEM o texture installate.
 - Terrain golden sintetico non qualifica DEM, texture, LOD o proiezione reali.
 - Touch, sunlight/night, ≥40 FPS, termica e fault sui pannelli restano aperti.
 - `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS`.
+
+### Incremento G3 — SkyView responsive, venti punti
+
+La criticità software dell'overlay meteo nelle golden SkyView è stata corretta
+e congelata nel contratto `avionix.skyview-responsive.v1`. Il profilo compact
+usa un solo badge 154×64; quello regular separa badge e no-data di 6 px. In
+entrambi i casi l'overlay inizia 62 px logici sotto la FMA e non invade più la
+heading ribbon.
+
+#### Implementato
+
+- Venti controlli `HMI-R20-01`…`HMI-R20-20` fail-closed.
+- Breakpoint 1100 px, geometrie compact/regular e policy di interazione.
+- No-data integrato in compact; legenda secondaria nascosta solo in compact.
+- Modalità `--manifest-only` per firmare catture dirette senza rilanciare Qt.
+- Golden SkyView aggiornate per 1024×600, 1280×800 e 1920×1080.
+
+#### Verificato solo software
+
+- Build MSVC/Qt e QML AOT: PASS.
+- Ispezione visuale delle golden 1024×600 e 1280×800: heading libera e riquadri
+  meteo non sovrapposti.
+- Seconda cattura nativa indipendente 3/3 e confronto anti-alias: PASS.
+- Validatore responsive e venti mutazioni isolate: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo, servizio, rete o cablaggio è stato
+  contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Validare la stessa geometria su RPi5 reale, inclusi touch, ≥40 FPS,
+  sunlight/night, termica e stati meteo LIVE/CACHED/STALE/EXPIRED.
+- Terrain golden sintetico non qualifica DEM, texture, LOD o proiezione reali.
+- `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS`.

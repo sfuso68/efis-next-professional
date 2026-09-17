@@ -95,33 +95,13 @@ def png_pixel_sha256(path: Path) -> str:
     return hashlib.sha256(png_pixels(path)).hexdigest()
 
 
-def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int,
-            data_state: str = "SIM", data_age_ms: int = 0,
-            role: str = "ems") -> dict:
-    if role not in SIZES_BY_ROLE:
-        raise ValueError(f"unsupported HMI golden role: {role}")
-    output_dir.mkdir(parents=True, exist_ok=True)
+def write_manifest(output_dir: Path, platform: str, data_state: str,
+                   data_age_ms: int, role: str) -> dict:
     images = []
     for width, height in SIZES_BY_ROLE[role]:
         output = output_dir / f"{role}-{width}x{height}.png"
-        environment = os.environ.copy()
-        environment.update({
-            "QT_QPA_PLATFORM": platform,
-            "QT_SCALE_FACTOR": "1",
-            "EFIS_CAPTURE": str(output.resolve()),
-            "EFIS_CAPTURE_SIZE": f"{width}x{height}",
-            "EFIS_CAPTURE_DELAY_MS": str(delay_ms),
-            "EFIS_CAPTURE_EXIT": "1",
-            "EFIS_HMI_GOLDEN_STATE": data_state,
-            "EFIS_HMI_GOLDEN_AGE_MS": str(data_age_ms),
-        })
-        completed = subprocess.run(
-            [str(executable), "--skyview-golden" if role == "skyview" else "--hmi-golden"],
-            env=environment,
-            check=False, timeout=max(15, delay_ms // 1000 + 10),
-        )
-        if completed.returncode != 0:
-            raise RuntimeError(f"capture {width}x{height} failed with {completed.returncode}")
+        if not output.is_file():
+            raise FileNotFoundError(f"missing captured image: {output}")
         actual = png_size(output)
         if actual != (width, height):
             raise RuntimeError(f"capture size {actual} does not match {(width, height)}")
@@ -150,22 +130,59 @@ def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int,
     return manifest
 
 
+def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int,
+            data_state: str = "SIM", data_age_ms: int = 0,
+            role: str = "ems") -> dict:
+    if role not in SIZES_BY_ROLE:
+        raise ValueError(f"unsupported HMI golden role: {role}")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for width, height in SIZES_BY_ROLE[role]:
+        output = output_dir / f"{role}-{width}x{height}.png"
+        environment = os.environ.copy()
+        environment.update({
+            "QT_QPA_PLATFORM": platform,
+            "QT_SCALE_FACTOR": "1",
+            "EFIS_CAPTURE": str(output.resolve()),
+            "EFIS_CAPTURE_SIZE": f"{width}x{height}",
+            "EFIS_CAPTURE_DELAY_MS": str(delay_ms),
+            "EFIS_CAPTURE_EXIT": "1",
+            "EFIS_HMI_GOLDEN_STATE": data_state,
+            "EFIS_HMI_GOLDEN_AGE_MS": str(data_age_ms),
+        })
+        completed = subprocess.run(
+            [str(executable), "--skyview-golden" if role == "skyview" else "--hmi-golden"],
+            env=environment,
+            check=False, timeout=max(30, delay_ms // 1000 + 15),
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(f"capture {width}x{height} failed with {completed.returncode}")
+        actual = png_size(output)
+        if actual != (width, height):
+            raise RuntimeError(f"capture size {actual} does not match {(width, height)}")
+    return write_manifest(output_dir, platform, data_state, data_age_ms, role)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--executable", type=Path, required=True)
+    parser.add_argument("--executable", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--platform", default="offscreen")
     parser.add_argument("--delay-ms", type=int, default=800)
     parser.add_argument("--state", choices=("LIVE", "STALE", "LOST", "FAIL", "SIM"), default="SIM")
     parser.add_argument("--age-ms", type=int, default=0)
     parser.add_argument("--role", choices=tuple(SIZES_BY_ROLE), default="ems")
+    parser.add_argument("--manifest-only", action="store_true",
+                        help="hash already captured images without launching Qt")
     args = parser.parse_args()
-    if not args.executable.is_file():
+    if not args.manifest_only and (args.executable is None or not args.executable.is_file()):
         parser.error(f"executable not found: {args.executable}")
     if args.age_ms < 0:
         parser.error("--age-ms must be non-negative")
-    print(json.dumps(capture(args.executable, args.output_dir, args.platform, args.delay_ms,
-                             args.state, args.age_ms, args.role)))
+    result = (write_manifest(args.output_dir, args.platform, args.state, args.age_ms, args.role)
+              if args.manifest_only else
+              capture(args.executable, args.output_dir, args.platform, args.delay_ms,
+                      args.state, args.age_ms, args.role))
+    print(json.dumps(result))
     return 0
 
 
