@@ -8,6 +8,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "config/ui/avionix-hmi-v1.json"
+COMPONENTS = (
+    "qml/HmiTokens.qml",
+    "qml/HmiDataStateBadge.qml",
+    "qml/HmiArcGaugeV4.qml",
+    "qml/SkyViewCompassArc.qml",
+    "qml/HmiComponentShowcase.qml",
+)
 
 
 def validate(data: dict) -> list[str]:
@@ -68,9 +75,28 @@ def validate(data: dict) -> list[str]:
     return errors
 
 
+def validate_repository(root: Path = ROOT) -> list[str]:
+    errors: list[str] = []
+    cmake = (root / "CMakeLists.txt").read_text(encoding="utf-8")
+    for relative in COMPONENTS:
+        if not (root / relative).is_file():
+            errors.append(f"missing HMI component: {relative}")
+        if relative not in cmake:
+            errors.append(f"HMI component not registered in CMake: {relative}")
+    ems = (root / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
+    if ems.count("HmiArcGaugeV4 {") != 5:
+        errors.append("AdaptiveEmsView must use exactly five HmiArcGaugeV4 instances")
+    if "dataState: controller.dataSourceState" not in ems:
+        errors.append("EMS V4 gauges do not expose controller data state")
+    compass = (root / "qml/SkyViewCompassArc.qml").read_text(encoding="utf-8")
+    if "readonly property real halfAngle: 35" not in compass:
+        errors.append("SkyView compass implementation diverges from the 35 degree contract")
+    return errors
+
+
 def main() -> int:
     data = json.loads(CONTRACT.read_text(encoding="utf-8"))
-    errors = validate(data)
+    errors = validate(data) + validate_repository()
     if errors:
         print("AVIONIX HMI contract FAILED")
         for error in errors:

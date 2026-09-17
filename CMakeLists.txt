@@ -161,6 +161,11 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/OperationalProfileSetup.qml
                 qml/EfisTouchKeyboard.qml
                 qml/Theme.qml
+                qml/HmiTokens.qml
+                qml/HmiDataStateBadge.qml
+                qml/HmiArcGaugeV4.qml
+                qml/SkyViewCompassArc.qml
+                qml/HmiComponentShowcase.qml
                 qml/GpuMapSurface.qml
                 qml/WeatherRadarOverlay.qml
                 qml/ProfessionalTape.qml
@@ -409,6 +414,9 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/OperationalProfileSetup.qml
                 qml/EfisTouchKeyboard.qml
                 qml/Theme.qml
+                qml/HmiTokens.qml
+                qml/HmiDataStateBadge.qml
+                qml/HmiArcGaugeV4.qml
         )
         target_include_directories(efis-ems-qt PRIVATE
             src/nodes/ems src/renderers/qt)

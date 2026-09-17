@@ -2725,3 +2725,18 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - Implementazione QML/Scene Graph, golden alle risoluzioni target, build ARM64,
   replay DDP/EDP e acceptance touch/visiva/termica restano aperti. Il contratto
   è `DESIGN_BASELINE_NOT_FLIGHT_APPROVED` e non va dichiarato DONE.
+
+### Incremento software — cinque componenti HMI
+
+- Implementati token condivisi, badge qualità/età, wrapper gauge EMS V4,
+  bussola SkyView circolare ±35° e showcase 1024×600.
+- I cinque strumenti circolari della pagina EMS propagano ora lo stato sorgente
+  nel gauge V4. Poiché EMS-004 non dispone ancora del manuale applicabile, i
+  limiti restano esplicitamente `UNVERIFIED` e non vengono presentati come
+  approvati.
+- Il validatore controlla presenza e registrazione CMake dei componenti, numero
+  dei gauge V4, propagazione dello stato e geometria bussola. Sono verifiche
+  statiche/software.
+- `qmllint` Qt 6.11.1 sui cinque nuovi componenti è PASS. La build MSVC
+  19.51/Qt 6.11.1 ha completato 224/224 step e linkato sia `efis-pfd-qt` sia
+  `efis-ems-qt`. Screenshot, build ARM64 e pannelli reali restano aperti.

@@ -3,7 +3,7 @@ import json
 import unittest
 from pathlib import Path
 
-from tools.ui.validate_hmi_contract import validate
+from tools.ui.validate_hmi_contract import validate, validate_repository
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +13,9 @@ BASE = json.loads((ROOT / "config/ui/avionix-hmi-v1.json").read_text(encoding="u
 class AvionixHmiContractTests(unittest.TestCase):
     def test_baseline_passes(self):
         self.assertEqual(validate(copy.deepcopy(BASE)), [])
+
+    def test_repository_components_are_registered(self):
+        self.assertEqual(validate_repository(ROOT), [])
 
     def test_platform_swap_fails(self):
         data = copy.deepcopy(BASE)

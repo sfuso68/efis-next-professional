@@ -26,3 +26,21 @@
 - Implementare componenti QML/Scene Graph e golden screenshot.
 - Eseguire build ARM64, replay DDP/EDP e acceptance visiva/touch sui pannelli.
 - Validare frame-rate, termica, sunlight/night mode e fault per 60 minuti.
+
+## Incremento componenti — cinque fondazioni software
+
+- `HmiTokens`: palette, misure minime e mapping stato-colore comuni.
+- `HmiDataStateBadge`: LIVE/SIM/STALE/LOST con età esplicita.
+- `HmiArcGaugeV4`: gauge V3 riusabile con health e limiti non verificati.
+- `SkyViewCompassArc`: arco realmente circolare ±35°, CDI e dati waypoint.
+- `HmiComponentShowcase`: superficie deterministica 1024×600 per golden futuri.
+
+I cinque gauge principali dell'EMS usano ora V4 e propagano
+`controller.dataSourceState`. I limiti sono intenzionalmente marcati
+`UNVERIFIED` finché EMS-004 non viene chiuso con manuale applicabile. Nessuna
+verifica grafica o hardware viene dichiarata da questo incremento.
+
+`qmllint` Qt 6.11.1 sui cinque nuovi componenti: PASS. Configurazione e build
+MSVC 19.51/Qt 6.11.1 dei target `efis-pfd-qt` ed `efis-ems-qt`: 224/224 step,
+link finale PASS. Questa è evidenza software Windows; non prova resa, frame-rate
+o interazione sui target ARM64.
