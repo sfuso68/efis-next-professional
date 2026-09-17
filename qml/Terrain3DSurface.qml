@@ -10,6 +10,7 @@ Item {
     required property real latitude
     required property real longitude
     required property real altitude
+    property bool goldenMode: false
 
     readonly property real tileWidth: 77150
     readonly property real tileDepth: 111320
@@ -28,6 +29,40 @@ Item {
             GradientStop { position: 1.00; color: "#c5d7d8" }
         }
     }
+    Canvas {
+        anchors.fill: parent
+        visible: terrain.goldenMode
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        Component.onCompleted: requestPaint()
+        onPaint: {
+            const ctx=getContext("2d")
+            ctx.reset()
+            const horizon=height*.48+terrain.pitch*height/75
+            ctx.fillStyle="#285236"
+            ctx.beginPath(); ctx.moveTo(0,height)
+            ctx.lineTo(0,horizon+height*.10)
+            ctx.lineTo(width*.18,horizon-height*.08)
+            ctx.lineTo(width*.34,horizon+height*.035)
+            ctx.lineTo(width*.52,horizon-height*.13)
+            ctx.lineTo(width*.72,horizon+height*.045)
+            ctx.lineTo(width,horizon-height*.07)
+            ctx.lineTo(width,height); ctx.closePath(); ctx.fill()
+            ctx.fillStyle="#3F7044"
+            ctx.beginPath(); ctx.moveTo(0,height)
+            ctx.lineTo(0,horizon+height*.20)
+            ctx.lineTo(width*.25,horizon+height*.05)
+            ctx.lineTo(width*.50,horizon+height*.18)
+            ctx.lineTo(width*.76,horizon+height*.03)
+            ctx.lineTo(width,horizon+height*.17)
+            ctx.lineTo(width,height); ctx.closePath(); ctx.fill()
+            ctx.strokeStyle="#89A768"; ctx.lineWidth=Math.max(1,width/1024)
+            for(let index=1;index<6;++index){
+                const y=horizon+(height-horizon)*index/6
+                ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()
+            }
+        }
+    }
     Rectangle {
         anchors { left: parent.left; right: parent.right; top: parent.top }
         height: parent.height * 0.44
@@ -41,6 +76,7 @@ Item {
     }
 
     View3D {
+        visible: !terrain.goldenMode
         anchors.fill: parent
         environment: ExtendedSceneEnvironment {
             backgroundMode: SceneEnvironment.Transparent

@@ -7,9 +7,9 @@ import argparse
 from pathlib import Path
 
 try:
-    from .capture_hmi_golden import SIZES, png_pixels, png_size
+    from .capture_hmi_golden import SIZES_BY_ROLE, png_pixels, png_size
 except ImportError:
-    from capture_hmi_golden import SIZES, png_pixels, png_size
+    from capture_hmi_golden import SIZES_BY_ROLE, png_pixels, png_size
 
 
 def difference(left: bytes, right: bytes) -> tuple[int, float, float]:
@@ -23,10 +23,13 @@ def difference(left: bytes, right: bytes) -> tuple[int, float, float]:
 
 def compare(reference: Path, candidate: Path,
             maximum_delta: int = 8, maximum_mean: float = 0.001,
-            maximum_changed_fraction: float = 0.001) -> list[str]:
+            maximum_changed_fraction: float = 0.001,
+            role: str = "ems") -> list[str]:
     errors: list[str] = []
-    for width, height in SIZES:
-        name = f"ems-{width}x{height}.png"
+    if role not in SIZES_BY_ROLE:
+        return [f"unsupported HMI golden role: {role}"]
+    for width, height in SIZES_BY_ROLE[role]:
+        name = f"{role}-{width}x{height}.png"
         expected, actual = reference/name, candidate/name
         if not expected.is_file() or not actual.is_file():
             errors.append(f"missing comparison image: {name}")
@@ -46,8 +49,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("reference", type=Path)
     parser.add_argument("candidate", type=Path)
+    parser.add_argument("--role", choices=tuple(SIZES_BY_ROLE), default="ems")
     args = parser.parse_args()
-    errors = compare(args.reference, args.candidate)
+    errors = compare(args.reference, args.candidate, role=args.role)
     if errors:
         print("AVIONIX HMI visual comparison FAILED")
         for error in errors:

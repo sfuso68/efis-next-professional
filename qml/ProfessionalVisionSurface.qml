@@ -28,6 +28,7 @@ Rectangle {
     property int imageryCoverageGaps: 0
     property var selectedAirport: ({})
     property real uiScale: 1
+    property bool goldenMode: false
     signal navigationRequested()
     function distanceNm() {
         const targetLat=selectedAirport.latitude_deg === undefined ? 45.6484 : selectedAirport.latitude_deg
@@ -44,7 +45,7 @@ Rectangle {
     Theme { id: theme }
     color: "#155D91"; clip: true; border.color: theme.border
 
-    Terrain3DSurface { anchors.fill: parent; roll: vision.roll; pitch: vision.pitch; heading: vision.heading; latitude: vision.latitude; longitude: vision.longitude; altitude: vision.altitude }
+    Terrain3DSurface { anchors.fill: parent; roll: vision.roll; pitch: vision.pitch; heading: vision.heading; latitude: vision.latitude; longitude: vision.longitude; altitude: vision.altitude; goldenMode: vision.goldenMode }
 
     // Targhette di stato della superficie, raccolte in una colonna sola.
     //

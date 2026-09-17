@@ -103,3 +103,17 @@ termica, throttling, fault dati e valutazione umana diurna/notturna.
 Il contratto passa il gate software quando manifesto e test sono verdi e tutte
 le risoluzioni producono golden senza overlap. Non diventa `DONE` finché i
 criteri HMI-10 non sono verificati sui pannelli reali.
+
+## Matrice golden software V2
+
+Le golden sono separate per ruolo e usano il manifesto chiuso
+`avionix.hmi-golden-manifest.v2`:
+
+- EMS: 800×480, 1024×600, 1280×800;
+- SkyView: 1024×600, 1280×800, 1920×1080.
+
+SkyView usa una fixture deterministica, meteo statico e terreno sintetico per
+evitare dipendenze dalla rete o dai dataset installati. Questa superficie
+verifica geometria e regressioni HMI, non qualità DEM/texture né prestazioni del
+renderer 3D operativo. I bundle restano marcati
+`SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE`.

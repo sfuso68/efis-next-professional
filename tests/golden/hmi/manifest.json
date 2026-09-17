@@ -1,9 +1,12 @@
 {
-  "schema": "avionix.hmi-golden-manifest.v1",
+  "schema": "avionix.hmi-golden-manifest.v2",
   "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
   "generated_utc": "2026-09-17T14:18:58.237693+00:00",
   "platform": "windows",
-  "fixture": "HmiGoldenController.qml",
+  "fixture": "HmiGoldenMain.qml",
+  "role": "ems",
+  "data_state": "SIM",
+  "data_age_ms": 0,
   "images": [
     {
       "file": "ems-800x480.png",

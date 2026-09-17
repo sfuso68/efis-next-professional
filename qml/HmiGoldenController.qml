@@ -38,6 +38,43 @@ QtObject {
     property real fuelLeakExcessGph:0
     property string centralBlackBoxState:"ONLINE"
     property string blackBoxState:"ONLINE"
+    property real airspeed:96
+    property real selectedAirspeed:100
+    property real airspeedTrend:3
+    property bool airspeedValid:true
+    property real altitude:4200
+    property real selectedAltitude:4500
+    property real altitudeTrend:180
+    property bool altitudeValid:true
+    property real verticalSpeed:350
+    property real roll:-4
+    property real pitch:2
+    property real heading:327
+    property real latitude:46.1648
+    property real longitude:12.2487
+    property real groundSpeed:104
+    property real selectedCourse:332
+    property real commandedRoll:0
+    property real commandedPitch:4
+    property bool flightDirectorActive:true
+    property bool navigationValid:true
+    property var selectedAirport:({icao:"LIDB",latitude_deg:46.16655,longitude_deg:12.25039})
+    property var aircraftSpeedProfile:({vso:39,vs1:45,vx:61,vy:68,vfe:81,vno:118,vne:145,va:97,bestGlide:65,vref:55})
+    property string imageryState:"GOLDEN FIXTURE"
+    property bool imageryOfflineReady:true
+    property int imageryTileCount:24
+    property int imageryCoverageGaps:0
+    property string engineDataState:dataSourceState
+    property string annunciation:"SYSTEM NORMAL"
+    property int annunciationSeverity:0
+    property string radarSource:""
+    property string radarState:"SIMULATED"
+    property string radarProduct:"REFLECTIVITY"
+    property string radarArea:"VENETO"
+    property int radarAgeMinutes:0
+    property bool simulation:true
+    property int simulationPhase:0
+    function cycleProduct() {}
     function setUnitSystem(value) { unitSystem=value }
     function setFuelOnBoardGallons(value) { fuelOnBoardGallons=value; return true }
     function setFuelReserveGallons(value) { fuelReserveGallons=value; return true }

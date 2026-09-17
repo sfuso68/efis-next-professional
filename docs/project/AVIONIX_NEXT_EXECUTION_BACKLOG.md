@@ -41,6 +41,7 @@ comandi su uscite.
 |---|---|---|---|
 | 2026-09-17 | AVX-G3-04 | `13d8687`…`caf1b3e`, golden/HMI/EDP diagnostics | IN_PROGRESS; software e CI verificati, pannelli/touch aperti |
 | 2026-09-17 | AVX-G3-04 | `AVIONIX_G3_HMI_BATCH20.md`, HMI-B20-01…20 e 17 test | IMPLEMENTED-SW; contratto chiuso in CTest, SkyView golden e acceptance hardware aperti |
+| 2026-09-17 | AVX-G3-04 | `AVIONIX_G3_SKYVIEW_GOLDEN_BATCH20.md`, HMI-G20-01…20, bundle EMS/SkyView V2 | VERIFIED-SW; matrice SkyView inclusa Full HD, criticità meteo 1024×600 e acceptance hardware aperte |
 | 2026-09-17 | AVX-G2-01 | `AVIONIX_DATA_ICD_V1.md`, specifica JSON, schema evidence bundle, due vettori e validator indipendente | FROZEN-SW; test workstation PASS, replay ARM64 e hardware aperti |
 | 2026-09-17 | AVX-G2-01 | `CHECKPOINT-2026-09-17-G2-ARM64-PENDING.md` | verifica ARM64 autorizzata ma non eseguita; accesso SSH workstation rifiutato, zero evidenza hardware |
 | 2026-09-17 | AVX-G2-02 | EDP SIM Blackbox→EMS già operativo; replay deterministico disponibile | resta PROPOSED per il verticale reale, dipendente da G1 e CAN reale |

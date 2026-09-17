@@ -3300,3 +3300,41 @@ delle invarianti degradate. La suite è registrata in CTest.
 - Verificare su RPi4/RPi5 leggibilità, touch, sunlight/night, ≥40 FPS,
   termica e fault.
 - `PRJ-004` resta `VERIFY-HW` e `AVX-G3-04` resta `IN_PROGRESS`.
+
+### Incremento G3 — matrice SkyView golden, venti punti
+
+La pipeline golden è stata resa role-aware e portata allo schema chiuso
+`avionix.hmi-golden-manifest.v2`. La nuova modalità `--skyview-golden` carica
+una fixture deterministica distinta dall'avvio operativo. Dati volo,
+navigazione, motore e meteo sono fissi; il terreno golden è sintetico e non
+dipende da rete, DEM o texture installate.
+
+#### Implementato
+
+- Matrice EMS: 800×480, 1024×600 e 1280×800.
+- Matrice SkyView: 1024×600, 1280×800 e 1920×1080.
+- Venti controlli `HMI-G20-01`…`HMI-G20-20` per schema, ruolo, provenance,
+  stato/età, path, risoluzione, dimensione, SHA-256 file e pixel.
+- Capture e comparatore selezionabili per ruolo; Project Control valida entrambi
+  i bundle.
+- Documento `AVIONIX_G3_SKYVIEW_GOLDEN_BATCH20.md` con mapping e limiti.
+
+#### Verificato solo software
+
+- Build MSVC/Qt 6.11.1 del PFD: PASS, 57/57 step finali e link.
+- Tre golden SkyView native Windows prodotte e ispezionate.
+- Seconda cattura indipendente confrontata entro le tolleranze anti-alias: PASS.
+- Suite golden 5/5 PASS con venti mutazioni; validator EMS e SkyView V2 PASS.
+- `py_compile` dei tre tool e della suite: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla; nessun nodo, servizio o cablaggio è stato contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- La cattura 1024×600 evidenzia densità nella zona superiore del riquadro
+  meteo; serve un affinamento separato con nuova golden.
+- Terrain golden sintetico non qualifica DEM, texture, LOD o proiezione reali.
+- Touch, sunlight/night, ≥40 FPS, termica e fault sui pannelli restano aperti.
+- `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS`.

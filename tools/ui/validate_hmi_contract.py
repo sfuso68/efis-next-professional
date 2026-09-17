@@ -22,6 +22,7 @@ COMPONENTS = (
     "qml/HmiComponentShowcase.qml",
     "qml/HmiGoldenController.qml",
     "qml/HmiGoldenMain.qml",
+    "qml/SkyViewGoldenMain.qml",
 )
 
 CONTROL_IDS = tuple(f"HMI-B20-{index:02d}" for index in range(1, 21))
@@ -203,7 +204,8 @@ def validate_repository(root: Path = ROOT) -> list[str]:
     if "readonly property real halfAngle: 35" not in compass:
         errors.append("SkyView compass implementation diverges from the 35 degree contract")
     main_cpp = (root / "src/renderers/qt/main.cpp").read_text(encoding="utf-8")
-    if "--hmi-golden" not in main_cpp or "EFIS_CAPTURE_SIZE" not in main_cpp:
+    if ("--hmi-golden" not in main_cpp or "--skyview-golden" not in main_cpp or
+            "EFIS_CAPTURE_SIZE" not in main_cpp):
         errors.append("PFD renderer does not expose deterministic multi-resolution golden mode")
     return errors
 

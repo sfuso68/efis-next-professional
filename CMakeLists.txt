@@ -172,6 +172,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/HmiComponentShowcase.qml
                 qml/HmiGoldenController.qml
                 qml/HmiGoldenMain.qml
+                qml/SkyViewGoldenMain.qml
                 qml/GpuMapSurface.qml
                 qml/WeatherRadarOverlay.qml
                 qml/ProfessionalTape.qml

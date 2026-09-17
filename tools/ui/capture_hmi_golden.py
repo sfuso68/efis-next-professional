@@ -13,7 +13,11 @@ import subprocess
 import zlib
 from datetime import datetime, timezone
 
-SIZES = ((800, 480), (1024, 600), (1280, 800))
+SIZES_BY_ROLE = {
+    "ems": ((800, 480), (1024, 600), (1280, 800)),
+    "skyview": ((1024, 600), (1280, 800), (1920, 1080)),
+}
+SIZES = SIZES_BY_ROLE["ems"]
 
 
 def png_size(path: Path) -> tuple[int, int]:
@@ -92,11 +96,14 @@ def png_pixel_sha256(path: Path) -> str:
 
 
 def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int,
-            data_state: str = "SIM", data_age_ms: int = 0) -> dict:
+            data_state: str = "SIM", data_age_ms: int = 0,
+            role: str = "ems") -> dict:
+    if role not in SIZES_BY_ROLE:
+        raise ValueError(f"unsupported HMI golden role: {role}")
     output_dir.mkdir(parents=True, exist_ok=True)
     images = []
-    for width, height in SIZES:
-        output = output_dir / f"ems-{width}x{height}.png"
+    for width, height in SIZES_BY_ROLE[role]:
+        output = output_dir / f"{role}-{width}x{height}.png"
         environment = os.environ.copy()
         environment.update({
             "QT_QPA_PLATFORM": platform,
@@ -109,7 +116,8 @@ def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int,
             "EFIS_HMI_GOLDEN_AGE_MS": str(data_age_ms),
         })
         completed = subprocess.run(
-            [str(executable), "--hmi-golden"], env=environment,
+            [str(executable), "--skyview-golden" if role == "skyview" else "--hmi-golden"],
+            env=environment,
             check=False, timeout=max(15, delay_ms // 1000 + 10),
         )
         if completed.returncode != 0:
@@ -126,11 +134,12 @@ def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int,
             "pixel_sha256": png_pixel_sha256(output),
         })
     manifest = {
-        "schema": "avionix.hmi-golden-manifest.v1",
+        "schema": "avionix.hmi-golden-manifest.v2",
         "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "platform": platform,
-        "fixture": "HmiGoldenController.qml",
+        "fixture": "SkyViewGoldenMain.qml" if role == "skyview" else "HmiGoldenMain.qml",
+        "role": role,
         "data_state": data_state,
         "data_age_ms": data_age_ms,
         "images": images,
@@ -149,13 +158,14 @@ def main() -> int:
     parser.add_argument("--delay-ms", type=int, default=800)
     parser.add_argument("--state", choices=("LIVE", "STALE", "LOST", "FAIL", "SIM"), default="SIM")
     parser.add_argument("--age-ms", type=int, default=0)
+    parser.add_argument("--role", choices=tuple(SIZES_BY_ROLE), default="ems")
     args = parser.parse_args()
     if not args.executable.is_file():
         parser.error(f"executable not found: {args.executable}")
     if args.age_ms < 0:
         parser.error("--age-ms must be non-negative")
     print(json.dumps(capture(args.executable, args.output_dir, args.platform, args.delay_ms,
-                             args.state, args.age_ms)))
+                             args.state, args.age_ms, args.role)))
     return 0
 
 

@@ -9,7 +9,8 @@ Item {
     property string regionName: "VENETO"
     property int refreshMinutes: 5
     property real badgeTopMargin: 6
-    readonly property bool available: radar.status === Image.Ready && weather.radarState !== "EXPIRED"
+    property var weatherProvider: weather
+    readonly property bool available: radar.status === Image.Ready && root.weatherProvider.radarState !== "EXPIRED"
     readonly property bool loading: radar.status === Image.Loading
 
     clip: true
@@ -18,7 +19,7 @@ Item {
         id: radar
         anchors.fill: parent
         visible: root.enabled && status !== Image.Error
-        source: root.enabled ? weather.radarSource : ""
+        source: root.enabled ? root.weatherProvider.radarSource : ""
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: true
@@ -26,8 +27,8 @@ Item {
     }
 
     Repeater {
-        model: weather.simulation ? [{x:.48,y:.39},{x:.61,y:.52},{x:.24,y:.24}] : []
-        delegate: Text { required property var modelData; x:(modelData.x+((weather.simulationPhase%10)/250))*root.width; y:modelData.y*root.height; text:"ϟ"; color:"#FFF36A"; font.pixelSize:15*root.uiScale; font.bold:true; style:Text.Outline; styleColor:"#A0000000" }
+        model: root.weatherProvider.simulation ? [{x:.48,y:.39},{x:.61,y:.52},{x:.24,y:.24}] : []
+        delegate: Text { required property var modelData; x:(modelData.x+((root.weatherProvider.simulationPhase%10)/250))*root.width; y:modelData.y*root.height; text:"ϟ"; color:"#FFF36A"; font.pixelSize:15*root.uiScale; font.bold:true; style:Text.Outline; styleColor:"#A0000000" }
     }
 
     Rectangle {
@@ -37,8 +38,8 @@ Item {
         Column {
             anchors { fill: parent; margins: 5*root.uiScale }
             spacing: 1*root.uiScale
-            Text { text: "WX "+weather.radarProduct+" • "+(weather.simulation ? "SIM" : weather.radarArea); color: weather.simulation ? "#E8B84A" : (root.available ? "#00E5F2" : "#E8B84A"); font.pixelSize: 7*root.uiScale; font.bold: true }
-            Text { text: !root.enabled ? "OFF" : root.loading ? "UPDATING" : weather.radarState+" • "+(weather.radarAgeMinutes < 0 ? "—" : weather.radarAgeMinutes+" MIN"); color: weather.radarState === "CURRENT" ? "#E8F3F7" : "#E8B84A"; font.pixelSize: 6*root.uiScale; font.bold: true }
+            Text { text: "WX "+root.weatherProvider.radarProduct+" • "+(root.weatherProvider.simulation ? "SIM" : root.weatherProvider.radarArea); color: root.weatherProvider.simulation ? "#E8B84A" : (root.available ? "#00E5F2" : "#E8B84A"); font.pixelSize: 7*root.uiScale; font.bold: true }
+            Text { text: !root.enabled ? "OFF" : root.loading ? "UPDATING" : root.weatherProvider.radarState+" • "+(root.weatherProvider.radarAgeMinutes < 0 ? "—" : root.weatherProvider.radarAgeMinutes+" MIN"); color: root.weatherProvider.radarState === "CURRENT" ? "#E8F3F7" : "#E8B84A"; font.pixelSize: 6*root.uiScale; font.bold: true }
         }
     }
 
@@ -57,7 +58,7 @@ Item {
     }
 
     Rectangle {
-        visible: weather.simulation && root.width > 300*root.uiScale
+        visible: root.weatherProvider.simulation && root.width > 300*root.uiScale
         anchors { left: parent.left; bottom: parent.bottom; leftMargin: 7*root.uiScale; bottomMargin: 7*root.uiScale }
         width: 226*root.uiScale; height: 29*root.uiScale; radius: 3*root.uiScale
         color: "#E9071118"; border.color: "#6A7D86"
@@ -74,5 +75,5 @@ Item {
         }
     }
 
-    TapHandler { enabled: root.interactive; onTapped: root.enabled = !root.enabled; onDoubleTapped: weather.cycleProduct() }
+    TapHandler { enabled: root.interactive; onTapped: root.enabled = !root.enabled; onDoubleTapped: root.weatherProvider.cycleProduct() }
 }

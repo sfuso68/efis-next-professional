@@ -71,7 +71,10 @@ int main(int argc, char* argv[]) {
         "hmiGoldenDataAgeMs", qEnvironmentVariableIntValue("EFIS_HMI_GOLDEN_AGE_MS"));
     const bool hmiGoldenMode = QCoreApplication::arguments().contains(
         QStringLiteral("--hmi-golden"));
-    engine.loadFromModule("EfisNext", hmiGoldenMode ? "HmiGoldenMain" : "Main");
+    const bool skyViewGoldenMode = QCoreApplication::arguments().contains(
+        QStringLiteral("--skyview-golden"));
+    engine.loadFromModule("EfisNext", skyViewGoldenMode ? "SkyViewGoldenMain"
+                                         : hmiGoldenMode ? "HmiGoldenMain" : "Main");
     if (engine.rootObjects().isEmpty()) return 1;
 
     qInfo().noquote() << "event=startup product=efis-next component=pfd version=0.1.0"
