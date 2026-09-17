@@ -6,6 +6,8 @@ Rectangle {
     required property var chtValues
     required property var egtValues
     property real uiScale: 1
+    property bool compact: false
+    function textSize(base, minimum) { return Math.max(compact ? minimum : 0, base*uiScale) }
     property string temperatureUnit: "°C"
     property real chtMaximumC: 230
     property real egtMaximumC: 920
@@ -32,10 +34,10 @@ Rectangle {
     readonly property int hottestEgt: hottest(egtValues)
     color: "#B008131C"; border.color: "#40535E"; radius: 5*uiScale
 
-    Text { x:9*root.uiScale; y:5*root.uiScale; text:"CHT / EGT  •  4 CYLINDER MATRIX"; color:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
+    Text { x:9*root.uiScale; y:5*root.uiScale; text:"CHT / EGT  •  4 CYLINDER MATRIX"; color:root.cyan; font.pixelSize:root.textSize(8,8); font.bold:true }
     Text { anchors { right:parent.right; top:parent.top; rightMargin:8*root.uiScale; topMargin:5*root.uiScale }
         text:root.limitsVerified ? root.dataState : "LIMITS UNVERIFIED  •  "+root.dataState
-        color:root.limitsVerified ? root.cyan : root.caution; font.pixelSize:6*root.uiScale; font.bold:true }
+        color:root.limitsVerified ? root.cyan : root.caution; font.pixelSize:root.textSize(6,8); font.bold:true }
     Row {
         id:cylinderRow
         anchors { left:parent.left; right:parent.right; top:parent.top; bottom:footer.top; leftMargin:8*root.uiScale; rightMargin:8*root.uiScale; topMargin:23*root.uiScale; bottomMargin:4*root.uiScale }
@@ -48,7 +50,7 @@ Rectangle {
                 color:"#081820"; border.width:(root.hottestCht===index||root.hottestEgt===index)?2:1
                 border.color:(root.hottestCht===index||root.hottestEgt===index)?root.caution:"#314650"
                 Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:3*root.uiScale }
-                    text:"CYL "+(cylinder.index+1); color:"#F4F8FC"; font.pixelSize:7*root.uiScale; font.bold:true }
+                    text:"CYL "+(cylinder.index+1); color:"#F4F8FC"; font.pixelSize:root.textSize(7,8); font.bold:true }
                 Row {
                     id:channelRow
                     x:4*root.uiScale; y:16*root.uiScale; width:parent.width-8*root.uiScale; height:parent.height-19*root.uiScale; spacing:3*root.uiScale
@@ -64,7 +66,7 @@ Rectangle {
                             readonly property bool channelValid:isFinite(modelData.value) && root.dataState!=="LOST" && root.dataState!=="FAIL"
                             readonly property real fraction:channelValid?Math.max(0,Math.min(1,modelData.value/modelData.high)):0
                             readonly property color channelColor:!channelValid?root.invalid:modelData.value>=modelData.warning?root.warning:modelData.value>=modelData.caution?root.caution:root.normal
-                            Text { anchors.horizontalCenter:parent.horizontalCenter; text:channel.modelData.name; color:root.cyan; font.pixelSize:5.5*root.uiScale; font.bold:true }
+                            Text { anchors.horizontalCenter:parent.horizontalCenter; text:channel.modelData.name; color:root.cyan; font.pixelSize:root.textSize(5.5,8); font.bold:true }
                             Rectangle { id:track; anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:10*root.uiScale; bottom:reading.top; bottomMargin:2*root.uiScale }
                                 width:10*root.uiScale; color:"#14242D"; border.color:"#64757E"
                                 Rectangle { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; margins:1 }
@@ -72,7 +74,7 @@ Rectangle {
                                 Repeater { model:5; delegate:Rectangle { required property int index; x:-3*root.uiScale; y:index*(track.height-1)/4; width:16*root.uiScale; height:1; color:"#BDCAD0" } }
                             }
                             Text { id:reading; anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom }
-                                text:channel.channelValid?Math.round(channel.modelData.value):"—"; color:channel.channelColor; font.pixelSize:7*root.uiScale; font.bold:true }
+                                text:channel.channelValid?Math.round(channel.modelData.value):"—"; color:channel.channelColor; font.pixelSize:root.textSize(7,8); font.bold:true }
                         }
                     }
                 }
@@ -80,7 +82,7 @@ Rectangle {
         }
     }
     Item { id:footer; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:16*root.uiScale
-        Text { x:8*root.uiScale; text:"HOT CHT  "+(root.hottestCht>=0?"CYL "+(root.hottestCht+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.chtValues)))+root.temperatureUnit; color:root.caution; font.pixelSize:6*root.uiScale; font.bold:true }
-        Text { anchors.right:parent.right; anchors.rightMargin:8*root.uiScale; text:"HOT EGT  "+(root.hottestEgt>=0?"CYL "+(root.hottestEgt+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.egtValues)))+root.temperatureUnit; color:root.caution; font.pixelSize:6*root.uiScale; font.bold:true }
+        Text { x:8*root.uiScale; text:"HOT CHT  "+(root.hottestCht>=0?"CYL "+(root.hottestCht+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.chtValues)))+root.temperatureUnit; color:root.caution; font.pixelSize:root.textSize(6,8); font.bold:true }
+        Text { anchors.right:parent.right; anchors.rightMargin:8*root.uiScale; text:"HOT EGT  "+(root.hottestEgt>=0?"CYL "+(root.hottestEgt+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.egtValues)))+root.temperatureUnit; color:root.caution; font.pixelSize:root.textSize(6,8); font.bold:true }
     }
 }

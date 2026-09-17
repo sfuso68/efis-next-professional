@@ -56,7 +56,7 @@ Item {
         visible: !gauge.limitsVerified
         anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 2 * gauge.uiScale }
         width: limitLabel.implicitWidth + 12 * gauge.uiScale
-        height: 18 * gauge.uiScale
+        height: Math.max(16, 18 * gauge.uiScale)
         radius: 2 * gauge.uiScale
         color: "#E0061119"
         border.color: tokens.caution

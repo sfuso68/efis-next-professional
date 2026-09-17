@@ -2800,3 +2800,40 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   pannello RPi4, font/contrasto diurno-notturno, touch, 40 FPS e soak termico.
 - Le golden sono `SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE`; non qualificano
   limiti motore, dati reali o impiego in volo.
+
+### Incremento software — leggibilità EMS compact 800×480
+
+- Aggiunta una modalità compact deterministica, attiva a larghezza non
+  superiore a 820 px o altezza non superiore a 500 px. Scala geometrica e
+  scala tipografica sono separate per evitare che l'aumento dei testi deformi
+  gli strumenti circolari.
+- Header e barra di navigazione usano contenuti abbreviati; i quattro comandi
+  inferiori mantengono un'altezza minima effettiva di 44 px.
+- Gauge primari e secondari applicano valori/unità con minimi tipografici e una
+  scala compatta senza duplicare le etichette Canvas e vettoriali.
+- CHT/EGT, carrello/flap, fuel ed elettrico ricevono esplicitamente lo stato
+  compact e applicano un minimo di 8 px ai testi ausiliari.
+- Il contratto macchina registra breakpoint e soglie compact; due test
+  negativi impediscono di ridurre silenziosamente testo e touch target.
+
+#### Verificato solo software
+
+- Validatore contratto PASS; suite HMI 12/12 PASS; `qmllint` senza errori
+  (restano warning preesistenti sugli accessi non qualificati).
+- Build MSVC/Qt 6.11.1 PFD con QML AOT e link finale PASS.
+- Golden definitive rigenerate a 800×480, 1024×600 e 1280×800; validatore
+  SHA/pixel PASS e seconda cattura indipendente entro la tolleranza anti-alias.
+- Ispezione software 800×480: strumenti circolari non deformati, scala unica
+  senza duplicazioni, comandi inferiori da 44 px, header abbreviato e moduli
+  destri completi.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessuna distribuzione su RPi4/RPi5.
+
+#### Aperto / non dichiarare DONE
+
+- Eseguire acceptance visiva/touch sul pannello RPi4; le golden restano
+  `SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE`.
+- Restano aperti leggibilità sunlight/night, 40 FPS, build ARM64, replay EDP,
+  soak termico e fault test. I limiti motore restano `UNVERIFIED`.

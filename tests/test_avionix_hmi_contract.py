@@ -42,6 +42,16 @@ class AvionixHmiContractTests(unittest.TestCase):
         data["degraded_mode"]["no_control_authority"] = False
         self.assertTrue(validate(data))
 
+    def test_compact_mode_text_floor_fails_closed(self):
+        data = copy.deepcopy(BASE)
+        data["ems"]["compact_mode"]["minimum_micro_text_px"] = 6
+        self.assertTrue(validate(data))
+
+    def test_compact_mode_touch_floor_fails_closed(self):
+        data = copy.deepcopy(BASE)
+        data["ems"]["compact_mode"]["minimum_touch_px"] = 36
+        self.assertTrue(validate(data))
+
 
 if __name__ == "__main__":
     unittest.main()

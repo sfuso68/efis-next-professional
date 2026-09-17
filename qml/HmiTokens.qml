@@ -14,7 +14,14 @@ QtObject {
     readonly property int minimumTouch: 44
     readonly property int primaryText: 34
     readonly property int secondaryText: 18
+    readonly property int minimumMicroText: 8
+    readonly property int minimumLabelText: 9
+    readonly property int minimumActionText: 12
     readonly property real minimumStroke: 1.5
+
+    function legibleText(base, scale, minimum) {
+        return Math.max(minimum, Math.round(base * scale))
+    }
 
     function stateColor(state) {
         if (state === "LIVE") return normal

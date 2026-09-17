@@ -62,6 +62,17 @@ def validate(data: dict) -> list[str]:
         errors.append("SkyView minimum FPS below 40")
 
     ems = data.get("ems", {})
+    compact = ems.get("compact_mode", {})
+    expected_compact = {
+        "max_width_px": 820,
+        "max_height_px": 500,
+        "minimum_micro_text_px": 8,
+        "minimum_action_text_px": 12,
+        "minimum_touch_px": 44,
+        "abbreviate_header_context": True,
+    }
+    if compact != expected_compact:
+        errors.append("EMS compact-mode legibility policy is incomplete")
     if ems.get("primary_gauges") != ["RPM", "MAP"]:
         errors.append("EMS primary gauges must be RPM and MAP")
     if ems.get("cylinders") != 4 or set(ems.get("cylinder_channels", [])) != {"CHT", "EGT"}:
@@ -90,6 +101,16 @@ def validate_repository(root: Path = ROOT) -> list[str]:
         if relative not in cmake:
             errors.append(f"HMI component not registered in CMake: {relative}")
     ems = (root / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
+    tokens_qml = (root / "qml/HmiTokens.qml").read_text(encoding="utf-8")
+    if "readonly property bool compactLayout: width <= 820 || height <= 500" not in ems:
+        errors.append("AdaptiveEmsView does not activate compact mode at 800x480")
+    if "Math.max(hmiTokens.minimumTouch,48*root.uiScale)" not in ems:
+        errors.append("EMS action controls do not preserve the 44 px touch minimum")
+    if "compact:root.compactLayout" not in ems:
+        errors.append("EMS components do not receive compact-mode state")
+    for marker in ("minimumMicroText: 8", "minimumActionText: 12", "function legibleText"):
+        if marker not in tokens_qml:
+            errors.append(f"HMI typography token missing: {marker}")
     if ems.count("HmiArcGaugeV4 {") != 5:
         errors.append("AdaptiveEmsView must use exactly five HmiArcGaugeV4 instances")
     if "dataState: controller.dataSourceState" not in ems:

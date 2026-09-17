@@ -97,3 +97,19 @@ PASS; 7/7 test dedicati PASS; build incrementale MSVC/Qt dei target PFD ed EMS
   acceptance ergonomica. Le immagini sono baseline di regressione software,
   non prova di leggibilità in cabina, sunlight, touch o frame-rate.
 - Nessuna verifica hardware, ARM64 o pannello è stata eseguita.
+
+## Incremento compact 800×480 — cinque passi
+
+- Modalità compact automatica a `<=820×500`, senza cambiare il canvas logico.
+- Header contestuale abbreviato e navigazione laterale ridotta a 72 px.
+- Quattro azioni inferiori con altezza minima fisica di 44 px.
+- Minimi tipografici per gauge e moduli EMS secondari, con propagazione
+  esplicita dello stato compact.
+- Contratto fail-closed e due test negativi per testo e touch target.
+
+Evidenza solo software: contratto PASS, 12/12 test HMI PASS, `qmllint` senza
+errori e build PFD MSVC/Qt 6.11.1 con link PASS. Golden rigenerate alle tre
+risoluzioni, validazione SHA/pixel PASS e confronto con seconda cattura PASS.
+La cattura 800×480 è stata ispezionata; non sostituisce acceptance sul display RPi4.
+Build ARM64, touch, sunlight/night, 40 FPS, replay EDP, termica e fault restano
+aperti. Nessuna funzione è promossa a flight approved.

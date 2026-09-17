@@ -5,6 +5,9 @@ Item {
     required property var controller
     property string clockOverride:""
     property real uiScale: Math.min(width/1024, height/600)
+    readonly property bool compactLayout: width <= 820 || height <= 500
+    readonly property real textScale: compactLayout ? Math.max(1.0, uiScale) : uiScale
+    HmiTokens { id: hmiTokens }
     readonly property color cyan: "#28D9F4"
     readonly property color green: "#52DE36"
     readonly property color amber: "#FFC72B"
@@ -158,25 +161,25 @@ Item {
             GradientStop { position: 1; color: "#071723" } } }
 
     Rectangle { id: header; anchors { left: parent.left; right: parent.right; top: parent.top }
-        height: 44*root.uiScale; color: "#D0061119"; border.color: root.line
-        Text { x: 13*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EFIS"; color: "white"; font.pixelSize: 17*root.uiScale; font.bold: true }
-        Text { x: 54*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "NEXT"; color: root.cyan; font.pixelSize: 17*root.uiScale; font.bold: true }
+        height: root.compactLayout ? 40 : 44*root.uiScale; color: "#D0061119"; border.color: root.line
+        Text { x: 13*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EFIS"; color: "white"; font.pixelSize: hmiTokens.legibleText(17,root.textScale,13); font.bold: true }
+        Text { x: 54*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "NEXT"; color: root.cyan; font.pixelSize: hmiTokens.legibleText(17,root.textScale,13); font.bold: true }
         Rectangle { x: 112*root.uiScale; y: 8*root.uiScale; width: 1; height: 28*root.uiScale; color: root.line }
-        Text { x: 129*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EMS"; color: root.cyan; font.pixelSize: 15*root.uiScale }
-        Text { anchors.centerIn: parent; text: "ENGINE"; color: "white"; font.pixelSize: 20*root.uiScale; font.bold: true; font.letterSpacing: 1.2 }
+        Text { x: 129*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EMS"; color: root.cyan; font.pixelSize: hmiTokens.legibleText(15,root.textScale,12) }
+        Text { anchors.centerIn: parent; text: "ENGINE"; color: "white"; font.pixelSize: hmiTokens.legibleText(20,root.textScale,16); font.bold: true; font.letterSpacing: 1.2 }
         Rectangle { anchors { verticalCenter: parent.verticalCenter; right: clock.left; rightMargin: 32*root.uiScale }
         width: 54*root.uiScale; height: 25*root.uiScale; radius: 4; color: "#08751B"
-            Text { anchors.centerIn: parent; text: controller.dataSourceState === "SIM" ? "SIM" : "LIVE"; color: "white"; font.pixelSize: 12*root.uiScale } }
+            Text { anchors.centerIn: parent; text: controller.dataSourceState === "SIM" ? "SIM" : "LIVE"; color: "white"; font.pixelSize: hmiTokens.legibleText(12,root.textScale,10) } }
         Text { id: clock; anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 18*root.uiScale }
-        text: (root.clockOverride.length?root.clockOverride:Qt.formatTime(new Date(),"hh:mm:ss"))+"   LOCAL     24 °C  OAT     1013 HPA  QNH"; color: "#E8ECEE"; font.pixelSize: 11*root.uiScale; font.bold: true }
-        Timer { interval: 1000; running: root.clockOverride.length===0; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+"   LOCAL     24 °C  OAT     1013 HPA  QNH" }
+        text: (root.clockOverride.length?root.clockOverride:Qt.formatTime(new Date(),"hh:mm:ss"))+(root.compactLayout?"   OAT 24°C":"   LOCAL     24 °C  OAT     1013 HPA  QNH"); color: "#E8ECEE"; font.pixelSize: hmiTokens.legibleText(11,root.textScale,9); font.bold: true }
+        Timer { interval: 1000; running: root.clockOverride.length===0; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+(root.compactLayout?"   OAT 24°C":"   LOCAL     24 °C  OAT     1013 HPA  QNH") }
         Item { x:0; y:0; width:105*root.uiScale; height:parent.height
             TapHandler { longPressThreshold:1.2; onLongPressed:root.openSetup(0) }
         }
     }
 
     Rectangle { id: nav; anchors { left: parent.left; top: header.bottom; bottom: actions.top }
-        width: 96*root.uiScale; color: "#B00A151D"; border.color: root.line; radius: 5*root.uiScale
+        width: root.compactLayout ? 72 : 96*root.uiScale; color: "#B00A151D"; border.color: root.line; radius: 5*root.uiScale
         Column { anchors.fill: parent
             Repeater { model: [{k:"engine",n:"ENGINE"},{k:"indications",n:"INDICATIONS"},{k:"electrical",n:"ELECTRICAL"},{k:"fuel",n:"FUEL"},{k:"system",n:"SYSTEM"},{k:"checklist",n:"MAINT"}]
                 delegate: Rectangle { required property var modelData; width: nav.width; height: nav.height/6; color: root.activeNavigation === modelData.n ? "#172832" : "transparent"; border.color: "#35454D"
@@ -184,7 +187,7 @@ Item {
                     EmsVectorIcon { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 9*root.uiScale }
          width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: root.activeNavigation === modelData.n ? root.cyan : "#89969C" }
                     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 8*root.uiScale }
-        text: modelData.n; color: root.activeNavigation === modelData.n ? root.cyan : "#A7B0B5"; font.pixelSize: 8*root.uiScale }
+        text: modelData.n; color: root.activeNavigation === modelData.n ? root.cyan : "#A7B0B5"; font.pixelSize: hmiTokens.legibleText(8,root.textScale,8); font.bold:root.compactLayout }
                     TapHandler { onTapped:root.selectNavigation(modelData.n) }
                 } }
         } }
@@ -194,54 +197,54 @@ Item {
         width: body.width*.63 }
     Row { id: primary; anchors { left: gauges.left; right: gauges.right; top: gauges.top }
         height: gauges.height*.59; spacing: 7*root.uiScale
-        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: root.rpmMaximum; greenStart: root.rpmMaximum*.24; greenEnd: root.rpmMaximum*.95; majorStep: root.rpmMaximum>4000?1000:500; minorStep: root.rpmMaximum>4000?200:100; dataState: controller.dataSourceState; limitsVerified: false }
-        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1; dataState: controller.dataSourceState; limitsVerified: false }
+        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: root.rpmMaximum; greenStart: root.rpmMaximum*.24; greenEnd: root.rpmMaximum*.95; majorStep: root.rpmMaximum>4000?1000:500; minorStep: root.rpmMaximum>4000?200:100; dataState: controller.dataSourceState; limitsVerified: false }
+        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1; dataState: controller.dataSourceState; limitsVerified: false }
     }
     Row { anchors { left: gauges.left; right: gauges.right; top: primary.bottom; bottom: gauges.bottom; topMargin: -3*root.uiScale }
         spacing: 5*root.uiScale
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.pressure(root.oilPressureMaximum); greenStart:root.pressure(root.oilPressureMinimum); greenEnd:root.pressure(root.oilPressureMaximum*.85); majorStep:root.pressure(root.oilPressureMaximum)/5; minorStep:root.pressure(root.oilPressureMaximum)/25; decimals:root.metricUnits?1:0; dataState: controller.dataSourceState; limitsVerified: false }
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.temp(20); maximum:root.temp(root.oilTemperatureMaximum*1.1); greenStart:root.temp(50); greenEnd:root.temp(root.oilTemperatureMaximum*.92); majorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/5; minorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/25; dataState: controller.dataSourceState; limitsVerified: false }
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1; dataState: controller.dataSourceState; limitsVerified: false }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.pressure(root.oilPressureMaximum); greenStart:root.pressure(root.oilPressureMinimum); greenEnd:root.pressure(root.oilPressureMaximum*.85); majorStep:root.pressure(root.oilPressureMaximum)/5; minorStep:root.pressure(root.oilPressureMaximum)/25; decimals:root.metricUnits?1:0; dataState: controller.dataSourceState; limitsVerified: false }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.temp(20); maximum:root.temp(root.oilTemperatureMaximum*1.1); greenStart:root.temp(50); greenEnd:root.temp(root.oilTemperatureMaximum*.92); majorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/5; minorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/25; dataState: controller.dataSourceState; limitsVerified: false }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1; dataState: controller.dataSourceState; limitsVerified: false }
     }
 
     Item { id: rightColumn; anchors { left: gauges.right; right: body.right; top: body.top; bottom: body.bottom; leftMargin: 8*root.uiScale } }
     Rectangle { id: cas; anchors { left: rightColumn.left; right: rightColumn.right; top: rightColumn.top }
         height: rightColumn.height*.42; color: root.panel; border.color: root.line; radius: 5*root.uiScale
         Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 5*root.uiScale }
-        text: "CAS MESSAGES"; color: "#E7ECEE"; font.pixelSize: 10*root.uiScale }
+        text: "CAS MESSAGES"; color: "#E7ECEE"; font.pixelSize:hmiTokens.legibleText(10,root.textScale,9) }
         Rectangle { id:casBanner; x: 1; y: 25*root.uiScale; width: parent.width-2; height: 34*root.uiScale; color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
             SequentialAnimation on opacity { running:root.casLevel==="WARNING"&&!root.casAcknowledged; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
-            Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:(root.casLevel==="NORMAL"?"✓   ":"⚠   ")+root.casHeadline; color:root.casColor; font.pixelSize:11*root.uiScale; font.bold:true }
-            Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:root.casAction; color:"#D9E3E6"; font.pixelSize:5.5*root.uiScale; font.bold:root.casLevel!=="NORMAL" }
+            Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:(root.casLevel==="NORMAL"?"✓   ":"⚠   ")+root.casHeadline; color:root.casColor; font.pixelSize:hmiTokens.legibleText(11,root.textScale,10); font.bold:true }
+            Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:root.casAction; color:"#D9E3E6"; font.pixelSize:hmiTokens.legibleText(5.5,root.textScale,8); font.bold:root.casLevel!=="NORMAL" }
             TapHandler { onTapped:{root.selectedPanel="CAS";root.activeNavigation="INDICATIONS"} }
         }
         HmiAirframePanel {
             anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; topMargin:62*root.uiScale; margins:5*root.uiScale }
-            uiScale:root.uiScale; gearInstalled:controller.landingGearInstalled; noseLocked:controller.gearNoseLocked
+            uiScale:root.uiScale; compact:root.compactLayout; gearInstalled:controller.landingGearInstalled; noseLocked:controller.gearNoseLocked
             leftLocked:controller.gearLeftLocked; rightLocked:controller.gearRightLocked; gearState:controller.gearState
             flapsInstalled:controller.flapsInstalled; flapDetents:controller.flapDetents; flapAngle:controller.flapAngle
             flapCommandedAngle:controller.flapCommandedAngle; dataState:controller.dataSourceState
         }
     }
 
-    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:controller.dataSourceState; limitsVerified:false }
+    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:root.compactLayout; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:controller.dataSourceState; limitsVerified:false }
 
     Rectangle { id: summary; anchors { left: nav.right; right: parent.right; bottom: actions.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
-        height: 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale
+        height: root.compactLayout ? 62 : 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale
         Row { anchors { fill:parent; margins:8*root.uiScale } spacing:10*root.uiScale
-            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:controller.dataSourceState }
+            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:controller.dataSourceState }
             Item { width:parent.width*.18; height:parent.height
-                Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"ENDURANCE"; color:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
-                Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.fuelEnduranceHours.toFixed(1)+" HR"; color:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:17*root.uiScale; font.bold:true }
+                Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"ENDURANCE"; color:root.cyan; font.pixelSize:hmiTokens.legibleText(8,root.textScale,8); font.bold:true }
+                Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.fuelEnduranceHours.toFixed(1)+" HR"; color:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:hmiTokens.legibleText(17,root.textScale,15); font.bold:true }
             }
-            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:controller.dataSourceState }
+            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:controller.dataSourceState }
         } }
-    Row { id: actions; anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 10*root.uiScale }
-        height: 48*root.uiScale; spacing: 12*root.uiScale
+    Row { id: actions; anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: root.compactLayout?4:10*root.uiScale }
+        height: Math.max(hmiTokens.minimumTouch,48*root.uiScale); spacing: root.compactLayout?6:12*root.uiScale
         Repeater { model: [{k:"lean",n:"LEAN"},{k:"fuel",n:"FUEL"},{k:"trend",n:"TREND"},{k:"checklist",n:"CHECKLIST"}]
             delegate: Rectangle { required property var modelData; width: (parent.width-3*parent.spacing)/4; height: parent.height; radius: 5*root.uiScale; color: "#101D25"; border.color: root.line
                 EmsVectorIcon { x: 50*root.uiScale; anchors.verticalCenter: parent.verticalCenter; width: 27*root.uiScale; height: 27*root.uiScale; kind: modelData.k; strokeColor: modelData.n === "LEAN" ? (root.mixtureControlAvailable?root.green:"#66777E") : root.cyan }
-                Text { anchors.centerIn: parent; text:modelData.n==="LEAN"&&!root.mixtureControlAvailable?"LEAN N/A":modelData.n; color:modelData.n==="LEAN"&&!root.mixtureControlAvailable?"#7D8B91":"#F0F3F4"; font.pixelSize: 14*root.uiScale; font.bold: true }
+                Text { anchors.centerIn: parent; text:modelData.n==="LEAN"&&!root.mixtureControlAvailable?"LEAN N/A":modelData.n; color:modelData.n==="LEAN"&&!root.mixtureControlAvailable?"#7D8B91":"#F0F3F4"; font.pixelSize:hmiTokens.legibleText(14,root.textScale,hmiTokens.minimumActionText); font.bold: true }
                 MouseArea { anchors.fill: parent; onClicked: root.selectedPanel=modelData.n }
             } }
     }

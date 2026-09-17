@@ -34,6 +34,14 @@
     "target_fps": 50
   },
   "ems": {
+    "compact_mode": {
+      "max_width_px": 820,
+      "max_height_px": 500,
+      "minimum_micro_text_px": 8,
+      "minimum_action_text_px": 12,
+      "minimum_touch_px": 44,
+      "abbreviate_header_context": true
+    },
     "primary_gauges": ["RPM", "MAP"],
     "secondary_gauges": ["OIL_PRESS", "OIL_TEMP", "FUEL_FLOW"],
     "cylinders": 4,

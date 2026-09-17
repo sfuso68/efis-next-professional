@@ -85,8 +85,10 @@ Item {
                 }
             }
 
-            ctx.fillStyle="#DCE6EA"; ctx.font="600 "+Math.max(10,Math.round(r*.12))+"px sans-serif"
-            ctx.fillText(gauge.label,cx,cy-r*.16)
+            if (!gauge.compact) {
+                ctx.fillStyle="#DCE6EA"; ctx.font="600 "+Math.max(10,Math.round(r*.12))+"px sans-serif"
+                ctx.fillText(gauge.label,cx,cy-r*.16)
+            }
 
             let glass=ctx.createLinearGradient(cx,cy-r*.83,cx,cy+r*.12)
             glass.addColorStop(0,"rgba(205,235,248,0.16)")
@@ -123,10 +125,9 @@ Item {
     // the Canvas is downscaled aggressively by the 1024x600 flight layout.
     Rectangle { visible:gauge.compact; x:gauge.cx-gauge.radius; y:gauge.cy-gauge.radius; width:gauge.radius*2; height:width; radius:width/2; color:"transparent"; border.width:Math.max(1,1.4*gauge.uiScale); border.color:"#AAB7BD" }
     Rectangle { visible:gauge.compact; x:gauge.cx-gauge.radius*.92; y:gauge.cy-gauge.radius*.92; width:gauge.radius*1.84; height:width; radius:width/2; color:"transparent"; border.width:Math.max(1,gauge.uiScale); border.color:"#4E626C" }
-    Text { visible:gauge.compact; anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*gauge.uiScale } text:gauge.label; color:"#DCE6EA"; font.pixelSize:9*gauge.uiScale; font.bold:true }
-    Text { visible:gauge.compact; x:gauge.cx-gauge.radius*.72; y:gauge.cy+gauge.radius*.34; text:Number(gauge.minimum).toFixed(0); color:"#EAF1F3"; font.pixelSize:7*gauge.uiScale; font.bold:true }
-    Text { visible:gauge.compact; anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:18*gauge.uiScale } text:Number((gauge.minimum+gauge.maximum)/2).toFixed(0); color:"#EAF1F3"; font.pixelSize:7*gauge.uiScale; font.bold:true }
-    Text { visible:gauge.compact; x:gauge.cx+gauge.radius*.54; y:gauge.cy+gauge.radius*.34; text:Number(gauge.maximum).toFixed(0); color:"#EAF1F3"; font.pixelSize:7*gauge.uiScale; font.bold:true }
+    Text { visible:gauge.compact; anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*gauge.uiScale }
+        width:parent.width*.76; horizontalAlignment:Text.AlignHCenter; elide:Text.ElideRight
+        text:gauge.label; color:"#DCE6EA"; font.pixelSize:Math.max(8,9*gauge.uiScale); font.bold:true }
 
     Item {
         id: needle
@@ -149,7 +150,7 @@ Item {
         Rectangle { anchors.centerIn: parent; width: parent.width*.20; height: width; radius: width/2; color: "#79868B" }
     }
     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: dominant ? 20*uiScale : 14*uiScale }
-        text: Number(gauge.value).toFixed(gauge.decimals); color: "#F5F8F9"; font.pixelSize: (dominant?45:31)*gauge.uiScale; font.bold: true }
+        text: Number(gauge.value).toFixed(gauge.decimals); color: "#F5F8F9"; font.pixelSize: Math.max(dominant?38:26,(dominant?45:31)*gauge.uiScale); font.bold: true }
     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 4*uiScale }
-        text: gauge.unit; color: "#D2DCE0"; font.pixelSize: (dominant?12:10)*gauge.uiScale; font.bold: true }
+        text: gauge.unit; color: "#D2DCE0"; font.pixelSize: Math.max(9,(dominant?12:10)*gauge.uiScale); font.bold: true }
 }
