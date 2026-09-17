@@ -33,6 +33,7 @@ con una nuova ADR o con una revisione esplicita del brief.
 | `AVIONIX_NEXT_MASTER_PROJECT_BRIEF_CODEX_R0.md` | specifica e piano generale AVIONIX Next | importato integralmente |
 | `AVIONIX_NEXT_PROJECT_AUDIT.md` | audit completo sezione 24 e proposta successiva | aggiornato all'HEAD del branch di lavoro |
 | `AVIONIX_G2_FREEZE_READINESS.md` | confronto read-only di contratti, codice e test DDP/EDP | freeze non autorizzato |
+| `AVIONIX_NEXT_DECISION_REGISTER.md` | decisioni G0/G1/G2 separate da evidenze e implementazione | proposte, non approvate |
 | `AVIONIX_NEXT_EXECUTION_BACKLOG.md` | attività ordinate per gate e registro evidenze | controllato |
 | `docs/status/EFIS_NEXT_STATE.md` | stato verificato e livelli di evidenza | autorevole |
 | `docs/status/EFIS_NEXT_MASTER_MATRIX.md` | requisiti, stato e criteri di chiusura | autorevole |

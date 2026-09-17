@@ -3171,3 +3171,27 @@ dell'ICD e non autorizza modifiche al wire protocol.
   conferma esplicita dell'utente.
 - `AVX-G2-02` resta `PROPOSED` e dipendente dall'inventario G1 e dalla sorgente
   CAN reale. Nessun nodo, servizio, rete o deployment è stato modificato.
+
+### Registro decisioni G0/G1/G2 — 2026-09-17
+
+Le decisioni del proprietario sono ora separate dai fatti tecnici in
+`docs/project/AVIONIX_NEXT_DECISION_REGISTER.md`. Il registro contiene cinque
+decisioni con stato, raccomandazione, effetto e criterio di autorizzazione.
+
+#### Verificato solo software/documentazione
+
+- La ricerca nelle branch esaminate, nel mirror locale e in `sources/` non ha
+  trovato nessuno dei cinque riferimenti mancanti elencati nell'indice.
+- Le decisioni di naming, retention NAS e freeze ICD restano
+  `PENDING_USER`; recupero fonti e inventario ASSO5 restano rispettivamente
+  `BLOCKED_EXTERNAL` e `BLOCKED_HW`.
+
+#### Verificato su hardware reale
+
+- Nulla in questa attività; NAS, ASSO5 e Sequent non sono stati interrogati.
+
+#### Aperto / non dichiarare DONE
+
+- Nessuna delle cinque decisioni è stata approvata da questo documento.
+- G0 resta `PARTIAL`; nessun merge, deployment, rename, cancellazione o
+  modifica hardware è autorizzato.
