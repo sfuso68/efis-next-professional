@@ -241,6 +241,50 @@ incluso e nessun requisito viene promosso a DONE.
 - Nessun requisito viene promosso a `DONE`; EMS-002 e BBX-003 restano
   `PARTIAL`.
 
+## Incremento qualificazione indipendente evidenza EDP — venti passi
+
+1. I limiti di accettazione applicati dalla cattura sono inclusi nel report.
+2. Il documento sorgente è limitato a 1 MiB prima del parsing.
+3. Radice JSON e schema EDP V1 sono verificati in modo stretto.
+4. È ammessa esclusivamente la modalità passiva `AF_PACKET`.
+5. La persistenza del payload grezzo deve risultare disabilitata.
+6. `flight_approval` deve essere presente e sempre `false`.
+7. Endpoint IPv4 e nome interfaccia sono validati sintatticamente.
+8. Il timestamp deve essere ISO 8601, UTC e dotato di fuso esplicito.
+9. Contatori e misure devono essere finiti e non negativi.
+10. Totali pacchetti, byte ed errori di decodifica sono riconciliati.
+11. Le identità degli stream devono essere univoche.
+12. Ogni stream accettato deve rispettare l'autorità Blackbox `source=47`.
+13. Contatori e intervallo di sequenza degli stream sono riconciliati.
+14. I restart dichiarati devono coincidere con gli stream non correnti.
+15. I campioni temporali devono essere coerenti con i datagrammi accettati.
+16. La percentuale di gap viene ricalcolata dai contatori elementari.
+17. Chiavi dei limiti e dei check incorporati devono coincidere esattamente
+    con il contratto noto, senza estensioni silenziose.
+18. Tutti i check e lo stato vengono ricalcolati indipendentemente; un report
+    che si auto-dichiara `PASS` non è considerato evidenza sufficiente.
+19. L'assessment separa integrità, autorità, continuità e uniformità e
+    classifica il feed `NO_DATA/SIM_ONLY/REAL_ONLY/MIXED`.
+20. Il report di assessment include SHA-256 del sorgente, viene scritto
+    atomicamente ed è registrato nella suite CTest e nella procedura EMS.
+
+### Evidenza software
+
+- Suite combinata cattura/assessment: 17/17 test PASS.
+- `py_compile` di entrambi i tool e delle rispettive suite: PASS.
+- Verificati alterazione dei check/stato, escalation privacy/approvazione,
+  incoerenze contatori/stream, schema o policy ignoti, digest e output atomico.
+
+### Hardware reale e aperto
+
+- Nessuna cattura reale è stata acquisita e nessun nodo è stato modificato.
+- Il classificatore produce esclusivamente qualifiche di banco
+  `BENCH_SIM_ONLY`, `BENCH_REAL_ONLY`, `BENCH_MIXED` o `NOT_QUALIFIED`; non può
+  concedere approvazione al volo.
+- Restano necessari report passivo da 180 s, correlazione con DATA LINK e
+  journal, fault fisico, recovery ed endurance. EMS-002 e BBX-003 restano
+  `PARTIAL`.
+
 ## Incremento osservatore passivo EDP — dieci passi
 
 1. Implementato parser EDP V1 indipendente per l'evidenza di banco.

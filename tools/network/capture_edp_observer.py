@@ -202,7 +202,8 @@ def capture(
     streams: dict[tuple[int, int], PublisherStream] = {}
     errors: dict[str, int] = {}
     packets_seen = ignored = frames = identity_rejected = socket_errors = 0
-    bytes_observed = restarts = simulated_frames = 0
+    bytes_observed = restarts = simulated_frames = real_frames = 0
+    mixed_provenance_frames = simulated_samples = 0
     try:
         while monotonic_ns() < deadline_ns:
             try:
@@ -232,7 +233,13 @@ def capture(
             last_ns = now_ns
             frames += 1
             bytes_observed += len(payload)
-            simulated_frames += envelope.simulated_samples == SAMPLE_COUNT
+            simulated_samples += envelope.simulated_samples
+            if envelope.simulated_samples == SAMPLE_COUNT:
+                simulated_frames += 1
+            elif envelope.simulated_samples == 0:
+                real_frames += 1
+            else:
+                mixed_provenance_frames += 1
             restarts += observe_sequence(streams, envelope)
     finally:
         receiver.close()
@@ -260,7 +267,21 @@ def capture(
         "reversed": sum(item.reversed for item in streams.values()),
         "publisher_restarts": restarts,
         "simulated_frames": simulated_frames,
+        "real_frames": real_frames,
+        "mixed_provenance_frames": mixed_provenance_frames,
+        "simulated_samples": simulated_samples,
+        "total_samples": frames * SAMPLE_COUNT,
         "interarrival": timing_report(intervals),
+        "acceptance_limits": {
+            "minimum_hz": args.minimum_hz,
+            "maximum_gap_percent": args.max_gap_percent,
+            "maximum_malformed": args.max_malformed,
+            "maximum_duplicates": args.max_duplicates,
+            "maximum_reversed": args.max_reversed,
+            "maximum_publisher_restarts": args.max_publisher_restarts,
+            "maximum_interarrival_ms": args.max_interarrival_ms,
+            "maximum_p95_interarrival_ms": args.max_p95_interarrival_ms,
+        },
         "streams": [asdict(streams[key]) for key in sorted(streams)],
         "socket_errors": socket_errors,
         "raw_payload_persisted": False,

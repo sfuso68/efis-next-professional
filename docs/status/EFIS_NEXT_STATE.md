@@ -3057,3 +3057,37 @@ sempre `flight_approval=false`. L'output su file usa sostituzione atomica.
   180 s, quindi confrontare report, pagina DATA LINK e journal.
 - Ripetere separatamente fault fisico e recovery; la cattura passiva non li
   sostituisce. EMS-002 e BBX-003 restano `PARTIAL`.
+
+### Incremento software — qualificazione indipendente dei report EDP
+
+Il report della cattura passiva non viene più accettato sulla base del proprio
+campo `status`. Il nuovo assessor rilegge il documento con limite di dimensione,
+verifica schema, modalità passiva, privacy, endpoint, timestamp e contatori,
+riconcilia pacchetti, byte, errori, stream, sequenze, restart e campioni
+temporali, quindi ricalcola limiti, check e stato. Chiavi sconosciute o mancanti
+sono respinte in modo fail-closed.
+
+L'esito distingue integrità, autorità, continuità e uniformità e classifica i
+campioni come `NO_DATA`, `SIM_ONLY`, `REAL_ONLY` o `MIXED`. Il documento di
+assessment conserva lo SHA-256 del report sorgente, usa scrittura atomica e
+mantiene sempre `flight_approval=false`; anche un esito positivo vale soltanto
+come evidenza di banco.
+
+#### Verificato solo software
+
+- Suite cattura più assessment: 17/17 test PASS.
+- `py_compile` dei due tool e delle due suite: PASS.
+- Sono coperti report alterati, escalation di privacy/approvazione, incoerenze
+  di contatori e stream, schema/modalità/policy ignoti, classificazione
+  SIM/REAL/MIXED, digest e scrittura atomica da CLI.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun deployment e nessuna cattura reale.
+
+#### Aperto / non dichiarare DONE
+
+- Acquisire sul RPi4 EMS il report passivo da 180 s e produrre l'assessment
+  indipendente, correlando esito, pagina DATA LINK e journal Blackbox.
+- Ripetere con fault Ethernet, recovery, reboot ed endurance. EMS-002 e BBX-003
+  restano `PARTIAL` fino alle evidenze hardware previste dalla master matrix.

@@ -285,6 +285,20 @@ sudo python3 tools/network/capture_edp_observer.py \
   --output /home/pi/.local/state/efis-next/edp-passive-180s.json
 ```
 
+Validare poi il file con un secondo processo che ricalcola tutti i gate e non
+si fida dei campi `checks` o `status` prodotti dalla cattura:
+
+```sh
+python3 tools/network/assess_edp_capture.py \
+  /home/pi/.local/state/efis-next/edp-passive-180s.json \
+  --output /home/pi/.local/state/efis-next/edp-assessment-180s.json
+```
+
+L'assessment collega il risultato all'originale tramite SHA-256 e separa
+`integrity`, `authority`, `continuity` e `uniformity`. Classifica inoltre il
+feed come `SIM_ONLY`, `MIXED` o `REAL_ONLY`; nessuna di queste etichette concede
+automaticamente l'idoneità al volo.
+
 L'esito `PASS` prova soltanto integrità, autorità, continuità e uniformità della
 finestra osservata. `flight_approval` resta sempre `false`. Un restart del
 publisher rende intenzionalmente il gate rosso salvo che la prova specifica
