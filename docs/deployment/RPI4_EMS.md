@@ -254,3 +254,39 @@ scesa a 0,18–0,22 ms. La prova equivalente con tutti i thread del renderer su
 CPU1–3, lasciando CPU0 ai due IRQ `bcmgenet`, ha dato 100/100 ping con massimo
 0,282 ms. Il drop-in `efis-ems-performance.override.conf` rende questa affinità
 parte del deployment; non è un'ottimizzazione estetica.
+
+## Osservazione passiva EDP V1
+
+`capture_edp_observer.py` misura il flusso Blackbox→EMS direttamente da
+`AF_PACKET`. Non apre la porta UDP 49003, non invia pacchetti e non crea una via
+di ritorno verso il broker. Il report conserva soltanto contatori e timing, mai
+il payload motore grezzo.
+
+Sul nodo EMS, durante una finestra di banco controllata:
+
+```sh
+cd /home/pi/efis-next
+mkdir -p /home/pi/.local/state/efis-next
+sudo python3 tools/network/capture_edp_observer.py \
+  --interface eth0 \
+  --source 10.77.10.2 \
+  --destination 10.77.10.12 \
+  --port 49003 \
+  --expected-source-node 47 \
+  --duration-seconds 180 \
+  --minimum-hz 10 \
+  --max-gap-percent 0.1 \
+  --max-malformed 0 \
+  --max-duplicates 0 \
+  --max-reversed 0 \
+  --max-publisher-restarts 0 \
+  --max-interarrival-ms 250 \
+  --max-p95-interarrival-ms 100 \
+  --output /home/pi/.local/state/efis-next/edp-passive-180s.json
+```
+
+L'esito `PASS` prova soltanto integrità, autorità, continuità e uniformità della
+finestra osservata. `flight_approval` resta sempre `false`. Un restart del
+publisher rende intenzionalmente il gate rosso salvo che la prova specifica
+usi un limite diverso e lo documenti. Non eseguire questa misura come
+sostituzione dei fault test fisici `LIVE → STALE → LOST → LIVE`.

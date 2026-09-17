@@ -240,3 +240,35 @@ incluso e nessun requisito viene promosso a DONE.
   journal reali durante traffico valido, source node errato, perdita e recovery.
 - Nessun requisito viene promosso a `DONE`; EMS-002 e BBX-003 restano
   `PARTIAL`.
+
+## Incremento osservatore passivo EDP — dieci passi
+
+1. Implementato parser EDP V1 indipendente per l'evidenza di banco.
+2. Verificati magic, schema, identità, dimensione e CRC32C.
+3. Verificati i 18 segnali, unicità, unità, source, validity e quality.
+4. Applicato il gate dell'autorità Blackbox `source_node=47`.
+5. Contati gap, duplicati, inversioni e restart per publisher instance.
+6. Misurati frequenza, massimo e percentile 95 degli intervalli.
+7. Usata cattura Linux `AF_PACKET` passiva, senza bind UDP o return path.
+8. Prodotto report JSON atomico, aggregato e privo di payload grezzi.
+9. Aggiunti gate fail-closed e otto test deterministici, inclusa alterazione
+   con CRC ricalcolato.
+10. Collegato il test a CTest e documentato il comando di banco RPi4.
+
+### Evidenza software
+
+- Suite `test_capture_edp_observer`: 8/8 PASS.
+- `py_compile` del tool e dei test: PASS.
+- Il vettore noto CRC32C `123456789` produce `0xE3069283`.
+- Riconfigurazione CMake e build MSVC del target `efis_edp_v1_tests`: PASS.
+  L'avvio locale dell'eseguibile tramite CTest resta bloccato dalla restrizione
+  applicativa Windows già osservata; la regressione eseguibile è demandata alla
+  EFIS Core CI Linux e non viene dichiarata localmente.
+
+### Hardware reale e aperto
+
+- Nessuna cattura è stata eseguita su `eth0` del nodo EMS in questo incremento.
+- Il tool è predisposto per `10.77.10.2 → 10.77.10.12:49003`, ma il report reale
+  da 180 s e la correlazione con pagina DATA LINK/journal restano da acquisire.
+- Nessun requisito viene promosso a `DONE`; EMS-002 e BBX-003 restano
+  `PARTIAL`.

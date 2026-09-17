@@ -3023,3 +3023,37 @@ sequenza e marcatore `RECENT` ed è ancora strettamente read-only.
   durante publisher valido, source node errato, `STALE`, `LOST` e recovery.
 - Verificare leggibilità e touch della pagina a 800×480, reboot, fault Ethernet
   ed endurance. EMS-002 e BBX-003 restano `PARTIAL`.
+
+### Incremento software — osservatore passivo EDP V1
+
+È disponibile un osservatore Linux `AF_PACKET` dedicato al collegamento
+Blackbox→EMS. Il processo filtra `10.77.10.2 → 10.77.10.12:49003`, non occupa la
+porta del consumer, non trasmette e non persiste dati motore grezzi. Il parser
+indipendente verifica envelope, CRC32C, identità, struttura dei 18 campioni,
+unità ingegneristiche e marcatura SIM.
+
+Il report aggregato include frequenza, timing massimo/p95, autorità del source
+node, sequenze, gap, duplicati, inversioni, restart e categorie degli errori di
+decodifica. Tutti i limiti sono espliciti; l'esito è fail-closed e contiene
+sempre `flight_approval=false`. L'output su file usa sostituzione atomica.
+
+#### Verificato solo software
+
+- Otto test deterministici PASS: frame valido, CRC noto, header/identità/
+  lunghezza/CRC errati, segnale duplicato, unità errata con CRC valido,
+  sequenze/restart e tutti i gate di accettazione.
+- `py_compile` PASS; il test è registrato in CTest.
+- Riconfigurazione CMake e compilazione MSVC del target EDP: PASS. Il processo
+  C++ non è stato avviato localmente da CTest per la restrizione applicativa
+  Windows già nota; occorre l'esito della EFIS Core CI Linux.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessuna cattura EDP reale o modifica ai nodi.
+
+#### Aperto / non dichiarare DONE
+
+- Distribuire soltanto il tool sul RPi4 EMS e acquisire una finestra passiva da
+  180 s, quindi confrontare report, pagina DATA LINK e journal.
+- Ripetere separatamente fault fisico e recovery; la cattura passiva non li
+  sostituisce. EMS-002 e BBX-003 restano `PARTIAL`.
