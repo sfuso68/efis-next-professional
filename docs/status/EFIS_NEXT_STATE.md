@@ -2850,3 +2850,11 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   implementato, ma il renderer è andato in timeout nella sessione Windows e
   non viene dichiarata una nuova golden. Hardware RPi4, EDP reale, touch,
   frame-rate, termica e fault fisico restano aperti.
+
+### Incremento software — isolamento delle funzioni derivate EMS
+
+Con sorgente `LOST/FAIL` il CAS segnala prioritariamente la perdita dati;
+`STALE/DEGRADED` genera caution. Trend, lean e checklist non consumano o
+convalidano valori non utilizzabili. Cilindri, airframe, fuel ed electrical
+ricevono stato ed età coerenti. Verificati soltanto codice, test e build desktop;
+fault EDP fisico e comportamento sul pannello RPi4 restano aperti.

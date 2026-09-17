@@ -8,6 +8,9 @@ Item {
     readonly property bool compactLayout: width <= 820 || height <= 500
     readonly property real textScale: compactLayout ? Math.max(1.0, uiScale) : uiScale
     readonly property int dataAgeMs: controller.dataAgeMs === undefined ? -1 : Number(controller.dataAgeMs)
+    readonly property string normalizedDataState: String(controller.dataSourceState||"LOST").toUpperCase()
+    readonly property bool dataUsable: normalizedDataState!=="LOST"&&normalizedDataState!=="FAIL"
+    readonly property bool dataDegraded: normalizedDataState==="STALE"||normalizedDataState==="DEGRADED"
     HmiTokens { id: hmiTokens }
     readonly property color cyan: "#28D9F4"
     readonly property color green: "#52DE36"
@@ -67,12 +70,15 @@ Item {
     readonly property bool blackBoxLinkLost: String(controller.centralBlackBoxState||"OFFLINE")!=="ONLINE"
     function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
-    readonly property string casLevel: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
+    readonly property string casLevel: !dataUsable ? "WARNING" : dataDegraded ? "CAUTION" :
+                                       controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
                                        maximumCht>chtMaximum || controller.oilTemperature>oilTemperatureMaximum ? "WARNING" :
                                        fuelTotalGallons<=fuelReserveGallons*.5 || fuelLeakAlarm || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
                                        controller.busVoltage<12.5 || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
                                        fuelImbalanceGallons>3 || blackBoxLinkLost ? "ADVISORY" : "NORMAL"
-    readonly property string casHeadline: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
+    readonly property string casHeadline: !dataUsable ? "ENGINE DATA "+normalizedDataState :
+                                          dataDegraded ? "ENGINE DATA "+normalizedDataState :
+                                          controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
                                           maximumCht>chtMaximum ? "CHT HIGH" :
                                           controller.oilTemperature>oilTemperatureMaximum ? "OIL TEMPERATURE HIGH" :
                                           controller.busVoltage<12.5 ? "BUS VOLTAGE LOW" :
@@ -82,7 +88,9 @@ Item {
                                           fuelTotalGallons<=fuelReserveGallons ? "FINAL RESERVE" :
                                           fuelImbalanceGallons>3 ? "FUEL IMBALANCE" :
                                           blackBoxLinkLost ? "BLACKBOX LINK LOST" : "SYSTEM NORMAL"
-    readonly property string casAction: controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
+    readonly property string casAction: !dataUsable ? "USE STANDBY INDICATIONS • CHECK EMS LINK" :
+                                        dataDegraded ? "VALUES MAY BE DELAYED • VERIFY SOURCE" :
+                                        controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
                                         maximumCht>chtMaximum ? "INCREASE COOLING • REDUCE POWER" :
                                         controller.oilTemperature>oilTemperatureMaximum ? "REDUCE POWER • MONITOR PRESSURE" :
                                         controller.busVoltage<12.5 ? "CHECK ALTERNATOR AND ELECTRICAL LOAD" :
@@ -115,8 +123,9 @@ Item {
         for(var i=0;i<values.length;i++){peaks.push(Number(values[i]));detected.push(false)}
         leanPeakValues=peaks; leanPeakDetected=detected; leanFirstCylinder=-1
     }
-    function startLean() { resetLean(); leanActive=true }
+    function startLean() { if(!dataUsable)return; resetLean(); leanActive=true }
     function updateLean() {
+        if(!dataUsable){leanActive=false;return}
         if(!leanActive)return
         var values=controller.egtValues||[]; var peaks=leanPeakValues.slice(0); var detected=leanPeakDetected.slice(0)
         for(var i=0;i<values.length;i++){
@@ -126,10 +135,10 @@ Item {
         }
         leanPeakValues=peaks; leanPeakDetected=detected
     }
-    readonly property bool checklistEngineOk: controller.engineRpm < 400 || (controller.oilPressure >= oilPressureMinimum && controller.oilPressure <= oilPressureMaximum && controller.oilTemperature >= 50 && controller.oilTemperature <= oilTemperatureMaximum)
-    readonly property bool checklistFuelOk: checklistFuelConfirmed && (controller.fuelLeft + controller.fuelRight) >= 8
-    readonly property bool checklistElectricalOk: controller.busVoltage >= 13.2 && controller.busVoltage <= 14.8 && controller.alternatorCurrent >= 0
-    readonly property bool checklistAirframeOk: checklistAirframeConfirmed && (!controller.landingGearInstalled || controller.gearState === "DOWN & LOCKED")
+    readonly property bool checklistEngineOk: dataUsable && (controller.engineRpm < 400 || (controller.oilPressure >= oilPressureMinimum && controller.oilPressure <= oilPressureMaximum && controller.oilTemperature >= 50 && controller.oilTemperature <= oilTemperatureMaximum))
+    readonly property bool checklistFuelOk: dataUsable && checklistFuelConfirmed && (controller.fuelLeft + controller.fuelRight) >= 8
+    readonly property bool checklistElectricalOk: dataUsable && controller.busVoltage >= 13.2 && controller.busVoltage <= 14.8 && controller.alternatorCurrent >= 0
+    readonly property bool checklistAirframeOk: dataUsable && checklistAirframeConfirmed && (!controller.landingGearInstalled || controller.gearState === "DOWN & LOCKED")
     readonly property bool checklistComplete: checklistEngineOk && checklistFuelOk && checklistElectricalOk && checklistAirframeOk
     function appendTrend(series,value) { var copy=series.slice(0); copy.push(value); if(copy.length>120)copy.shift(); return copy }
     readonly property string units: controller.unitSystem || "AVIATION"
@@ -146,6 +155,7 @@ Item {
     readonly property string flowUnit: metricUnits ? "L/H" : "GPH"
     readonly property string mapUnit: metricUnits ? "HPA" : "IN HG"
     Timer { interval:1000; running:true; repeat:true; onTriggered:{
+            if(!root.dataUsable){root.leanActive=false;root.updateCasEvents();return}
             root.rpmTrend=root.appendTrend(root.rpmTrend,Number(controller.engineRpm||0)/3000)
             root.oilTrend=root.appendTrend(root.oilTrend,Number(controller.oilPressure||0)/100)
             var maximum=0; var values=controller.chtValues||[]; for(var i=0;i<values.length;i++)maximum=Math.max(maximum,Number(values[i])); root.chtTrend=root.appendTrend(root.chtTrend,maximum/250)
@@ -223,21 +233,21 @@ Item {
             uiScale:root.uiScale; compact:root.compactLayout; gearInstalled:controller.landingGearInstalled; noseLocked:controller.gearNoseLocked
             leftLocked:controller.gearLeftLocked; rightLocked:controller.gearRightLocked; gearState:controller.gearState
             flapsInstalled:controller.flapsInstalled; flapDetents:controller.flapDetents; flapAngle:controller.flapAngle
-            flapCommandedAngle:controller.flapCommandedAngle; dataState:controller.dataSourceState
+            flapCommandedAngle:controller.flapCommandedAngle; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs
         }
     }
 
-    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:root.compactLayout; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:controller.dataSourceState; limitsVerified:false }
+    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:root.compactLayout; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified:false }
 
     Rectangle { id: summary; anchors { left: nav.right; right: parent.right; bottom: actions.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
         height: root.compactLayout ? 62 : 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale
         Row { anchors { fill:parent; margins:8*root.uiScale } spacing:10*root.uiScale
-            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:controller.dataSourceState }
+            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs }
             Item { width:parent.width*.18; height:parent.height
                 Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"ENDURANCE"; color:root.cyan; font.pixelSize:hmiTokens.legibleText(8,root.textScale,8); font.bold:true }
                 Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.fuelEnduranceHours.toFixed(1)+" HR"; color:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:hmiTokens.legibleText(17,root.textScale,15); font.bold:true }
             }
-            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:controller.dataSourceState }
+            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs }
         } }
     Row { id: actions; anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: root.compactLayout?4:10*root.uiScale }
         height: Math.max(hmiTokens.minimumTouch,48*root.uiScale); spacing: root.compactLayout?6:12*root.uiScale

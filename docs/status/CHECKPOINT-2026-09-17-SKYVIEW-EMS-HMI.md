@@ -122,4 +122,15 @@ aperti. Nessuna funzione è promossa a flight approved.
 - Scale neutre, senza normalizzazione verde, in `LOST/FAIL`.
 - Test fail-closed e comando per golden degradate; la cattura resta aperta dopo
   timeout del renderer nella sessione Windows corrente. Nessuna acceptance
-  hardware implicita.
+hardware implicita.
+
+## Incremento isolamento dati non validi — cinque passi
+
+- `LOST/FAIL` hanno precedenza sul CAS e generano `ENGINE DATA LOST/FAIL`.
+- `STALE/DEGRADED` producono una caution esplicita con richiesta di verifica.
+- Trend e lean non acquisiscono campioni non utilizzabili; il lean attivo viene
+  arrestato al decadimento della sorgente.
+- Le checklist automatiche non possono risultare verdi con dati non validi.
+- Età e stato sono propagati anche a cilindri, airframe, fuel ed electrical.
+
+Verifiche esclusivamente software; nessun fault fisico o pannello reale incluso.

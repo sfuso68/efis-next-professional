@@ -68,6 +68,21 @@ class AvionixHmiContractTests(unittest.TestCase):
         self.assertIn("EFIS_HMI_GOLDEN_STATE", main)
         self.assertIn("EFIS_HMI_GOLDEN_AGE_MS", main)
 
+    def test_invalid_data_blocks_derived_ems_functions(self):
+        ems = (ROOT / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
+        self.assertIn('readonly property bool dataUsable:', ems)
+        self.assertIn('!dataUsable ? "WARNING"', ems)
+        self.assertIn('if(!dataUsable)return; resetLean()', ems)
+        self.assertIn('if(!root.dataUsable){root.leanActive=false;root.updateCasEvents();return}', ems)
+        self.assertIn('checklistEngineOk: dataUsable &&', ems)
+
+    def test_secondary_modules_receive_age(self):
+        ems = (ROOT / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
+        for component in ("HmiCylinderMatrixV2", "HmiAirframePanel",
+                          "HmiFuelStatus", "HmiElectricalSynoptic"):
+            start = ems.index(component)
+            self.assertIn("dataAgeMs:root.dataAgeMs", ems[start:start + 900])
+
 
 if __name__ == "__main__":
     unittest.main()

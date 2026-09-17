@@ -12,6 +12,8 @@ Rectangle {
     property real chtMaximumC: 230
     property real egtMaximumC: 920
     property string dataState: "LOST"
+    property int dataAgeMs: -1
+    function stateLabel() { return dataState+((dataState==="STALE"||dataState==="LOST")&&dataAgeMs>=0?" "+(dataAgeMs/1000).toFixed(1)+"s":"") }
     property bool limitsVerified: false
     readonly property color cyan: "#28D7E8"
     readonly property color normal: "#39D353"
@@ -36,7 +38,7 @@ Rectangle {
 
     Text { x:9*root.uiScale; y:5*root.uiScale; text:"CHT / EGT  •  4 CYLINDER MATRIX"; color:root.cyan; font.pixelSize:root.textSize(8,8); font.bold:true }
     Text { anchors { right:parent.right; top:parent.top; rightMargin:8*root.uiScale; topMargin:5*root.uiScale }
-        text:root.limitsVerified ? root.dataState : "LIMITS UNVERIFIED  •  "+root.dataState
+        text:root.limitsVerified ? root.stateLabel() : "LIMITS UNVERIFIED  •  "+root.stateLabel()
         color:root.limitsVerified ? root.cyan : root.caution; font.pixelSize:root.textSize(6,8); font.bold:true }
     Row {
         id:cylinderRow

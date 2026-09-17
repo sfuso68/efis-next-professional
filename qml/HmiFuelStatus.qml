@@ -12,6 +12,7 @@ Item {
     property real reserve:0
     property string unit:"GAL"
     property string dataState:"LOST"
+    property int dataAgeMs:-1
     readonly property real total:Math.max(0,leftQuantity)+Math.max(0,rightQuantity)
     readonly property color cyan:"#28D7E8"
     readonly property color normal:"#39D353"
@@ -19,7 +20,7 @@ Item {
     readonly property color warning:"#FF3B30"
     readonly property bool dataValid:dataState!=="LOST"&&dataState!=="FAIL"
     Text { x:0; y:0; text:"FUEL"; color:root.cyan; font.pixelSize:root.textSize(8,8); font.bold:true }
-    Text { anchors { right:parent.right; top:parent.top } text:root.dataValid?root.total.toFixed(1)+" "+root.unit:"—"; color:root.dataValid?(root.total<=root.reserve?root.warning:"#F4F8FC"):"#8A96A3"; font.pixelSize:root.textSize(12,11); font.bold:true }
+    Text { anchors { right:parent.right; top:parent.top } text:root.dataValid?root.total.toFixed(1)+" "+root.unit:root.dataState+((root.dataState==="LOST"&&root.dataAgeMs>=0)?" "+(root.dataAgeMs/1000).toFixed(1)+"s":""); color:root.dataValid?(root.total<=root.reserve?root.warning:"#F4F8FC"):root.warning; font.pixelSize:root.textSize(12,11); font.bold:true }
     Row { id:tankRow; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:parent.height-23*root.uiScale; spacing:8*root.uiScale
         Repeater { model:[{n:"LEFT",v:root.leftQuantity},{n:"RIGHT",v:root.rightQuantity}]
             delegate:Item { id:tank; required property var modelData; width:(tankRow.width-tankRow.spacing)/2; height:tankRow.height

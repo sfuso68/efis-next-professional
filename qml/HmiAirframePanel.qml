@@ -16,12 +16,14 @@ Item {
     property real flapAngle: 0
     property real flapCommandedAngle: 0
     property string dataState: "LOST"
+    property int dataAgeMs: -1
     readonly property color cyan:"#28D7E8"
     readonly property color normal:"#39D353"
     readonly property color warning:"#FF3B30"
     readonly property color invalid:"#8A96A3"
     readonly property bool dataValid:dataState!=="LOST"&&dataState!=="FAIL"
     Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"AIRFRAME"; color:root.cyan; font.pixelSize:root.textSize(8,8); font.bold:true }
+    Text { anchors { right:parent.right; top:parent.top } text:root.dataValid?"":root.dataState+((root.dataState==="LOST"&&root.dataAgeMs>=0)?" "+(root.dataAgeMs/1000).toFixed(1)+"s":""); color:root.warning; font.pixelSize:root.textSize(6,8); font.bold:true }
     Item { anchors { left:parent.left; top:parent.top; bottom:parent.bottom; topMargin:17*root.uiScale } width:parent.width*.55
         Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"GEAR"; color:root.cyan; font.pixelSize:root.textSize(7,8); font.bold:true }
         EmsVectorIcon { visible:root.gearInstalled; anchors.centerIn:parent; anchors.verticalCenterOffset:-3*root.uiScale; width:55*root.uiScale; height:43*root.uiScale; kind:"airplane"; strokeColor:root.dataValid?"#EDF3F5":root.invalid }
