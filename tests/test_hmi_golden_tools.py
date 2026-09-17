@@ -52,6 +52,11 @@ class HmiGoldenToolsTests(unittest.TestCase):
             (directory / "ems-800x480.png").write_bytes(b"tampered")
             self.assertTrue(validate(directory))
 
+    def test_lost_manifest_records_state_and_age(self):
+        manifest = {"data_state": "LOST", "data_age_ms": 1450}
+        self.assertEqual(manifest["data_state"], "LOST")
+        self.assertGreater(manifest["data_age_ms"], 1000)
+
 
 if __name__ == "__main__":
     unittest.main()

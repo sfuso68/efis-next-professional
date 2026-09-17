@@ -65,6 +65,10 @@ int main(int argc, char* argv[]) {
     engine.rootContext()->setContextProperty("bench", &sensorBench);
     engine.rootContext()->setContextProperty(
         "startupPage", qEnvironmentVariable("EFIS_START_PAGE", "PFD"));
+    engine.rootContext()->setContextProperty(
+        "hmiGoldenDataState", qEnvironmentVariable("EFIS_HMI_GOLDEN_STATE", "SIM"));
+    engine.rootContext()->setContextProperty(
+        "hmiGoldenDataAgeMs", qEnvironmentVariableIntValue("EFIS_HMI_GOLDEN_AGE_MS"));
     const bool hmiGoldenMode = QCoreApplication::arguments().contains(
         QStringLiteral("--hmi-golden"));
     engine.loadFromModule("EfisNext", hmiGoldenMode ? "HmiGoldenMain" : "Main");

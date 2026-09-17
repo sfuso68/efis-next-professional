@@ -36,6 +36,7 @@ Item {
         uiScale: gauge.uiScale
         dominant: gauge.dominant
         compact: gauge.compact
+        normalRangesVisible: gauge.usable
         opacity: gauge.usable ? 1.0 : 0.34
     }
     Rectangle {

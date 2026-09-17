@@ -1,7 +1,8 @@
 import QtQuick
 
 QtObject {
-    property string dataSourceState:"SIM"
+    property string dataSourceState:typeof hmiGoldenDataState!=="undefined"?hmiGoldenDataState:"SIM"
+    property int dataAgeMs:typeof hmiGoldenDataAgeMs!=="undefined"?hmiGoldenDataAgeMs:0
     property int engineHealth:0
     property real engineRpm:5060
     property real manifoldPressure:24.3

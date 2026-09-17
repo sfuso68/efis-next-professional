@@ -91,7 +91,8 @@ def png_pixel_sha256(path: Path) -> str:
     return hashlib.sha256(png_pixels(path)).hexdigest()
 
 
-def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int) -> dict:
+def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int,
+            data_state: str = "SIM", data_age_ms: int = 0) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     images = []
     for width, height in SIZES:
@@ -104,6 +105,8 @@ def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int) ->
             "EFIS_CAPTURE_SIZE": f"{width}x{height}",
             "EFIS_CAPTURE_DELAY_MS": str(delay_ms),
             "EFIS_CAPTURE_EXIT": "1",
+            "EFIS_HMI_GOLDEN_STATE": data_state,
+            "EFIS_HMI_GOLDEN_AGE_MS": str(data_age_ms),
         })
         completed = subprocess.run(
             [str(executable), "--hmi-golden"], env=environment,
@@ -128,6 +131,8 @@ def capture(executable: Path, output_dir: Path, platform: str, delay_ms: int) ->
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "platform": platform,
         "fixture": "HmiGoldenController.qml",
+        "data_state": data_state,
+        "data_age_ms": data_age_ms,
         "images": images,
     }
     (output_dir / "manifest.json").write_text(
@@ -142,10 +147,15 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--platform", default="offscreen")
     parser.add_argument("--delay-ms", type=int, default=800)
+    parser.add_argument("--state", choices=("LIVE", "STALE", "LOST", "FAIL", "SIM"), default="SIM")
+    parser.add_argument("--age-ms", type=int, default=0)
     args = parser.parse_args()
     if not args.executable.is_file():
         parser.error(f"executable not found: {args.executable}")
-    print(json.dumps(capture(args.executable, args.output_dir, args.platform, args.delay_ms)))
+    if args.age_ms < 0:
+        parser.error("--age-ms must be non-negative")
+    print(json.dumps(capture(args.executable, args.output_dir, args.platform, args.delay_ms,
+                             args.state, args.age_ms)))
     return 0
 
 

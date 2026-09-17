@@ -113,3 +113,13 @@ risoluzioni, validazione SHA/pixel PASS e confronto con seconda cattura PASS.
 La cattura 800×480 è stata ispezionata; non sostituisce acceptance sul display RPi4.
 Build ARM64, touch, sunlight/night, 40 FPS, replay EDP, termica e fault restano
 aperti. Nessuna funzione è promossa a flight approved.
+
+## Incremento stati degradati — cinque passi
+
+- Fixture golden parametrica per stato ed età.
+- Header EMS fedele a `LIVE/STALE/LOST/FAIL/SIM`.
+- Età esplicita per valori congelati `STALE/LOST`.
+- Scale neutre, senza normalizzazione verde, in `LOST/FAIL`.
+- Test fail-closed e comando per golden degradate; la cattura resta aperta dopo
+  timeout del renderer nella sessione Windows corrente. Nessuna acceptance
+  hardware implicita.

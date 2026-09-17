@@ -52,6 +52,22 @@ class AvionixHmiContractTests(unittest.TestCase):
         data["ems"]["compact_mode"]["minimum_touch_px"] = 36
         self.assertTrue(validate(data))
 
+    def test_degraded_state_is_wired_to_gauges_and_age(self):
+        ems = (ROOT / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
+        gauge = (ROOT / "qml/HmiArcGaugeV4.qml").read_text(encoding="utf-8")
+        face = (ROOT / "qml/EmsGaugeV3.qml").read_text(encoding="utf-8")
+        self.assertIn("dataAgeMs:root.dataAgeMs", ems)
+        self.assertIn("normalRangesVisible: gauge.usable", gauge)
+        self.assertIn('arc(gauge.minimum,gauge.maximum,"#8A96A3"', face)
+
+    def test_golden_fixture_accepts_explicit_state_and_age(self):
+        fixture = (ROOT / "qml/HmiGoldenController.qml").read_text(encoding="utf-8")
+        main = (ROOT / "src/renderers/qt/main.cpp").read_text(encoding="utf-8")
+        self.assertIn("hmiGoldenDataState", fixture)
+        self.assertIn("hmiGoldenDataAgeMs", fixture)
+        self.assertIn("EFIS_HMI_GOLDEN_STATE", main)
+        self.assertIn("EFIS_HMI_GOLDEN_AGE_MS", main)
+
 
 if __name__ == "__main__":
     unittest.main()

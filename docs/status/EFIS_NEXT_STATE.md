@@ -2837,3 +2837,16 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   `SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE`.
 - Restano aperti leggibilità sunlight/night, 40 FPS, build ARM64, replay EDP,
   soak termico e fault test. I limiti motore restano `UNVERIFIED`.
+
+### Incremento software — stati EMS degradati
+
+- Il renderer golden accetta fixture deterministiche `LIVE/STALE/LOST/FAIL/SIM`
+  e un'età esplicita, senza modificare il percorso operativo.
+- L'header conserva lo stato effettivo invece di presentare come `LIVE` ogni
+  condizione non-SIM; `STALE/LOST` mostrano l'età del dato congelato.
+- I gauge ricevono la stessa età e, in `LOST/FAIL`, rimuovono gli archi verdi
+  sostituendoli con una scala neutra oltre ai cue testuali.
+- Verificato via test, QML AOT e link PFD/EMS. Il comando di cattura degradata è
+  implementato, ma il renderer è andato in timeout nella sessione Windows e
+  non viene dichiarata una nuova golden. Hardware RPi4, EDP reale, touch,
+  frame-rate, termica e fault fisico restano aperti.

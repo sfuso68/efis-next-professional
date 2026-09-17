@@ -15,12 +15,14 @@ Item {
     property real uiScale: 1
     property bool dominant: false
     property bool compact: false
+    property bool normalRangesVisible: true
     readonly property real span: Math.max(0.001, maximum-minimum)
     readonly property real fraction: Math.max(0, Math.min(1, (value-minimum)/span))
     readonly property real cx: width/2
     readonly property real cy: height*0.51
     readonly property real radius: Math.min(width*0.47, height*0.45)
     onCompactChanged: face.requestPaint()
+    onNormalRangesVisibleChanged: face.requestPaint()
     Timer { interval:120; running:true; repeat:false; onTriggered:face.requestPaint() }
 
     Canvas {
@@ -60,10 +62,14 @@ Item {
                 ctx.strokeStyle=color; ctx.lineWidth=width; ctx.lineCap="butt"
                 ctx.beginPath(); ctx.arc(cx,cy,r*.86,angleFor(from),angleFor(to)); ctx.stroke()
             }
-            arc(gauge.minimum,gauge.greenStart,"#D93A2E",r*.037)
-            arc(gauge.greenStart,gauge.greenEnd,"#4BCD37",r*.052)
-            arc(gauge.greenEnd,Math.min(gauge.maximum,gauge.greenEnd+gauge.span*.10),"#FFD31A",r*.052)
-            arc(Math.min(gauge.maximum,gauge.greenEnd+gauge.span*.10),gauge.maximum,"#EE3224",r*.052)
+            if (gauge.normalRangesVisible) {
+                arc(gauge.minimum,gauge.greenStart,"#D93A2E",r*.037)
+                arc(gauge.greenStart,gauge.greenEnd,"#4BCD37",r*.052)
+                arc(gauge.greenEnd,Math.min(gauge.maximum,gauge.greenEnd+gauge.span*.10),"#FFD31A",r*.052)
+                arc(Math.min(gauge.maximum,gauge.greenEnd+gauge.span*.10),gauge.maximum,"#EE3224",r*.052)
+            } else {
+                arc(gauge.minimum,gauge.maximum,"#8A96A3",r*.052)
+            }
 
             ctx.textAlign="center"; ctx.textBaseline="middle"
             const count = Math.min(150,Math.floor(gauge.span/gauge.minorStep+.5))
@@ -107,7 +113,7 @@ Item {
             x:gauge.cx; y:gauge.cy; width:0; height:0
             rotation:-130+index*(260/30)
             readonly property real sampleValue:gauge.minimum+(gauge.span*index/30)
-            readonly property color bandColor:sampleValue<gauge.greenStart?"#D93A2E":sampleValue<=gauge.greenEnd?"#4BCD37":sampleValue<=gauge.greenEnd+gauge.span*.10?"#FFD31A":"#EE3224"
+            readonly property color bandColor:!gauge.normalRangesVisible?"#8A96A3":sampleValue<gauge.greenStart?"#D93A2E":sampleValue<=gauge.greenEnd?"#4BCD37":sampleValue<=gauge.greenEnd+gauge.span*.10?"#FFD31A":"#EE3224"
             Rectangle { x:-Math.max(1.8,gauge.radius*.04); y:-gauge.radius*.88; width:Math.max(3.6,gauge.radius*.08); height:gauge.radius*.075; color:parent.bandColor }
         }
     }
