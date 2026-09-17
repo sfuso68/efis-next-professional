@@ -1,0 +1,25 @@
+{
+  "schema": "avionix-next.data-icd-vectors.v1",
+  "generator_contract": "tools/protocol/validate_avionix_icd.py",
+  "canonical_identity": {
+    "source_node": 47,
+    "publisher_instance": 72623859790382856,
+    "sequence": 1,
+    "monotonic_us": 1000000
+  },
+  "sample_contract": {
+    "value": "float(signal_id)",
+    "source": 1,
+    "validity": 5,
+    "quality": 2,
+    "age_ms": 0,
+    "simulated": 1,
+    "origin_node": 47,
+    "calibration_revision": 1,
+    "raw": "float(signal_id)"
+  },
+  "vectors": {
+    "DDP_V2": {"profile": 2, "payload_type": 1, "payload_crc32c": "48e6c31c", "wire_sha256": "f15e1173a431a51bb7a943778dfa7f712a34e35b91c0363263321e2e4ebe4544", "wire_size": 529},
+    "EDP_V1": {"health": 0, "injected_fault": 0, "payload_crc32c": "376ee061", "wire_sha256": "d92e0a6e39d15c68b5b00866aa4dfbb35b465c7aa6856d1457710fa0f31c373c", "wire_size": 694}
+  }
+}

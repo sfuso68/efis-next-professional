@@ -2,14 +2,18 @@
 
 Data verifica: 2026-09-17  
 Baseline ispezionata: `e0275c8d26f3ebbc38604f82f0d635533c4e5913`  
-Stato: READINESS ONLY / FREEZE NON AUTORIZZATO
+Stato: SUPERSEDED BY APPROVED FREEZE / documento storico di readiness
 
 ## Scopo
 
-Questa verifica prepara `AVX-G2-01` senza congelare l'ICD e senza modificare
+Questa verifica ha preparato `AVX-G2-01` senza modificare
 wire protocol, runtime, configurazioni, servizi o nodi. Le fonti confrontate
 sono implementazione C++, protocolli DDP V2/EDP V1, ADR-008…011, strumenti di
 cattura/assessment/replay, test e documentazione di deployment.
+
+Il proprietario ha approvato lo scope il 2026-09-17. Il freeze risultante è in
+`docs/protocols/AVIONIX_DATA_ICD_V1.md`; questo file resta la registrazione dei
+disallineamenti anteriori e non è più il documento normativo.
 
 ## Baseline verificata solo software
 
@@ -73,10 +77,10 @@ RPi4/RPi5, Blackbox, Pixhawk, sensori o cablaggi reali.
 
 ## Gate di ingresso e uscita
 
-Ingresso al freeze: conferma esplicita dell'utente sul solo scope documentale.
+Ingresso al freeze: soddisfatto dalla conferma esplicita dell'utente sul solo
+scope documentale il 2026-09-17.
 
-Uscita proposta: documento ICD revisionato, vettori riproducibili, validator e
-link dalla Master Matrix; tutti i test software verdi. Il gate resta
+Uscita documentale: documento ICD, specifica machine-readable, vettori
+riproducibili, validator e schema evidence bundle. Il gate resta
 `IN_PROGRESS-SW/VERIFY-HW` finché non esistono prove reali su Ethernet e nodi
 installati. Il verticale reale `AVX-G2-02` resta separato e dipendente da G1.
-

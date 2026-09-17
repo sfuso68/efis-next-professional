@@ -1,7 +1,7 @@
 # AVIONIX NEXT — decision register
 
 Aggiornamento: 2026-09-17  
-Stato: decisioni proposte, nessuna approvazione implicita
+Stato: registro decisioni; ogni approvazione resta esplicita e tracciata
 
 Questo registro separa le decisioni del proprietario dalle constatazioni
 tecniche. Una raccomandazione non modifica repository, servizi, hardware o
@@ -13,7 +13,7 @@ configurazioni e non diventa vincolante finché non viene approvata.
 | DEC-G0-002 | G0 | Secondo bare repository NAS | conservarlo read-only come archivio finché percorso, refs e unicità non sono nuovamente inventariati | PENDING_USER | decisione di retention; nessuna cancellazione |
 | DEC-G0-003 | G0 | Cinque documenti mancanti | acquisire gli originali dal proprietario, calcolare hash e classificarli; vietata la ricostruzione presunta | BLOCKED_EXTERNAL | import controllato in `docs/reference/` o registro esterno |
 | DEC-G0-004 | G0/G1 | Nodo ASSO5 e quattro Sequent | inventario fisico/read-only con modello, revisione, DIP, I2C, alimentazione e foto | BLOCKED_HW | abilita G1 senza autorizzare uscite o scritture |
-| DEC-G2-001 | G2 | Freeze ICD DDP/EDP ed evidence bundle | approvare il solo freeze documentale definito nel readiness report | PENDING_USER | documento ICD, vector, validator; nessun deployment |
+| DEC-G2-001 | G2 | Freeze ICD DDP/EDP ed evidence bundle | approvare il solo freeze documentale definito nel readiness report | APPROVED 2026-09-17 | documento ICD, vector, validator; nessun deployment |
 
 ## DEC-G0-001 — naming
 
@@ -67,6 +67,11 @@ prove hardware.
 Risposta sufficiente:
 `Confermo il freeze documentale G2 dell'ICD AVIONIX e dell'evidence bundle.`
 
+Decisione ricevuta dal proprietario il 2026-09-17 con la formula sopra. Lo
+scope approvato è stato applicato senza modifiche wire, runtime, deployment,
+rete o hardware. La baseline risultante è `FROZEN-SW`; la verifica ARM64 e le
+prove target restano aperte.
+
 ## Regole di chiusura
 
 - Ogni decisione viene chiusa singolarmente con data, autore e riferimento.
@@ -74,4 +79,3 @@ Risposta sufficiente:
 - `BLOCKED_EXTERNAL` e `BLOCKED_HW` non diventano `DONE` senza evidenza.
 - Nessuna decisione autorizza implicitamente merge, deployment o modifica
   hardware.
-

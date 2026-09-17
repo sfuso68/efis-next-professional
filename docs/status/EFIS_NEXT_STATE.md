@@ -3195,3 +3195,41 @@ decisioni con stato, raccomandazione, effetto e criterio di autorizzazione.
 - Nessuna delle cinque decisioni è stata approvata da questo documento.
 - G0 resta `PARTIAL`; nessun merge, deployment, rename, cancellazione o
   modifica hardware è autorizzato.
+
+### Freeze documentale G2 ICD AVIONIX — 2026-09-17
+
+Il proprietario ha approvato esplicitamente `DEC-G2-001`. È stata congelata la
+baseline software `AVIONIX_DATA_ICD_V1` sopra i contratti DDP V2 ed EDP V1,
+senza cambiare byte wire, codec, processi, configurazioni installative, rete o
+hardware. Il freeze comprende JSON normativo, schema evidence bundle,
+vettori deterministici con CRC32C/SHA-256 e validator indipendente fail-closed.
+
+#### Implementato
+
+- ICD sovraordinato con autorità, direzioni, endpoint, offset, dimensioni,
+  freshness `WAITING/LIVE/STALE/LOST`, provenance e regole di evoluzione.
+- Specifica `config/protocols/avionix-data-icd-v1.json` e schema
+  `avionix-evidence-bundle-v1.schema.json`, con `flight_approval=false`.
+- Vettori canonici DDP V2 (529 byte) ed EDP V1 (694 byte), ricostruiti senza
+  usare il codec C++, e test automatici registrati in CTest.
+- Documenti DDP/EDP aggiornati per rimuovere contraddizioni storiche e rinviare
+  all'ICD normativo.
+
+#### Verificato solo software
+
+- Validator ICD: PASS; CRC32C noto, layout contigui, quantità segnali, payload,
+  digest dei due frame e invarianti dello schema evidence verificati.
+- Suite `tests.test_avionix_icd`: 7/7 PASS su workstation x86-64.
+- Controllo sintattico Python: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento. Non sono stati contattati né modificati RPi4,
+  RPi5, Blackbox, server, NAS, Pixhawk, switch o sensori.
+
+#### Aperto / non dichiarare DONE
+
+- `PRJ-003` è `VERIFY-HW` e `AVX-G2-01` resta `IN_PROGRESS`: eseguire gli
+  stessi vettori/validator su ARM64 RPi4 e RPi5 e archiviare evidence bundle.
+- Cadenza, jitter, perdita, endurance e autenticazione non sono qualificati.
+- `AVX-G2-02` (verticale reale) resta separato e non autorizzato dal freeze.

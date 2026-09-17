@@ -69,8 +69,8 @@
       "progress": 33.3
     },
     "PRJ": {
-      "items": 2,
-      "progress": 50.0
+      "items": 3,
+      "progress": 58.3
     },
     "PROD": {
       "items": 5,
@@ -101,17 +101,18 @@
     "PAN-002",
     "PAN-003"
   ],
-  "requirements": 68,
+  "requirements": 69,
   "status_counts": {
     "BLOCKED": 2,
     "DONE": 6,
     "LEGACY": 2,
     "PARTIAL": 43,
     "TODO": 14,
-    "VERIFY-HW": 1
+    "VERIFY-HW": 2
   },
   "verify_hw": [
+    "PRJ-003",
     "INST-001"
   ],
-  "weighted_progress": 44.5
+  "weighted_progress": 44.9
 }
