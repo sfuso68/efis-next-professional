@@ -214,80 +214,26 @@ Item {
             Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:root.casAction; color:"#D9E3E6"; font.pixelSize:5.5*root.uiScale; font.bold:root.casLevel!=="NORMAL" }
             TapHandler { onTapped:{root.selectedPanel="CAS";root.activeNavigation="INDICATIONS"} }
         }
-        Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 64*root.uiScale }
-        text: "AIRFRAME  ·  CONFIGURED"; color: root.cyan; font.pixelSize: 9*root.uiScale; font.letterSpacing: 1.2 }
-        Rectangle { x: parent.width/2; y: 82*root.uiScale; width: 1; height: parent.height-83*root.uiScale; color: root.line }
-        Item { visible: controller.landingGearInstalled; x: 5*root.uiScale; y: 83*root.uiScale; width: parent.width/2-10*root.uiScale; height: parent.height-85*root.uiScale
-            Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top }
-        text: "GEAR"; color: root.cyan; font.pixelSize: 10*root.uiScale }
-            EmsVectorIcon { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 14*root.uiScale }
-         width: 58*root.uiScale; height: Math.min(48*root.uiScale,parent.height*.54); kind: "airplane"; strokeColor: "#E5EAEC" }
-            Repeater { model: [
-                {n:"N",ok:controller.gearNoseLocked,x:.50,y:.37},
-                {n:"L",ok:controller.gearLeftLocked,x:.27,y:.66},
-                {n:"R",ok:controller.gearRightLocked,x:.73,y:.66}]
-                delegate: Item { required property var modelData; x: parent.width*modelData.x-8*root.uiScale; y: parent.height*modelData.y; width: 16*root.uiScale; height: 24*root.uiScale
-                    Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 14*root.uiScale; height: width; radius: width/2; color: modelData.ok ? "#0B2C16" : "#421316"; border.width: 2; border.color: modelData.ok ? root.green : "#FF3830"
-                        Rectangle { anchors.centerIn: parent; width: 5*root.uiScale; height: width; radius: width/2; color: modelData.ok ? root.green : "#FF3830" } }
-                    Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 15*root.uiScale }
-         text: modelData.n; color: "#DCE5E8"; font.pixelSize: 6*root.uiScale; font.bold: true }
-                } }
-            Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 3*root.uiScale }
-        text: controller.gearState; color: controller.gearState === "DOWN & LOCKED" ? root.green : "#FF3830"; font.pixelSize: 8*root.uiScale; font.bold: true }
-        }
-        Item { visible: controller.flapsInstalled; x: parent.width/2+6*root.uiScale; y: 83*root.uiScale; width: parent.width/2-12*root.uiScale; height: parent.height-85*root.uiScale
-            Text { anchors { left: parent.left; top: parent.top }
-        text: "FLAPS"; color: root.cyan; font.pixelSize: 10*root.uiScale }
-            Text { anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 3*root.uiScale }
-         text: Math.round(controller.flapAngle)+"°"; color: "white"; font.pixelSize: 27*root.uiScale; font.bold: true }
-            Text { anchors { left: parent.left; bottom: parent.bottom; leftMargin: 3*root.uiScale }
-         text: "ACTUAL"; color: root.green; font.pixelSize: 6*root.uiScale; font.bold: true }
-            Rectangle { id: flapRail; x: parent.width*.59; y: 15*root.uiScale; width: 5*root.uiScale; height: parent.height-22*root.uiScale; radius: 2; color: "#344A54"
-                Rectangle { anchors { left: parent.left; right: parent.right; top: parent.top }
-         height: parent.height*Math.min(1,controller.flapAngle/30); radius: 2; color: root.cyan }
-                Rectangle { x: -5*root.uiScale; y: parent.height*Math.min(1,controller.flapAngle/30)-5*root.uiScale; width: 15*root.uiScale; height: 10*root.uiScale; rotation: 45; color: root.cyan; border.color: "white" }
-                Rectangle { x: -8*root.uiScale; y: parent.height*Math.min(1,controller.flapCommandedAngle/30)-1*root.uiScale; width: 21*root.uiScale; height: 2*root.uiScale; color: "white" }
-            }
-            Repeater { model: controller.flapDetents
-                delegate: Item { required property real modelData; x: flapRail.x+11*root.uiScale; y: flapRail.y+flapRail.height*modelData/30-5*root.uiScale; width: parent.width-flapRail.x; height: 11*root.uiScale
-                    Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 6*root.uiScale; height: 1; color: "#D7E0E3" }
-                    Text { x: 9*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: modelData+"°"; color: modelData === Math.round(controller.flapAngle) ? root.cyan : "#D7E0E3"; font.pixelSize: 6*root.uiScale; font.bold: modelData === Math.round(controller.flapAngle) }
-                } }
+        HmiAirframePanel {
+            anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; topMargin:62*root.uiScale; margins:5*root.uiScale }
+            uiScale:root.uiScale; gearInstalled:controller.landingGearInstalled; noseLocked:controller.gearNoseLocked
+            leftLocked:controller.gearLeftLocked; rightLocked:controller.gearRightLocked; gearState:controller.gearState
+            flapsInstalled:controller.flapsInstalled; flapDetents:controller.flapDetents; flapAngle:controller.flapAngle
+            flapCommandedAngle:controller.flapCommandedAngle; dataState:controller.dataSourceState
         }
     }
 
-    EngineTemperatureBars { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:false; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum }
+    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:controller.dataSourceState; limitsVerified:false }
 
     Rectangle { id: summary; anchors { left: nav.right; right: parent.right; bottom: actions.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
         height: 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale
-        Row { anchors.fill: parent
-            Item { width: parent.width*.36; height: parent.height
-                Rectangle { anchors.right: parent.right; width: 1; height: parent.height*.72; anchors.verticalCenter: parent.verticalCenter; color: root.line }
-                Text { x:12*root.uiScale; y:7*root.uiScale; text:"FUEL"; color:root.cyan; font.pixelSize:9*root.uiScale; font.bold:true }
-                Text { anchors { right:parent.right; rightMargin:14*root.uiScale; top:parent.top; topMargin:6*root.uiScale }
-                    text:root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit; color:"white"; font.pixelSize:13*root.uiScale; font.bold:true }
-                Row { x:12*root.uiScale; y:31*root.uiScale; width:parent.width-26*root.uiScale; spacing:12*root.uiScale
-                    Repeater { model:[{n:"L",v:controller.fuelLeft},{n:"R",v:controller.fuelRight}]
-                        delegate:Item { required property var modelData; width:(parent.width-parent.spacing)/2; height:29*root.uiScale
-                            Text { text:modelData.n+"  "+root.fuel(modelData.v).toFixed(1); color:"#E8EEF0"; font.pixelSize:8*root.uiScale; font.bold:true }
-                            Rectangle { anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:8*root.uiScale; color:"#142630"; border.color:"#60727B"
-                                Rectangle { anchors { left:parent.left; top:parent.top; bottom:parent.bottom; margins:1 }
-                                    width:(parent.width-2)*Math.max(0,Math.min(1,modelData.v/20)); color:modelData.v<4?"#FF3933":modelData.v<7?root.amber:root.green }
-                            }
-                        }
-                    }
-                }
+        Row { anchors { fill:parent; margins:8*root.uiScale } spacing:10*root.uiScale
+            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:controller.dataSourceState }
+            Item { width:parent.width*.18; height:parent.height
+                Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"ENDURANCE"; color:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
+                Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.fuelEnduranceHours.toFixed(1)+" HR"; color:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:17*root.uiScale; font.bold:true }
             }
-            Repeater { model: [
-                {h:"ENDURANCE",v:((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR",c:root.cyan},
-                {h:"BUS",v:controller.busVoltage.toFixed(1)+" V",c:"white"},
-                {h:"ALT",v:"+"+controller.alternatorCurrent.toFixed(0)+" A",c:"white"}]
-                delegate: Item { required property var modelData; width: parent.width*.64/3; height: parent.height
-                    Rectangle { anchors.right: parent.right; width: 1; height: parent.height*.72; anchors.verticalCenter: parent.verticalCenter; color: root.line }
-                    Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 9*root.uiScale }
-        text: modelData.h; color: root.cyan; font.pixelSize: 9*root.uiScale }
-                    Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 10*root.uiScale }
-        text: modelData.v; color: modelData.c; font.pixelSize: 20*root.uiScale; font.bold: true } } }
+            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:controller.dataSourceState }
         } }
     Row { id: actions; anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 10*root.uiScale }
         height: 48*root.uiScale; spacing: 12*root.uiScale

@@ -164,6 +164,10 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/HmiTokens.qml
                 qml/HmiDataStateBadge.qml
                 qml/HmiArcGaugeV4.qml
+                qml/HmiCylinderMatrixV2.qml
+                qml/HmiAirframePanel.qml
+                qml/HmiFuelStatus.qml
+                qml/HmiElectricalSynoptic.qml
                 qml/SkyViewCompassArc.qml
                 qml/HmiComponentShowcase.qml
                 qml/GpuMapSurface.qml
@@ -417,6 +421,10 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/HmiTokens.qml
                 qml/HmiDataStateBadge.qml
                 qml/HmiArcGaugeV4.qml
+                qml/HmiCylinderMatrixV2.qml
+                qml/HmiAirframePanel.qml
+                qml/HmiFuelStatus.qml
+                qml/HmiElectricalSynoptic.qml
         )
         target_include_directories(efis-ems-qt PRIVATE
             src/nodes/ems src/renderers/qt)

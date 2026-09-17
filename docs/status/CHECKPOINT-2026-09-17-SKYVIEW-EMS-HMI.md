@@ -44,3 +44,24 @@ verifica grafica o hardware viene dichiarata da questo incremento.
 MSVC 19.51/Qt 6.11.1 dei target `efis-pfd-qt` ed `efis-ems-qt`: 224/224 step,
 link finale PASS. Questa è evidenza software Windows; non prova resa, frame-rate
 o interazione sui target ARM64.
+
+## Incremento EMS — cinque passi successivi
+
+- `HmiCylinderMatrixV2`: quattro canali CHT/EGT, hottest channel, spread e
+  perdita esplicita del valore in stato LOST/FAIL.
+- `HmiAirframePanel`: tre consensi carrello e flap verticale con posizione
+  comandata/misurata e detent configurabili.
+- `HmiFuelStatus`: quantità sinistra/destra, totale, riserva e degrado dati
+  senza usare il solo colore.
+- `HmiElectricalSynoptic`: alternatore, main bus ed essential bus come
+  rappresentazione read-only con health esplicita.
+- Integrazione adattiva dei quattro componenti nella pagina EMS reale e nella
+  showcase deterministica; il validatore impedisce la loro rimozione silenziosa.
+
+I limiti CHT/EGT restano `UNVERIFIED`, quindi questo incremento non chiude
+EMS-004 e non costituisce approvazione al volo. Verifica hardware ancora
+assente.
+
+Verifica software dell'incremento: `qmllint` Qt 6.11.1 PASS; validatore HMI
+PASS; 7/7 test dedicati PASS; build incrementale MSVC/Qt dei target PFD ed EMS
+75/75 step con entrambi i link finali PASS.

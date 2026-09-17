@@ -2740,3 +2740,35 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
 - `qmllint` Qt 6.11.1 sui cinque nuovi componenti è PASS. La build MSVC
   19.51/Qt 6.11.1 ha completato 224/224 step e linkato sia `efis-pfd-qt` sia
   `efis-ems-qt`. Screenshot, build ARM64 e pannelli reali restano aperti.
+
+### Incremento software — cinque componenti EMS strutturali
+
+- Implementati matrice CHT/EGT a quattro cilindri con hottest channel e spread,
+  pannello airframe con tre consensi carrello e flap verticale, riepilogo fuel
+  e sinottico elettrico read-only.
+- I quattro componenti sono integrati nella pagina EMS condivisa tra PFD RPi5
+  ed EMS RPi4 e nella showcase deterministica. Il validatore repository ne
+  controlla presenza, registrazione CMake e integrazione singola.
+- Il degrado LIVE/SIM/STALE/LOST/FAIL è preservato e un canale perso non viene
+  rappresentato come normale. I limiti CHT/EGT restano esplicitamente
+  `UNVERIFIED`.
+
+#### Verificato solo software
+
+- `qmllint` Qt 6.11.1 sui quattro nuovi componenti e sulla showcase: PASS.
+- Validatore HMI: PASS; test Python dedicati: 7/7 PASS.
+- Build MSVC/Qt 6.11.1 dei target `efis-pfd-qt` ed `efis-ems-qt`: 75/75
+  step incrementali e link finale PASS.
+- Queste prove verificano sintassi, contratto e compilazione; non costituiscono
+  acceptance grafica né verifica su hardware ARM64.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica e nessuna distribuzione su RPi4/RPi5.
+
+#### Aperto
+
+- Golden screenshot multi-risoluzione, replay DDP/EDP, build ARM64, verifica
+  touch, 40 FPS minimi, termica e prova fault di 60 minuti sui pannelli reali.
+- Approvazione dei limiti motore da manuale applicabile prima di chiudere
+  EMS-004.

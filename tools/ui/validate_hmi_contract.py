@@ -12,6 +12,10 @@ COMPONENTS = (
     "qml/HmiTokens.qml",
     "qml/HmiDataStateBadge.qml",
     "qml/HmiArcGaugeV4.qml",
+    "qml/HmiCylinderMatrixV2.qml",
+    "qml/HmiAirframePanel.qml",
+    "qml/HmiFuelStatus.qml",
+    "qml/HmiElectricalSynoptic.qml",
     "qml/SkyViewCompassArc.qml",
     "qml/HmiComponentShowcase.qml",
 )
@@ -88,6 +92,17 @@ def validate_repository(root: Path = ROOT) -> list[str]:
         errors.append("AdaptiveEmsView must use exactly five HmiArcGaugeV4 instances")
     if "dataState: controller.dataSourceState" not in ems:
         errors.append("EMS V4 gauges do not expose controller data state")
+    integrations = {
+        "HmiCylinderMatrixV2 {": "cylinder matrix",
+        "HmiAirframePanel {": "airframe panel",
+        "HmiFuelStatus {": "fuel summary",
+        "HmiElectricalSynoptic {": "electrical synoptic",
+    }
+    for marker, label in integrations.items():
+        if ems.count(marker) != 1:
+            errors.append(f"AdaptiveEmsView must integrate exactly one {label}")
+    if "limitsVerified:false" not in ems:
+        errors.append("EMS cylinder limits must remain explicitly unverified")
     compass = (root / "qml/SkyViewCompassArc.qml").read_text(encoding="utf-8")
     if "readonly property real halfAngle: 35" not in compass:
         errors.append("SkyView compass implementation diverges from the 35 degree contract")
