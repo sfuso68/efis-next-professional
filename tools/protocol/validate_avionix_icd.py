@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import json
+import re
 import struct
 import sys
 from pathlib import Path
@@ -15,6 +17,13 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SPEC = ROOT / "config/protocols/avionix-data-icd-v1.json"
 DEFAULT_VECTORS = ROOT / "tests/data/protocols/avionix-data-icd-v1-vectors.json"
 DEFAULT_EVIDENCE_SCHEMA = ROOT / "config/protocols/avionix-evidence-bundle-v1.schema.json"
+EVIDENCE_KEYS = {"schema", "evidence_id", "requirement_ids", "gate", "level",
+                 "status", "created_utc", "producer", "environment", "artifacts",
+                 "checks", "limitations", "flight_approval"}
+REQUIREMENT_ID = re.compile(r"^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{2,3}$")
+EVIDENCE_ID = re.compile(r"^[A-Z0-9][A-Z0-9._-]{2,63}$")
+SHA256 = re.compile(r"^[0-9a-f]{64}$")
+COMMIT = re.compile(r"^[0-9a-f]{7,40}$")
 
 FROZEN_ENUMS = {
     "source_id": {"unknown": 0, "simulation": 1, "pixhawk_primary": 2,
@@ -203,6 +212,124 @@ def validate_evidence_schema(schema: dict[str, Any]) -> list[str]:
         errors.append("evidence schema: evidence levels differ from frozen order")
     if schema.get("additionalProperties") is not False:
         errors.append("evidence schema: root must reject unknown properties")
+    requirement_pattern = properties.get("requirement_ids", {}).get("items", {}).get("pattern")
+    if requirement_pattern != REQUIREMENT_ID.pattern:
+        errors.append("evidence schema: requirement ID pattern differs from frozen value")
+    if properties.get("artifacts", {}).get("minItems") != 1:
+        errors.append("evidence schema: at least one artifact is required")
+    return errors
+
+
+def validate_evidence_bundle(bundle: dict[str, Any], root: Path = ROOT) -> list[str]:
+    """Validate a bundle and re-hash every referenced repository artifact."""
+    errors: list[str] = []
+    unknown = set(bundle) - EVIDENCE_KEYS
+    missing = EVIDENCE_KEYS - set(bundle)
+    if unknown:
+        errors.append(f"bundle: unknown properties {sorted(unknown)}")
+    if missing:
+        errors.append(f"bundle: missing properties {sorted(missing)}")
+    if bundle.get("schema") != "avionix-next.evidence-bundle.v1":
+        errors.append("bundle: unsupported schema")
+    evidence_id = bundle.get("evidence_id")
+    if not isinstance(evidence_id, str) or not EVIDENCE_ID.fullmatch(evidence_id):
+        errors.append("bundle: invalid evidence_id")
+    ids = bundle.get("requirement_ids")
+    ids_are_strings = isinstance(ids, list) and all(isinstance(item, str) for item in ids)
+    if (not ids_are_strings or not ids or len(ids) != len(set(ids)) or
+            any(not REQUIREMENT_ID.fullmatch(item) for item in ids)):
+        errors.append("bundle: invalid or duplicate requirement_ids")
+    if bundle.get("gate") not in {f"G{i}" for i in range(8)}:
+        errors.append("bundle: invalid gate")
+    if bundle.get("level") not in {"VERIFIED_SW", "EVIDENCE_HW_HISTORICAL", "VERIFY_HW", "BLOCKED"}:
+        errors.append("bundle: invalid level")
+    if bundle.get("status") not in {"PASS", "FAIL", "INCOMPLETE"}:
+        errors.append("bundle: invalid status")
+    try:
+        created = bundle.get("created_utc")
+        parsed = dt.datetime.fromisoformat(created.replace("Z", "+00:00")) if isinstance(created, str) else None
+        if parsed is None or parsed.tzinfo is None:
+            raise ValueError
+    except ValueError:
+        errors.append("bundle: created_utc must be timezone-aware ISO-8601")
+
+    producer = bundle.get("producer")
+    if not isinstance(producer, dict) or set(producer) != {"tool", "version", "commit"}:
+        errors.append("bundle: invalid producer object")
+    elif (not all(isinstance(producer.get(key), str) and producer[key] for key in ("tool", "version")) or
+          not isinstance(producer.get("commit"), str) or not COMMIT.fullmatch(producer["commit"])):
+        errors.append("bundle: invalid producer values")
+
+    environment = bundle.get("environment")
+    environment_keys = {"class", "os", "architecture"}
+    allowed_environment_keys = environment_keys | {"node"}
+    if not isinstance(environment, dict) or not environment_keys <= set(environment) or not set(environment) <= allowed_environment_keys:
+        errors.append("bundle: invalid environment object")
+    elif (environment.get("class") not in {"CI", "WORKSTATION", "RPI4", "RPI5", "BLACKBOX", "SERVER", "NAS", "HARDWARE_BENCH"} or
+          any(not isinstance(environment.get(key), str) or not environment[key] for key in environment_keys)):
+        errors.append("bundle: invalid environment values")
+
+    artifacts = bundle.get("artifacts")
+    if not isinstance(artifacts, list) or not artifacts:
+        errors.append("bundle: artifacts must be a non-empty array")
+    else:
+        for index, artifact in enumerate(artifacts):
+            if not isinstance(artifact, dict) or set(artifact) != {"path", "sha256", "size"}:
+                errors.append(f"bundle.artifacts[{index}]: invalid object")
+                continue
+            raw_path = artifact.get("path")
+            digest = artifact.get("sha256")
+            size = artifact.get("size")
+            if not isinstance(raw_path, str) or not raw_path or "\\" in raw_path:
+                errors.append(f"bundle.artifacts[{index}]: path must be repository-relative POSIX")
+                continue
+            relative = Path(raw_path)
+            if relative.is_absolute() or ".." in relative.parts:
+                errors.append(f"bundle.artifacts[{index}]: path escapes repository")
+                continue
+            root_resolved = root.resolve()
+            path = (root / relative).resolve()
+            if not path.is_relative_to(root_resolved):
+                errors.append(f"bundle.artifacts[{index}]: resolved path escapes repository")
+                continue
+            if not path.is_file():
+                errors.append(f"bundle.artifacts[{index}]: artifact does not exist")
+                continue
+            data = path.read_bytes()
+            if not isinstance(size, int) or isinstance(size, bool) or size != len(data):
+                errors.append(f"bundle.artifacts[{index}]: size mismatch")
+            if not isinstance(digest, str) or not SHA256.fullmatch(digest) or digest != hashlib.sha256(data).hexdigest():
+                errors.append(f"bundle.artifacts[{index}]: sha256 mismatch")
+
+    checks = bundle.get("checks")
+    if not isinstance(checks, list) or not checks:
+        errors.append("bundle: checks must be a non-empty array")
+    else:
+        seen: set[str] = set()
+        statuses: list[str] = []
+        for index, check in enumerate(checks):
+            if not isinstance(check, dict) or set(check) != {"id", "status", "evidence"}:
+                errors.append(f"bundle.checks[{index}]: invalid object")
+                continue
+            check_id, status, evidence = check.get("id"), check.get("status"), check.get("evidence")
+            if not isinstance(check_id, str) or not check_id or check_id in seen:
+                errors.append(f"bundle.checks[{index}]: invalid or duplicate id")
+            else:
+                seen.add(check_id)
+            if status not in {"PASS", "FAIL", "SKIP"}:
+                errors.append(f"bundle.checks[{index}]: invalid status")
+            else:
+                statuses.append(status)
+            if not isinstance(evidence, str) or not evidence:
+                errors.append(f"bundle.checks[{index}]: evidence is required")
+        if bundle.get("status") == "PASS" and ("FAIL" in statuses or "PASS" not in statuses):
+            errors.append("bundle: PASS requires at least one PASS check and no FAIL check")
+
+    limitations = bundle.get("limitations")
+    if not isinstance(limitations, list) or not limitations or any(not isinstance(item, str) or not item for item in limitations):
+        errors.append("bundle: limitations must be a non-empty string array")
+    if bundle.get("flight_approval") is not False:
+        errors.append("bundle: flight_approval must be false")
     return errors
 
 
@@ -211,6 +338,7 @@ def main() -> int:
     parser.add_argument("--spec", type=Path, default=DEFAULT_SPEC)
     parser.add_argument("--vectors", type=Path, default=DEFAULT_VECTORS)
     parser.add_argument("--evidence-schema", type=Path, default=DEFAULT_EVIDENCE_SCHEMA)
+    parser.add_argument("--bundle", action="append", type=Path, default=[])
     parser.add_argument("--print-vector-digests", action="store_true")
     args = parser.parse_args()
     try:
@@ -221,6 +349,9 @@ def main() -> int:
         vector_errors, actual = validate_vectors(spec, vectors)
         errors += vector_errors
         errors += validate_evidence_schema(evidence)
+        for bundle_path in args.bundle:
+            bundle = load_json(bundle_path)
+            errors += [f"{bundle_path}: {item}" for item in validate_evidence_bundle(bundle)]
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 2

@@ -3233,3 +3233,16 @@ vettori deterministici con CRC32C/SHA-256 e validator indipendente fail-closed.
   stessi vettori/validator su ARM64 RPi4 e RPi5 e archiviare evidence bundle.
 - Cadenza, jitter, perdita, endurance e autenticazione non sono qualificati.
 - `AVX-G2-02` (verticale reale) resta separato e non autorizzato dal freeze.
+
+#### Evidence bundle software conforme
+
+Il primo manifesto `avionix-next.evidence-bundle.v1` è archiviato in
+`docs/status/evidence/g2-icd-freeze-workstation-20260917/evidence.json`. Il
+validator ora controlla proprietà obbligatorie/ignote, ID, timestamp, ambiente,
+coerenza dell'esito, divieto di flight approval, path confinati al repository e
+ricalcola dimensione e SHA-256 degli artifact.
+
+- Suite ICD/evidence: 11/11 PASS su workstation x86-64.
+- Il bundle registra Project Control #89 e Core CI #73 PASS, ma conserva livello
+  `VERIFIED_SW` e tre limitazioni esplicite.
+- Nessuna nuova evidenza hardware: `PRJ-003` resta `VERIFY-HW`.

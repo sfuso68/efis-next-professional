@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "tools/protocol/validate_avionix_icd.py"
+BUNDLE_PATH = ROOT / "docs/status/evidence/g2-icd-freeze-workstation-20260917/evidence.json"
 SPEC = importlib.util.spec_from_file_location("validate_avionix_icd", MODULE_PATH)
 assert SPEC and SPEC.loader
 icd = importlib.util.module_from_spec(SPEC)
@@ -17,6 +18,7 @@ class AvionixIcdTests(unittest.TestCase):
         cls.contract = icd.load_json(icd.DEFAULT_SPEC)
         cls.vectors = icd.load_json(icd.DEFAULT_VECTORS)
         cls.evidence = icd.load_json(icd.DEFAULT_EVIDENCE_SCHEMA)
+        cls.bundle = icd.load_json(BUNDLE_PATH)
 
     def test_crc32c_known_vector(self):
         self.assertEqual(icd.crc32c(b"123456789"), 0xE3069283)
@@ -51,6 +53,24 @@ class AvionixIcdTests(unittest.TestCase):
         altered = copy.deepcopy(self.evidence)
         altered["properties"]["flight_approval"]["const"] = True
         self.assertTrue(icd.validate_evidence_schema(altered))
+
+    def test_reference_evidence_bundle_and_artifact_digest(self):
+        self.assertEqual(icd.validate_evidence_bundle(self.bundle), [])
+
+    def test_evidence_digest_mutation_fails_closed(self):
+        altered = copy.deepcopy(self.bundle)
+        altered["artifacts"][0]["sha256"] = "0" * 64
+        self.assertTrue(any("sha256 mismatch" in item for item in icd.validate_evidence_bundle(altered)))
+
+    def test_evidence_path_escape_fails_closed(self):
+        altered = copy.deepcopy(self.bundle)
+        altered["artifacts"][0]["path"] = "../secret"
+        self.assertTrue(any("escapes repository" in item for item in icd.validate_evidence_bundle(altered)))
+
+    def test_malformed_requirement_ids_fail_closed_without_exception(self):
+        altered = copy.deepcopy(self.bundle)
+        altered["requirement_ids"] = [{"not": "an id"}]
+        self.assertTrue(any("requirement_ids" in item for item in icd.validate_evidence_bundle(altered)))
 
 
 if __name__ == "__main__":

@@ -155,6 +155,16 @@ Livelli ammessi:
 Un `PASS` software non può essere promosso a verifica hardware. Artifact senza
 digest, ambiente o limitazioni non sono evidence bundle conformi.
 
+Il validator verifica anche manifesti concreti, ricalcolando dimensione e
+SHA-256 di ogni artifact e rifiutando path assoluti o traversal:
+
+```text
+python tools/protocol/validate_avionix_icd.py --bundle <evidence.json>
+```
+
+Il primo bundle software conforme è archiviato in
+`docs/status/evidence/g2-icd-freeze-workstation-20260917/evidence.json`.
+
 ## 9. Compatibilità e modifiche future
 
 Il freeze è compatibile con l'implementazione corrente e verificato con parser
