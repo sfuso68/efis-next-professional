@@ -28,6 +28,23 @@ enum class DecodeError : std::uint8_t {
   reversed_sequence
 };
 
+[[nodiscard]] constexpr std::string_view
+decode_error_name(DecodeError error) noexcept {
+  switch (error) {
+  case DecodeError::none: return "NONE";
+  case DecodeError::truncated: return "TRUNCATED";
+  case DecodeError::bad_magic: return "BAD_MAGIC";
+  case DecodeError::unsupported_schema: return "UNSUPPORTED_SCHEMA";
+  case DecodeError::invalid_identity: return "INVALID_IDENTITY";
+  case DecodeError::length_mismatch: return "LENGTH_MISMATCH";
+  case DecodeError::crc_mismatch: return "CRC_MISMATCH";
+  case DecodeError::malformed_payload: return "MALFORMED_PAYLOAD";
+  case DecodeError::duplicate_sequence: return "DUPLICATE_SEQUENCE";
+  case DecodeError::reversed_sequence: return "REVERSED_SEQUENCE";
+  }
+  return "UNKNOWN";
+}
+
 struct Envelope final {
   std::uint32_t source_node{};
   std::uint64_t publisher_instance{};
@@ -108,6 +125,19 @@ struct ConsumerMetrics final {
   std::uint64_t publisher_restarts{};
 };
 
+// Read-only snapshot for maintenance and bench evidence.  It deliberately
+// contains no mutator and no network control: the display may explain which
+// publisher is authoritative, but cannot change that authority.
+struct ConsumerDiagnostics final {
+  LinkStatus link{};
+  ConsumerMetrics metrics{};
+  std::uint32_t source_node{};
+  std::uint64_t publisher_instance{};
+  std::uint64_t sequence{};
+  DecodeError last_rejection{DecodeError::none};
+  std::optional<std::chrono::milliseconds> last_rejection_age{};
+};
+
 class Consumer final {
 public:
   explicit Consumer(ConsumerPolicy policy = {});
@@ -117,6 +147,7 @@ public:
   [[nodiscard]] std::optional<std::chrono::milliseconds>
   age(MonoTime now) const noexcept;
   [[nodiscard]] LinkStatus status(MonoTime now) const noexcept;
+  [[nodiscard]] ConsumerDiagnostics diagnostics(MonoTime now) const noexcept;
   [[nodiscard]] const engine::EngineSnapshot *latest() const noexcept;
   [[nodiscard]] const ConsumerMetrics &metrics() const noexcept {
     return metrics_;
@@ -135,7 +166,10 @@ private:
   Envelope last_{};
   engine::EngineSnapshot latest_{};
   MonoTime last_received_{};
+  MonoTime last_rejected_at_{};
+  DecodeError last_rejection_{DecodeError::none};
   bool has_snapshot_{};
+  bool has_rejection_{};
 };
 
 } // namespace efis::protocol::edp

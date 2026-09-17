@@ -134,10 +134,18 @@ QVariantMap EmsController::engineLinkDiagnostics() const {
         {QStringLiteral("duplicates"), qulonglong(0)},
         {QStringLiteral("reversed"), qulonglong(0)},
         {QStringLiteral("sequenceGaps"), qulonglong(0)},
-        {QStringLiteral("publisherRestarts"), qulonglong(0)}
+        {QStringLiteral("publisherRestarts"), qulonglong(0)},
+        {QStringLiteral("sourceNode"), QStringLiteral("N/A")},
+        {QStringLiteral("publisherInstance"), QStringLiteral("N/A")},
+        {QStringLiteral("sequence"), QStringLiteral("N/A")},
+        {QStringLiteral("lastRejection"), QStringLiteral("NONE")},
+        {QStringLiteral("lastRejectionAgeMs"), -1},
+        {QStringLiteral("validPercent"), 0.0},
+        {QStringLiteral("sessionStatus"), QStringLiteral("NOT CONFIGURED")}
     };
     if (!engine_network_source_) return diagnostics;
-    const auto& metrics = engine_network_source_->metrics();
+    const auto snapshot = engine_network_source_->diagnostics(efis::MonoClock::now());
+    const auto& metrics = snapshot.metrics;
     const auto& endpoint = engine_network_source_->local_endpoint();
     diagnostics.insert(QStringLiteral("bindAddress"),
                        QString::fromStdString(endpoint.address));
@@ -151,6 +159,29 @@ QVariantMap EmsController::engineLinkDiagnostics() const {
     diagnostics.insert(QStringLiteral("reversed"), qulonglong(metrics.reversed));
     diagnostics.insert(QStringLiteral("sequenceGaps"), qulonglong(metrics.sequence_gaps));
     diagnostics.insert(QStringLiteral("publisherRestarts"), qulonglong(metrics.publisher_restarts));
+    diagnostics.insert(QStringLiteral("sourceNode"), snapshot.source_node
+        ? QString::number(snapshot.source_node) : QStringLiteral("N/A"));
+    diagnostics.insert(QStringLiteral("publisherInstance"), snapshot.publisher_instance
+        ? QString::number(snapshot.publisher_instance) : QStringLiteral("N/A"));
+    diagnostics.insert(QStringLiteral("sequence"), snapshot.sequence
+        ? QString::number(snapshot.sequence) : QStringLiteral("N/A"));
+    const auto rejection_name =
+        efis::protocol::edp::decode_error_name(snapshot.last_rejection);
+    diagnostics.insert(QStringLiteral("lastRejection"),
+        QString::fromLatin1(rejection_name.data(), int(rejection_name.size())));
+    diagnostics.insert(QStringLiteral("lastRejectionAgeMs"),
+        snapshot.last_rejection_age
+            ? int(qMin<std::int64_t>(snapshot.last_rejection_age->count(),
+                                     std::numeric_limits<int>::max()))
+            : -1);
+    diagnostics.insert(QStringLiteral("validPercent"), metrics.datagrams
+        ? 100.0 * double(metrics.accepted) / double(metrics.datagrams) : 0.0);
+    const auto session_anomalies = metrics.decode_rejected +
+        metrics.identity_rejected + metrics.duplicates + metrics.reversed +
+        metrics.sequence_gaps;
+    diagnostics.insert(QStringLiteral("sessionStatus"),
+        session_anomalies ? QStringLiteral("SESSION ANOMALIES")
+                          : QStringLiteral("SESSION CLEAN"));
     return diagnostics;
 }
 
@@ -712,6 +743,10 @@ void EmsController::updateSnapshot() {
                           << "crc_rejected=" << diagnostics.value("crcRejected").toULongLong()
                           << "sequence_gaps=" << diagnostics.value("sequenceGaps").toULongLong()
                           << "publisher_restarts=" << diagnostics.value("publisherRestarts").toULongLong()
+                          << "source_node=" << diagnostics.value("sourceNode").toString()
+                          << "publisher_instance=" << diagnostics.value("publisherInstance").toString()
+                          << "sequence=" << diagnostics.value("sequence").toString()
+                          << "last_rejection=" << diagnostics.value("lastRejection").toString()
                           << "node=" << sensor_node_state_;
     }
     if (!fuel_on_board_initialized_) {

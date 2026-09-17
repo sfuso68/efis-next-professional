@@ -102,7 +102,9 @@ class AvionixHmiContractTests(unittest.TestCase):
         self.assertIn("Q_PROPERTY(QVariantMap engineLinkDiagnostics", header)
         self.assertIn("event=ems_edp_link_transition", source)
         for metric in ("crcRejected", "identityRejected", "sequenceGaps",
-                       "publisherRestarts"):
+                       "publisherRestarts", "sourceNode", "publisherInstance",
+                       "sequence", "lastRejection", "lastRejectionAgeMs",
+                       "validPercent", "sessionStatus"):
             self.assertIn(metric, source)
             self.assertIn(metric, setup)
         self.assertIn('"DATA LINK"', setup)
@@ -112,6 +114,14 @@ class AvionixHmiContractTests(unittest.TestCase):
         self.assertIn('indexOf("--setup-edp-preview")', main)
         self.assertIn("if (edpPreview) setupSection = 5", main)
         self.assertIn("if (operationalPreview) setupSection = 6", main)
+
+        link_page = setup[setup.index("Item { id:linkPage"):setup.index(
+            "OperationalProfileSetup", setup.index("Item { id:linkPage"))]
+        self.assertIn("SOURCE NODE", link_page)
+        self.assertIn("PUBLISHER", link_page)
+        self.assertIn("LAST REJECT", link_page)
+        self.assertNotIn("TapHandler", link_page)
+        self.assertNotIn("onClicked", link_page)
 
 
 if __name__ == "__main__":

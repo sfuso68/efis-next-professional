@@ -56,6 +56,14 @@ int main() {
         "transition starts waiting without invented age");
   check(efis::protocol::edp::link_state_name(waiting.state) == "WAITING",
         "waiting state has canonical diagnostic name");
+  const auto waiting_diagnostics = transition.diagnostics(now);
+  check(waiting_diagnostics.source_node == 0 &&
+            waiting_diagnostics.publisher_instance == 0 &&
+            waiting_diagnostics.sequence == 0 &&
+            waiting_diagnostics.last_rejection ==
+                efis::protocol::edp::DecodeError::none &&
+            !waiting_diagnostics.last_rejection_age,
+        "waiting diagnostics do not invent publisher or rejection identity");
   check(transition.consume(wire, now) ==
             efis::protocol::edp::DecodeError::none,
         "transition accepts first sample");
@@ -71,6 +79,15 @@ int main() {
   check(transition.consume(bad, now + 1500ms) ==
             efis::protocol::edp::DecodeError::crc_mismatch,
         "corrupt traffic is rejected during link loss");
+  const auto rejected = transition.diagnostics(now + 1510ms);
+  check(rejected.source_node == 47 && rejected.publisher_instance == 1234 &&
+            rejected.sequence == 1 &&
+            rejected.last_rejection ==
+                efis::protocol::edp::DecodeError::crc_mismatch &&
+            rejected.last_rejection_age == 10ms &&
+            efis::protocol::edp::decode_error_name(
+                rejected.last_rejection) == "CRC_MISMATCH",
+        "rejection diagnostics retain accepted authority and rejection age");
   const auto still_lost = transition.status(now + 1500ms);
   check(still_lost.state == efis::protocol::edp::LinkState::lost &&
             still_lost.age == 1500ms,
@@ -85,13 +102,31 @@ int main() {
             recovered.age == 0ms &&
             efis::protocol::edp::link_state_name(recovered.state) == "LIVE",
         "recovery returns atomically to live with zero age");
+  const auto recovered_diagnostics = transition.diagnostics(now + 1600ms);
+  check(recovered_diagnostics.source_node == 47 &&
+            recovered_diagnostics.publisher_instance == 4321 &&
+            recovered_diagnostics.sequence == 1 &&
+            recovered_diagnostics.metrics.publisher_restarts == 1 &&
+            recovered_diagnostics.last_rejection ==
+                efis::protocol::edp::DecodeError::crc_mismatch &&
+            recovered_diagnostics.last_rejection_age == 100ms,
+        "recovery changes publisher identity without erasing fault evidence");
   check(consumer.consume(wire, now + 10ms) ==
             efis::protocol::edp::DecodeError::duplicate_sequence,
         "duplicate rejected");
+  check(consumer.diagnostics(now + 10ms).last_rejection ==
+            efis::protocol::edp::DecodeError::duplicate_sequence,
+        "duplicate rejection is named in diagnostics");
   efis::protocol::edp::Consumer wrong{{250ms, 1000ms, 99}};
   check(wrong.consume(wire, now) ==
             efis::protocol::edp::DecodeError::invalid_identity,
         "unexpected node rejected");
+  const auto wrong_diagnostics = wrong.diagnostics(now + 5ms);
+  check(wrong_diagnostics.source_node == 0 &&
+            wrong_diagnostics.last_rejection ==
+                efis::protocol::edp::DecodeError::invalid_identity &&
+            wrong_diagnostics.last_rejection_age == 5ms,
+        "identity rejection cannot establish publisher authority");
   const auto next = publisher.publish(snapshot, now + 20ms);
   check(consumer.consume(next, now + 20ms) ==
             efis::protocol::edp::DecodeError::none,

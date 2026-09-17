@@ -2955,3 +2955,38 @@ fault EDP fisico e comportamento sul pannello RPi4 restano aperti.
   confrontare contatori UI, journal e broker Blackbox.
 - Verificare leggibilità/touch a 800×480 e persistenza dei log attraverso reboot
   e fault fisico Ethernet.
+
+### Incremento software — tracciabilità del publisher EDP
+
+Il consumer EDP produce ora uno snapshot diagnostico atomico contenente stato,
+metriche, identità dell'ultimo publisher accettato, sequenza e ultimo motivo di
+rifiuto con età monotona. Un pacchetto CRC errato, duplicato, invertito o con
+source node inatteso aggiorna l'evidenza del rifiuto ma non sostituisce
+l'identità autorevole e non rinfresca l'età dei dati. Un publisher valido dopo
+la perdita aggiorna identità e sequenza e conserva l'ultimo fault per la
+diagnostica di banco.
+
+Il controller EMS propaga source node, publisher instance e sequenza come
+stringhe, evitando perdita di precisione numerica in QML, e calcola percentuale
+di datagrammi validi e stato cumulativo della sessione. La pagina DATA LINK li
+mostra senza azioni di scrittura; il journal delle sole transizioni include la
+stessa identità e l'ultimo rifiuto.
+
+#### Verificato solo software
+
+- Test EDP: PASS per attesa, CRC, identità inattesa, duplicato, restart,
+  recovery e conservazione dell'evidenza.
+- Contratto HMI: 15/15 PASS; nessun `TapHandler` o comando nella pagina DATA
+  LINK.
+- `qmllint` senza errori e build/link MSVC/Qt dei target PFD ed EMS: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento.
+
+#### Aperto / non dichiarare DONE
+
+- Confrontare UI, journal EMS e broker Blackbox sulla rete reale durante
+  perdita, traffico rifiutato, restart e recovery.
+- Verificare resa/touch 800×480, reboot, fault Ethernet ed endurance. EMS-002
+  e BBX-003 restano `PARTIAL`.

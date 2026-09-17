@@ -173,3 +173,39 @@ Verifica software: HMI 15/15 PASS, `qmllint` senza errori e build/link PFD+EMS
 PASS. La cattura offscreen Windows non ha terminato ed è stata interrotta, quindi
 non esiste nuova evidenza grafica. Nessun deployment o test RPi4/Blackbox è
 incluso e nessun requisito viene promosso a DONE.
+
+## Incremento tracciabilità publisher EDP — dieci passi
+
+1. Definiti nomi canonici stabili per tutti gli esiti di decodifica EDP.
+2. Introdotto uno snapshot diagnostico atomico del consumer.
+3. Esposti source node, publisher instance e ultima sequenza accettata.
+4. Conservato l'ultimo motivo di rifiuto senza cancellarlo al recovery.
+5. Aggiunta l'età monotona dell'ultimo rifiuto, con protezione da regressione
+   dell'orologio.
+6. Propagato lo snapshot diagnostico attraverso la sorgente UDP read-only.
+7. Calcolati percentuale valida e stato cumulativo della sessione nel
+   controller EMS senza modificare l'autorità della sorgente.
+8. Estesa la pagina DATA LINK con identità, sequenza e ultimo rifiuto; la
+   pagina non contiene handler di comando.
+9. Esteso il journal delle transizioni con identità del publisher e ultimo
+   rifiuto.
+10. Aggiunti test fail-closed per attesa, CRC, identità errata, duplicato,
+    restart e recovery.
+
+### Evidenza software
+
+- `efis_edp_v1_tests`: PASS, incluse identità autorevole e persistenza
+  dell'evidenza di rifiuto attraverso il recovery.
+- Contratto HMI: 15/15 PASS; la pagina DATA LINK è confermata read-only.
+- `qmllint` Qt 6.11.1: nessun errore; restano warning preesistenti sugli
+  accessi QML non qualificati.
+- Build MSVC/Qt 6.11.1 dei target `efis-pfd-qt` ed `efis-ems-qt`: link PASS.
+
+### Hardware reale e aperto
+
+- Nessuna distribuzione o verifica su RPi4/Blackbox in questo incremento.
+- Source node, publisher instance, sequenza, contatori ed età del rifiuto
+  devono essere confrontati sul pannello con journal e broker reali durante
+  `LIVE → STALE → LOST → LIVE`.
+- Nessun requisito viene promosso a `DONE`; EMS-002 e BBX-003 restano
+  `PARTIAL` fino alle evidenze hardware già definite nella matrice.

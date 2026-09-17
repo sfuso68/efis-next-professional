@@ -51,6 +51,10 @@ public:
   [[nodiscard]] const protocol::edp::ConsumerMetrics &metrics() const noexcept {
     return consumer_.metrics();
   }
+  [[nodiscard]] protocol::edp::ConsumerDiagnostics
+  diagnostics(MonoTime now) const noexcept {
+    return consumer_.diagnostics(now);
+  }
   [[nodiscard]] const io::UdpEndpoint &local_endpoint() const noexcept {
     return receiver_.local();
   }

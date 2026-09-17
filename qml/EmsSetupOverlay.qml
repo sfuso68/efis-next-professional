@@ -187,7 +187,8 @@ Rectangle {
                 }
             }
             Rectangle { y:118*setup.uiScale; width:772*setup.uiScale; height:54*setup.uiScale; color:"#10232D"; border.color:setup.line
-                Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:String(linkPage.link.transport||"EDP V1 / UDP")+"   •   "+(linkPage.link.configured?(String(linkPage.link.bindAddress||"0.0.0.0")+":"+String(linkPage.link.port||49003)):"NOT CONFIGURED")+"   •   "+String(setup.controller.sensorNodeState||"SIMULATED"); color:linkPage.link.configured?setup.cyan:setup.amber; font.pixelSize:10*setup.uiScale; font.bold:true }
+                Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:String(linkPage.link.transport||"EDP V1 / UDP")+"   •   "+(linkPage.link.configured?(String(linkPage.link.bindAddress||"0.0.0.0")+":"+String(linkPage.link.port||49003)):"NOT CONFIGURED")+"   •   "+String(setup.controller.sensorNodeState||"SIMULATED"); color:linkPage.link.configured?setup.cyan:setup.amber; font.pixelSize:9*setup.uiScale; font.bold:true }
+                Text { anchors { right:parent.right; rightMargin:12*setup.uiScale; bottom:parent.bottom; bottomMargin:4*setup.uiScale } text:String(linkPage.link.sessionStatus||"NOT CONFIGURED"); color:text==="SESSION CLEAN"?setup.green:setup.amber; font.pixelSize:6*setup.uiScale; font.bold:true }
             }
             Grid { y:184*setup.uiScale; columns:4; spacing:8*setup.uiScale
                 Repeater { model:[
@@ -195,11 +196,15 @@ Rectangle {
                     {k:"DUPLICATES",v:"duplicates"},{k:"REVERSED",v:"reversed"},
                     {k:"SEQUENCE GAPS",v:"sequenceGaps"},{k:"PUBLISHER RESTARTS",v:"publisherRestarts"},
                     {k:"TOTAL DATAGRAMS",v:"datagrams"},{k:"VALID RATIO",v:"ratio"}]
-                    delegate:Rectangle { required property var modelData; width:187*setup.uiScale; height:64*setup.uiScale; color:setup.panel; border.color:modelData.v!=="ratio"&&Number(linkPage.link[modelData.v]||0)>0?setup.amber:setup.line
+                    delegate:Rectangle { required property var modelData; width:187*setup.uiScale; height:60*setup.uiScale; color:setup.panel; border.color:modelData.v!=="ratio"&&Number(linkPage.link[modelData.v]||0)>0?setup.amber:setup.line
                         Text { x:9*setup.uiScale; y:8*setup.uiScale; text:modelData.k; color:"#91A2AA"; font.pixelSize:7*setup.uiScale; font.bold:true }
-                        Text { x:9*setup.uiScale; y:29*setup.uiScale; text:modelData.v==="ratio"?(Number(linkPage.link.datagrams||0)>0?(100*Number(linkPage.link.accepted||0)/Number(linkPage.link.datagrams)).toFixed(1)+" %":"N/A"):String(linkPage.link[modelData.v]||0); color:modelData.v!=="ratio"&&Number(linkPage.link[modelData.v]||0)>0?setup.amber:"white"; font.pixelSize:15*setup.uiScale; font.bold:true }
+                        Text { x:9*setup.uiScale; y:29*setup.uiScale; text:modelData.v==="ratio"?(Number(linkPage.link.datagrams||0)>0?Number(linkPage.link.validPercent||0).toFixed(1)+" %":"N/A"):String(linkPage.link[modelData.v]||0); color:modelData.v!=="ratio"&&Number(linkPage.link[modelData.v]||0)>0?setup.amber:"white"; font.pixelSize:14*setup.uiScale; font.bold:true }
                     }
                 }
+            }
+            Rectangle { y:312*setup.uiScale; width:772*setup.uiScale; height:52*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:10*setup.uiScale; y:7*setup.uiScale; text:"SOURCE NODE  "+String(linkPage.link.sourceNode||"N/A")+"   •   PUBLISHER  "+String(linkPage.link.publisherInstance||"N/A")+"   •   SEQUENCE  "+String(linkPage.link.sequence||"N/A"); color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
+                Text { x:10*setup.uiScale; y:29*setup.uiScale; text:"LAST REJECT  "+String(linkPage.link.lastRejection||"NONE")+(Number(linkPage.link.lastRejectionAgeMs)>=0?("   •   "+String(linkPage.link.lastRejectionAgeMs)+" ms AGO"):""); color:String(linkPage.link.lastRejection||"NONE")==="NONE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
             }
             Text { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; bottomMargin:6*setup.uiScale } horizontalAlignment:Text.AlignHCenter; wrapMode:Text.WordWrap; text:"READ-ONLY DIAGNOSTICS • counters reset at process start • rejected traffic never refreshes data age"; color:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
         }
