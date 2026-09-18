@@ -1,0 +1,30 @@
+===== AVIONIX G2 ARM64 READ-ONLY VERIFICATION =====
+NODE=EMS
+ADDRESS=192.168.1.36
+SOURCE_COMMIT=c331a9d3846d1f59addcea76f9db530174c8ec11
+TIMESTAMP_UTC=2026-09-18T11:43:12Z
+HOSTNAME=efis
+ARCH=aarch64
+Python 3.13.5
+AVIONIX ICD V1: PASS
+test_canonical_vectors_match_frozen_digests (test_avionix_icd.AvionixIcdTests.test_canonical_vectors_match_frozen_digests) ... ok
+test_crc32c_known_vector (test_avionix_icd.AvionixIcdTests.test_crc32c_known_vector) ... ok
+test_enum_renumbering_fails_closed (test_avionix_icd.AvionixIcdTests.test_enum_renumbering_fails_closed) ... ok
+test_evidence_digest_mutation_fails_closed (test_avionix_icd.AvionixIcdTests.test_evidence_digest_mutation_fails_closed) ... ok
+test_evidence_path_escape_fails_closed (test_avionix_icd.AvionixIcdTests.test_evidence_path_escape_fails_closed) ... ok
+test_evidence_schema_is_fail_closed (test_avionix_icd.AvionixIcdTests.test_evidence_schema_is_fail_closed) ... ok
+test_frozen_contract_is_structurally_valid (test_avionix_icd.AvionixIcdTests.test_frozen_contract_is_structurally_valid) ... ok
+test_layout_gap_fails_closed (test_avionix_icd.AvionixIcdTests.test_layout_gap_fails_closed) ... ok
+test_malformed_requirement_ids_fail_closed_without_exception (test_avionix_icd.AvionixIcdTests.test_malformed_requirement_ids_fail_closed_without_exception) ... ok
+test_reference_evidence_bundle_and_artifact_digest (test_avionix_icd.AvionixIcdTests.test_reference_evidence_bundle_and_artifact_digest) ... ok
+test_vector_mutation_fails_closed (test_avionix_icd.AvionixIcdTests.test_vector_mutation_fails_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.019s
+
+OK
+e7a6b0ec2ef06d7e9b1c47728974829bd270d38e9227d90fd455dd1c2e18423e  config/protocols/avionix-data-icd-v1.json
+0cbda20efa32b393aa3d046dd156c044bc88f27de8e2a0f364307158e09f0ace  config/protocols/avionix-evidence-bundle-v1.schema.json
+4ce6a0f24240900dd25992420151484c5d5f2b9736a37faa84fbfb2bd05b8a32  tests/data/protocols/avionix-data-icd-v1-vectors.json
+e66fe28923025cd9d9f898a6b25006ff94dd065e5f269d9d5185b710ed6d75cf  tools/protocol/validate_avionix_icd.py
+RESULT=PASS

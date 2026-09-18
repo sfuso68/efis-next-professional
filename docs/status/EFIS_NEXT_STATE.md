@@ -3257,13 +3257,34 @@ La procedura da eseguire dal PFD è stata predisposta e il punto è congelato in
 
 #### Verificato su hardware reale
 
-- Nulla: non esiste ancora un report ARM64 acquisito.
+- Il 2026-09-18 il replay software G2 è stato eseguito sul PFD fisico
+  `efis-pfd-01` (`192.168.1.45`, `aarch64`, Python 3.13.5) usando esattamente
+  il freeze `c331a9d3846d1f59addcea76f9db530174c8ec11`. Il validator ha restituito
+  `AVIONIX ICD V1: PASS`, gli 11 test sono PASS e i digest di ICD, schema,
+  vettori e validator coincidono con quelli congelati. L'evidenza parziale è
+  in `docs/status/evidence/g2-arm64-pfd-20260918/`.
+- Il report PFD originario è stato recuperato e corrisponde byte-per-byte allo
+  SHA-256 target
+  `80f6258c2fc7c469470768fef35687e1bea7424532a1b3b4bcc039867201841f`.
+- Il 2026-09-18 lo stesso freeze è stato verificato sul MFD RPi5 fisico `pi5`
+  (`192.168.1.49`, `aarch64`, Python 3.13.5): validator PASS, 11/11 test PASS e
+  quattro digest coincidenti. Il report originario è archiviato in
+  `docs/status/evidence/g2-arm64-mfd-20260918/` con SHA-256
+  `5fb12c74488f6b0ff46d51d027e176b115dd3cc0db5937587bc34399354c7d3e`.
+- Il replay è stato completato anche sull'EMS RPi4 fisico `efis`
+  (`192.168.1.36`, `aarch64`, Python 3.13.5): validator PASS, 11/11 test PASS
+  e digest coincidenti. Il report originario copiato dal target misura 2142
+  byte e coincide esattamente con lo SHA-256
+  `e66951087e5687339353faff04fb51cdfd99bf5728b27f8267bc119049644bea`.
+- I tre bundle individuali e quello consolidato sono validi; il checkpoint di
+  chiusura del replay è `CHECKPOINT-2026-09-18-G2-ARM64-VERIFIED.md`.
 
 #### Aperto / non dichiarare DONE
 
-- Acquisire `/tmp/avionix-g2-arm64-results.txt` completo per PFD, EMS e MFD.
-- `PRJ-003` resta `VERIFY-HW`; autorizzazione e preparazione non costituiscono
-  evidence.
+- `AVX-G2-01` è `ACCEPTED` per freeze e replay x86-64/ARM64.
+- `PRJ-003` resta `VERIFY-HW`: manca la prova dati live separata AVX-G2-02.
+- Non avviare AVX-G2-02 senza approvazione esplicita; questa attività non ha
+  verificato Ethernet DDP/EDP, Blackbox, Pixhawk, CAN o sensori reali.
 
 ### Incremento G3 — venti controlli HMI fail-closed
 

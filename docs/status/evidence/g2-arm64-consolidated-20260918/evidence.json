@@ -1,0 +1,66 @@
+{
+  "schema": "avionix-next.evidence-bundle.v1",
+  "evidence_id": "G2-ARM64-CONSOLIDATED-20260918",
+  "requirement_ids": ["PRJ-003", "AVX-G2-01"],
+  "gate": "G2",
+  "level": "VERIFY_HW",
+  "status": "PASS",
+  "created_utc": "2026-09-18T11:43:12Z",
+  "producer": {
+    "tool": "validate_avionix_icd.py",
+    "version": "1.0.0",
+    "commit": "c331a9d3846d1f59addcea76f9db530174c8ec11"
+  },
+  "environment": {
+    "class": "HARDWARE_BENCH",
+    "os": "Debian GNU/Linux 13",
+    "architecture": "aarch64",
+    "node": "PFD efis-pfd-01; MFD pi5; EMS efis"
+  },
+  "artifacts": [
+    {
+      "path": "docs/status/evidence/g2-arm64-pfd-20260918/report.txt",
+      "sha256": "80f6258c2fc7c469470768fef35687e1bea7424532a1b3b4bcc039867201841f",
+      "size": 2149
+    },
+    {
+      "path": "docs/status/evidence/g2-arm64-mfd-20260918/report.txt",
+      "sha256": "5fb12c74488f6b0ff46d51d027e176b115dd3cc0db5937587bc34399354c7d3e",
+      "size": 2141
+    },
+    {
+      "path": "docs/status/evidence/g2-arm64-ems-20260918/report.txt",
+      "sha256": "e66951087e5687339353faff04fb51cdfd99bf5728b27f8267bc119049644bea",
+      "size": 2142
+    }
+  ],
+  "checks": [
+    {
+      "id": "PFD_RPI5_ARM64",
+      "status": "PASS",
+      "evidence": "ICD validator PASS, 11/11 tests PASS, frozen digests match"
+    },
+    {
+      "id": "MFD_RPI5_ARM64",
+      "status": "PASS",
+      "evidence": "ICD validator PASS, 11/11 tests PASS, frozen digests match"
+    },
+    {
+      "id": "EMS_RPI4_ARM64",
+      "status": "PASS",
+      "evidence": "ICD validator PASS, 11/11 tests PASS, frozen digests match"
+    },
+    {
+      "id": "CROSS_ARCHITECTURE_FREEZE",
+      "status": "PASS",
+      "evidence": "Canonical x86-64 workstation vectors and all three ARM64 target runs produced identical frozen artifact digests"
+    }
+  ],
+  "limitations": [
+    "This closes the AVX-G2-01 frozen ICD replay only; AVX-G2-02 live vertical integration remains separate and unapproved.",
+    "No live Ethernet, DDP/EDP, Pixhawk, sensor, display, touch, timing, fault-injection or flight behavior was exercised.",
+    "The Blackbox node was not required by the authorized three-target ARM64 replay and was not exercised by this bundle.",
+    "This evidence is not flight approval."
+  ],
+  "flight_approval": false
+}

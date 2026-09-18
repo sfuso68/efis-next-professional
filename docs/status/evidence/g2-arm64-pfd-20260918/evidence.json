@@ -1,0 +1,55 @@
+{
+  "schema": "avionix-next.evidence-bundle.v1",
+  "evidence_id": "G2-ARM64-PFD-20260918",
+  "requirement_ids": ["PRJ-003", "AVX-G2-01"],
+  "gate": "G2",
+  "level": "VERIFY_HW",
+  "status": "PASS",
+  "created_utc": "2026-09-18T07:19:08Z",
+  "producer": {
+    "tool": "run-g2-arm64-pfd.sh",
+    "version": "1.0.0",
+    "commit": "c331a9d3846d1f59addcea76f9db530174c8ec11"
+  },
+  "environment": {
+    "class": "RPI5",
+    "os": "Debian GNU/Linux 13",
+    "architecture": "aarch64",
+    "node": "efis-pfd-01 (192.168.1.45)"
+  },
+  "artifacts": [
+    {
+      "path": "docs/status/evidence/g2-arm64-pfd-20260918/report.txt",
+      "sha256": "80f6258c2fc7c469470768fef35687e1bea7424532a1b3b4bcc039867201841f",
+      "size": 2149
+    }
+  ],
+  "checks": [
+    {
+      "id": "TARGET_IDENTITY",
+      "status": "PASS",
+      "evidence": "hostname efis-pfd-01, address 192.168.1.45, architecture aarch64"
+    },
+    {
+      "id": "ICD_VALIDATOR_ARM64",
+      "status": "PASS",
+      "evidence": "AVIONIX ICD V1: PASS"
+    },
+    {
+      "id": "UNIT_TESTS_ARM64",
+      "status": "PASS",
+      "evidence": "11/11 tests passed with Python 3.13.5"
+    },
+    {
+      "id": "FROZEN_ARTIFACT_DIGESTS",
+      "status": "PASS",
+      "evidence": "ICD, schema, vectors and validator digests match the frozen G2 values"
+    }
+  ],
+  "limitations": [
+    "Only the PFD Raspberry Pi 5 node was exercised by this bundle; the MFD result is recorded separately and EMS remains pending.",
+    "No live Ethernet, DDP/EDP, Pixhawk, sensor, display, touch, timing, fault-injection or flight behavior was exercised.",
+    "This evidence is not flight approval."
+  ],
+  "flight_approval": false
+}

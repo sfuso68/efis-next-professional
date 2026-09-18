@@ -17,7 +17,7 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | AVX-G1-02 | G1 | Inventariare Sequent e DIP | quattro schede | modello/revisione/ID/foto | AVX-G1-01 | alto | 4/4 identificate | inventario HW | I2C/CLI read-only | M | OPEN |
 | AVX-G1-03 | G1 | Implementare adapter real/SIM e health | inventario e ICD | servizio acquisizione | AVX-G1-02, G2 schema | medio | open/short/timeout e recovery testati | core/adapter/deploy | unit/component | L | PROPOSED |
 | AVX-G1-04 | G1 | Soak nodo sensori | servizio completo | report 60 minuti | AVX-G1-03 | alto | zero errori non gestiti e log locale continuo | evidence | soak/fault rete | M | PROPOSED |
-| AVX-G2-01 | G2 | Congelare ICD AVIONIX sopra DDP/EDP | contratti esistenti | schema, freshness, naming | G0 | medio | compatibilità ARM64/x86-64 | docs/protocol, test vectors | schema/replay | M | IN_PROGRESS |
+| AVX-G2-01 | G2 | Congelare ICD AVIONIX sopra DDP/EDP | contratti esistenti | schema, freshness, naming | G0 | medio | compatibilità ARM64/x86-64 | docs/protocol, test vectors | schema/replay | M | ACCEPTED |
 | AVX-G2-02 | G2 | Verticale sensore→RPi4→Blackbox→RPi5→replay | G1 e ICD | catena completa riproducibile | AVX-G1-03, AVX-G2-01 | alto | stesso dataset e stessi esiti | adapter/broker/replay | integration/HIL | L | PROPOSED |
 | AVX-G3-01 | G3 | Correggere LOD/proiezione SV | renderer e dataset | qualità primo piano accettabile | benchmark/dataset | medio | acceptance visuale e frame-rate | renderer/terrain | screenshot/replay/HW | L | OPEN |
 | AVX-G3-02 | G3 | Integrare MGL RS-232 passivo | MGL, pinout, protocollo | parser e confronto EMS | documenti mancanti | alto | MGL indipendente, timeout corretti | adapter/test | parser/HW | L | BLOCKED |
@@ -50,8 +50,9 @@ comandi su uscite.
 | 2026-09-17 | AVX-G2-01 | `AVIONIX_DATA_ICD_V1.md`, specifica JSON, schema evidence bundle, due vettori e validator indipendente | FROZEN-SW; test workstation PASS, replay ARM64 e hardware aperti |
 | 2026-09-17 | AVX-G2-01 | `CHECKPOINT-2026-09-17-G2-ARM64-PENDING.md` | verifica ARM64 autorizzata ma non eseguita; accesso SSH workstation rifiutato, zero evidenza hardware |
 | 2026-09-17 | AVX-G2-02 | EDP SIM Blackbox→EMS già operativo; replay deterministico disponibile | resta PROPOSED per il verticale reale, dipendente da G1 e CAN reale |
+| 2026-09-18 | AVX-G2-01 | `CHECKPOINT-2026-09-18-G2-ARM64-VERIFIED.md` e bundle consolidato | ACCEPTED; PFD/MFD RPi5 ed EMS RPi4 ARM64: validator e 11/11 test PASS, digest congelati coincidenti; verticale live escluso |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
-senza modificare wire, runtime o nodi. Il gate resta `IN_PROGRESS` fino alla
-verifica degli stessi vettori su ARM64; AVX-G2-02 non è autorizzato da questo
-freeze.
+senza modificare wire o runtime. Il replay degli stessi vettori è stato
+completato il 2026-09-18 sui tre target ARM64 autorizzati e AVX-G2-01 è
+`ACCEPTED`; AVX-G2-02 non è autorizzato da questo freeze e resta separato.
