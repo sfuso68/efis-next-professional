@@ -72,7 +72,7 @@ class HmiHardwareAcceptanceTests(unittest.TestCase):
                     path.write_text(f"synthetic validator fixture {role} {kind}\n", encoding="utf-8")
                     artifacts.append({"kind": kind, "file": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(), "generated_utc": stamp})
                 runs.append({
-                    "role": role, "node": f"synthetic-{role.lower()}", "result": "PASS",
+                    "role": role, "node": f"synthetic-{role.lower()}", "release": "1" * 40, "result": "PASS",
                     "measurements": {
                         "duration_minutes": 60, "minimum_fps": 40,
                         "p95_frame_time_ms": 25.0, "maximum_temperature_c": 55.0,
@@ -84,7 +84,7 @@ class HmiHardwareAcceptanceTests(unittest.TestCase):
                         "ethernet_fault_recovery_pass": True,
                     }, "artifacts": artifacts,
                 })
-            manifest = {"schema": "avionix.hmi-hardware-evidence.v1", "status": "PASS", "hardware_verified": True, "generated_utc": stamp, "operator": "synthetic-test-only", "runs": runs}
+            manifest = {"schema": "avionix.hmi-hardware-evidence.v1", "status": "PASS", "hardware_verified": True, "flight_approval": False, "generated_utc": stamp, "operator": "synthetic-test-only", "runs": runs}
             path = bundle / "manifest.json"
             path.write_text(json.dumps(manifest), encoding="utf-8")
             self.assertEqual(validate(ROOT, path), [])

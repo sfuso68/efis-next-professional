@@ -3444,6 +3444,35 @@ esplicitamente `NOT_RUN`.
 - Compilare il bundle sul banco per PFD, MFD ed EMS con firma operatore.
 - `AVX-G3-03` resta `OPEN`; `PRJ-004` resta `VERIFY-HW`.
 
+### Incremento G3 — packager evidence HMI, venti punti
+
+Il percorso di acceptance dispone ora di un assemblatore deterministico che
+trasforma risultati operatore completi nel manifesto hardware già validato.
+
+#### Implementato
+
+- Template risultati V1 distribuito esclusivamente come `NOT_RUN`.
+- Controlli `HMI-P20-01`…`HMI-P20-20` su identità, release, metriche, copertura,
+  artefatti, percorsi e immutabilità.
+- SHA-256 calcolato dall'assemblatore e seconda validazione indipendente prima
+  di conservare l'output.
+- `flight_approval=false` obbligatorio anche per un futuro bundle PASS.
+- Test dedicato registrato in CTest e Project Control.
+
+#### Verificato solo software
+
+- Sei test combinati validator/packager PASS, inclusi venti fault isolati,
+  bundle sintetico completo, digest e rifiuto dell'overwrite.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; non sono stati contattati nodi o pannelli.
+
+#### Aperto / non dichiarare DONE
+
+- Produrre risultati reali firmati per PFD, MFD ed EMS e assemblare il primo
+  bundle hardware. `AVX-G3-03` resta `OPEN`; `PRJ-004` resta `VERIFY-HW`.
+
 ### Incremento G3 — stati EMS multi-risoluzione, venti punti
 
 La semantica EMS fail-closed è stata estesa dal solo formato compact al

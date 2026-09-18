@@ -15,11 +15,12 @@ PLAN_KEYS = {"schema", "status", "authority", "duration_minutes", "targets", "sc
 TARGET_KEYS = {"role", "platform", "resolution", "transport", "port"}
 ACCEPTANCE_KEYS = {"minimum_touch_px", "minimum_fps", "maximum_p95_frame_time_ms", "required_throttled_value", "temperature_recording_required", "cold_boot_required", "reboot_required", "transport_replay_required", "ethernet_fault_recovery_required", "operator_visual_signoff_required", "operator_touch_signoff_required"}
 EVIDENCE_KEYS = {"manifest_schema", "required_artifact_kinds", "digest", "node_identity_required", "utc_timestamp_required", "pass_requires_all_targets"}
-MANIFEST_KEYS = {"schema", "status", "hardware_verified", "generated_utc", "operator", "runs"}
-RUN_KEYS = {"role", "node", "result", "measurements", "artifacts"}
+MANIFEST_KEYS = {"schema", "status", "hardware_verified", "flight_approval", "generated_utc", "operator", "runs"}
+RUN_KEYS = {"role", "node", "release", "result", "measurements", "artifacts"}
 ARTIFACT_KEYS = {"kind", "file", "sha256", "generated_utc"}
 MEASUREMENT_KEYS = {"duration_minutes", "minimum_fps", "p95_frame_time_ms", "maximum_temperature_c", "throttled", "cold_boot_pass", "reboot_pass", "scenarios_passed", "lighting_modes_passed", "minimum_touch_px", "transport_replay_pass", "ethernet_fault_recovery_pass"}
 DIGEST = re.compile(r"[0-9a-f]{64}")
+RELEASE = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})")
 
 
 def _error(errors: list[str], control: int, message: str) -> None:
@@ -103,21 +104,24 @@ def validate(root: Path, evidence_path: Path | None = None) -> list[str]:
     if set(manifest) != MANIFEST_KEYS or manifest.get("schema") != "avionix.hmi-hardware-evidence.v1":
         _error(errors, 18, "evidence manifest schema is invalid")
         return errors
+    if manifest.get("flight_approval") is not False:
+        _error(errors, 18, "HMI evidence can never grant flight approval")
     runs = manifest.get("runs")
     if not isinstance(runs, list) or [run.get("role") for run in runs if isinstance(run, dict)] != ["PFD", "MFD", "EMS"] or any(set(run) != RUN_KEYS for run in runs if isinstance(run, dict)):
         _error(errors, 19, "evidence must contain exactly PFD, MFD and EMS runs")
         return errors
     status = manifest.get("status")
     if status == "NOT_RUN":
-        if manifest.get("hardware_verified") is not False or manifest.get("generated_utc") is not None or manifest.get("operator") is not None or any(run.get("result") != "NOT_RUN" or run.get("node") is not None or run.get("measurements") != {} or run.get("artifacts") != [] for run in runs):
+        if manifest.get("hardware_verified") is not False or manifest.get("generated_utc") is not None or manifest.get("operator") is not None or any(run.get("result") != "NOT_RUN" or run.get("node") is not None or run.get("release") is not None or run.get("measurements") != {} or run.get("artifacts") != [] for run in runs):
             _error(errors, 20, "NOT_RUN template contains a hardware claim or evidence")
         return errors
-    if status != "PASS" or manifest.get("hardware_verified") is not True or not _utc(manifest.get("generated_utc")) or not isinstance(manifest.get("operator"), str) or not manifest["operator"].strip():
+    if status != "PASS" or manifest.get("hardware_verified") is not True or manifest.get("flight_approval") is not False or not _utc(manifest.get("generated_utc")) or not isinstance(manifest.get("operator"), str) or not manifest["operator"].strip():
         _error(errors, 20, "hardware PASS lacks signed UTC provenance")
         return errors
     base = manifest_path.parent.resolve()
     for run in runs:
-        if run.get("result") != "PASS" or not isinstance(run.get("node"), str) or not run["node"].strip():
+        if (run.get("result") != "PASS" or not isinstance(run.get("node"), str) or not run["node"].strip() or
+                not isinstance(run.get("release"), str) or not RELEASE.fullmatch(run["release"])):
             _error(errors, 20, f"{run.get('role')} does not have a passing identified node")
             continue
         measured = run.get("measurements")

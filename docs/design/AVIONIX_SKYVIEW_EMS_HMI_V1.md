@@ -157,3 +157,9 @@ boot/reboot, termica/throttling, replay DDP/EDP e fault/recovery Ethernet.
 Il manifesto distribuito resta `NOT_RUN`; soltanto un bundle completo per tutti
 i tre target, firmato dall'operatore e con digest verificabili può dichiarare
 PASS. La presenza del contratto non costituisce acceptance hardware.
+
+Il packager `assemble_hmi_hardware_evidence.py` traduce esclusivamente risultati
+operatore completi nel manifesto finale. Verifica object ID della release,
+metriche, copertura, percorsi locali, file non vuoti e digest; l'output è
+immutabile e sempre marcato `flight_approval=false`. Il template distribuito è
+`NOT_RUN` e non è assemblabile.
