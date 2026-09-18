@@ -3434,6 +3434,42 @@ di autorità di comando.
 - `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
   conserva limiti `UNVERIFIED`.
 
+### Incremento G2 — contratto verticale live, venti controlli
+
+Il 2026-09-18 è stato autorizzato e completato il solo batch
+software/documentale di preparazione AVX-G2-02. Nessuna prova live, modifica
+rete, deployment o azione hardware è inclusa.
+
+#### Implementato
+
+- Contratto machine-readable
+  `config/network/avionix-g2-vertical-acceptance-v1.json`.
+- Venti controlli fail-closed `G2-V20-01`…`G2-V20-20` per identità, topology,
+  autorità Blackbox, DDP/EDP, assenza comandi, provenance SIM, integrità,
+  freshness, sequenze, recorder/replay, observer, fault, evidence e rollback.
+- Cross-check del contratto contro network plan e ICD congelato.
+- Validator CLI, dieci test di regressione e integrazione Project Control CI.
+
+#### Verificato solo software
+
+- Validator: 20/20 controlli PASS.
+- Suite dedicata: 10/10 test PASS.
+- Stato intenzionalmente `PREPARED_SW_NOT_RUN`, `execution_authorized=false`,
+  `flight_approval=false`.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento.
+
+#### Blocco / non dichiarare DONE
+
+- Il trasporto autorevole adapter RPi4→Blackbox è `UNRESOLVED`; DDP/EDP
+  downstream non lo sostituiscono.
+- Servono AVX-G1-01 (nodo), AVX-G1-02 (Sequent) e AVX-G1-03 (adapter/health).
+- AVX-G2-02 passa a `IN_PROGRESS` soltanto per la preparazione software; smoke,
+  fault, endurance e replay live richiedono runbook e nuova approvazione.
+- `PRJ-003` resta `VERIFY-HW`.
+
 ### Incremento G3 — harness acceptance hardware HMI, venti punti
 
 È stato aggiunto il contratto macchina `avionix.hmi-hardware-acceptance.v1`

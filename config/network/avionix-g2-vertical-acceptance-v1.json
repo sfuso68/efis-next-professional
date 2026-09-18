@@ -1,0 +1,119 @@
+{
+  "schema": "avionix-next.g2-vertical-acceptance.v1",
+  "revision": "1.0.0",
+  "status": "PREPARED_SW_NOT_RUN",
+  "execution_authorized": false,
+  "flight_approval": false,
+  "freeze": {
+    "source_commit": "c331a9d3846d1f59addcea76f9db530174c8ec11",
+    "icd_path": "config/protocols/avionix-data-icd-v1.json",
+    "network_plan_path": "config/network/avionics-network-v1.json"
+  },
+  "topology": {
+    "stages": [
+      "sensor-simulator",
+      "rpi4-acquisition-adapter",
+      "blackbox-broker-recorder",
+      "pfd-ddp-consumer",
+      "mfd-ddp-consumer",
+      "ems-edp-consumer",
+      "replay-verifier"
+    ],
+    "publisher_authority": "BLACKBOX_BROKER",
+    "display_authority": "RECEIVE_ONLY",
+    "source_to_blackbox": {
+      "transport": "UNRESOLVED",
+      "execution_allowed": false,
+      "blocked_by": ["AVX-G1-01", "AVX-G1-02", "AVX-G1-03"]
+    }
+  },
+  "downstream_flows": [
+    {"id": "blackbox-ddp-pfd", "source": "blackbox", "destination": "pfd-01", "protocol": "DDP_V2", "transport": "UDP_UNICAST", "port": 49002, "direction": "ONE_WAY"},
+    {"id": "blackbox-ddp-mfd", "source": "blackbox", "destination": "mfd-01", "protocol": "DDP_V2", "transport": "UDP_UNICAST", "port": 49002, "direction": "ONE_WAY"},
+    {"id": "blackbox-edp-ems", "source": "blackbox", "destination": "ems-01", "protocol": "EDP_V1", "transport": "UDP_UNICAST", "port": 49003, "direction": "ONE_WAY"}
+  ],
+  "safety": {
+    "command_path": "ABSENT",
+    "actuation_path": "ABSENT",
+    "pixhawk_write_allowed": false,
+    "display_transmit_allowed": false,
+    "simulation_must_be_visible": true,
+    "unknown_source_policy": "REJECT"
+  },
+  "integrity": {
+    "byte_order": "BIG_ENDIAN",
+    "payload_crc": "CRC32C_CASTAGNOLI",
+    "source_identity_required": true,
+    "publisher_instance_required": true,
+    "sequence_policy": "REJECT_DUPLICATE_OR_OUT_OF_ORDER",
+    "schema_policy": "REJECT_UNKNOWN"
+  },
+  "freshness": {
+    "clock": "CONSUMER_LOCAL_MONOTONIC",
+    "stale_after_ms": 250,
+    "lost_after_ms": 1000,
+    "rejected_packet_preserves_last_valid": true
+  },
+  "recording_replay": {
+    "raw_and_normalized_provenance_required": true,
+    "recording_sha256_required": true,
+    "replay_uses_same_recording": true,
+    "cross_consumer_outcome_match_required": true
+  },
+  "observer": {
+    "mode": "PASSIVE_NO_BIND_NO_RETURN_PATH",
+    "payload_persistence": false,
+    "minimum_smoke_seconds": 60,
+    "minimum_endurance_seconds": 3600
+  },
+  "mandatory_faults": [
+    "source_absent",
+    "source_stale",
+    "crc_corruption",
+    "unknown_source",
+    "duplicate_sequence",
+    "out_of_order_sequence",
+    "publisher_restart",
+    "blackbox_restart",
+    "network_loss",
+    "storage_full",
+    "clock_regression",
+    "consumer_restart"
+  ],
+  "evidence": {
+    "required_nodes": ["sensor-rpi4", "blackbox", "pfd-01", "mfd-01", "ems-01"],
+    "required_artifacts": ["preflight", "capture", "recorder-digest", "replay-report", "fault-report", "rollback-report"],
+    "sha256_required": true,
+    "utc_required": true,
+    "operator_required": true,
+    "flight_approval": false
+  },
+  "rollback": {
+    "deployment_allowed_by_this_contract": false,
+    "baseline_snapshot_required": true,
+    "service_restart_limit": 0,
+    "restore_procedure_required": true
+  },
+  "controls": [
+    {"id": "G2-V20-01", "key": "contract_identity", "state": "DEFINED", "evidence_required": "validator-report"},
+    {"id": "G2-V20-02", "key": "prepared_not_run", "state": "DEFINED", "evidence_required": "status-report"},
+    {"id": "G2-V20-03", "key": "frozen_icd_commit", "state": "DEFINED", "evidence_required": "commit-digest"},
+    {"id": "G2-V20-04", "key": "topology_stages", "state": "DEFINED", "evidence_required": "topology-report"},
+    {"id": "G2-V20-05", "key": "source_transport_dependency", "state": "BLOCKED_DEPENDENCY", "evidence_required": "g1-inventory-and-adapter"},
+    {"id": "G2-V20-06", "key": "blackbox_authority", "state": "DEFINED", "evidence_required": "broker-identity"},
+    {"id": "G2-V20-07", "key": "pfd_ddp_flow", "state": "DEFINED", "evidence_required": "passive-capture"},
+    {"id": "G2-V20-08", "key": "mfd_ddp_flow", "state": "DEFINED", "evidence_required": "passive-capture"},
+    {"id": "G2-V20-09", "key": "ems_edp_flow", "state": "DEFINED", "evidence_required": "passive-capture"},
+    {"id": "G2-V20-10", "key": "one_way_receive_only", "state": "DEFINED", "evidence_required": "firewall-and-socket-report"},
+    {"id": "G2-V20-11", "key": "no_command_or_actuation", "state": "DEFINED", "evidence_required": "negative-path-report"},
+    {"id": "G2-V20-12", "key": "simulation_provenance", "state": "DEFINED", "evidence_required": "sample-provenance-report"},
+    {"id": "G2-V20-13", "key": "integrity_and_identity", "state": "DEFINED", "evidence_required": "fault-report"},
+    {"id": "G2-V20-14", "key": "freshness_monotonic", "state": "DEFINED", "evidence_required": "timing-report"},
+    {"id": "G2-V20-15", "key": "sequence_session_discipline", "state": "DEFINED", "evidence_required": "sequence-report"},
+    {"id": "G2-V20-16", "key": "recorder_replay_parity", "state": "DEFINED", "evidence_required": "replay-report"},
+    {"id": "G2-V20-17", "key": "passive_observer", "state": "DEFINED", "evidence_required": "observer-report"},
+    {"id": "G2-V20-18", "key": "mandatory_fault_matrix", "state": "DEFINED", "evidence_required": "fault-matrix-report"},
+    {"id": "G2-V20-19", "key": "evidence_provenance", "state": "DEFINED", "evidence_required": "evidence-bundle"},
+    {"id": "G2-V20-20", "key": "go_no_go_and_rollback", "state": "NO_GO", "evidence_required": "approved-runbook-and-rollback"}
+  ]
+}

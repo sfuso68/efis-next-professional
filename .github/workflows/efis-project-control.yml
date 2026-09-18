@@ -29,6 +29,13 @@ jobs:
       - name: Validate matrix and generated status
         run: python tools/project_status/generate_status.py --check
 
+      - name: Validate G2 ICD and live-vertical contract
+        run: |
+          python tools/protocol/validate_avionix_icd.py --bundle docs/status/evidence/g2-arm64-consolidated-20260918/evidence.json
+          python -m unittest tests.test_avionix_icd -v
+          python tools/network/validate_g2_vertical_acceptance.py
+          python -m unittest tests.test_g2_vertical_acceptance -v
+
       - name: Validate SkyView and EMS HMI contract
         run: |
           python tools/ui/validate_hmi_contract.py
