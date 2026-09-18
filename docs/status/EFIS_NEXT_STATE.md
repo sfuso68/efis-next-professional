@@ -3761,3 +3761,46 @@ banco.
 - Acquisire modello, tensione, corrente e foto etichetta dell'alimentatore.
 - `AVX-G1-02` resta `OPEN`, schede reali 0/4 e decisione
   `NO_GO_PENDING_PHYSICAL_BOARD_INVENTORY`.
+
+### Incremento G1/G2 — readiness di integrazione, cento punti
+
+Il 2026-09-18 è stato costruito un audit machine-readable di cento controlli
+per evitare che la futura integrazione promuova ipotesi non verificate. Il
+batch copre inventario fisico, mappa dei 18 segnali motore, calibrazione,
+trasporto RPi4→Blackbox→EMS ed evidence/release.
+
+#### Implementato
+
+- Contratto `avionix-next.g1-g2-readiness.v1` con cinque domini da venti
+  controlli e catalogo congelato tramite digest.
+- Cross-check verso il manifest fisico G1, il contratto verticale G2,
+  `SignalId`, `EngineSnapshot` e ADR EDP V1.
+- Confini espliciti per unità, raw value, `NodeId`, `ChannelId`, revisione di
+  calibrazione, `SourceId`, autorità Blackbox, EDP V1/49003, soak e replay.
+- Validator, test dedicati, CTest e Project Control CI.
+
+#### Verificato solo software
+
+- 100/100 controlli validati.
+- 100/100 mutazioni isolate del catalogo rifiutate fail-closed.
+- Suite dedicata: 8/8 test PASS.
+- Distribuzione stati: 49 `PASS`, 37 `PREPARED`, 11 `BLOCKED_HARDWARE`,
+  2 `BLOCKED_ARCHITECTURE`, 1 `BLOCKED_APPROVAL`.
+- Modello software coerente con 18 campioni motore, quattro CHT, quattro EGT e
+  Blackbox→EMS EDP V1/UDP 49003 one-way.
+
+#### Verificato su hardware reale
+
+- Nulla di nuovo in questo incremento.
+- Non sono stati contattati nodi, bus, sensori, schede, switch o Blackbox.
+
+#### Aperto / non dichiarare DONE
+
+- Le quattro Sequent restano 0/4 verificate; indirizzi, canali e tarature sono
+  irrisolti e nessuna soglia è stata inventata.
+- Il `SourceId` della catena reale richiede una decisione architetturale.
+- Il trasporto autorevole RPi4→Blackbox resta `UNRESOLVED`; EDP downstream non
+  lo sostituisce.
+- Prove live, deployment, soak e uso in volo non sono autorizzati.
+- Decisione:
+  `NO_GO_PENDING_G1_PHYSICAL_INVENTORY_AND_ARCHITECTURE_REVIEW`.

@@ -56,6 +56,7 @@ comandi su uscite.
 | 2026-09-18 | AVX-G1-01 | `CHECKPOINT-2026-09-18-G1-NODE-IDENTITY-HW.md` e node report | HW-PARTIAL; `ems-sensor` `.89`, RPi4 8 GB Bookworm aarch64 e bus `i2c-1` verificati; alimentatore ignoto, Ethernet senza carrier e Sequent 0/4 |
 | 2026-09-18 | AVX-G1-01 | `AVIONIX_G1_NODE_CAPTURE_BATCH10.md`, acquisitore e test | VERIFIED-RPI4/NO-GO; report ripetibile 10/10 PASS sul nodo, senza probing; board inventory e power ancora mancanti |
 | 2026-09-18 | AVX-G1-02 | `AVIONIX_G1_PHYSICAL_INVENTORY_BATCH10.md`, manifest e validator G1-I10 | IMPLEMENTED-SW/NOT-CAPTURED/NO-GO; 10/10 controlli e 8/8 test PASS; quattro slot e alimentatore pronti per evidenza visuale, schede reali ancora 0/4 |
+| 2026-09-18 | AVX-G1-02/03, AVX-G2-02 | `AVIONIX_G1_G2_READINESS_BATCH100.md`, contratto e validator R100 | IMPLEMENTED-SW/PREPARED-NOT-RUN/NO-GO; 100/100 controlli validati, 100 mutazioni fail-closed e 8/8 test PASS; hardware 0/4, mapping/calibrazione/SourceId/trasporto upstream ancora irrisolti |
 | 2026-09-18 | AVX-G1-03 | `AVIONIX_G1_ADAPTER_HEALTH_BATCH20.md`, kernel C++ e 20 test | IMPLEMENTED-SW/HW-NOT-RUN; REAL/SIM, sequence, freshness, fault e recovery implementati senza driver, channel map o publisher |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
@@ -77,3 +78,8 @@ separata con il proprietario presente.
 Il kernel health porta `AVX-G1-03` a `IN_PROGRESS` solo sul piano software. La
 dipendenza dall'inventario resta effettiva: il codice non contiene accesso bus,
 conversioni, mapping Sequent o endpoint di rete e non abilita la prova G2 live.
+
+Il readiness batch R100 rende espliciti e verificabili i cinque confini che
+precedono l'integrazione: inventario, 18 segnali, calibrazione, trasporto ed
+evidence. I 49 controlli software in PASS non promuovono i 51 controlli
+PREPARED/BLOCKED e non autorizzano probing o deployment.
