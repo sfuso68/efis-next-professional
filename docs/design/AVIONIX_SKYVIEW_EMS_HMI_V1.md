@@ -137,3 +137,13 @@ compact 800×480 di `LIVE`, `STALE`, `DEGRADED`, `LOST`, `FAIL` e `SIM`.
 indisponibilità esplicita. Sei golden firmate verificano i controlli
 `HMI-E20-01`…`HMI-E20-20`. La matrice resta software-only e non sostituisce
 replay EDP, fault fisico e acceptance sul pannello RPi4.
+
+## Matrice responsive degli stati EMS V1
+
+Il contratto `avionix.ems-responsive-state-matrix.v1` estende i sei stati EMS
+alle tre risoluzioni 800×480, 1024×600 e 1280×800. Il prodotto cartesiano di
+18 immagini conserva severità, età e inibizione delle funzioni derivate senza
+dipendere dal profilo compact o expanded. Il manifesto chiuso e i controlli
+`HMI-M20-01`…`HMI-M20-20` verificano ordine, provenance, dimensioni e digest.
+Queste golden restano riferimenti software e non qualificano pannello, touch,
+frame-rate, contrasto, temperatura o trasporto EDP reale.

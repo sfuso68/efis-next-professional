@@ -82,6 +82,15 @@ class HmiGoldenToolsTests(unittest.TestCase):
             self.assertEqual(validate(directory), [])
             self.assertIn((1920, 1080), SIZES_BY_ROLE["skyview"])
 
+    def test_degraded_is_a_canonical_golden_state(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            manifest = fake_bundle(directory)
+            manifest["data_state"] = "DEGRADED"
+            manifest["data_age_ms"] = 600
+            write_manifest(directory, manifest)
+            self.assertEqual(validate(directory), [])
+
     def test_manifest_can_be_built_from_direct_captures(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)

@@ -3412,3 +3412,42 @@ di autorità di comando.
 - Verificare touch, sunlight/night, ≥40 FPS, reboot, endurance e termica.
 - `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
   conserva limiti `UNVERIFIED`.
+
+### Incremento G3 — stati EMS multi-risoluzione, venti punti
+
+La semantica EMS fail-closed è stata estesa dal solo formato compact al
+prodotto cartesiano completo di sei stati e tre risoluzioni. Il contratto
+`avionix.ems-responsive-state-matrix.v1` e i controlli
+`HMI-M20-01`…`HMI-M20-20` rendono verificabile che la risposta a perdita o
+degrado dati non cambi tra 800×480, 1024×600 e 1280×800.
+
+#### Implementato
+
+- Manifesto chiuso con 18 immagini: `LIVE`, `STALE`, `DEGRADED`, `LOST`,
+  `FAIL` e `SIM` per ciascuna delle tre risoluzioni EMS.
+- Generatore e validatore dedicati con dimensioni, byte count, SHA-256 del file
+  e SHA-256 dei pixel.
+- Test di mutazione per ciascuno dei venti controlli fail-closed.
+- Stato `DEGRADED` riconosciuto anche dal validatore golden generale, con età
+  ammessa soltanto nella finestra 251–1000 ms.
+- Test registrato in CTest e nel workflow Project Control.
+
+#### Verificato solo software
+
+- 18 catture native Windows generate dal renderer Qt e ispezionate.
+- Nessuna sovrapposizione critica riscontrata nei layout compact ed expanded.
+- Cue ambra ed età coerenti in `STALE/DEGRADED`; warning rosso e dati derivati
+  inibiti in `LOST/FAIL`; `LIVE` e `SIM` restano distinguibili.
+- Validatore della matrice: 18/18 immagini e 20/20 controlli PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo, servizio, rete o cablaggio è stato
+  contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Ripetere la matrice su pannello RPi4 con replay EDP e fault fisico.
+- Verificare touch, sunlight/night, ≥40 FPS, reboot, endurance e termica.
+- `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
+  conserva limiti `UNVERIFIED`.

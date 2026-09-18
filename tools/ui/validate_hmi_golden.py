@@ -18,7 +18,7 @@ ROOT_KEYS = {"schema", "status", "generated_utc", "platform", "fixture", "role",
              "data_state", "data_age_ms", "images"}
 IMAGE_KEYS = {"file", "width", "height", "bytes", "sha256", "pixel_sha256"}
 FIXTURES = {"ems": "HmiGoldenMain.qml", "skyview": "SkyViewGoldenMain.qml"}
-STATES = {"LIVE", "STALE", "LOST", "FAIL", "SIM"}
+STATES = {"LIVE", "STALE", "DEGRADED", "LOST", "FAIL", "SIM"}
 DIGEST = re.compile(r"[0-9a-f]{64}")
 
 
@@ -63,7 +63,8 @@ def validate(directory: Path) -> list[str]:
         _error(errors, 8, "data_state is not canonical")
     age = manifest.get("data_age_ms")
     if (not isinstance(age, int) or isinstance(age, bool) or age < 0 or
-            (state == "SIM" and age != 0) or (state == "STALE" and not 250 < age <= 1000) or
+            (state == "SIM" and age != 0) or
+            (state in {"STALE", "DEGRADED"} and not 250 < age <= 1000) or
             (state == "LOST" and age <= 1000)):
         _error(errors, 9, "data age is inconsistent with the declared state")
     if errors:
