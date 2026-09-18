@@ -13,7 +13,7 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | AVX-G0-03 | G0 | Decidere il bare NAS duplicato | inventario NAS | decisione conservazione | autorizzazione utente | medio | nessuna copia ambigua | indice | verifica refs | S | BLOCKED |
 | AVX-G0-04 | G0 | Recuperare cinque documenti mancanti | file del proprietario | indice con hash | disponibilità file | alto | 5/5 acquisiti e classificati | `docs/reference/` o registro esterno | hash e apertura | M | BLOCKED |
 | AVX-G0-05 | G0 | Congelare nomenclatura AVIONIX/EFIS | decisione prodotto | naming policy | utente | medio | nomi e alias approvati | ADR o brief R1 | controllo riferimenti | S | BLOCKED |
-| AVX-G1-01 | G1 | Identificare nodo ASSO5 dedicato | RPi4 reale | identità OS/IP/power/storage | hardware | alto | inventario firmato | inventario HW | comandi read-only | S | OPEN |
+| AVX-G1-01 | G1 | Identificare nodo ASSO5 dedicato | RPi4 reale | identità OS/IP/power/storage | hardware | alto | inventario firmato | inventario HW | comandi read-only | S | IN_PROGRESS |
 | AVX-G1-02 | G1 | Inventariare Sequent e DIP | quattro schede | modello/revisione/ID/foto | AVX-G1-01 | alto | 4/4 identificate | inventario HW | I2C/CLI read-only | M | OPEN |
 | AVX-G1-03 | G1 | Implementare adapter real/SIM e health | inventario e ICD | servizio acquisizione | AVX-G1-02, G2 schema | medio | open/short/timeout e recovery testati | core/adapter/deploy | unit/component | L | IN_PROGRESS |
 | AVX-G1-04 | G1 | Soak nodo sensori | servizio completo | report 60 minuti | AVX-G1-03 | alto | zero errori non gestiti e log locale continuo | evidence | soak/fault rete | M | PROPOSED |
@@ -53,6 +53,7 @@ comandi su uscite.
 | 2026-09-18 | AVX-G2-01 | `CHECKPOINT-2026-09-18-G2-ARM64-VERIFIED.md` e bundle consolidato | ACCEPTED; PFD/MFD RPi5 ed EMS RPi4 ARM64: validator e 11/11 test PASS, digest congelati coincidenti; verticale live escluso |
 | 2026-09-18 | AVX-G2-02 | `AVIONIX_G2_VERTICAL_ACCEPTANCE_BATCH20.md`, contratto e validator G2-V20 | PREPARED-SW/NOT-RUN; 20/20 controlli e 10/10 test PASS; trasporto RPi4→Blackbox UNRESOLVED e NO-GO fino ad AVX-G1-01/02/03 e nuova approvazione |
 | 2026-09-18 | AVX-G1-01/02 | `AVIONIX_G1_SENSOR_DISCOVERY_BATCH20.md`, contratto e validator G1-D20 | PREPARED-SW/NOT-RUN; ricognizione fail-closed definita, identità nodo 0/1 e schede 0/4; nessuna esecuzione hardware o scansione I²C autorizzata |
+| 2026-09-18 | AVX-G1-01 | `CHECKPOINT-2026-09-18-G1-NODE-IDENTITY-HW.md` e node report | HW-PARTIAL; `ems-sensor` `.89`, RPi4 8 GB Bookworm aarch64 e bus `i2c-1` verificati; alimentatore ignoto, Ethernet senza carrier e Sequent 0/4 |
 | 2026-09-18 | AVX-G1-03 | `AVIONIX_G1_ADAPTER_HEALTH_BATCH20.md`, kernel C++ e 20 test | IMPLEMENTED-SW/HW-NOT-RUN; REAL/SIM, sequence, freshness, fault e recovery implementati senza driver, channel map o publisher |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto

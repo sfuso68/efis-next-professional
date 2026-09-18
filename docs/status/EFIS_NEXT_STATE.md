@@ -3473,6 +3473,45 @@ comandi sul banco e non costituisce inventario hardware.
 - Installazione CLI vendor, adapter, publisher e soak appartengono a passaggi
   successivi e separatamente approvati.
 
+### Incremento G1 — identità hardware del nodo sensori
+
+Il 2026-09-18 il proprietario ha autorizzato la prima finestra hardware
+read-only e la sola abilitazione reversibile del controller I²C GPIO. Il nodo
+è stato verificato come `ems-sensor` all'indirizzo Wi-Fi `192.168.1.89`.
+
+#### Implementato
+
+- Backup di `/boot/firmware/config.txt` conservato come
+  `config.txt.pre-avionix-i2c-20260918`.
+- Abilitato esclusivamente `dtparam=i2c_arm=on` e riavviato il nodo.
+- Nessuna scansione indirizzi, lettura vendor, scrittura registro, modifica
+  DIP/cablaggio o comando verso uscite.
+
+#### Verificato solo software
+
+- Il kernel health G1-H20 resta separato dal bus e non è stato distribuito sul
+  nodo in questa finestra.
+
+#### Verificato su hardware reale
+
+- Raspberry Pi 4 Model B Rev 1.5, 8 GB, Debian 12 Bookworm `aarch64`, kernel
+  `6.12.109+rpt-rpi-v8`.
+- microSD 53,7 GB con circa 45 GB disponibili.
+- `/dev/i2c-1` presente; GPIO2=`SDA1`, GPIO3=`SCL1`; utente `pi` nel gruppo
+  `i2c`.
+- `throttled=0x0`, temperatura 44,8 °C dopo il riavvio.
+- Ethernet senza carrier; Wi-Fi operativo su `192.168.1.89`.
+- Evidenza e digest registrati in
+  `CHECKPOINT-2026-09-18-G1-NODE-IDENTITY-HW.md`.
+
+#### Aperto / non dichiarare DONE
+
+- Alimentatore non identificato: `AVX-G1-01` resta `IN_PROGRESS`.
+- Sequent 0/4: mancano foto, revisioni, DIP, slot e connettori;
+  `AVX-G1-02` resta `OPEN`.
+- Nessun indirizzo, CLI/driver, channel map, calibrazione o publisher è stato
+  qualificato; il gate resta NO-GO.
+
 ### Incremento G1 — kernel health dell'adapter sensori, venti punti
 
 Il 2026-09-18 è stato implementato il nucleo C++20, indipendente dall'hardware,

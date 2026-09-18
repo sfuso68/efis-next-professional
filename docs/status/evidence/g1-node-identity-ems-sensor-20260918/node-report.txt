@@ -1,0 +1,35 @@
+timestamp_utc=2026-09-18T18:49:45Z
+operator=pi
+hostname=ems-sensor
+addresses=192.168.1.89 fd00::5051:ac09:b7d8:3eea
+os=Debian GNU/Linux 12 (bookworm)
+kernel=Linux ems-sensor 6.12.109+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.12.109-1+rpt1 (2026-09-11) aarch64 GNU/Linux
+architecture=aarch64
+model=Raspberry Pi 4 Model B Rev 1.5
+memory_total=7.6Gi
+memory_available=7.2Gi
+swap_total=511Mi
+storage=mmcblk0 53.7G
+root_filesystem=/dev/mmcblk0p2 ext4 53G used=5.0G available=45G use=11%
+boot_filesystem=/dev/mmcblk0p1 vfat 510M used=78M available=433M use=16%
+eth0=DOWN NO-CARRIER mac=88:a2:9e:b6:59:ad
+wlan0=UP 192.168.1.89/24 mac=88:a2:9e:b6:59:ae
+config_line=6:dtparam=i2c_arm=on
+i2c_device=/dev/i2c-1 owner=root group=i2c mode=crw-rw----
+i2c_name=bcm2835 (i2c@7e804000)
+i2c_of_node=/sys/firmware/devicetree/base/soc/i2c@7e804000
+gpio2=a0 pu hi SDA1
+gpio3=a0 pu hi SCL1
+user_groups=pi adm dialout cdrom sudo audio video plugdev games users input render netdev lpadmin gpio i2c spi
+throttled=0x0
+temperature=44.8C
+rollback_backup=/boot/firmware/config.txt.pre-avionix-i2c-20260918
+
+collection_notes:
+- Initial operator capture showed i2c_arm commented, only /dev/i2c-20 and /dev/i2c-21,
+  GPIO2/GPIO3 as plain inputs, throttled=0x0 and temperature=42.8C.
+- After operator-authorized configuration and reboot, Codex performed the
+  read-only SSH verification represented above.
+- No I2C address scan, vendor command, board register read or output command
+  was executed.
+- Power-supply identity and all Sequent board identities remain unverified.
