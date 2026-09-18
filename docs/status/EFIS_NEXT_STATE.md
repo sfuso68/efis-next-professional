@@ -3512,6 +3512,40 @@ read-only e la sola abilitazione reversibile del controller I²C GPIO. Il nodo
 - Nessun indirizzo, CLI/driver, channel map, calibrazione o publisher è stato
   qualificato; il gate resta NO-GO.
 
+### Incremento G1 — acquisizione read-only ripetibile, dieci punti
+
+È stato implementato e provato sul nodo reale l'acquisitore
+`capture_g1_sensor_node.py`, che sostituisce i comandi manuali con un report
+JSON deterministico e una allowlist chiusa.
+
+#### Implementato
+
+- Dieci controlli `G1-C10-01`…`G1-C10-10` per provenienza, identità, risorse,
+  rete, configurazione I²C, controller, pin, health e NO-GO.
+- Nessun comando parametrico: shell, `sudo`, utility I²C, package manager,
+  servizi, riavvio e comandi di scrittura non appartengono all'allowlist.
+- Test Python integrato in CTest e Project Control.
+
+#### Verificato solo software
+
+- 7/7 test PASS; 10/10 mutazioni fail-closed rifiutate.
+- Comando arbitrario e `i2cdetect -y 1` rifiutati prima dell'esecuzione.
+- Suite CTest completa: 42/42 PASS.
+
+#### Verificato su hardware reale
+
+- Capture sul RPi4 `ems-sensor`: 10/10 PASS.
+- Report persistente sul nodo con UTC `2026-09-18T20:53:42Z` e SHA-256
+  `f7cb1da79623c37891e662ec966f8d64be743a8d471663970993e4eac93f5e94`.
+- Decisione prodotta: `NO_GO_PENDING_PHYSICAL_BOARD_INVENTORY`.
+
+#### Aperto / non dichiarare DONE
+
+- Il tool prova esclusivamente nodo e controller: Sequent 0/4 e alimentatore
+  ancora non verificati.
+- Non autorizza address scan, vendor read, adapter, publisher o volo.
+- `AVX-G1-01` resta `IN_PROGRESS`; `AVX-G1-02` resta `OPEN`.
+
 ### Incremento G1 — kernel health dell'adapter sensori, venti punti
 
 Il 2026-09-18 è stato implementato il nucleo C++20, indipendente dall'hardware,

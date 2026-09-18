@@ -54,6 +54,7 @@ comandi su uscite.
 | 2026-09-18 | AVX-G2-02 | `AVIONIX_G2_VERTICAL_ACCEPTANCE_BATCH20.md`, contratto e validator G2-V20 | PREPARED-SW/NOT-RUN; 20/20 controlli e 10/10 test PASS; trasporto RPi4→Blackbox UNRESOLVED e NO-GO fino ad AVX-G1-01/02/03 e nuova approvazione |
 | 2026-09-18 | AVX-G1-01/02 | `AVIONIX_G1_SENSOR_DISCOVERY_BATCH20.md`, contratto e validator G1-D20 | PREPARED-SW/NOT-RUN; ricognizione fail-closed definita, identità nodo 0/1 e schede 0/4; nessuna esecuzione hardware o scansione I²C autorizzata |
 | 2026-09-18 | AVX-G1-01 | `CHECKPOINT-2026-09-18-G1-NODE-IDENTITY-HW.md` e node report | HW-PARTIAL; `ems-sensor` `.89`, RPi4 8 GB Bookworm aarch64 e bus `i2c-1` verificati; alimentatore ignoto, Ethernet senza carrier e Sequent 0/4 |
+| 2026-09-18 | AVX-G1-01 | `AVIONIX_G1_NODE_CAPTURE_BATCH10.md`, acquisitore e test | VERIFIED-RPI4/NO-GO; report ripetibile 10/10 PASS sul nodo, senza probing; board inventory e power ancora mancanti |
 | 2026-09-18 | AVX-G1-03 | `AVIONIX_G1_ADAPTER_HEALTH_BATCH20.md`, kernel C++ e 20 test | IMPLEMENTED-SW/HW-NOT-RUN; REAL/SIM, sequence, freshness, fault e recovery implementati senza driver, channel map o publisher |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
