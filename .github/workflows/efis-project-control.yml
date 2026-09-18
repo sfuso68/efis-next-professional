@@ -29,6 +29,11 @@ jobs:
       - name: Validate matrix and generated status
         run: python tools/project_status/generate_status.py --check
 
+      - name: Validate G1 sensor-node discovery contract
+        run: |
+          python tools/hardware/validate_g1_sensor_node_discovery.py
+          python -m unittest tests.test_g1_sensor_node_discovery -v
+
       - name: Validate G2 ICD and live-vertical contract
         run: |
           python tools/protocol/validate_avionix_icd.py --bundle docs/status/evidence/g2-arm64-consolidated-20260918/evidence.json

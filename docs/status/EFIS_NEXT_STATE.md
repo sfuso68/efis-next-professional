@@ -3434,6 +3434,45 @@ di autorità di comando.
 - `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
   conserva limiti `UNVERIFIED`.
 
+### Incremento G1 — ricognizione ASSO5/Sequent, venti controlli
+
+Il 2026-09-18 è stato completato il solo batch software/documentale che prepara
+la futura ricognizione read-only del nodo sensori. Il contratto non autorizza
+comandi sul banco e non costituisce inventario hardware.
+
+#### Implementato
+
+- Contratto machine-readable
+  `config/hardware/avionix-g1-sensor-node-discovery-v1.json`.
+- Venti controlli fail-closed `G1-D20-01`…`G1-D20-20`.
+- Inventario atteso D-007: 1×SM-I-018, 2×SM-I-011 e 1×SM-I-019, tutte ancora
+  `UNVERIFIED`.
+- Allowlist read-only e denylist esplicita per probing I²C, register/relay
+  write, EEPROM/firmware, installazioni, configurazione, wiring e power.
+- Validator, test di mutazione e integrazione Project Control CI.
+
+#### Verificato solo software
+
+- Il contratto conserva `PREPARED_SW_NOT_RUN`, `execution_authorized=false`,
+  `flight_approval=false` e `current_decision=NO_GO`.
+- Identità, IP, OS, architettura, alimentazione, storage, revisioni, DIP e
+  trasporto publisher non possono essere promossi senza evidenza.
+- Adapter reale `NOT_IMPLEMENTED`; soglie health e recovery restano
+  intenzionalmente non risolte.
+
+#### Verificato su hardware reale
+
+- Nulla: nodo ASSO5 0/1 e schede Sequent 0/4.
+
+#### Blocco / non dichiarare DONE
+
+- `AVX-G1-01` e `AVX-G1-02` restano `OPEN`.
+- Serve una nuova autorizzazione con il proprietario davanti al banco.
+- La prima finestra ammetterà soltanto identità sistema, elenco controller I²C
+  senza address probing e fotografie/lettura visuale delle schede.
+- Installazione CLI vendor, adapter, publisher e soak appartengono a passaggi
+  successivi e separatamente approvati.
+
 ### Incremento G2 — contratto verticale live, venti controlli
 
 Il 2026-09-18 è stato autorizzato e completato il solo batch

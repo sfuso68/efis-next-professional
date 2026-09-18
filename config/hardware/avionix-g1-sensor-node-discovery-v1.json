@@ -1,0 +1,142 @@
+{
+  "schema": "avionix-next.g1-sensor-node-discovery.v1",
+  "revision": "1.0.0",
+  "status": "PREPARED_SW_NOT_RUN",
+  "execution_authorized": false,
+  "flight_approval": false,
+  "source_authority": {
+    "master_brief": "docs/project/AVIONIX_NEXT_MASTER_PROJECT_BRIEF_CODEX_R0.md",
+    "decision_register": "docs/project/AVIONIX_NEXT_DECISION_REGISTER.md",
+    "backlog_items": ["AVX-G1-01", "AVX-G1-02"]
+  },
+  "node": {
+    "role": "ASSO5-SENSOR-NODE",
+    "hostname": "UNRESOLVED",
+    "address": "UNRESOLVED",
+    "platform": "RPI4_EXPECTED_UNVERIFIED",
+    "operating_system": "UNRESOLVED",
+    "architecture": "UNRESOLVED",
+    "power_source": "UNRESOLVED",
+    "storage": "UNRESOLVED",
+    "result": "NOT_RUN"
+  },
+  "expected_inventory": {
+    "source": "USER_CONFIRMED_D-007",
+    "total_boards": 4,
+    "boards": [
+      {"model": "SM-I-018", "quantity": 1, "function": "engine-analog", "verification": "UNVERIFIED"},
+      {"model": "SM-I-011", "quantity": 2, "function": "digital-inputs", "verification": "UNVERIFIED"},
+      {"model": "SM-I-019", "quantity": 1, "function": "thermocouples", "verification": "UNVERIFIED"}
+    ],
+    "secondary_sm_i_018": "NOT_INSTALLED_UNVERIFIED"
+  },
+  "discovery_stages": [
+    "operator-and-bench-preflight",
+    "node-identity-read-only",
+    "power-and-storage-read-only",
+    "i2c-controller-enumeration-only",
+    "physical-board-photo-and-label-capture",
+    "dip-and-address-visual-capture",
+    "evidence-assembly",
+    "operator-review"
+  ],
+  "i2c_policy": {
+    "controller_listing_allowed": true,
+    "address_probe_allowed": false,
+    "generic_scan_allowed": false,
+    "vendor_read_allowed": false,
+    "write_allowed": false,
+    "reason": "board revision, bus and approved vendor read command are not yet known"
+  },
+  "allowed_operations": [
+    "read-hostname-os-kernel-architecture",
+    "read-memory-storage-and-mounts",
+    "read-network-interface-state",
+    "read-throttling-and-temperature-if-supported",
+    "list-i2c-controllers-without-address-probing",
+    "photograph-board-front-back-labels-and-dip",
+    "hash-and-package-evidence"
+  ],
+  "forbidden_operations": [
+    "change-dip-or-jumper",
+    "probe-i2c-addresses",
+    "write-i2c-or-modbus-registers",
+    "activate-output-or-relay",
+    "write-eeprom-or-firmware",
+    "install-or-upgrade-package-or-driver",
+    "change-service-or-boot-configuration",
+    "change-network-configuration",
+    "change-wiring-or-power-source",
+    "power-from-usb-c-and-hat-simultaneously",
+    "connect-engine-sensor",
+    "deploy-runtime"
+  ],
+  "board_evidence": {
+    "required_per_board": ["front-photo", "back-photo", "model", "revision", "serial-if-present", "dip-visual-state", "connector-labels"],
+    "photo_sha256_required": true,
+    "physical_slot_required": true,
+    "observed_address_required": false,
+    "electrical_probe_required": false
+  },
+  "power_safety": {
+    "single_power_source_required": true,
+    "supply_model_and_rating_required": true,
+    "wiring_change_allowed": false,
+    "energization_change_allowed": false,
+    "brownout_test_allowed": false
+  },
+  "adapter_boundary": {
+    "real_adapter_status": "NOT_IMPLEMENTED",
+    "simulation_adapter_status": "EXISTING_CAPABILITY_NOT_QUALIFIED_FOR_G1",
+    "real_and_sim_must_be_distinguishable": true,
+    "gui_hardware_access_allowed": false,
+    "publisher_transport": "UNRESOLVED"
+  },
+  "health_contract": {
+    "required_states": ["VALID", "STALE", "LOST", "FAIL", "SIMULATED"],
+    "required_faults": ["board_absent", "bus_timeout", "open_input", "short_input", "invalid_range", "adapter_restart"],
+    "thresholds": "UNRESOLVED_UNTIL_HARDWARE_INVENTORY",
+    "recovery_policy": "UNRESOLVED_UNTIL_ADAPTER_DESIGN"
+  },
+  "evidence": {
+    "required_artifacts": ["preflight", "node-report", "board-inventory", "photo-manifest", "power-report", "i2c-controller-report", "operator-review"],
+    "operator_required": true,
+    "utc_required": true,
+    "sha256_required": true,
+    "raw_command_output_required": true,
+    "redaction_log_required": true,
+    "result": "NOT_RUN"
+  },
+  "go_no_go": {
+    "discovery_only": true,
+    "adapter_implementation_allowed": false,
+    "live_publisher_allowed": false,
+    "soak_allowed": false,
+    "exit_requires_four_of_four_boards": true,
+    "exit_requires_node_identity": true,
+    "exit_requires_operator_approval": true,
+    "current_decision": "NO_GO"
+  },
+  "controls": [
+    {"id": "G1-D20-01", "key": "contract_identity", "state": "DEFINED"},
+    {"id": "G1-D20-02", "key": "prepared_not_run", "state": "DEFINED"},
+    {"id": "G1-D20-03", "key": "source_authority", "state": "DEFINED"},
+    {"id": "G1-D20-04", "key": "node_role_unresolved_identity", "state": "BLOCKED_HARDWARE"},
+    {"id": "G1-D20-05", "key": "os_kernel_arch_capture", "state": "DEFINED"},
+    {"id": "G1-D20-06", "key": "power_storage_capture", "state": "DEFINED"},
+    {"id": "G1-D20-07", "key": "i2c_controller_listing_only", "state": "DEFINED"},
+    {"id": "G1-D20-08", "key": "four_board_count", "state": "DEFINED"},
+    {"id": "G1-D20-09", "key": "exact_model_quantities", "state": "DEFINED"},
+    {"id": "G1-D20-10", "key": "secondary_018_absence", "state": "DEFINED"},
+    {"id": "G1-D20-11", "key": "board_photo_labels", "state": "DEFINED"},
+    {"id": "G1-D20-12", "key": "dip_visual_capture_no_change", "state": "DEFINED"},
+    {"id": "G1-D20-13", "key": "single_power_source", "state": "DEFINED"},
+    {"id": "G1-D20-14", "key": "no_output_or_register_write", "state": "DEFINED"},
+    {"id": "G1-D20-15", "key": "no_install_or_configuration_change", "state": "DEFINED"},
+    {"id": "G1-D20-16", "key": "real_sim_separation", "state": "DEFINED"},
+    {"id": "G1-D20-17", "key": "health_state_vocabulary", "state": "DEFINED"},
+    {"id": "G1-D20-18", "key": "fault_catalog", "state": "DEFINED"},
+    {"id": "G1-D20-19", "key": "evidence_provenance", "state": "DEFINED"},
+    {"id": "G1-D20-20", "key": "go_no_go_boundary", "state": "NO_GO"}
+  ]
+}

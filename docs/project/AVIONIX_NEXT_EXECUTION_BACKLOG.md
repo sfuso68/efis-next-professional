@@ -52,6 +52,7 @@ comandi su uscite.
 | 2026-09-17 | AVX-G2-02 | EDP SIM Blackbox→EMS già operativo; replay deterministico disponibile | resta PROPOSED per il verticale reale, dipendente da G1 e CAN reale |
 | 2026-09-18 | AVX-G2-01 | `CHECKPOINT-2026-09-18-G2-ARM64-VERIFIED.md` e bundle consolidato | ACCEPTED; PFD/MFD RPi5 ed EMS RPi4 ARM64: validator e 11/11 test PASS, digest congelati coincidenti; verticale live escluso |
 | 2026-09-18 | AVX-G2-02 | `AVIONIX_G2_VERTICAL_ACCEPTANCE_BATCH20.md`, contratto e validator G2-V20 | PREPARED-SW/NOT-RUN; 20/20 controlli e 10/10 test PASS; trasporto RPi4→Blackbox UNRESOLVED e NO-GO fino ad AVX-G1-01/02/03 e nuova approvazione |
+| 2026-09-18 | AVX-G1-01/02 | `AVIONIX_G1_SENSOR_DISCOVERY_BATCH20.md`, contratto e validator G1-D20 | PREPARED-SW/NOT-RUN; ricognizione fail-closed definita, identità nodo 0/1 e schede 0/4; nessuna esecuzione hardware o scansione I²C autorizzata |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato
@@ -62,3 +63,8 @@ Il 2026-09-18 il proprietario ha autorizzato il batch software/documentale di
 venti controlli per AVX-G2-02. L'attività è ora `IN_PROGRESS`, ma il contratto
 impone `NOT_RUN`: nessuna prova live o modifica hardware è autorizzata finché
 le dipendenze G1 non sono chiuse e il runbook non riceve approvazione separata.
+
+Il batch successivo ha preparato i venti controlli della sola ricognizione G1.
+`AVX-G1-01/02` restano `OPEN`: il contratto non vale come inventario e richiede
+una finestra separata, con il proprietario presente, prima di qualsiasi lettura
+dal nodo o fotografia delle schede.
