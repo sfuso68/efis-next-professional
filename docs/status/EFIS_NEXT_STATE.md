@@ -3413,6 +3413,37 @@ di autorità di comando.
 - `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
   conserva limiti `UNVERIFIED`.
 
+### Incremento G3 — harness acceptance hardware HMI, venti punti
+
+È stato aggiunto il contratto macchina `avionix.hmi-hardware-acceptance.v1`
+con i controlli `HMI-A20-01`…`HMI-A20-20` e un manifesto iniziale
+esplicitamente `NOT_RUN`.
+
+#### Implementato
+
+- Piano comune per PFD/MFD RPi5 ed EMS RPi4 con sei stati, DAY/NIGHT, touch,
+  frame timing, termica, boot/reboot, replay trasporto e fault Ethernet.
+- Provenance obbligatoria con identità nodo, operatore, UTC e SHA-256.
+- Validatore fail-closed: un PASS richiede limiti numerici rispettati e tutti
+  gli otto tipi di artefatto per ciascuno dei tre target; path non sicuri, file
+  mancanti e digest errati sono rifiutati.
+- Venti mutazioni negative, CTest e Project Control integrati.
+
+#### Verificato solo software
+
+- Template `PREPARED_SW_NOT_RUN` e manifesto `NOT_RUN`: PASS.
+- Controlli `HMI-A20-01`…`HMI-A20-20`: PASS fail-closed.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo, pannello, servizio o cablaggio è
+  stato contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Compilare il bundle sul banco per PFD, MFD ed EMS con firma operatore.
+- `AVX-G3-03` resta `OPEN`; `PRJ-004` resta `VERIFY-HW`.
+
 ### Incremento G3 — stati EMS multi-risoluzione, venti punti
 
 La semantica EMS fail-closed è stata estesa dal solo formato compact al

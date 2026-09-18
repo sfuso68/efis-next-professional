@@ -351,6 +351,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_ems_responsive_state_matrix)
         set_tests_properties(efis_ems_responsive_state_matrix_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_hmi_hardware_acceptance_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_hmi_hardware_acceptance)
+        set_tests_properties(efis_hmi_hardware_acceptance_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         add_test(NAME efis_avionix_icd_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_avionix_icd)
         set_tests_properties(efis_avionix_icd_tests PROPERTIES

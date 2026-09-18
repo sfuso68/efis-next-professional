@@ -147,3 +147,13 @@ dipendere dal profilo compact o expanded. Il manifesto chiuso e i controlli
 `HMI-M20-01`…`HMI-M20-20` verificano ordine, provenance, dimensioni e digest.
 Queste golden restano riferimenti software e non qualificano pannello, touch,
 frame-rate, contrasto, temperatura o trasporto EDP reale.
+
+## Harness di acceptance hardware V1
+
+Il contratto `avionix.hmi-hardware-acceptance.v1` prepara una prova comune per
+PFD e MFD su RPi5 ed EMS su RPi4. Congela sei stati dati, DAY/NIGHT, touch
+minimo 44 px, minimo 40 FPS, p95 frame-time massimo 25 ms, durata 60 minuti,
+boot/reboot, termica/throttling, replay DDP/EDP e fault/recovery Ethernet.
+Il manifesto distribuito resta `NOT_RUN`; soltanto un bundle completo per tutti
+i tre target, firmato dall'operatore e con digest verificabili può dichiarare
+PASS. La presenza del contratto non costituisce acceptance hardware.

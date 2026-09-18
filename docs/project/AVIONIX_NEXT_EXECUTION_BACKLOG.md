@@ -45,6 +45,7 @@ comandi su uscite.
 | 2026-09-18 | AVX-G3-04 | `AVIONIX_G3_SKYVIEW_RESPONSIVE_BATCH20.md`, HMI-R20-01…20 e golden aggiornate | VERIFIED-SW; overlay meteo separato dalla heading ribbon, acceptance hardware aperta |
 | 2026-09-18 | AVX-G3-04 | `AVIONIX_G3_EMS_STATE_BATCH20.md`, HMI-E20-01…20 e sei golden EMS 800×480 | VERIFIED-SW; stati degradati senza verde normale e funzioni derivate inibite in LOST/FAIL; acceptance hardware aperta |
 | 2026-09-18 | AVX-G3-04 | `AVIONIX_G3_EMS_RESPONSIVE_BATCH20.md`, HMI-M20-01…20 e matrice EMS 6×3 | VERIFIED-SW; semantica dei sei stati verificata a 800×480, 1024×600 e 1280×800; acceptance hardware aperta |
+| 2026-09-18 | AVX-G3-03 | `AVIONIX_G3_HMI_HARDWARE_ACCEPTANCE_BATCH20.md`, HMI-A20-01…20 | PREPARED-SW/NOT_RUN; harness fail-closed pronto, nessuna prova su pannelli e attività resta OPEN |
 | 2026-09-17 | AVX-G2-01 | `AVIONIX_DATA_ICD_V1.md`, specifica JSON, schema evidence bundle, due vettori e validator indipendente | FROZEN-SW; test workstation PASS, replay ARM64 e hardware aperti |
 | 2026-09-17 | AVX-G2-01 | `CHECKPOINT-2026-09-17-G2-ARM64-PENDING.md` | verifica ARM64 autorizzata ma non eseguita; accesso SSH workstation rifiutato, zero evidenza hardware |
 | 2026-09-17 | AVX-G2-02 | EDP SIM Blackbox→EMS già operativo; replay deterministico disponibile | resta PROPOSED per il verticale reale, dipendente da G1 e CAN reale |
