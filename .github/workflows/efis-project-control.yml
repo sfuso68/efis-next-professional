@@ -34,6 +34,8 @@ jobs:
           python tools/hardware/validate_g1_sensor_node_discovery.py
           python -m unittest tests.test_g1_sensor_node_discovery -v
           python -m unittest tests.test_capture_g1_sensor_node -v
+          python tools/hardware/validate_g1_physical_inventory.py
+          python -m unittest tests.test_g1_physical_inventory -v
 
       - name: Validate G2 ICD and live-vertical contract
         run: |

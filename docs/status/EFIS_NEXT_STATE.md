@@ -3722,3 +3722,42 @@ degrado dati non cambi tra 800×480, 1024×600 e 1280×800.
 - Verificare touch, sunlight/night, ≥40 FPS, reboot, endurance e termica.
 - `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
   conserva limiti `UNVERIFIED`.
+
+### Incremento G1 — manifest inventario fisico, dieci punti
+
+Il 2026-09-18 è stato preparato il formato verificabile per acquisire le
+evidenze visuali delle quattro Sequent e dell'alimentatore del nodo sensori.
+Non sono state eseguite letture I²C, scansioni, vendor read o modifiche al
+banco.
+
+#### Implementato
+
+- Manifest V1 con quattro slot fissi: 1×SM-I-018, 2×SM-I-011 e 1×SM-I-019.
+- Controlli `G1-I10-01`…`G1-I10-10` per provenienza nodo, foto fronte/retro,
+  SHA-256, etichette, revisione, DIP visuali, connettori e alimentatore.
+- Validator fail-closed per percorsi relativi, digest, quantità, modelli,
+  divieto di probing/mutazioni e doppio NO-GO.
+- Integrazione CTest e Project Control CI.
+
+#### Verificato solo software
+
+- Template repository: 10/10 controlli PASS con 0/4 schede verificate.
+- Suite dedicata: 8/8 test PASS.
+- Manifest sintetico completo: 4/4 visuali accettati ma decisione obbligatoria
+  `NO_GO_PENDING_ENGINEERING_REVIEW` e `flight_approval=false`.
+- Mutazioni di slot, modelli, path, digest, policy, probing e approvazione
+  prematura rifiutate.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware in questo incremento.
+- Resta valida soltanto l'identità del nodo e il capture G1-C10 già registrato;
+  non prova presenza, modello o configurazione delle schede.
+
+#### Aperto / non dichiarare DONE
+
+- Acquisire fotografie fronte/retro, etichette, revisioni, seriali se presenti,
+  DIP e connettori delle quattro schede.
+- Acquisire modello, tensione, corrente e foto etichetta dell'alimentatore.
+- `AVX-G1-02` resta `OPEN`, schede reali 0/4 e decisione
+  `NO_GO_PENDING_PHYSICAL_BOARD_INVENTORY`.
