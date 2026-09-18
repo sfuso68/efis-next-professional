@@ -3473,6 +3473,48 @@ comandi sul banco e non costituisce inventario hardware.
 - Installazione CLI vendor, adapter, publisher e soak appartengono a passaggi
   successivi e separatamente approvati.
 
+### Incremento G1 — kernel health dell'adapter sensori, venti punti
+
+Il 2026-09-18 è stato implementato il nucleo C++20, indipendente dall'hardware,
+che governa stato, freshness, fault e recovery dei futuri canali ASSO5/Sequent.
+Questo incremento non contiene driver I²C, mappe indirizzi, calibrazioni reali,
+publisher di rete o autorizzazioni di volo.
+
+#### Implementato
+
+- Stati per canale `UNKNOWN`, `VALID`, `STALE`, `LOST`, `FAILED` e
+  `SIMULATED`, con modalità REAL/SIM esplicita e marcatore SIM persistente.
+- Configurazione fail-closed di identità, unità, revisione calibrazione e
+  policy temporali iniettate dal profilo, senza inventare soglie hardware.
+- Rifiuto di duplicati, sequenze o tempi regressivi e mismatch REAL/SIM senza
+  aggiornare la freshness del dato.
+- Conteggio dei gap, classificazione dei fault, dwell di recovery configurabile
+  e reset fail-closed dopo restart dell'adapter.
+- Mapping conservativo verso `Validity` del core e nuovo target CTest
+  `efis_sensor_adapter_health_tests`.
+
+#### Verificato solo software
+
+- Build MSVC del nuovo target e delle regressioni `efis_engine_tests` ed
+  `efis_core_tests`: PASS.
+- Suite dedicata del kernel health: 20/20 scenari PASS.
+- Suite core completa: 21/21 target CTest PASS.
+- Nessun valore viene promosso a valido senza configurazione, osservazione
+  coerente e completamento dell'eventuale dwell di recovery.
+
+#### Verificato su hardware reale
+
+- Nulla: nodo ASSO5 0/1 e schede Sequent 0/4; nessun bus o sensore contattato.
+
+#### Aperto / non dichiarare DONE
+
+- `AVX-G1-03` è `IN_PROGRESS`, non `DONE`: mancano inventario reale, driver,
+  address map, unità/calibrazioni approvate e mapping stabile dei `SourceId`.
+- Mancano publisher verso Blackbox, integrazione systemd, fault injection e
+  soak sul nodo ARM64.
+- Il kernel non abilita il gate verticale G2 e non costituisce evidenza di
+  idoneità al volo.
+
 ### Incremento G2 — contratto verticale live, venti controlli
 
 Il 2026-09-18 è stato autorizzato e completato il solo batch

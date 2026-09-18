@@ -15,7 +15,7 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | AVX-G0-05 | G0 | Congelare nomenclatura AVIONIX/EFIS | decisione prodotto | naming policy | utente | medio | nomi e alias approvati | ADR o brief R1 | controllo riferimenti | S | BLOCKED |
 | AVX-G1-01 | G1 | Identificare nodo ASSO5 dedicato | RPi4 reale | identità OS/IP/power/storage | hardware | alto | inventario firmato | inventario HW | comandi read-only | S | OPEN |
 | AVX-G1-02 | G1 | Inventariare Sequent e DIP | quattro schede | modello/revisione/ID/foto | AVX-G1-01 | alto | 4/4 identificate | inventario HW | I2C/CLI read-only | M | OPEN |
-| AVX-G1-03 | G1 | Implementare adapter real/SIM e health | inventario e ICD | servizio acquisizione | AVX-G1-02, G2 schema | medio | open/short/timeout e recovery testati | core/adapter/deploy | unit/component | L | PROPOSED |
+| AVX-G1-03 | G1 | Implementare adapter real/SIM e health | inventario e ICD | servizio acquisizione | AVX-G1-02, G2 schema | medio | open/short/timeout e recovery testati | core/adapter/deploy | unit/component | L | IN_PROGRESS |
 | AVX-G1-04 | G1 | Soak nodo sensori | servizio completo | report 60 minuti | AVX-G1-03 | alto | zero errori non gestiti e log locale continuo | evidence | soak/fault rete | M | PROPOSED |
 | AVX-G2-01 | G2 | Congelare ICD AVIONIX sopra DDP/EDP | contratti esistenti | schema, freshness, naming | G0 | medio | compatibilità ARM64/x86-64 | docs/protocol, test vectors | schema/replay | M | ACCEPTED |
 | AVX-G2-02 | G2 | Verticale sensore→RPi4→Blackbox→RPi5→replay | G1 e ICD | catena completa riproducibile | AVX-G1-03, AVX-G2-01 | alto | stesso dataset e stessi esiti | adapter/broker/replay | integration/HIL | L | IN_PROGRESS |
@@ -53,6 +53,7 @@ comandi su uscite.
 | 2026-09-18 | AVX-G2-01 | `CHECKPOINT-2026-09-18-G2-ARM64-VERIFIED.md` e bundle consolidato | ACCEPTED; PFD/MFD RPi5 ed EMS RPi4 ARM64: validator e 11/11 test PASS, digest congelati coincidenti; verticale live escluso |
 | 2026-09-18 | AVX-G2-02 | `AVIONIX_G2_VERTICAL_ACCEPTANCE_BATCH20.md`, contratto e validator G2-V20 | PREPARED-SW/NOT-RUN; 20/20 controlli e 10/10 test PASS; trasporto RPi4→Blackbox UNRESOLVED e NO-GO fino ad AVX-G1-01/02/03 e nuova approvazione |
 | 2026-09-18 | AVX-G1-01/02 | `AVIONIX_G1_SENSOR_DISCOVERY_BATCH20.md`, contratto e validator G1-D20 | PREPARED-SW/NOT-RUN; ricognizione fail-closed definita, identità nodo 0/1 e schede 0/4; nessuna esecuzione hardware o scansione I²C autorizzata |
+| 2026-09-18 | AVX-G1-03 | `AVIONIX_G1_ADAPTER_HEALTH_BATCH20.md`, kernel C++ e 20 test | IMPLEMENTED-SW/HW-NOT-RUN; REAL/SIM, sequence, freshness, fault e recovery implementati senza driver, channel map o publisher |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato
@@ -68,3 +69,7 @@ Il batch successivo ha preparato i venti controlli della sola ricognizione G1.
 `AVX-G1-01/02` restano `OPEN`: il contratto non vale come inventario e richiede
 una finestra separata, con il proprietario presente, prima di qualsiasi lettura
 dal nodo o fotografia delle schede.
+
+Il kernel health porta `AVX-G1-03` a `IN_PROGRESS` solo sul piano software. La
+dipendenza dall'inventario resta effettiva: il codice non contiene accesso bus,
+conversioni, mapping Sequent o endpoint di rete e non abilita la prova G2 live.

@@ -41,6 +41,7 @@ add_library(efis_core
     src/providers/ddp_udp_publisher.cpp
     src/providers/edp_udp.cpp
     src/providers/engine_simulation_provider.cpp
+    src/providers/sensor_adapter_health.cpp
     src/simulation/system_simulator.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
@@ -497,6 +498,12 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_engine_runtime_store_tests tests/engine_runtime_store_tests.cpp)
     target_link_libraries(efis_engine_runtime_store_tests PRIVATE efis_core)
     add_test(NAME efis_engine_runtime_store_tests COMMAND efis_engine_runtime_store_tests)
+
+    add_executable(efis_sensor_adapter_health_tests
+        tests/sensor_adapter_health_tests.cpp)
+    target_link_libraries(efis_sensor_adapter_health_tests PRIVATE efis_core)
+    add_test(NAME efis_sensor_adapter_health_tests
+        COMMAND efis_sensor_adapter_health_tests)
 
     if(TARGET Qt6::Core)
         add_executable(efis_operational_profile_model_tests
