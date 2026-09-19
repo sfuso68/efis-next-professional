@@ -115,9 +115,9 @@ void Esp32CanAdapter::apply_attitude(const can::Frame& frame, MonoTime now) {
     // contrario di quasi ogni altra rappresentazione del progetto. Scambiarli
     // produrrebbe due numeri entrambi plausibili, che e' il modo peggiore di
     // sbagliare.
-    const double pitch = can::read_i16(frame, 0) / 100.0;
-    const double roll = can::read_i16(frame, 2) / 100.0;
-    const double heading = can::read_i16(frame, 4) / 100.0;
+    const double pitch = can::read_i16(frame, 0).value() / 100.0;
+    const double roll = can::read_i16(frame, 2).value() / 100.0;
+    const double heading = can::read_i16(frame, 4).value() / 100.0;
 
     const std::uint8_t flags = frame.data[6];
     state_.imu_ok = (flags & 0x01) != 0;
@@ -130,40 +130,40 @@ void Esp32CanAdapter::apply_attitude(const can::Frame& frame, MonoTime now) {
     state_.calibration_gyroscope = static_cast<std::uint8_t>((calibration >> 4) & 0x03);
     state_.calibration_accelerometer = static_cast<std::uint8_t>((calibration >> 6) & 0x03);
 
-    snapshot_.attitude.pitch_deg = measured(pitch, can::read_i16(frame, 0),
+    snapshot_.attitude.pitch_deg = measured(pitch, can::read_i16(frame, 0).value(),
                                             SignalId::pitch, Unit::degree, node_,
                                             now, sequence_);
-    snapshot_.attitude.roll_deg = measured(roll, can::read_i16(frame, 2),
+    snapshot_.attitude.roll_deg = measured(roll, can::read_i16(frame, 2).value(),
                                            SignalId::roll, Unit::degree, node_,
                                            now, sequence_);
-    snapshot_.attitude.heading_deg = measured(heading, can::read_i16(frame, 4),
+    snapshot_.attitude.heading_deg = measured(heading, can::read_i16(frame, 4).value(),
                                               SignalId::heading, Unit::degree, node_,
                                               now, sequence_);
 }
 
 void Esp32CanAdapter::apply_air_data(const can::Frame& frame, MonoTime now) {
-    const double airspeed = can::read_i16(frame, 0) / 10.0;
-    const double altitude = can::read_i16(frame, 2);
-    const double pressure = can::read_i16(frame, 4) / 10.0 + pressure_offset_hpa;
-    const double differential = can::read_i16(frame, 6) / 10.0;
+    const double airspeed = can::read_i16(frame, 0).value() / 10.0;
+    const double altitude = can::read_i16(frame, 2).value();
+    const double pressure = can::read_i16(frame, 4).value() / 10.0 + pressure_offset_hpa;
+    const double differential = can::read_i16(frame, 6).value() / 10.0;
 
     snapshot_.air_data.indicated_airspeed_kt =
-        measured(airspeed, can::read_i16(frame, 0), SignalId::indicated_airspeed,
+        measured(airspeed, can::read_i16(frame, 0).value(), SignalId::indicated_airspeed,
                  Unit::knot, node_, now, sequence_);
     snapshot_.air_data.pressure_altitude_ft =
-        measured(altitude, can::read_i16(frame, 2), SignalId::pressure_altitude,
+        measured(altitude, can::read_i16(frame, 2).value(), SignalId::pressure_altitude,
                  Unit::foot, node_, now, sequence_);
 
     state_.static_pressure_hpa =
-        measured(pressure, can::read_i16(frame, 4), SignalId::unknown,
+        measured(pressure, can::read_i16(frame, 4).value(), SignalId::unknown,
                  Unit::hectopascal, node_, now, sequence_);
     state_.differential_pressure_pa =
-        measured(differential, can::read_i16(frame, 6), SignalId::differential_pressure,
+        measured(differential, can::read_i16(frame, 6).value(), SignalId::differential_pressure,
                  Unit::pascal, node_, now, sequence_);
 }
 
 void Esp32CanAdapter::apply_health(const can::Frame& frame, MonoTime now) {
-    const std::uint16_t heartbeat = can::read_u16(frame, 0);
+    const std::uint16_t heartbeat = can::read_u16(frame, 0).value();
 
     // Il contatore e' a 16 bit e avvolge. La sorveglianza dei nodi lavora su una
     // sequenza monotona, quindi l'avvolgimento va srotolato qui: passarlo cosi'
@@ -182,11 +182,11 @@ void Esp32CanAdapter::apply_health(const can::Frame& frame, MonoTime now) {
     health_.heartbeat(node_, now, sequence_);
     collect(health_.update(now));
 
-    state_.load_factor_g = measured(can::read_i16(frame, 2) / 100.0,
-                                    can::read_i16(frame, 2), SignalId::unknown,
+    state_.load_factor_g = measured(can::read_i16(frame, 2).value() / 100.0,
+                                    can::read_i16(frame, 2).value(), SignalId::unknown,
                                     Unit::none, node_, now, sequence_);
-    state_.temperature_c = measured(can::read_i16(frame, 4) / 10.0,
-                                    can::read_i16(frame, 4),
+    state_.temperature_c = measured(can::read_i16(frame, 4).value() / 10.0,
+                                    can::read_i16(frame, 4).value(),
                                     SignalId::air_data_temperature, Unit::celsius,
                                     node_, now, sequence_);
 }
@@ -197,39 +197,39 @@ void Esp32CanAdapter::apply_diagnostics(const can::Frame& frame) {
     state_.reset_reason = frame.data[2];
     state_.boot_count = frame.data[3];
     state_.crash_count = frame.data[4];
-    state_.free_heap_kb = can::read_u16(frame, 5);
+    state_.free_heap_kb = can::read_u16(frame, 5).value();
     state_.diagnostics_received = true;
 }
 
 void Esp32CanAdapter::apply_gps_position(const can::Frame& frame, MonoTime now) {
     snapshot_.position.latitude_deg =
-        measured(can::read_i32(frame, 0) / 1e7, can::read_i32(frame, 0),
+        measured(can::read_i32(frame, 0).value() / 1e7, can::read_i32(frame, 0).value(),
                  SignalId::latitude, Unit::degree, node_, now, sequence_);
     snapshot_.position.longitude_deg =
-        measured(can::read_i32(frame, 4) / 1e7, can::read_i32(frame, 4),
+        measured(can::read_i32(frame, 4).value() / 1e7, can::read_i32(frame, 4).value(),
                  SignalId::longitude, Unit::degree, node_, now, sequence_);
 }
 
 void Esp32CanAdapter::apply_gps_velocity(const can::Frame& frame, MonoTime now) {
     snapshot_.position.ground_speed_kt =
-        measured(can::read_i16(frame, 0) / 10.0, can::read_i16(frame, 0),
+        measured(can::read_i16(frame, 0).value() / 10.0, can::read_i16(frame, 0).value(),
                  SignalId::ground_speed, Unit::knot, node_, now, sequence_);
     // La quota satellitare arriva in metri. Viene convertita in piedi, che e'
     // l'unita' del resto del sistema, e tenuta fuori dallo snapshot di volo: la
     // quota di volo e' quella barometrica, e confondere le due renderebbe
     // inutile il confronto fra loro.
     state_.gnss_altitude_ft =
-        measured(can::read_i16(frame, 4) * feet_per_meter, can::read_i16(frame, 4),
+        measured(can::read_i16(frame, 4).value() * feet_per_meter, can::read_i16(frame, 4).value(),
                  SignalId::unknown, Unit::foot, node_, now, sequence_);
     state_.gnss_track_deg =
-        measured(can::read_i16(frame, 2) / 10.0, can::read_i16(frame, 2),
+        measured(can::read_i16(frame, 2).value() / 10.0, can::read_i16(frame, 2).value(),
                  SignalId::unknown, Unit::degree, node_, now, sequence_);
 }
 
 void Esp32CanAdapter::apply_gps_status(const can::Frame& frame) {
     state_.gnss_fix = frame.data[0] != 0;
     state_.gnss_satellites = frame.data[1];
-    state_.gnss_hdop = can::read_i16(frame, 2) / 10.0;
+    state_.gnss_hdop = can::read_i16(frame, 2).value() / 10.0;
 }
 
 void Esp32CanAdapter::revalidate() {

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
+#include <cstddef>
 #include <cstdint>
+#include <optional>
 
 namespace efis::can {
 
@@ -25,22 +28,31 @@ struct Frame final {
 
 // Estrazione little-endian. L'ordine e' quello del firmware del nodo, verificato
 // leggendo come impacchetta i valori, non assunto.
-[[nodiscard]] constexpr std::int16_t read_i16(const Frame& frame,
-                                              std::uint8_t offset) noexcept {
+[[nodiscard]] constexpr std::optional<std::int16_t> read_i16(
+    const Frame& frame, std::uint8_t offset) noexcept {
+    const auto start = static_cast<std::size_t>(offset);
+    const auto available = std::min<std::size_t>(frame.length, frame.data.size());
+    if (start > available || 2U > available - start) return std::nullopt;
     const auto low = static_cast<std::uint16_t>(frame.data[offset]);
     const auto high = static_cast<std::uint16_t>(frame.data[offset + 1]);
     return static_cast<std::int16_t>(static_cast<std::uint16_t>(low | (high << 8)));
 }
 
-[[nodiscard]] constexpr std::uint16_t read_u16(const Frame& frame,
-                                               std::uint8_t offset) noexcept {
+[[nodiscard]] constexpr std::optional<std::uint16_t> read_u16(
+    const Frame& frame, std::uint8_t offset) noexcept {
+    const auto start = static_cast<std::size_t>(offset);
+    const auto available = std::min<std::size_t>(frame.length, frame.data.size());
+    if (start > available || 2U > available - start) return std::nullopt;
     const auto low = static_cast<std::uint16_t>(frame.data[offset]);
     const auto high = static_cast<std::uint16_t>(frame.data[offset + 1]);
     return static_cast<std::uint16_t>(low | (high << 8));
 }
 
-[[nodiscard]] constexpr std::int32_t read_i32(const Frame& frame,
-                                              std::uint8_t offset) noexcept {
+[[nodiscard]] constexpr std::optional<std::int32_t> read_i32(
+    const Frame& frame, std::uint8_t offset) noexcept {
+    const auto start = static_cast<std::size_t>(offset);
+    const auto available = std::min<std::size_t>(frame.length, frame.data.size());
+    if (start > available || 4U > available - start) return std::nullopt;
     std::uint32_t value = 0;
     for (std::uint8_t index = 0; index < 4; ++index) {
         value |= static_cast<std::uint32_t>(frame.data[offset + index]) << (8U * index);

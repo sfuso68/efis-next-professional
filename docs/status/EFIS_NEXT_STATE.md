@@ -4009,3 +4009,35 @@ candidate per il flusso dal nodo sensori alla Blackbox.
 - Il piano elettrico G4 e la sessione al banco richiedono approvazione separata.
 - Anche un futuro `BENCH_PASS` mantiene `flight_approval=false`; Waveshare 5P
   resta lo switch installato autorevole e la decisione generale resta NO-GO.
+
+### Primitive CAN bounds-safe — 2026-09-19
+
+ID: `ESP-001`.
+
+#### Implementato
+
+- `read_i16`, `read_u16` e `read_i32` restituiscono `std::optional` e verificano
+  sia il DLC dichiarato sia la capienza fisica dell'array CAN.
+- Offset al bordo, fuori bordo o ostili vengono rifiutati senza aritmetica che
+  possa avvolgere; i chiamanti ESP32 consumano esplicitamente il valore soltanto
+  dopo il gate di lunghezza già presente.
+
+#### Verificato solo software
+
+- Il test pre-fix non compilava perché le primitive restituivano ancora interi
+  e non potevano esprimere il fallimento.
+- Test mirato ESP32 PASS; frame corto, letture 16/32 bit fuori payload, offset
+  250 e lettura valida sul bordo sono coperti.
+- Build core completa PASS; CTest 20/21 PASS. Il solo
+  `efis_engine_runtime_tests`, estraneo alla modifica, non è stato avviato perché
+  Windows Smart App Control ha bloccato il nuovo eseguibile; i test ESP32 e CAN
+  source sono PASS anche nella ripetizione selettiva.
+
+#### Verificato su hardware reale
+
+- Nulla. Nessun bus o nodo è stato interrogato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- CI Linux del branch e replay/bus reale dopo review e distribuzione autorizzata.
+- `ESP-001` resta `PARTIAL`.
