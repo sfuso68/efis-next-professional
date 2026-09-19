@@ -197,6 +197,22 @@ if(EFIS_BUILD_QT_RENDERER)
         target_link_libraries(efis-pfd-qt PRIVATE
             efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Quick3D Qt6::QuickControls2 Qt6::Concurrent Qt6::Network)
 
+        if(EFIS_BUILD_TESTS)
+            qt_add_executable(efis_pfd_aircraft_profile_tests
+                tests/pfd_aircraft_profile_tests.cpp
+                src/renderers/qt/pfd_controller.cpp
+                src/renderers/qt/pfd_controller.hpp
+                src/setup/operational_profile_model.cpp
+                src/setup/operational_profile_model.hpp
+            )
+            target_include_directories(efis_pfd_aircraft_profile_tests PRIVATE
+                src/renderers/qt src/setup)
+            target_link_libraries(efis_pfd_aircraft_profile_tests PRIVATE
+                efis_core Qt6::Core Qt6::Network)
+            add_test(NAME efis_pfd_aircraft_profile_tests
+                     COMMAND efis_pfd_aircraft_profile_tests)
+        endif()
+
         # Pagina analogica come applicazione a se'. Gli strumenti entreranno nel
         # selettore con la fase 3, quando esistera' la configurazione che li
         # dispone; fino ad allora serve poterli vedere sul display vero, che e'

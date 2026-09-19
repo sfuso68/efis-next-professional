@@ -872,8 +872,16 @@ void PfdController::cycleMaintenanceInterval(int index){if(index<0||index>=maint
 bool PfdController::completeMaintenanceTask(int index){if(index<0||index>=maintenance_tasks_.size())return false;auto t=maintenance_tasks_[index].toMap();if(t.value("interval_hours").toInt()<=0)return false;t["last_hours"]=engineHours();t["last_utc"]=QDateTime::currentDateTimeUtc().toString(Qt::ISODate);maintenance_tasks_[index]=t;QSettings s{QSettings::IniFormat,QSettings::UserScope,"EFIS-NEXT","ems-maintenance"};const auto b=QStringLiteral("tasks/%1/").arg(t.value("id").toString());s.setValue(b+"last_hours",t.value("last_hours"));s.setValue(b+"last_utc",t.value("last_utc"));s.sync();emit maintenanceChanged();return s.status()==QSettings::NoError;}
 
 void PfdController::loadAircraftProfile() {
-    aircraft_speed_profile_ = {{"vso",39.0},{"vs1",45.0},{"vfe",85.0},{"vx",62.0},
-        {"vy",68.0},{"va",105.0},{"vno",120.0},{"vne",140.0},{"bestGlide",65.0},{"vref",55.0}};
+    aircraft_speed_profile_.clear();
+    aircraft_speed_profile_available_ = false;
+    aircraft_speed_profile_message_ = QStringLiteral("V-SPEEDS UNAVAILABLE");
+    aircraft_profile_name_ = QStringLiteral("UNCONFIGURED");
+    aircraft_profile_state_ = QStringLiteral("PROFILE UNAVAILABLE");
+    catalog_version_ = QStringLiteral("UNAVAILABLE");
+
+    const QMap<QString,QString> mapping{{"VSO","vso"},{"VS1","vs1"},{"VFE","vfe"},
+        {"VX","vx"},{"VY","vy"},{"VA","va"},{"VNO","vno"},{"VNE","vne"},
+        {"BEST_GLIDE","bestGlide"},{"VREF","vref"}};
     const QString configured = qEnvironmentVariable("EFIS_AIRCRAFT_PROFILE");
     const QDir app{QCoreApplication::applicationDirPath()};
     const QStringList candidates = configured.isEmpty()
@@ -888,6 +896,36 @@ void PfdController::loadAircraftProfile() {
         const auto root = document.object();
         const auto aircraft = root.value("aircraft").toObject();
         const auto engine = root.value("engine").toObject();
+        const auto speeds = root.value("speeds_kt").toObject();
+        QVariantMap validated_speeds;
+        bool speeds_valid = true;
+        for (auto it=mapping.cbegin(); it!=mapping.cend(); ++it) {
+            const auto value = speeds.value(it.key());
+            if (!value.isDouble() || !std::isfinite(value.toDouble()) || value.toDouble() <= 0.0) {
+                speeds_valid = false;
+                break;
+            }
+            validated_speeds.insert(it.value(), value.toDouble());
+        }
+        if (speeds_valid) {
+            const auto number = [&validated_speeds](const char* key) {
+                return validated_speeds.value(QString::fromLatin1(key)).toDouble();
+            };
+            speeds_valid = number("vso") <= number("vs1") &&
+                number("vs1") < number("vfe") && number("vfe") <= number("vno") &&
+                number("vno") < number("vne") && number("vx") < number("vne") &&
+                number("vy") < number("vne") && number("va") < number("vne") &&
+                number("bestGlide") < number("vne") && number("vref") < number("vne");
+        }
+        if (!speeds_valid) {
+            qWarning().noquote() << "event=aircraft_profile_rejected path=" << path
+                                 << "reason=missing_invalid_or_inconsistent_vspeeds";
+            continue;
+        }
+
+        // Ogni mutazione del controller avviene soltanto dopo che il profilo
+        // safety-relevant e' completo. In questo modo un candidato incompleto
+        // non puo' lasciare motore, impianti o una singola V-speed applicati.
         engine_profile_name_ = engine.value("manufacturer").toString() +
             QStringLiteral(" ") + engine.value("model").toString();
         engine_serial_number_ = engine.value("serial_number").toString(QStringLiteral("TO BE ENTERED"));
@@ -936,13 +974,9 @@ void PfdController::loadAircraftProfile() {
         flaps_installed_ = flaps.value("installed").toBool(false);
         flap_detents_.clear();
         for (const auto detent : flaps.value("detents_deg").toArray()) flap_detents_ << detent.toDouble();
-        const auto speeds = root.value("speeds_kt").toObject();
-        if (speeds.isEmpty()) continue;
-        const QMap<QString,QString> mapping{{"VSO","vso"},{"VS1","vs1"},{"VFE","vfe"},
-            {"VX","vx"},{"VY","vy"},{"VA","va"},{"VNO","vno"},{"VNE","vne"},
-            {"BEST_GLIDE","bestGlide"},{"VREF","vref"}};
-        for (auto it=mapping.cbegin(); it!=mapping.cend(); ++it)
-            if (speeds.contains(it.key())) aircraft_speed_profile_[it.value()] = speeds.value(it.key()).toDouble();
+        aircraft_speed_profile_ = validated_speeds;
+        aircraft_speed_profile_available_ = true;
+        aircraft_speed_profile_message_ = QStringLiteral("V-SPEEDS VERIFIED PROFILE");
         aircraft_profile_name_ = aircraft.value("manufacturer").toString()+QStringLiteral(" • ")+aircraft.value("model").toString();
         aircraft_profile_state_ = root.value("state").toString(QStringLiteral("DRAFT"));
         catalog_version_ = root.value("catalog_version").toString(QStringLiteral("UNKNOWN"));
@@ -950,7 +984,7 @@ void PfdController::loadAircraftProfile() {
                           << "profile=" << aircraft_profile_name_ << "state=" << aircraft_profile_state_;
         return;
     }
-    qWarning().noquote() << "event=aircraft_profile_fallback reason=no_valid_profile";
+    qWarning().noquote() << "event=aircraft_profile_unavailable reason=no_complete_valid_profile";
 }
 
 bool PfdController::sensorCalibrationReady() const {
@@ -1733,9 +1767,12 @@ void PfdController::updateEmergencyAssist(efis::MonoTime now) {
         input.environment.wind_valid = true;
         input.environment.weather_valid = true;
         input.environment.wind_range_factor = 0.82;
-        input.performance.approved = true;
+        input.performance.approved = aircraft_speed_profile_available_;
         input.performance.simulated = true;
-        input.performance.best_glide_kt = aircraft_speed_profile_.value("bestGlide").toDouble();
+        if (aircraft_speed_profile_available_) {
+            input.performance.best_glide_kt =
+                aircraft_speed_profile_.value("bestGlide").toDouble();
+        }
         input.performance.conservative_glide_ratio = 8.0;
         input.performance.terrain_clearance_reserve_ft = 500.0;
         input.performance.manoeuvre_loss_ft = 300.0;

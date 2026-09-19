@@ -1,5 +1,39 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-19 — V-speed fail-closed e profilo atomico
+
+ID matrice: `CFG-001`, `PFD-002`.
+
+### Implementato
+
+- Rimossi dal controller tutti i default numerici VSO/VS1/VFE/VX/VY/VA/VNO,
+  VNE/BEST_GLIDE/VREF.
+- Il profilo viene validato integralmente prima di modificare motore, sensori,
+  impianto elettrico, carrello, flap o V-speed; profili assenti, corrotti,
+  incompleti o incoerenti sono rifiutati senza stato misto.
+- PFD e Canvas espongono un annuncio ambra `V-SPEEDS UNAVAILABLE`; le bande e
+  le tacche del nastro restano nascoste quando manca un profilo completo.
+- Emergency Assist non approva né inserisce una best-glide numerica se le
+  V-speed non sono disponibili.
+
+### Verificato solo software
+
+- Il test è stato introdotto prima della correzione e falliva perché un profilo
+  assente esponeva ancora dieci V-speed cablate.
+- Casi assente, JSON corrotto, profilo con sola VNE e profilo completo: PASS.
+- Build Qt/QML AOT completa: PASS; test mirato più golden/HMI contract: 3/3
+  PASS su Windows/MSVC e Qt 6.11.1.
+
+### Verificato su hardware reale
+
+- Nulla in questo incremento. Nessun PFD/MFD è stato aggiornato.
+
+### Aperto
+
+- Ripetere build/test su ARM64 e verificare leggibilità dell'annuncio sul
+  display reale con i quattro casi di profilo.
+- L'approvazione dei valori reali richiede ancora fonti POH applicabili.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato

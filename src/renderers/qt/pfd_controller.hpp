@@ -119,6 +119,8 @@ class PfdController final : public QObject {
     Q_PROPERTY(double flapAngle READ flapAngle NOTIFY snapshotChanged)
     Q_PROPERTY(double flapCommandedAngle READ flapCommandedAngle NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantMap aircraftSpeedProfile READ aircraftSpeedProfile CONSTANT)
+    Q_PROPERTY(bool aircraftSpeedProfileAvailable READ aircraftSpeedProfileAvailable CONSTANT)
+    Q_PROPERTY(QString aircraftSpeedProfileMessage READ aircraftSpeedProfileMessage CONSTANT)
     Q_PROPERTY(QString aircraftProfileName READ aircraftProfileName CONSTANT)
     Q_PROPERTY(QString aircraftProfileState READ aircraftProfileState CONSTANT)
     Q_PROPERTY(QString catalogVersion READ catalogVersion CONSTANT)
@@ -308,6 +310,8 @@ public:
     [[nodiscard]] double flapCommandedAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_command_deg : 15.0; }
     Q_INVOKABLE void cycleEngineFault();
     [[nodiscard]] QVariantMap aircraftSpeedProfile() const { return aircraft_speed_profile_; }
+    [[nodiscard]] bool aircraftSpeedProfileAvailable() const { return aircraft_speed_profile_available_; }
+    [[nodiscard]] QString aircraftSpeedProfileMessage() const { return aircraft_speed_profile_message_; }
     [[nodiscard]] QString aircraftProfileName() const { return aircraft_profile_name_; }
     [[nodiscard]] QString aircraftProfileState() const { return aircraft_profile_state_; }
     [[nodiscard]] QString catalogVersion() const { return catalog_version_; }
@@ -518,6 +522,8 @@ private:
     qulonglong black_box_records_{};
     efis::MonoTime last_recorder_check_{};
     QVariantMap aircraft_speed_profile_;
+    bool aircraft_speed_profile_available_{};
+    QString aircraft_speed_profile_message_{QStringLiteral("V-SPEEDS UNAVAILABLE")};
     QString aircraft_profile_name_{QStringLiteral("LSA SIM • BENCH")};
     QString aircraft_profile_state_{QStringLiteral("SIMULATION")};
     QString catalog_version_{QStringLiteral("UNAVAILABLE")};
