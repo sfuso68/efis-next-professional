@@ -12,6 +12,7 @@
 #include "efis/providers/edp_udp.hpp"
 #include "efis/core/engine_runtime.hpp"
 #include "efis/core/engine_runtime_store.hpp"
+#include "efis/core/derived_state.hpp"
 #include "../../setup/operational_profile_model.hpp"
 
 #include <QObject>
@@ -276,6 +277,7 @@ private:
     QString last_logged_data_source_state_;
     efis::MonoTime started_at_{efis::MonoClock::now()};
     efis::MonoTime last_recorder_check_{};
+    efis::PublicationFreshness recorder_freshness_{};
     QString recorder_status_path_;
     QString black_box_state_{QStringLiteral("OFFLINE")};
     qulonglong black_box_records_{};

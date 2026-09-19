@@ -1,5 +1,6 @@
 #include "ems_controller.hpp"
 
+#include "efis/core/derived_state.hpp"
 #include "efis/recording/recorder_status.hpp"
 
 #include <QDebug>
@@ -679,18 +680,17 @@ void EmsController::updateRecorderStatus(efis::MonoTime now) {
     try {
         const auto status = efis::recording::read_recorder_status(
             recorder_status_path_.toStdString());
-        const auto wall_now = static_cast<std::uint64_t>(
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now().time_since_epoch()).count());
-        const auto age = wall_now >= status.updated_wall_ms
-            ? wall_now - status.updated_wall_ms : 0;
-        black_box_state_ = age > kRecorderStaleMs
-            ? QStringLiteral("STALE")
-            : QString::fromStdString(status.state);
+        recorder_freshness_.observe(status.updated_wall_ms, now);
+        black_box_state_ = recorder_freshness_.fresh(
+            now, std::chrono::milliseconds{
+                     static_cast<std::chrono::milliseconds::rep>(kRecorderStaleMs)})
+            ? QString::fromStdString(status.state)
+            : QStringLiteral("STALE");
         black_box_records_ = static_cast<qulonglong>(status.records);
     } catch (...) {
         // Nessun registratore su questo nodo e' una condizione normale, non un
         // errore: il nodo EMS deve continuare a mostrare il motore comunque.
+        recorder_freshness_.reset();
         black_box_state_ = QStringLiteral("OFFLINE");
         black_box_records_ = 0;
     }
@@ -776,10 +776,11 @@ void EmsController::updateSnapshot() {
     }
     if (last_fuel_update_ != efis::MonoTime{}) {
         const auto seconds = std::chrono::duration<double>(now - last_fuel_update_).count();
-        if (engine_snapshot_.rpm.value > 400.0 && engine_snapshot_.fuel_flow_gph.value > 0.0) {
-            const double consumed = engine_snapshot_.fuel_flow_gph.value * seconds / 3600.0;
-            if (engine_snapshot_.fuel_flow_gph.is_simulated()) simulated_fuel_used_gallons_ += consumed;
-            else fuel_used_gallons_ += consumed;
+        const auto input = efis::engine_integration_input(
+            engine_snapshot_.rpm, engine_snapshot_.fuel_flow_gph, seconds);
+        if (input.fuel_usable) {
+            if (input.simulated) simulated_fuel_used_gallons_ += input.fuel_consumed_gallons;
+            else fuel_used_gallons_ += input.fuel_consumed_gallons;
             if (last_fuel_notify_ == efis::MonoTime{} || now - last_fuel_notify_ >= 1s) {
                 last_fuel_notify_ = now; emit fuelComputerChanged();
             }
@@ -793,9 +794,9 @@ void EmsController::updateSnapshot() {
     }
     if (last_runtime_update_ != efis::MonoTime{}) {
         const auto seconds = std::chrono::duration<double>(now - last_runtime_update_).count();
-        const double accountable_rpm = engine_snapshot_.rpm.is_simulated()
-            ? 0.0 : engine_snapshot_.rpm.value;
-        runtime_tracker_.update(accountable_rpm, seconds, false);
+        const auto input = efis::engine_integration_input(
+            engine_snapshot_.rpm, engine_snapshot_.fuel_flow_gph, seconds);
+        runtime_tracker_.update(input.accountable_rpm, seconds, false);
     }
     last_runtime_update_ = now;
     if (last_runtime_save_ == efis::MonoTime{} || now - last_runtime_save_ >= 10s) {

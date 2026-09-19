@@ -4009,3 +4009,41 @@ candidate per il flusso dal nodo sensori alla Blackbox.
 - Il piano elettrico G4 e la sessione al banco richiedono approvazione separata.
 - Anche un futuro `BENCH_PASS` mantiene `flight_approval=false`; Waveshare 5P
   resta lo switch installato autorevole e la decisione generale resta NO-GO.
+
+### Integratori PFD/EMS e freshness recorder fail-closed — 2026-09-19
+
+#### Implementato
+
+- Policy core condivisa per ore motore e consumo: RPM e fuel-flow alimentano gli
+  integratori soltanto se `usable`, finiti e coerenti; i campioni simulati non
+  confluiscono nei contatori reali.
+- Il trend IAS interrompe la catena derivativa su dato non valido, azzera
+  l'indicazione e usa il primo campione valido successivo solo come baseline.
+- PFD ed EMS non confrontano più l'heartbeat recorder con l'orologio civile:
+  una variazione del token di pubblicazione viene cronometrata localmente con
+  `MonoClock`, quindi uno step NTP/GNSS all'indietro non rende fresco un file
+  congelato.
+
+#### Verificato solo software
+
+- Il nuovo test ha riprodotto prima della correzione l'accumulo da RPM
+  `UNAVAILABLE` e fuel-flow `STALE` ed è terminato in FAIL.
+- Dopo la correzione `efis_derived_state_tests` è PASS; build completa PFD/EMS
+  Qt/QML MSVC e generazione QML AOT sono PASS.
+- Due esecuzioni CTest hanno dato 22/23 PASS: il solo test Qt del modello
+  profilo termina con `0xc0000135` quando avviato da CTest; eseguito direttamente
+  nello stesso ambiente Qt è PASS. È un'anomalia locale di avvio già separata
+  dalla logica modificata; il gate complessivo resta aperto alla CI.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento. Nessun nodo, servizio, file di consumo/ore o
+  cablaggio è stato modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Ripetere fault injection e recovery di RPM, fuel-flow, IAS e status recorder
+  sui PFD/EMS reali dopo review, merge e distribuzione autorizzata.
+- Confermare che i contatori persistenti restino invariati durante dati invalidi
+  e che la UI mostri trend zero e recorder `STALE` entro il budget previsto.
+- `PFD-001` ed `EMS-002` restano `PARTIAL`.

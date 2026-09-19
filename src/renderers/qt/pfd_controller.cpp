@@ -1,4 +1,5 @@
 #include "pfd_controller.hpp"
+#include "efis/core/derived_state.hpp"
 #include "efis/recording/recorder_status.hpp"
 
 #include <QString>
@@ -1446,9 +1447,11 @@ void PfdController::updateSnapshot() {
         const auto seconds = std::chrono::duration<double>(now - last_runtime_update_).count();
         const bool airborne = snapshot_.position.ground_speed_kt.usable() &&
                               snapshot_.position.ground_speed_kt.value > 35.0;
-        const double accountable_rpm = engine_snapshot_.rpm.is_simulated()
-            ? 0.0 : engine_snapshot_.rpm.value;
-        runtime_tracker_.update(accountable_rpm, seconds, airborne && !showingSimulatedData());
+        const auto input = efis::engine_integration_input(
+            engine_snapshot_.rpm, engine_snapshot_.fuel_flow_gph, seconds);
+        runtime_tracker_.update(input.accountable_rpm, seconds,
+                                input.runtime_usable && airborne &&
+                                    !showingSimulatedData());
     }
     last_runtime_update_ = now;
     if (!fuel_on_board_initialized_) {
@@ -1458,11 +1461,12 @@ void PfdController::updateSnapshot() {
     }
     if (last_fuel_update_ != efis::MonoTime{}) {
         const auto seconds = std::chrono::duration<double>(now - last_fuel_update_).count();
-        if (engine_snapshot_.rpm.value > 400.0 && engine_snapshot_.fuel_flow_gph.value > 0.0) {
-            const double consumed = engine_snapshot_.fuel_flow_gph.value * seconds / 3600.0;
-            if (engine_snapshot_.fuel_flow_gph.is_simulated()) simulated_fuel_used_gallons_ += consumed;
+        const auto input = efis::engine_integration_input(
+            engine_snapshot_.rpm, engine_snapshot_.fuel_flow_gph, seconds);
+        if (input.fuel_usable) {
+            if (input.simulated) simulated_fuel_used_gallons_ += input.fuel_consumed_gallons;
             else {
-                fuel_used_gallons_ += consumed;
+                fuel_used_gallons_ += input.fuel_consumed_gallons;
                 fuel_persistence_dirty_ = true;
             }
             if (last_fuel_notify_ == efis::MonoTime{} || now - last_fuel_notify_ >= 1s) {
@@ -1480,29 +1484,21 @@ void PfdController::updateSnapshot() {
         persistFuelComputer();
         fuel_persistence_dirty_ = false;
     }
-    if (trend_initialized_) {
-        const auto six_second_projection = (snapshot_.air_data.indicated_airspeed_kt.value -
-                                            previous_airspeed_) * 300.0;
-        airspeed_trend_ = airspeed_trend_ * 0.9 + six_second_projection * 0.1;
-    } else {
-        trend_initialized_ = true;
-    }
-    previous_airspeed_ = snapshot_.air_data.indicated_airspeed_kt.value;
+    (void)efis::update_airspeed_trend(snapshot_.air_data.indicated_airspeed_kt,
+                                     previous_airspeed_, airspeed_trend_,
+                                     trend_initialized_);
     if (last_recorder_check_ == efis::MonoTime{} || now - last_recorder_check_ >= 500ms) {
         last_recorder_check_ = now;
         try {
             const auto status = efis::recording::read_recorder_status(
                 recorder_status_path_.toStdString());
-            const auto wall_now = static_cast<std::uint64_t>(
-                std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count());
-            const auto age = wall_now >= status.updated_wall_ms
-                ? wall_now - status.updated_wall_ms : 0;
-            black_box_state_ = age > 3000
-                ? QStringLiteral("STALE")
-                : QString::fromStdString(status.state);
+            recorder_freshness_.observe(status.updated_wall_ms, now);
+            black_box_state_ = recorder_freshness_.fresh(now, 3000ms)
+                ? QString::fromStdString(status.state)
+                : QStringLiteral("STALE");
             black_box_records_ = status.records;
         } catch (...) {
+            recorder_freshness_.reset();
             black_box_state_ = QStringLiteral("OFFLINE");
             black_box_records_ = 0;
         }
