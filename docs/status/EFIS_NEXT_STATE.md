@@ -1,5 +1,47 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-19 — PFD validity gates V1 (branch di sicurezza)
+
+### Implementato
+
+- Il renderer SVG non usa rollio o beccheggio non utilizzabili per costruire
+  un orizzonte plausibile: mostra una superficie neutra con `ATTITUDE INVALID`.
+  Prua, GS, V/S, quota e rotta selezionate diventano `---` quando il rispettivo
+  campo non è utilizzabile.
+- Rimossi dal renderer i valori fittizi `AP ALT 12000` e `TREND +2`. La FMA
+  Qt non dichiara più AP, HDG o ALT come modi attivi senza un contratto dati;
+  mostra soltanto lo stato FD verificabile e selezioni valide.
+- La catena Qt/QML propaga validità separate per assetto, prua, posizione,
+  quota, ground speed, comandi FD e selezioni. Synthetic vision, scale,
+  cursori, vettore di volo e FD vengono soppressi o degradati esplicitamente.
+- Il banner compatto degli allarmi indica `+N MORE` quando non può espandere
+  tutti gli allarmi attivi.
+
+### Verificato solo software
+
+- `efis_core_tests` PASS con casi negativi che conservano valori numerici
+  plausibili ma impostano `Validity::unavailable`: tali valori non compaiono
+  nell'SVG e l'orizzonte mobile non viene generato.
+- Build completa `build-hmi` PASS, inclusa compilazione AOT dei QML modificati.
+- I primi 29 test CTest sono PASS. Il trentesimo test Qt
+  `efis_operational_profile_model_tests` è PASS in 14,74 s quando eseguito da
+  solo con DLL Qt nel `PATH` e backend `offscreen`, ma in una successiva suite
+  completa è andato in timeout a 90 s. Il gate CTest complessivo locale non è
+  quindi dichiarato PASS; la CI deve discriminare un problema ambientale da
+  una flakiness preesistente del test.
+
+### Verificato su hardware reale
+
+- Nessuna verifica hardware è stata eseguita per questo branch.
+
+### Aperto / non dichiarare DONE
+
+- Review e CI del branch, verifica visuale e fault injection su RPi5 PFD/MFD.
+- Verificare transizione e recupero di assetto, prua, posizione, quota e
+  guidance usando sorgenti reali; questa modifica non autorizza il volo.
+- Barometro/altitudine indicata, fan-out MAVLink, recorder e classificazione
+  `NO DATA` restano lotti separati e non sono stati modificati qui.
+
 Aggiornamento: 2026-09-15
 
 Baseline repository verificata: `origin/main` al commit

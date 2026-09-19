@@ -14,9 +14,9 @@ Rectangle {
 
     Row { anchors.centerIn: parent; spacing: 5*fma.uiScale
         Repeater { model: [
-            {k:"AP",v:controller.flightDirectorActive ? "ACTIVE" : "OFF",c:controller.flightDirectorActive ? theme.green : theme.secondary},
-            {k:"LATERAL",v:"HDG",c:theme.green}, {k:"VERTICAL",v:"ALT",c:theme.green},
-            {k:"ALT SEL",v:Math.round(controller.selectedAltitude)+" FT",c:theme.cyan}
+            {k:"FD",v:controller.flightDirectorActive && controller.flightDirectorGuidanceValid && controller.attitudeValid ? "ACTIVE" : "OFF",c:controller.flightDirectorActive && controller.flightDirectorGuidanceValid && controller.attitudeValid ? theme.green : theme.secondary},
+            {k:"LATERAL",v:"---",c:theme.secondary}, {k:"VERTICAL",v:"---",c:theme.secondary},
+            {k:"ALT SEL",v:controller.selectedAltitudeValid ? Math.round(controller.selectedAltitude)+" FT" : "---",c:controller.selectedAltitudeValid ? theme.cyan : theme.warning}
         ]; delegate: Rectangle { required property var modelData; width: 88*fma.uiScale; height: 42*fma.uiScale;
                 color: "#0A151F"; border.color: modelData.c; radius: 2*fma.uiScale
                 Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 4*fma.uiScale } text: modelData.k; color: theme.secondary; font.pixelSize: 6*fma.uiScale; font.bold: true }

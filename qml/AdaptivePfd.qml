@@ -15,6 +15,10 @@ Item {
 
     ProfessionalVisionSurface { id: vision; z: 0; anchors { left: parent.left; right: parent.right; top: fma.bottom; bottom: dock.top }
         selectedAirport: root.controller.selectedAirport
+        attitudeValid: controller.attitudeValid; headingValid: controller.headingValid
+        altitudeValid: controller.altitudeValid; positionValid: controller.positionValid; groundSpeedValid: controller.groundSpeedValid
+        selectedCourseValid: controller.selectedCourseValid
+        flightDirectorGuidanceValid: controller.flightDirectorGuidanceValid
         uiScale: root.uiScale; roll: controller.roll; pitch: controller.pitch; heading: controller.heading; latitude: controller.latitude; longitude: controller.longitude; altitude: controller.altitude; groundSpeed: controller.groundSpeed;
         selectedCourse: controller.selectedCourse; commandedRoll: controller.commandedRoll;
         commandedPitch: controller.commandedPitch; flightDirectorActive: controller.flightDirectorActive;
@@ -27,12 +31,14 @@ Item {
     ProfessionalTape { id: speedTape; z: 2; anchors { left: parent.left; top: fma.bottom; topMargin: 12*root.uiScale; bottom: dock.top; bottomMargin: 12*root.uiScale }
         width: 120*root.uiScale; uiScale: root.uiScale; role: "IAS"; value: controller.airspeed;
         speedProfile: root.lsaSpeedProfile;
-        selectedValue: controller.selectedAirspeed; trend: controller.airspeedTrend; valid: controller.airspeedValid }
+        selectedValue: controller.selectedAirspeed; selectedValid: controller.selectedAirspeedValid
+        trend: controller.airspeedTrend; valid: controller.airspeedValid }
 
     ProfessionalTape { id: altitudeTape; z: 2; anchors { right: parent.right; top: fma.bottom; topMargin: 12*root.uiScale; bottom: dock.top; bottomMargin: 12*root.uiScale }
         width: 128*root.uiScale; uiScale: root.uiScale; role: "ALT"; value: controller.altitude;
-        selectedValue: controller.selectedAltitude; trend: controller.altitudeTrend; valid: controller.altitudeValid;
-        verticalSpeed: controller.verticalSpeed }
+        selectedValue: controller.selectedAltitude; selectedValid: controller.selectedAltitudeValid
+        trend: controller.verticalSpeedValid ? controller.altitudeTrend : 0; valid: controller.altitudeValid;
+        verticalSpeed: controller.verticalSpeed; verticalSpeedValid: controller.verticalSpeedValid }
 
     WeatherRadarOverlay {
         z: 3

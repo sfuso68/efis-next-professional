@@ -35,11 +35,16 @@ class PfdController final : public QObject {
     Q_PROPERTY(double latitude READ latitude NOTIFY snapshotChanged)
     Q_PROPERTY(double longitude READ longitude NOTIFY snapshotChanged)
     Q_PROPERTY(bool positionValid READ positionValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool groundSpeedValid READ groundSpeedValid NOTIFY snapshotChanged)
     Q_PROPERTY(double commandedRoll READ commandedRoll NOTIFY snapshotChanged)
     Q_PROPERTY(double commandedPitch READ commandedPitch NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flightDirectorGuidanceValid READ flightDirectorGuidanceValid NOTIFY snapshotChanged)
     Q_PROPERTY(double selectedAltitude READ selectedAltitude NOTIFY snapshotChanged)
+    Q_PROPERTY(bool selectedAltitudeValid READ selectedAltitudeValid NOTIFY snapshotChanged)
     Q_PROPERTY(double selectedCourse READ selectedCourse NOTIFY snapshotChanged)
+    Q_PROPERTY(bool selectedCourseValid READ selectedCourseValid NOTIFY snapshotChanged)
     Q_PROPERTY(double selectedAirspeed READ selectedAirspeed NOTIFY snapshotChanged)
+    Q_PROPERTY(bool selectedAirspeedValid READ selectedAirspeedValid NOTIFY snapshotChanged)
     Q_PROPERTY(double cdiDeviation READ cdiDeviation NOTIFY snapshotChanged)
     Q_PROPERTY(double glideSlope READ glideSlope NOTIFY snapshotChanged)
     Q_PROPERTY(double airspeedTrend READ airspeedTrend NOTIFY snapshotChanged)
@@ -216,11 +221,16 @@ public:
     [[nodiscard]] double latitude() const;
     [[nodiscard]] double longitude() const;
     [[nodiscard]] bool positionValid() const;
+    [[nodiscard]] bool groundSpeedValid() const;
     [[nodiscard]] double commandedRoll() const;
     [[nodiscard]] double commandedPitch() const;
+    [[nodiscard]] bool flightDirectorGuidanceValid() const;
     [[nodiscard]] double selectedAltitude() const;
+    [[nodiscard]] bool selectedAltitudeValid() const;
     [[nodiscard]] double selectedCourse() const;
+    [[nodiscard]] bool selectedCourseValid() const;
     [[nodiscard]] double selectedAirspeed() const;
+    [[nodiscard]] bool selectedAirspeedValid() const;
     [[nodiscard]] double cdiDeviation() const;
     [[nodiscard]] double glideSlope() const;
     [[nodiscard]] double airspeedTrend() const;
