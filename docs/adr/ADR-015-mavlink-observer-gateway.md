@@ -31,6 +31,9 @@ Il fan-out è strutturalmente solo trasmittente:
 - non inoltra pacchetti verso Pixhawk;
 - non interpreta né genera comandi MAVLink;
 - rifiuta destinazioni duplicate, broadcast e wildcard;
+- rifiuta qualsiasi destinazione nella rete FLIGHT-DATA `10.77.10.0/24`,
+  incluso il Pixhawk, e qualsiasi destinazione uguale alla sorgente MAVLink
+  configurata;
 - espone contatori separati per destinatario e isola gli errori.
 
 La configurazione di banco autorizzata è:
@@ -44,6 +47,12 @@ Pixhawk 10.77.10.3 --MAVLink2/UDP--> Blackbox 10.77.10.2:14550
 
 `net.ipv4.ip_forward` resta zero. Non esiste route, bridge o NAT fra
 `10.77.10.0/24` e `192.168.1.0/24`.
+
+Il vincolo e' applicato nel costruttore del fan-out prima di creare il sender,
+non soltanto nella configurazione o nel firewall. Un endpoint vietato arresta
+l'avvio del broker in modo fail-closed. Anche il forwarder USB provvisorio
+applica la stessa esclusione a ogni destinazione, inclusi gli endpoint passati
+direttamente alla classe senza attraversare il parser CLI.
 
 Sul portatile una tabella nftables dedicata costituisce difesa in profondità:
 ammette su UDP 14550 soltanto la sorgente Blackbox, scarta UDP in uscita verso

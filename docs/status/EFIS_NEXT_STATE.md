@@ -1,5 +1,50 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-19 — Isolamento fan-out MAVLink V1 (branch di sicurezza)
+
+### Implementato
+
+- Il fan-out del broker rifiuta in modo fail-closed ogni observer nella rete
+  FLIGHT-DATA `10.77.10.0/24`, incluso il Pixhawk `10.77.10.3`.
+- Il broker passa al fan-out la sorgente MAVLink configurata e rifiuta un
+  observer con lo stesso indirizzo, anche quando non appartiene alla rete
+  FLIGHT-DATA.
+- Restano vietati wildcard, broadcast, multicast e duplicati; una rete
+  adiacente non viene confusa con `10.77.10.0/24`.
+- Il forwarder USB read-only applica la stessa esclusione a indirizzi CLI e a
+  destinazioni fornite direttamente alla classe.
+- La suite CTest include ora la policy Python del forwarder insieme alle prove
+  C++ e al test di processo del broker.
+
+### Verificato solo software
+
+- Build core MSVC Debug PASS.
+- Suite core completa: 48/48 CTest PASS dopo l'ultima modifica.
+- Build completa Qt/QML `build-hmi` PASS.
+- Test mirati `efis_mavlink_observer_fanout_tests`,
+  `efis_blackbox_broker_observer_tests` e
+  `efis_mavlink_readonly_forwarder_tests`: 3/3 PASS.
+- I test di processo verificano il rifiuto sia del Pixhawk sia della sorgente
+  configurata; i test del forwarder verificano l'intero prefisso e la
+  costruzione diretta. La policy C++ rifiuta anche duplicati numericamente
+  equivalenti con rappresentazione testuale diversa. Su Windows i due casi
+  pseudo-terminale POSIX sono
+  correttamente esclusi e restano affidati alla CI Linux.
+
+### Verificato su hardware reale
+
+- Nessuna verifica hardware e nessun deployment sono stati eseguiti per questo
+  branch.
+
+### Aperto / non dichiarare DONE
+
+- Eseguire CI Linux, review e merge prima di qualsiasi distribuzione.
+- Dopo autorizzazione separata, distribuire sulla Blackbox e verificare
+  startup valido, rifiuto di configurazioni vietate, continuita' di broker,
+  recorder, DDP/EDP e due observer ammessi.
+- Ripetere fault/recovery ed endurance sul banco isolato. NET-001 e BBX-003
+  restano `PARTIAL`; questa modifica non autorizza comandi o volo.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato

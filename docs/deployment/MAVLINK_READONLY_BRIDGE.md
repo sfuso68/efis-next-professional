@@ -10,6 +10,12 @@ descrittore e non genera heartbeat, richieste stream, comandi o scritture di
 parametri. Non interpreta MAVLink: conserva i byte e lascia parsing, health e
 arbitraggio al broker Blackbox, secondo ADR-003.
 
+Le destinazioni devono essere indirizzi IPv4 numerici unicast. Il forwarder
+rifiuta wildcard, multicast, broadcast, duplicati e l'intera rete avionica
+FLIGHT-DATA `10.77.10.0/24`; quindi non puo' essere configurato per inviare una
+copia al Pixhawk o a un altro nodo avionico. La policy viene rivalidata anche
+quando `ReadOnlyForwarder` e' costruito direttamente, senza parser CLI.
+
 ## Installazione utente
 
 Installare lo script in:

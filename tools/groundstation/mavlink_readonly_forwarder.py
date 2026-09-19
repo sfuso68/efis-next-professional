@@ -10,18 +10,25 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import errno
+import ipaddress
 import os
 import selectors
 import signal
 import socket
 import sys
-import termios
 import time
-import tty
 from typing import Iterable
+
+try:
+    import termios
+    import tty
+except ImportError:  # pragma: no cover - runtime target is Linux
+    termios = None
+    tty = None
 
 
 MAX_UDP_PAYLOAD = 65_507
+FLIGHT_DATA_NETWORK = ipaddress.IPv4Network("10.77.10.0/24")
 
 
 @dataclass
@@ -45,7 +52,21 @@ def destination(value: str) -> tuple[str, int]:
         raise argparse.ArgumentTypeError("destination port must be numeric") from error
     if port < 1 or port > 65_535:
         raise argparse.ArgumentTypeError("destination port out of range")
-    return host, port
+    try:
+        address = ipaddress.IPv4Address(host)
+    except ipaddress.AddressValueError as error:
+        raise argparse.ArgumentTypeError(
+            "destination host must be numeric IPv4"
+        ) from error
+    if address.packed[0] == 0 or address.is_multicast or address.packed[-1] == 255:
+        raise argparse.ArgumentTypeError(
+            "destination must be explicit IPv4 unicast"
+        )
+    if address in FLIGHT_DATA_NETWORK:
+        raise argparse.ArgumentTypeError(
+            "destination must not be in FLIGHT-DATA 10.77.10.0/24"
+        )
+    return str(address), port
 
 
 class ReadOnlyForwarder:
@@ -61,9 +82,17 @@ class ReadOnlyForwarder:
         if read_size < 1 or read_size > MAX_UDP_PAYLOAD:
             raise ValueError("read_size outside UDP payload range")
         self.serial_path = serial_path
-        self.destinations = tuple(destinations)
+        validated: list[tuple[str, int]] = []
+        for host, port in destinations:
+            try:
+                validated.append(destination(f"{host}:{port}"))
+            except argparse.ArgumentTypeError as error:
+                raise ValueError(str(error)) from error
+        self.destinations = tuple(validated)
         if not self.destinations:
             raise ValueError("at least one destination is required")
+        if len(set(self.destinations)) != len(self.destinations):
+            raise ValueError("duplicate destination")
         self.read_size = read_size
         self.report_seconds = max(0.1, report_seconds)
         self.retry_seconds = max(0.1, retry_seconds)
@@ -85,6 +114,8 @@ class ReadOnlyForwarder:
         )
 
     def _forward_session(self, udp: socket.socket, deadline: float | None) -> None:
+        if termios is None or tty is None:
+            raise RuntimeError("read-only serial forwarding requires a POSIX runtime")
         # O_RDONLY is the safety boundary: this process cannot write commands,
         # heartbeats, parameters or stream requests to the Pixhawk.
         fd = os.open(self.serial_path, os.O_RDONLY | os.O_NOCTTY | os.O_NONBLOCK)

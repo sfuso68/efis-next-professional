@@ -29,7 +29,8 @@ struct ReadOnlyUdpFanoutStatistics final {
 // sorgente avionica. Non e' un router IP ne' un bridge di rete.
 class ReadOnlyUdpFanout final {
 public:
-    explicit ReadOnlyUdpFanout(std::vector<UdpEndpoint> destinations);
+    explicit ReadOnlyUdpFanout(std::vector<UdpEndpoint> destinations,
+                               std::string protected_source = {});
 
     void forward(std::span<const std::uint8_t> datagram) noexcept;
     [[nodiscard]] ReadOnlyUdpFanoutStatistics statistics() const noexcept;
