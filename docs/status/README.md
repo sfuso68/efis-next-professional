@@ -16,6 +16,17 @@ Serve per sapere rapidamente:
 - principali decisioni consolidate;
 - roadmap e rischi aperti.
 
+Lo storico esteso è conservato in `archive/` e non deve essere usato per
+dedurre quale release sia attiva oggi.
+
+## 1a. `EFIS_NEXT_ACTIVE_RELEASES.md`
+
+**Fonte canonica delle release osservate sui nodi.**
+
+I checkpoint possono descrivere una sequenza di deployment, ma soltanto questo
+registro distingue ultima release osservata, release attiva riconfermata e
+stato da verificare.
+
 ## 2. `EFIS_NEXT_MASTER_MATRIX.md`
 
 **Registro operativo riga-per-riga.**

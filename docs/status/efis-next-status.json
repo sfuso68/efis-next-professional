@@ -14,7 +14,7 @@
     },
     "CORE": {
       "items": 4,
-      "progress": 87.5
+      "progress": 81.2
     },
     "EMS": {
       "items": 4,
@@ -34,11 +34,11 @@
     },
     "GS": {
       "items": 3,
-      "progress": 66.7
+      "progress": 58.3
     },
     "INST": {
       "items": 2,
-      "progress": 87.5
+      "progress": 75.0
     },
     "LEG": {
       "items": 2,
@@ -76,6 +76,10 @@
       "items": 5,
       "progress": 20.0
     },
+    "PWR": {
+      "items": 1,
+      "progress": 75.0
+    },
     "SRV": {
       "items": 3,
       "progress": 50.0
@@ -101,19 +105,23 @@
     "PAN-002",
     "PAN-003"
   ],
-  "requirements": 70,
+  "requirements": 71,
   "status_counts": {
     "BLOCKED": 2,
-    "DONE": 6,
+    "DONE": 3,
     "LEGACY": 2,
     "PARTIAL": 43,
     "TODO": 14,
-    "VERIFY-HW": 3
+    "VERIFY-HW": 7
   },
   "verify_hw": [
     "PRJ-003",
     "PRJ-004",
-    "INST-001"
+    "CORE-003",
+    "INST-001",
+    "INST-002",
+    "GS-002",
+    "PWR-001"
   ],
-  "weighted_progress": 45.4
+  "weighted_progress": 44.7
 }
