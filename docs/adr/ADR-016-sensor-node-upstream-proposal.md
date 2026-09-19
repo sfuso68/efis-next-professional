@@ -46,6 +46,22 @@ almeno sette. La topologia fisica deve quindi essere rivista prima di qualsiasi
 deploy: non è accettabile eliminare ridondanze o collegamenti essenziali per
 far entrare il nuovo nodo.
 
+Il 2026-09-19 il proprietario ha autorizzato la sola registrazione documentale
+del **MokerLink IND-F082GS** come candidato, sulla base del titolo commerciale
+fornito. Il modello non è stato identificato da una targhetta reale e non è
+installato. La configurazione dichiarata dal costruttore — otto RJ45 Fast
+Ethernet, una RJ45 Gigabit e una SFP Gigabit — darebbe nove porte rame e quindi
+un margine numerico di due porte rispetto al minimo di sette. Questo dato non
+chiude il gate: identità, porte, velocità negoziate, alimentazione 12–55 V,
+brownout, assorbimento, temperatura, riavvio e fault/recovery restano da
+verificare sul dispositivo ricevuto.
+
+Il candidato è ammesso esclusivamente per `FLIGHT-DATA`. Non sostituisce lo
+switch VIDEO fisicamente separato, non deve collegare le telecamere e la porta
+SFP non è conteggiata come rame senza un transceiver verificato. Le modalità
+Extend/VLAN restano vietate finché non sono caratterizzate. Stato formale:
+`CANDIDATE_NOT_PHYSICALLY_VERIFIED` e `CANDIDATE_CAPACITY_UNVERIFIED`.
+
 ## Decisione corrente
 
 `NO_GO_PENDING_ARCHITECTURE_AND_HARDWARE_REVIEW`.

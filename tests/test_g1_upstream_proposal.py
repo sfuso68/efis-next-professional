@@ -97,6 +97,35 @@ class G1UpstreamProposalTests(unittest.TestCase):
         with self.assertRaisesRegex(MODULE.ProposalError, "G1-U20-18"):
             self.validate(invalid)
 
+    def test_candidate_switch_cannot_be_installed_or_promoted_by_documentation(self) -> None:
+        for key in ("installed", "execution_authorized", "flight_approved"):
+            with self.subTest(key=key):
+                invalid = copy.deepcopy(self.proposal)
+                invalid["candidate_switch"][key] = True
+                with self.assertRaisesRegex(MODULE.ProposalError, "G1-U20-18"):
+                    self.validate(invalid)
+
+        invalid = copy.deepcopy(self.proposal)
+        invalid["candidate_switch"]["deployment_status"] = "READY"
+        with self.assertRaisesRegex(MODULE.ProposalError, "G1-U20-18"):
+            self.validate(invalid)
+
+    def test_candidate_switch_cannot_hide_port_or_segment_limits(self) -> None:
+        mutations = (
+            ("ports", "copper_total", 10),
+            ("ports", "rj45_fast_ethernet", 0),
+            ("ports", "sfp_counts_as_copper", True),
+            ("use_constraints", "video_segment_forbidden", False),
+            ("use_constraints", "camera_attachment_forbidden", False),
+            ("capacity_assessment", "status", "READY"),
+        )
+        for section, key, value in mutations:
+            with self.subTest(section=section, key=key):
+                invalid = copy.deepcopy(self.proposal)
+                invalid["candidate_switch"][section][key] = value
+                with self.assertRaisesRegex(MODULE.ProposalError, "G1-U20-18"):
+                    self.validate(invalid)
+
     def test_unresolved_g2_and_r100_boundaries_are_required(self) -> None:
         vertical = copy.deepcopy(self.vertical)
         vertical["topology"]["source_to_blackbox"]["transport"] = "ERAP_V1"

@@ -74,12 +74,12 @@ def validate(proposal: dict, network: dict, vertical: dict, readiness: dict, icd
             "schema", "revision", "status", "execution_authorized", "flight_approval",
             "source", "destination", "transport", "authority", "source_id", "payload",
             "integrity", "recording", "safety", "deployment_blockers", "network_capacity",
-            "decision", "controls",
+            "candidate_switch", "decision", "controls",
         },
         "G1-U20-01", "root properties differ from V1",
     )
     require(
-        (proposal["schema"], proposal["revision"]) == ("avionix-next.g1-upstream-proposal.v1", "1.0.0"),
+        (proposal["schema"], proposal["revision"]) == ("avionix-next.g1-upstream-proposal.v1", "1.1.0"),
         "G1-U20-01", "proposal identity differs from V1",
     )
     require(proposal["controls"] == expected_controls(), "G1-U20-01", "control catalog changed")
@@ -192,8 +192,62 @@ def validate(proposal: dict, network: dict, vertical: dict, readiness: dict, icd
             "required_operational_ports_before_sensor_node": 6,
             "required_operational_ports_with_sensor_node": 7,
             "status": "BLOCKED_CAPACITY_REVIEW",
+            "candidate_status": "CANDIDATE_CAPACITY_UNVERIFIED",
         },
         "G1-U20-18", "switch capacity blocker changed",
+    )
+    candidate = proposal["candidate_switch"]
+    require(
+        candidate == {
+            "manufacturer": "MokerLink",
+            "model": "IND-F082GS",
+            "identity_status": "PRESUMED_FROM_MARKETING_TITLE_NOT_LABEL_VERIFIED",
+            "intended_segment": "flight-data",
+            "deployment_status": "CANDIDATE_NOT_PHYSICALLY_VERIFIED",
+            "installed": False,
+            "execution_authorized": False,
+            "flight_approved": False,
+            "management": "UNMANAGED",
+            "ports": {
+                "rj45_fast_ethernet": 8, "rj45_gigabit": 1, "sfp_gigabit": 1,
+                "copper_total": 9, "sfp_counts_as_copper": False,
+            },
+            "power_input": {
+                "minimum_vdc": 12, "maximum_vdc": 55,
+                "redundant_inputs_claimed": True,
+                "status": "VENDOR_CLAIM_NOT_BENCH_VERIFIED",
+            },
+            "environment": {
+                "minimum_operating_c": -40, "maximum_operating_c": 75,
+                "ingress_protection_claimed": "IP40",
+                "status": "VENDOR_CLAIM_NOT_QUALIFICATION",
+            },
+            "use_constraints": {
+                "flight_data_only": True, "video_segment_forbidden": True,
+                "camera_attachment_forbidden": True, "extend_mode_forbidden": True,
+                "vlan_mode_forbidden_until_verified": True,
+                "sfp_not_counted_without_transceiver": True,
+            },
+            "capacity_assessment": {
+                "required_copper_ports": 7, "candidate_copper_ports": 9,
+                "numerical_margin_ports": 2,
+                "status": "CANDIDATE_CAPACITY_UNVERIFIED",
+            },
+            "required_evidence": [
+                "MODEL_LABEL_PHOTO", "TERMINAL_AND_POWER_LABEL_PHOTO",
+                "PORT_MAP_AND_MODE_SWITCH_PHOTO", "ALL_RJ45_PORTS_LINK_TEST",
+                "NEGOTIATED_SPEED_PER_PORT", "MIN_MAX_INPUT_AND_BROWNOUT_TEST",
+                "CURRENT_TEMPERATURE_AND_RESTART_REPORT",
+                "FLIGHT_DATA_VIDEO_PHYSICAL_ISOLATION_TEST",
+                "FAULT_AND_RECOVERY_TEST",
+            ],
+        },
+        "G1-U20-18", "candidate switch registration changed or promoted",
+    )
+    require(
+        candidate["ports"]["copper_total"] >= capacity["required_operational_ports_with_sensor_node"]
+        and candidate["capacity_assessment"]["status"] == "CANDIDATE_CAPACITY_UNVERIFIED",
+        "G1-U20-18", "candidate capacity was hidden or promoted",
     )
     require(not any(node["id"] == "sensor-rpi4" for node in network["nodes"]), "G1-U20-18", "network plan was deployed prematurely")
     require(not any(flow.get("port") == 49004 for flow in network["flows"]), "G1-U20-18", "port 49004 was activated prematurely")
@@ -202,6 +256,7 @@ def validate(proposal: dict, network: dict, vertical: dict, readiness: dict, icd
         "PHYSICAL_BOARD_INVENTORY_0_OF_4", "CHANNEL_MAP_UNRESOLVED", "CALIBRATION_UNRESOLVED",
         "SOURCE_ID_NOT_IN_FROZEN_ICD", "ERAP_V1_NOT_FROZEN", "PUBLISH_RATE_UNRESOLVED",
         "FRESHNESS_THRESHOLDS_UNRESOLVED", "FLIGHT_SWITCH_CAPACITY_INSUFFICIENT",
+        "FLIGHT_SWITCH_CANDIDATE_NOT_VERIFIED",
         "LIVE_RUNBOOK_NOT_APPROVED",
     ]
     require(proposal["deployment_blockers"] == blockers, "G1-U20-19", "deployment blockers changed")
@@ -225,6 +280,8 @@ def validate(proposal: dict, network: dict, vertical: dict, readiness: dict, icd
         "controls_validated": 20, "controls_total": 20, "proposed_protocol": transport["protocol"],
         "proposed_port": transport["port"], "source_id_status": proposal["source_id"]["status"],
         "switch_capacity": capacity["status"], "execution_authorized": False,
+        "candidate_switch": candidate["model"],
+        "candidate_switch_status": candidate["deployment_status"],
         "flight_approval": False, "decision": proposal["decision"],
     }
 

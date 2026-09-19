@@ -3873,3 +3873,25 @@ candidate per il flusso dal nodo sensori alla Blackbox.
 - Completare inventario, channel map e calibrazione prima del freeze wire.
 - Rate e freshness restano volutamente irrisolti fino alle prove reali.
 - Decisione: `NO_GO_PENDING_ARCHITECTURE_AND_HARDWARE_REVIEW`.
+
+### Registrazione documentale candidato switch MokerLink — 2026-09-19
+
+- Il proprietario ha autorizzato esplicitamente la sola registrazione
+  documentale del MokerLink come candidato non verificato.
+- Il modello `IND-F082GS` è presunto dal titolo commerciale e non è confermato
+  da fotografia della targhetta. Non risulta installato o alimentato.
+- Il contratto G1 upstream passa alla revisione 1.1.0 e conserva il Waveshare
+  `Gigabit-Switch-5P (EU)` come unico switch installato autorevole.
+- La configurazione dichiarata del candidato è 8×RJ45 Fast Ethernet,
+  1×RJ45 Gigabit e 1×SFP Gigabit: nove porte rame contro sette richieste, con
+  margine numerico due. Stato: `CANDIDATE_CAPACITY_UNVERIFIED`.
+- Il candidato è limitato a `FLIGHT-DATA`; VIDEO e telecamere restano vietati
+  e richiedono uno switch Gigabit/PoE fisicamente separato. La SFP non conta
+  come rame senza transceiver verificato; Extend e VLAN restano vietati.
+- Sono richieste nove evidenze: targhetta modello, alimentazione/morsettiera,
+  port map/DIP, link di tutte le RJ45, velocità per porta, min/max e brownout,
+  corrente/temperatura/restart, isolamento VIDEO e fault/recovery.
+- Non sono stati modificati `avionics-network-v1.json`, nodi, flussi, IP,
+  firewall, runtime, servizi o hardware. `execution_authorized=false`,
+  `flight_approved=false` e `NO_GO_PENDING_ARCHITECTURE_AND_HARDWARE_REVIEW`
+  restano invariati.

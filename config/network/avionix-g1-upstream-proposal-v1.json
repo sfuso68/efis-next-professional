@@ -1,6 +1,6 @@
 {
   "schema": "avionix-next.g1-upstream-proposal.v1",
-  "revision": "1.0.0",
+  "revision": "1.1.0",
   "status": "PROPOSED_NOT_APPROVED",
   "execution_authorized": false,
   "flight_approval": false,
@@ -102,6 +102,7 @@
     "PUBLISH_RATE_UNRESOLVED",
     "FRESHNESS_THRESHOLDS_UNRESOLVED",
     "FLIGHT_SWITCH_CAPACITY_INSUFFICIENT",
+    "FLIGHT_SWITCH_CANDIDATE_NOT_VERIFIED",
     "LIVE_RUNBOOK_NOT_APPROVED"
   ],
   "network_capacity": {
@@ -109,7 +110,63 @@
     "installed_ports": 5,
     "required_operational_ports_before_sensor_node": 6,
     "required_operational_ports_with_sensor_node": 7,
-    "status": "BLOCKED_CAPACITY_REVIEW"
+    "status": "BLOCKED_CAPACITY_REVIEW",
+    "candidate_status": "CANDIDATE_CAPACITY_UNVERIFIED"
+  },
+  "candidate_switch": {
+    "manufacturer": "MokerLink",
+    "model": "IND-F082GS",
+    "identity_status": "PRESUMED_FROM_MARKETING_TITLE_NOT_LABEL_VERIFIED",
+    "intended_segment": "flight-data",
+    "deployment_status": "CANDIDATE_NOT_PHYSICALLY_VERIFIED",
+    "installed": false,
+    "execution_authorized": false,
+    "flight_approved": false,
+    "management": "UNMANAGED",
+    "ports": {
+      "rj45_fast_ethernet": 8,
+      "rj45_gigabit": 1,
+      "sfp_gigabit": 1,
+      "copper_total": 9,
+      "sfp_counts_as_copper": false
+    },
+    "power_input": {
+      "minimum_vdc": 12,
+      "maximum_vdc": 55,
+      "redundant_inputs_claimed": true,
+      "status": "VENDOR_CLAIM_NOT_BENCH_VERIFIED"
+    },
+    "environment": {
+      "minimum_operating_c": -40,
+      "maximum_operating_c": 75,
+      "ingress_protection_claimed": "IP40",
+      "status": "VENDOR_CLAIM_NOT_QUALIFICATION"
+    },
+    "use_constraints": {
+      "flight_data_only": true,
+      "video_segment_forbidden": true,
+      "camera_attachment_forbidden": true,
+      "extend_mode_forbidden": true,
+      "vlan_mode_forbidden_until_verified": true,
+      "sfp_not_counted_without_transceiver": true
+    },
+    "capacity_assessment": {
+      "required_copper_ports": 7,
+      "candidate_copper_ports": 9,
+      "numerical_margin_ports": 2,
+      "status": "CANDIDATE_CAPACITY_UNVERIFIED"
+    },
+    "required_evidence": [
+      "MODEL_LABEL_PHOTO",
+      "TERMINAL_AND_POWER_LABEL_PHOTO",
+      "PORT_MAP_AND_MODE_SWITCH_PHOTO",
+      "ALL_RJ45_PORTS_LINK_TEST",
+      "NEGOTIATED_SPEED_PER_PORT",
+      "MIN_MAX_INPUT_AND_BROWNOUT_TEST",
+      "CURRENT_TEMPERATURE_AND_RESTART_REPORT",
+      "FLIGHT_DATA_VIDEO_PHYSICAL_ISOLATION_TEST",
+      "FAULT_AND_RECOVERY_TEST"
+    ]
   },
   "decision": "NO_GO_PENDING_ARCHITECTURE_AND_HARDWARE_REVIEW",
   "controls": [
