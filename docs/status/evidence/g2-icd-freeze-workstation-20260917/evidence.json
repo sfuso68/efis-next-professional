@@ -1,0 +1,54 @@
+{
+  "schema": "avionix-next.evidence-bundle.v1",
+  "evidence_id": "G2-ICD-FREEZE-WORKSTATION-20260917",
+  "requirement_ids": ["PRJ-003", "AVX-G2-01"],
+  "gate": "G2",
+  "level": "VERIFIED_SW",
+  "status": "PASS",
+  "created_utc": "2026-09-17T20:46:00Z",
+  "producer": {
+    "tool": "validate_avionix_icd.py",
+    "version": "1.0.0",
+    "commit": "bec871d66b29934113b70ba41820d7cd95e636ee"
+  },
+  "environment": {
+    "class": "WORKSTATION",
+    "os": "Windows",
+    "architecture": "x86_64"
+  },
+  "artifacts": [
+    {
+      "path": "tests/data/protocols/avionix-data-icd-v1-vectors.json",
+      "sha256": "4ce6a0f24240900dd25992420151484c5d5f2b9736a37faa84fbfb2bd05b8a32",
+      "size": 879
+    }
+  ],
+  "checks": [
+    {
+      "id": "ICD_VALIDATOR",
+      "status": "PASS",
+      "evidence": "AVIONIX ICD V1: PASS"
+    },
+    {
+      "id": "UNIT_TESTS",
+      "status": "PASS",
+      "evidence": "tests.test_avionix_icd 7/7 PASS"
+    },
+    {
+      "id": "PROJECT_CONTROL_CI",
+      "status": "PASS",
+      "evidence": "GitHub Actions EFIS Project Control #89 PASS"
+    },
+    {
+      "id": "CORE_CI",
+      "status": "PASS",
+      "evidence": "GitHub Actions EFIS Core CI #73 PASS"
+    }
+  ],
+  "limitations": [
+    "No ARM64 target was exercised by this evidence bundle.",
+    "No Ethernet, RPi4, RPi5, Blackbox, Pixhawk or sensor hardware was exercised.",
+    "This bundle is software evidence only and is not flight approval."
+  ],
+  "flight_approval": false
+}

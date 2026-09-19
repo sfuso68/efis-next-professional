@@ -29,6 +29,44 @@ jobs:
       - name: Validate matrix and generated status
         run: python tools/project_status/generate_status.py --check
 
+      - name: Validate G1 sensor-node discovery contract
+        run: |
+          python tools/hardware/validate_g1_sensor_node_discovery.py
+          python -m unittest tests.test_g1_sensor_node_discovery -v
+          python -m unittest tests.test_capture_g1_sensor_node -v
+          python tools/hardware/validate_g1_physical_inventory.py
+          python -m unittest tests.test_g1_physical_inventory -v
+          python -m unittest tests.test_g1_visual_inventory_import -v
+          python tools/network/validate_g1_upstream_proposal.py
+          python -m unittest tests.test_g1_upstream_proposal -v
+          python tools/network/validate_g1_switch_acceptance.py
+          python -m unittest tests.test_g1_switch_acceptance -v
+          python tools/hardware/validate_g1_g2_readiness.py
+          python -m unittest tests.test_g1_g2_readiness -v
+
+      - name: Validate G2 ICD and live-vertical contract
+        run: |
+          python tools/protocol/validate_avionix_icd.py --bundle docs/status/evidence/g2-arm64-consolidated-20260918/evidence.json
+          python -m unittest tests.test_avionix_icd -v
+          python tools/network/validate_g2_vertical_acceptance.py
+          python -m unittest tests.test_g2_vertical_acceptance -v
+
+      - name: Validate SkyView and EMS HMI contract
+        run: |
+          python tools/ui/validate_hmi_contract.py
+          python -m unittest tests.test_avionix_hmi_contract -v
+          python -m unittest tests.test_skyview_responsive -v
+          python -m unittest tests.test_ems_state_presentation -v
+          python -m unittest tests.test_ems_responsive_state_matrix -v
+          python -m unittest tests.test_hmi_hardware_acceptance -v
+          python -m unittest tests.test_assemble_hmi_hardware_evidence -v
+          python -m unittest tests.test_hmi_golden_tools -v
+          python tools/ui/validate_ems_state_presentation.py
+          python tools/ui/validate_ems_responsive_state_matrix.py
+          python tools/ui/validate_hmi_hardware_acceptance.py
+          python tools/ui/validate_hmi_golden.py tests/golden/hmi
+          python tools/ui/validate_hmi_golden.py tests/golden/skyview
+
       - name: Determine changed files
         id: changes
         shell: bash

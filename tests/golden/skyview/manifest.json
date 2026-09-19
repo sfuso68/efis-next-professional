@@ -1,0 +1,36 @@
+{
+  "schema": "avionix.hmi-golden-manifest.v2",
+  "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
+  "generated_utc": "2026-09-17T22:03:44.426032+00:00",
+  "platform": "windows",
+  "fixture": "SkyViewGoldenMain.qml",
+  "role": "skyview",
+  "data_state": "SIM",
+  "data_age_ms": 0,
+  "images": [
+    {
+      "file": "skyview-1024x600.png",
+      "width": 1024,
+      "height": 600,
+      "bytes": 205791,
+      "sha256": "e9116423dce8588b18f6da11982a0fb07f7bf66d417bfab911d4f439f8808eb5",
+      "pixel_sha256": "54cfc9aebd39471745077e4dd70a1c268182999f530910f3dfd5425b49f35ec2"
+    },
+    {
+      "file": "skyview-1280x800.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 289262,
+      "sha256": "46cae5a6bd1111cab8416e5dd2a6b5080c2fe9a866b3149400de72fdc1d45d7f",
+      "pixel_sha256": "7032b427786fe730cefd436dcf44c167afd1d50dbb3dcff4ebf2b4f494f70efe"
+    },
+    {
+      "file": "skyview-1920x1080.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 461633,
+      "sha256": "1895cdc21499dca40e79ee85f9d88b8289f3bf0b1ed4dcd1ff3f80286356eac7",
+      "pixel_sha256": "a5f3b6e3fe90765db20f9ce3fa134d8c24d25f5677a237ac4b06828ec01de106"
+    }
+  ]
+}

@@ -35,6 +35,7 @@ Rectangle {
     property int imageryCoverageGaps: 0
     property var selectedAirport: ({})
     property real uiScale: 1
+    property bool goldenMode: false
     signal navigationRequested()
     function distanceNm() {
         if (!positionValid || selectedAirport.latitude_deg === undefined || selectedAirport.longitude_deg === undefined)
@@ -64,6 +65,7 @@ Rectangle {
         latitude: vision.positionValid ? vision.latitude : 0
         longitude: vision.positionValid ? vision.longitude : 0
         altitude: vision.altitude
+        goldenMode: vision.goldenMode
     }
 
     Rectangle {
@@ -85,7 +87,6 @@ Rectangle {
         text: "SVS DATA INVALID"; color: theme.amber
         font.pixelSize: 10*vision.uiScale; font.bold: true
     }
-
     // Targhette di stato della superficie, raccolte in una colonna sola.
     //
     // Stanno a destra dei nastri e sotto l'arco di prua: sono le uniche due

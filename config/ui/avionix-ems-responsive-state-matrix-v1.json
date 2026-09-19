@@ -1,0 +1,32 @@
+{
+  "schema": "avionix.ems-responsive-state-matrix.v1",
+  "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
+  "role": "ems",
+  "fixture": "HmiGoldenMain.qml",
+  "resolutions": [[800, 480], [1024, 600], [1280, 800]],
+  "states": [
+    {"name": "LIVE", "age_ms": 0, "severity": "NORMAL", "show_age": false},
+    {"name": "STALE", "age_ms": 600, "severity": "CAUTION", "show_age": true},
+    {"name": "DEGRADED", "age_ms": 600, "severity": "CAUTION", "show_age": true},
+    {"name": "LOST", "age_ms": 1500, "severity": "WARNING", "show_age": true},
+    {"name": "FAIL", "age_ms": 0, "severity": "WARNING", "show_age": false},
+    {"name": "SIM", "age_ms": 0, "severity": "SIMULATION", "show_age": false}
+  ],
+  "invariants": {
+    "captures": 18,
+    "state_semantics_independent_of_resolution": true,
+    "normal_green_forbidden_for": ["STALE", "DEGRADED", "LOST", "FAIL"],
+    "derived_functions_blocked_for": ["LOST", "FAIL"],
+    "compact_resolution": [800, 480],
+    "expanded_resolutions": [[1024, 600], [1280, 800]],
+    "colour_is_not_only_cue": true,
+    "no_control_authority": true
+  },
+  "golden": {
+    "schema": "avionix.ems-responsive-state-golden.v1",
+    "directory": "tests/golden/ems-responsive-states",
+    "filename_template": "ems-{width}x{height}-{state}.png",
+    "platform": "windows",
+    "interactive": false
+  }
+}

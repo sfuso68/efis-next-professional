@@ -23,9 +23,11 @@ ApplicationWindow {
                 Qt.application.arguments.indexOf("--setup-operational-load-preview") >= 0 ||
                 Qt.application.arguments.indexOf("--setup-operational-check-preview") >= 0 ||
                 Qt.application.arguments.indexOf("--setup-operational-keyboard-preview") >= 0
+            var edpPreview = Qt.application.arguments.indexOf("--setup-edp-preview") >= 0
             if (blackboxPreview) setupSection = 4
-            if (operationalPreview) setupSection = 5
-            setupVisible = Qt.application.arguments.indexOf("--setup-preview") >= 0 || blackboxPreview || operationalPreview
+            if (edpPreview) setupSection = 5
+            if (operationalPreview) setupSection = 6
+            setupVisible = Qt.application.arguments.indexOf("--setup-preview") >= 0 || blackboxPreview || edpPreview || operationalPreview
         }
     }
 

@@ -1,0 +1,34 @@
+{
+  "schema": "avionix.hmi-hardware-acceptance.v1",
+  "status": "PREPARED_SW_NOT_RUN",
+  "authority": "READ_ONLY_DISPLAY_ACCEPTANCE_NO_CONTROL_AUTHORITY",
+  "duration_minutes": 60,
+  "targets": [
+    {"role": "PFD", "platform": "RPi5", "resolution": [1024, 600], "transport": "DDP", "port": 49002},
+    {"role": "MFD", "platform": "RPi5", "resolution": [1024, 600], "transport": "DDP", "port": 49002},
+    {"role": "EMS", "platform": "RPi4", "resolution": [1024, 600], "transport": "EDP", "port": 49003}
+  ],
+  "scenarios": ["LIVE", "STALE", "DEGRADED", "LOST", "FAIL", "SIM"],
+  "lighting_modes": ["DAY", "NIGHT"],
+  "acceptance": {
+    "minimum_touch_px": 44,
+    "minimum_fps": 40,
+    "maximum_p95_frame_time_ms": 25.0,
+    "required_throttled_value": "0x0",
+    "temperature_recording_required": true,
+    "cold_boot_required": true,
+    "reboot_required": true,
+    "transport_replay_required": true,
+    "ethernet_fault_recovery_required": true,
+    "operator_visual_signoff_required": true,
+    "operator_touch_signoff_required": true
+  },
+  "evidence": {
+    "manifest_schema": "avionix.hmi-hardware-evidence.v1",
+    "required_artifact_kinds": ["SCREENSHOT", "FRAME_TIMING", "THERMAL", "TOUCH_LOG", "BOOT_LOG", "TRANSPORT_REPLAY", "FAULT_RECOVERY", "OPERATOR_SIGNOFF"],
+    "digest": "SHA-256",
+    "node_identity_required": true,
+    "utc_timestamp_required": true,
+    "pass_requires_all_targets": true
+  }
+}

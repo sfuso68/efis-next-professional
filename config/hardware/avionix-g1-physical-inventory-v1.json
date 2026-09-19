@@ -1,0 +1,113 @@
+{
+  "schema": "avionix-next.g1-physical-inventory.v1",
+  "revision": "1.0.0",
+  "status": "PREPARED_SW_NOT_CAPTURED",
+  "source_contract": "config/hardware/avionix-g1-sensor-node-discovery-v1.json",
+  "node": {
+    "hostname": "ems-sensor",
+    "address": "192.168.1.89",
+    "platform": "Raspberry Pi 4 Model B Rev 1.5",
+    "capture_report_sha256": "f7cb1da79623c37891e662ec966f8d64be743a8d471663970993e4eac93f5e94"
+  },
+  "boards": [
+    {
+      "slot": "G1-SLOT-01",
+      "expected_model": "SM-I-018",
+      "expected_function": "engine-analog",
+      "model_observed": null,
+      "revision_observed": null,
+      "serial_observed": null,
+      "front_photo": null,
+      "back_photo": null,
+      "dip_visual_state": null,
+      "connector_labels": [],
+      "i2c_address_observed": null,
+      "electrical_probe_performed": false,
+      "verification": "UNVERIFIED"
+    },
+    {
+      "slot": "G1-SLOT-02",
+      "expected_model": "SM-I-011",
+      "expected_function": "digital-inputs",
+      "model_observed": null,
+      "revision_observed": null,
+      "serial_observed": null,
+      "front_photo": null,
+      "back_photo": null,
+      "dip_visual_state": null,
+      "connector_labels": [],
+      "i2c_address_observed": null,
+      "electrical_probe_performed": false,
+      "verification": "UNVERIFIED"
+    },
+    {
+      "slot": "G1-SLOT-03",
+      "expected_model": "SM-I-011",
+      "expected_function": "digital-inputs",
+      "model_observed": null,
+      "revision_observed": null,
+      "serial_observed": null,
+      "front_photo": null,
+      "back_photo": null,
+      "dip_visual_state": null,
+      "connector_labels": [],
+      "i2c_address_observed": null,
+      "electrical_probe_performed": false,
+      "verification": "UNVERIFIED"
+    },
+    {
+      "slot": "G1-SLOT-04",
+      "expected_model": "SM-I-019",
+      "expected_function": "thermocouples",
+      "model_observed": null,
+      "revision_observed": null,
+      "serial_observed": null,
+      "front_photo": null,
+      "back_photo": null,
+      "dip_visual_state": null,
+      "connector_labels": [],
+      "i2c_address_observed": null,
+      "electrical_probe_performed": false,
+      "verification": "UNVERIFIED"
+    }
+  ],
+  "power": {
+    "supply_model": null,
+    "rated_voltage": null,
+    "rated_current": null,
+    "label_photo": null,
+    "single_source_confirmed": false,
+    "verification": "UNVERIFIED"
+  },
+  "capture_policy": {
+    "photo_root": "docs/status/evidence/g1-physical-inventory",
+    "photo_hash": "SHA-256",
+    "relative_paths_only": true,
+    "dip_change_allowed": false,
+    "wiring_change_allowed": false,
+    "address_probe_allowed": false,
+    "vendor_read_allowed": false,
+    "output_activation_allowed": false
+  },
+  "operator_review": {
+    "operator": null,
+    "captured_utc": null,
+    "approved": false,
+    "notes": null
+  },
+  "prohibited_operations_observed": [],
+  "decision": "NO_GO_PENDING_PHYSICAL_BOARD_INVENTORY",
+  "flight_approval": false,
+  "controls": [
+    {"id": "G1-I10-01", "key": "manifest_identity", "state": "PASS"},
+    {"id": "G1-I10-02", "key": "node_provenance", "state": "PASS"},
+    {"id": "G1-I10-03", "key": "four_expected_slots", "state": "PASS"},
+    {"id": "G1-I10-04", "key": "front_back_photo_contract", "state": "PREPARED"},
+    {"id": "G1-I10-05", "key": "label_identity_contract", "state": "PREPARED"},
+    {"id": "G1-I10-06", "key": "dip_visual_only", "state": "PREPARED"},
+    {"id": "G1-I10-07", "key": "connector_and_slot_contract", "state": "PREPARED"},
+    {"id": "G1-I10-08", "key": "power_evidence_contract", "state": "PREPARED"},
+    {"id": "G1-I10-09", "key": "no_probe_or_mutation", "state": "PASS"},
+    {"id": "G1-I10-10", "key": "fail_closed_decision", "state": "NO_GO"}
+  ]
+}

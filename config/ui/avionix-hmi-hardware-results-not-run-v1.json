@@ -1,0 +1,12 @@
+{
+  "schema": "avionix.hmi-hardware-results.v1",
+  "status": "NOT_RUN",
+  "operator_confirmed": false,
+  "operator": null,
+  "captured_utc": null,
+  "runs": [
+    {"role": "PFD", "node": null, "release": null, "measurements": {}, "artifacts": {}},
+    {"role": "MFD", "node": null, "release": null, "measurements": {}, "artifacts": {}},
+    {"role": "EMS", "node": null, "release": null, "measurements": {}, "artifacts": {}}
+  ]
+}

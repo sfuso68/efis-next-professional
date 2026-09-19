@@ -1,0 +1,13 @@
+{
+  "schema": "avionix.hmi-hardware-evidence.v1",
+  "status": "NOT_RUN",
+  "hardware_verified": false,
+  "flight_approval": false,
+  "generated_utc": null,
+  "operator": null,
+  "runs": [
+    {"role": "PFD", "node": null, "release": null, "result": "NOT_RUN", "measurements": {}, "artifacts": []},
+    {"role": "MFD", "node": null, "release": null, "result": "NOT_RUN", "measurements": {}, "artifacts": []},
+    {"role": "EMS", "node": null, "release": null, "result": "NOT_RUN", "measurements": {}, "artifacts": []}
+  ]
+}

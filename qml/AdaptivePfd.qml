@@ -4,6 +4,7 @@ Item {
     id: root
     property real uiScale: Math.min(width/1024, height/600)
     required property var controller
+    property bool goldenMode: false
     signal navigationRequested()
     readonly property var lsaSpeedProfile: controller.aircraftSpeedProfile
     Theme { id: theme }
@@ -26,6 +27,7 @@ Item {
         leftInstrumentInset: 120*root.uiScale; rightInstrumentInset: 128*root.uiScale
         imageryState: controller.imageryState; imageryOfflineReady: controller.imageryOfflineReady
         imageryTileCount: controller.imageryTileCount; imageryCoverageGaps: controller.imageryCoverageGaps
+        goldenMode: root.goldenMode
         onNavigationRequested: root.navigationRequested() }
 
     ProfessionalTape { id: speedTape; z: 2; anchors { left: parent.left; top: fma.bottom; topMargin: 12*root.uiScale; bottom: dock.top; bottomMargin: 12*root.uiScale }
@@ -41,10 +43,16 @@ Item {
         verticalSpeed: controller.verticalSpeed; verticalSpeedValid: controller.verticalSpeedValid }
 
     WeatherRadarOverlay {
+        id: weatherOverlay
         z: 3
-        anchors { right: altitudeTape.left; top: fma.bottom; rightMargin: 8*root.uiScale; topMargin: 9*root.uiScale }
-        width: 178*root.uiScale; height: 103*root.uiScale
+        readonly property bool compactSkyView: root.width <= 1100
+        anchors { right: altitudeTape.left; top: fma.bottom; rightMargin: 8*root.uiScale; topMargin: 62*root.uiScale }
+        width: (compactSkyView ? 154 : 178)*root.uiScale
+        height: (compactSkyView ? 64 : 103)*root.uiScale
         uiScale: root.uiScale; radarOpacity: 0.72
+        compactLayout: compactSkyView
+        weatherProvider: root.goldenMode ? root.controller : weather
+        interactive: !root.goldenMode
     }
 
     Rectangle { visible: false

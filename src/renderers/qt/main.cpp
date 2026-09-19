@@ -65,13 +65,34 @@ int main(int argc, char* argv[]) {
     engine.rootContext()->setContextProperty("bench", &sensorBench);
     engine.rootContext()->setContextProperty(
         "startupPage", qEnvironmentVariable("EFIS_START_PAGE", "PFD"));
-    engine.loadFromModule("EfisNext", "Main");
+    engine.rootContext()->setContextProperty(
+        "hmiGoldenDataState", qEnvironmentVariable("EFIS_HMI_GOLDEN_STATE", "SIM"));
+    engine.rootContext()->setContextProperty(
+        "hmiGoldenDataAgeMs", qEnvironmentVariableIntValue("EFIS_HMI_GOLDEN_AGE_MS"));
+    const bool hmiGoldenMode = QCoreApplication::arguments().contains(
+        QStringLiteral("--hmi-golden"));
+    const bool skyViewGoldenMode = QCoreApplication::arguments().contains(
+        QStringLiteral("--skyview-golden"));
+    engine.loadFromModule("EfisNext", skyViewGoldenMode ? "SkyViewGoldenMain"
+                                         : hmiGoldenMode ? "HmiGoldenMain" : "Main");
     if (engine.rootObjects().isEmpty()) return 1;
 
     qInfo().noquote() << "event=startup product=efis-next component=pfd version=0.1.0"
                       << "qt=" << qVersion() << "platform=" << QGuiApplication::platformName();
 
     if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().front())) {
+        QSize requestedCaptureSize;
+        const auto captureSize = qEnvironmentVariable("EFIS_CAPTURE_SIZE");
+        const auto captureParts = captureSize.split(QLatin1Char('x'));
+        if (captureParts.size() == 2) {
+            bool okWidth = false, okHeight = false;
+            const int width = captureParts.at(0).toInt(&okWidth);
+            const int height = captureParts.at(1).toInt(&okHeight);
+            if (okWidth && okHeight && width > 0 && height > 0) {
+                requestedCaptureSize = QSize{width, height};
+                window->resize(width, height);
+            }
+        }
         auto frames = std::make_shared<quint64>(0);
         auto snapshotEvents = std::make_shared<quint64>(0);
         auto elapsed = std::make_shared<QElapsedTimer>();
@@ -139,9 +160,15 @@ int main(int argc, char* argv[]) {
             const int configuredDelay = qEnvironmentVariableIntValue("EFIS_CAPTURE_DELAY_MS");
             const int delay = configuredDelay > 0 ? configuredDelay : 2000;
             const bool exitAfterCapture = qEnvironmentVariableIntValue("EFIS_CAPTURE_EXIT") > 0;
-            QTimer::singleShot(delay, window, [window, capturePath, exitAfterCapture] {
+            QTimer::singleShot(delay, window, [window, capturePath, exitAfterCapture,
+                                               requestedCaptureSize] {
                 QDir{}.mkpath(QFileInfo{capturePath}.absolutePath());
-                const QImage image = window->grabWindow();
+                QImage image = window->grabWindow();
+                if (!image.isNull() && requestedCaptureSize.isValid()
+                    && image.size() != requestedCaptureSize) {
+                    image = image.scaled(requestedCaptureSize, Qt::IgnoreAspectRatio,
+                                         Qt::SmoothTransformation);
+                }
                 const bool saved = !image.isNull() && image.save(capturePath);
                 qInfo().noquote() << "event=pfd_capture path=" << capturePath
                                   << "saved=" << saved << "size=" << image.size()

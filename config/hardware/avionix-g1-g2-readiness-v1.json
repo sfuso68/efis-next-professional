@@ -1,0 +1,721 @@
+{
+  "schema": "avionix-next.g1-g2-readiness.v1",
+  "revision": "1.0.0",
+  "status": "PREPARED_SW_NOT_RUN",
+  "execution_authorized": false,
+  "flight_approval": false,
+  "authorities": {
+    "master_brief": "docs/project/AVIONIX_NEXT_MASTER_PROJECT_BRIEF_CODEX_R0.md",
+    "g1_discovery": "config/hardware/avionix-g1-sensor-node-discovery-v1.json",
+    "g1_inventory": "config/hardware/avionix-g1-physical-inventory-v1.json",
+    "g2_vertical": "config/network/avionix-g2-vertical-acceptance-v1.json",
+    "edp_adr": "docs/adr/ADR-011-engine-data-protocol.md"
+  },
+  "verified_software_baseline": {
+    "node": {
+      "hostname": "ems-sensor",
+      "address": "192.168.1.89",
+      "platform": "Raspberry Pi 4 Model B Rev 1.5",
+      "capture_sha256": "f7cb1da79623c37891e662ec966f8d64be743a8d471663970993e4eac93f5e94"
+    },
+    "expected_boards": [
+      {
+        "model": "SM-I-018",
+        "quantity": 1
+      },
+      {
+        "model": "SM-I-011",
+        "quantity": 2
+      },
+      {
+        "model": "SM-I-019",
+        "quantity": 1
+      }
+    ],
+    "engine_signal_count": 18,
+    "downstream_engine_protocol": "EDP_V1",
+    "downstream_engine_port": 49003,
+    "blackbox_authority": true
+  },
+  "unresolved": {
+    "verified_physical_boards": 0,
+    "board_addresses": "UNRESOLVED_NO_PROBE_AUTHORIZED",
+    "physical_channel_map": "UNRESOLVED_PENDING_BOARD_INVENTORY",
+    "calibration_coefficients": "UNRESOLVED_PENDING_BENCH_REFERENCE",
+    "real_source_id": "UNRESOLVED_PENDING_ARCHITECTURE_DECISION",
+    "source_to_blackbox_transport": "UNRESOLVED_PENDING_G1_DESIGN",
+    "live_execution": "NOT_AUTHORIZED"
+  },
+  "safety": {
+    "address_probe_allowed": false,
+    "vendor_read_allowed": false,
+    "register_write_allowed": false,
+    "output_activation_allowed": false,
+    "dip_change_allowed": false,
+    "wiring_change_allowed": false,
+    "runtime_deployment_allowed": false,
+    "threshold_invention_allowed": false,
+    "direct_sensor_to_display_allowed": false,
+    "flight_use_allowed": false
+  },
+  "engine_signals": [
+    {
+      "signal": "engine_rpm",
+      "unit": "rpm",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "manifold_pressure",
+      "unit": "inHg",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "oil_pressure",
+      "unit": "psi",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "oil_temperature",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "fuel_pressure",
+      "unit": "psi",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "fuel_flow",
+      "unit": "gph",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "fuel_quantity_left",
+      "unit": "gal",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "fuel_quantity_right",
+      "unit": "gal",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "bus_voltage",
+      "unit": "V",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "alternator_current",
+      "unit": "A",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "cht_1",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "cht_2",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "cht_3",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "cht_4",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "egt_1",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "egt_2",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "egt_3",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    },
+    {
+      "signal": "egt_4",
+      "unit": "C",
+      "physical_channel": "UNRESOLVED",
+      "calibration_revision": "UNRESOLVED"
+    }
+  ],
+  "transport": {
+    "source": "sensor-rpi4",
+    "normalization_authority": "blackbox",
+    "source_to_blackbox": "UNRESOLVED",
+    "blackbox_to_ems": {
+      "protocol": "EDP_V1",
+      "transport": "UDP_UNICAST",
+      "port": 49003,
+      "direction": "ONE_WAY"
+    },
+    "displays_receive_only": true,
+    "routing_bridge_nat_allowed": false
+  },
+  "evidence": {
+    "root": "docs/status/evidence/g1-g2-readiness",
+    "relative_paths_only": true,
+    "sha256_required": true,
+    "utc_required": true,
+    "operator_required": true,
+    "minimum_soak_seconds": 3600,
+    "same_dataset_replay_required": true
+  },
+  "domains": [
+    {
+      "domain": "inventory",
+      "controls": [
+        {
+          "id": "G1-R100-INV-01",
+          "key": "manifest_identity",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-INV-02",
+          "key": "node_identity_provenance",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-INV-03",
+          "key": "node_capture_digest",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-INV-04",
+          "key": "four_physical_slots",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-INV-05",
+          "key": "expected_model_quantities",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-INV-06",
+          "key": "front_photo_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-07",
+          "key": "back_photo_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-08",
+          "key": "photo_sha256_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-09",
+          "key": "photo_path_confinement",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-INV-10",
+          "key": "model_label_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-11",
+          "key": "revision_label_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-12",
+          "key": "serial_if_present",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-13",
+          "key": "dip_visual_state_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-14",
+          "key": "dip_change_forbidden",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-INV-15",
+          "key": "connector_labels_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-16",
+          "key": "power_model_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-17",
+          "key": "power_rating_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-18",
+          "key": "single_power_source_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-INV-19",
+          "key": "probe_and_vendor_read_forbidden",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-INV-20",
+          "key": "engineering_review_required",
+          "state": "BLOCKED_HARDWARE"
+        }
+      ]
+    },
+    {
+      "domain": "signal_mapping",
+      "controls": [
+        {
+          "id": "G1-R100-SIG-01",
+          "key": "engine_snapshot_18_samples",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-02",
+          "key": "stable_signal_ids",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-03",
+          "key": "explicit_units",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-04",
+          "key": "rpm_signal",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-05",
+          "key": "manifold_pressure_signal",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-06",
+          "key": "oil_pressure_signal",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-07",
+          "key": "oil_temperature_signal",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-08",
+          "key": "fuel_pressure_signal",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-09",
+          "key": "fuel_flow_signal",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-10",
+          "key": "dual_fuel_quantity_signals",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-11",
+          "key": "bus_voltage_signal",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-12",
+          "key": "alternator_current_signal",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-13",
+          "key": "four_cht_signals",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-14",
+          "key": "four_egt_signals",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-SIG-15",
+          "key": "raw_value_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-SIG-16",
+          "key": "physical_channel_id_required",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-SIG-17",
+          "key": "physical_node_id_required",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-SIG-18",
+          "key": "calibration_revision_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-SIG-19",
+          "key": "real_source_id_decision",
+          "state": "BLOCKED_ARCHITECTURE"
+        },
+        {
+          "id": "G1-R100-SIG-20",
+          "key": "real_sim_provenance_separation",
+          "state": "PASS"
+        }
+      ]
+    },
+    {
+      "domain": "calibration",
+      "controls": [
+        {
+          "id": "G1-R100-CAL-01",
+          "key": "versioned_profile",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-02",
+          "key": "engine_model_binding",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-03",
+          "key": "per_channel_revision",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-04",
+          "key": "raw_capture_retention",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-05",
+          "key": "coefficient_set_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-06",
+          "key": "engineering_unit_required",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-CAL-07",
+          "key": "raw_domain_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-08",
+          "key": "plausibility_limits_unresolved",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-CAL-09",
+          "key": "open_threshold_unresolved",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-CAL-10",
+          "key": "short_threshold_unresolved",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-CAL-11",
+          "key": "channel_specific_calibration",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-12",
+          "key": "profile_sha256",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-13",
+          "key": "capture_utc",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-14",
+          "key": "operator_identity",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-15",
+          "key": "reference_equipment",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-16",
+          "key": "environmental_conditions",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-17",
+          "key": "rollback_profile",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-18",
+          "key": "immutable_revision_history",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-CAL-19",
+          "key": "simulation_profile_separate",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-CAL-20",
+          "key": "bench_approval_no_flight_approval",
+          "state": "PASS"
+        }
+      ]
+    },
+    {
+      "domain": "transport",
+      "controls": [
+        {
+          "id": "G1-R100-NET-01",
+          "key": "sensor_node_role",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-02",
+          "key": "blackbox_normalization_authority",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-03",
+          "key": "source_to_blackbox_transport_unresolved",
+          "state": "BLOCKED_ARCHITECTURE"
+        },
+        {
+          "id": "G1-R100-NET-04",
+          "key": "source_transport_execution_forbidden",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-05",
+          "key": "blackbox_to_ems_edp_v1",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-06",
+          "key": "edp_udp_port_49003",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-07",
+          "key": "one_way_data_flow",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-08",
+          "key": "display_receive_only",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-09",
+          "key": "display_mavlink_forbidden",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-10",
+          "key": "routing_bridge_nat_forbidden",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-11",
+          "key": "source_identity_required",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-12",
+          "key": "crc32c_required",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-13",
+          "key": "sequence_discipline",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-14",
+          "key": "publisher_instance_required",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-15",
+          "key": "monotonic_freshness",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-16",
+          "key": "stale_lost_states",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-NET-17",
+          "key": "recorder_replay_parity",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-NET-18",
+          "key": "firewall_negative_path",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-NET-19",
+          "key": "mandatory_fault_matrix",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-NET-20",
+          "key": "approved_live_runbook_required",
+          "state": "BLOCKED_APPROVAL"
+        }
+      ]
+    },
+    {
+      "domain": "evidence_release",
+      "controls": [
+        {
+          "id": "G1-R100-EVD-01",
+          "key": "evidence_root_confined",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-EVD-02",
+          "key": "relative_paths_only",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-EVD-03",
+          "key": "artifact_sha256",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-EVD-04",
+          "key": "utc_required",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-EVD-05",
+          "key": "operator_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-EVD-06",
+          "key": "node_identity_required",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-EVD-07",
+          "key": "source_commit_required",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-EVD-08",
+          "key": "manifest_digest_required",
+          "state": "PASS"
+        },
+        {
+          "id": "G1-R100-EVD-09",
+          "key": "raw_capture_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-EVD-10",
+          "key": "redaction_log_required",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-EVD-11",
+          "key": "board_photo_bundle",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-EVD-12",
+          "key": "power_evidence_bundle",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-EVD-13",
+          "key": "calibration_bundle",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-EVD-14",
+          "key": "channel_map_bundle",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-EVD-15",
+          "key": "transport_capture_bundle",
+          "state": "BLOCKED_HARDWARE"
+        },
+        {
+          "id": "G1-R100-EVD-16",
+          "key": "fault_report_bundle",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-EVD-17",
+          "key": "rollback_report_bundle",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-EVD-18",
+          "key": "minimum_60_minute_soak",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-EVD-19",
+          "key": "same_dataset_replay",
+          "state": "PREPARED"
+        },
+        {
+          "id": "G1-R100-EVD-20",
+          "key": "overall_no_go_and_no_flight_approval",
+          "state": "PASS"
+        }
+      ]
+    }
+  ],
+  "decision": "NO_GO_PENDING_G1_PHYSICAL_INVENTORY_AND_ARCHITECTURE_REVIEW"
+}

@@ -1,0 +1,121 @@
+{
+  "schema": "avionix-next.data-icd.v1",
+  "revision": "1.0.0",
+  "status": "FROZEN-SW",
+  "frozen_utc": "2026-09-17T00:00:00Z",
+  "authority": {
+    "publisher_role": "BLACKBOX_BROKER",
+    "default_source_node": 47,
+    "display_direction": "RECEIVE_ONLY",
+    "flight_approval": false
+  },
+  "transport": {
+    "ip": "IPv4",
+    "mode": "UDP_UNICAST",
+    "byte_order": "BIG_ENDIAN",
+    "authentication": "NONE",
+    "security_boundary": "ISOLATED_FILTERED_FLIGHT_DATA_NETWORK"
+  },
+  "freshness": {
+    "clock": "CONSUMER_LOCAL_MONOTONIC",
+    "stale_after_ms": 250,
+    "lost_after_ms": 1000,
+    "boundaries": {
+      "LIVE": "age_ms <= 250",
+      "STALE": "250 < age_ms <= 1000",
+      "LOST": "age_ms > 1000"
+    }
+  },
+  "enumerations": {
+    "source_id": {"unknown": 0, "simulation": 1, "pixhawk_primary": 2, "esp32_legacy": 3, "dlvr_legacy": 4, "nav_rf": 5, "nav_synthetic": 6, "pilot_setting": 7, "blackbox_broker": 8},
+    "quality": {"unknown": 0, "poor": 1, "nominal": 2, "high": 3},
+    "validity": {"valid": 0, "stale": 1, "unavailable": 2, "out_of_range": 3, "disagree": 4, "simulated": 5, "degraded": 6},
+    "unit": {"unknown": 0, "none": 1, "boolean": 2, "degree": 3, "knot": 4, "foot": 5, "foot_per_minute": 6, "dot": 7, "revolutions_per_minute": 8, "inch_mercury": 9, "pound_per_square_inch": 10, "celsius": 11, "gallon": 12, "gallon_per_hour": 13, "volt": 14, "ampere": 15, "hectopascal": 16, "degree_per_second": 17, "gravity": 18, "pascal": 19}
+  },
+  "protocols": {
+    "DDP_V2": {
+      "magic_ascii": "EFN2",
+      "schema_version": 2,
+      "default_udp_port": 49002,
+      "envelope_size": 44,
+      "payload_max_bytes": 65536,
+      "sample_count": 23,
+      "payload_header_size": 25,
+      "sample_size": 20,
+      "envelope": [
+        ["magic", 0, 4, "bytes"], ["schema", 4, 2, "u16"],
+        ["profile", 6, 1, "u8"], ["payload_type", 7, 1, "u8"],
+        ["source_node", 8, 4, "u32"], ["publisher_instance", 12, 8, "u64"],
+        ["sequence", 20, 8, "u64"], ["monotonic_us", 28, 8, "u64"],
+        ["payload_length", 36, 4, "u32"], ["payload_crc32c", 40, 4, "u32"]
+      ],
+      "payload_header": [
+        ["health_level", 0, 1, "u8"], ["unavailable_fields", 1, 4, "u32"],
+        ["stale_fields", 5, 4, "u32"], ["suspect_fields", 9, 4, "u32"],
+        ["disagreeing_fields", 13, 4, "u32"], ["degraded_fields", 17, 4, "u32"],
+        ["frozen_signal", 21, 2, "u16"], ["sample_count", 23, 2, "u16"]
+      ],
+      "sample": [
+        ["signal", 0, 2, "u16"], ["value", 2, 8, "f64"],
+        ["source", 10, 2, "u16"], ["validity", 12, 1, "u8"],
+        ["quality", 13, 1, "u8"], ["unit", 14, 1, "u8"],
+        ["age_ms", 15, 4, "u32"], ["simulated", 19, 1, "u8"]
+      ],
+      "profiles": {"standard": 1, "professional": 2, "degraded": 3},
+      "payload_types": {"snapshot": 1, "alert_reserved": 2, "heartbeat_reserved": 3, "config_reserved": 4},
+      "health": {"normal": 0, "advisory": 1, "caution": 2, "warning": 3},
+      "signals": [
+        ["roll", 100, 3], ["pitch", 101, 3], ["heading", 102, 3],
+        ["turn_rate", 103, 17], ["lateral_acceleration", 104, 18],
+        ["indicated_airspeed", 200, 4], ["pressure_altitude", 201, 5],
+        ["vertical_speed", 202, 6], ["baro_setting", 205, 16],
+        ["indicated_altitude", 206, 5], ["latitude", 300, 3],
+        ["longitude", 301, 3], ["ground_speed", 302, 4],
+        ["gnss_vertical_speed", 303, 6], ["commanded_roll", 401, 3],
+        ["commanded_pitch", 402, 3], ["selected_altitude", 403, 5],
+        ["selected_course", 404, 3], ["selected_airspeed", 405, 4],
+        ["cdi_deviation", 500, 7], ["glide_slope_deviation", 501, 7],
+        ["flight_director_active", 400, 2], ["to_flag", 502, 2]
+      ]
+    },
+    "EDP_V1": {
+      "magic_ascii": "EDP1",
+      "schema_version": 1,
+      "default_udp_port": 49003,
+      "envelope_size": 42,
+      "payload_size": 652,
+      "sample_count": 18,
+      "payload_header_size": 4,
+      "sample_size": 36,
+      "envelope": [
+        ["magic", 0, 4, "bytes"], ["schema", 4, 2, "u16"],
+        ["source_node", 6, 4, "u32"], ["publisher_instance", 10, 8, "u64"],
+        ["sequence", 18, 8, "u64"], ["monotonic_us", 26, 8, "u64"],
+        ["payload_length", 34, 4, "u32"], ["payload_crc32c", 38, 4, "u32"]
+      ],
+      "payload_header": [
+        ["health", 0, 1, "u8"], ["injected_fault", 1, 1, "u8"],
+        ["sample_count", 2, 2, "u16"]
+      ],
+      "sample": [
+        ["signal", 0, 2, "u16"], ["value", 2, 8, "f64"],
+        ["source", 10, 2, "u16"], ["validity", 12, 1, "u8"],
+        ["quality", 13, 1, "u8"], ["unit", 14, 1, "u8"],
+        ["age_ms", 15, 4, "u32"], ["simulated", 19, 1, "u8"],
+        ["origin_node", 20, 2, "u16"], ["origin_channel", 22, 2, "u16"],
+        ["calibration_revision", 24, 4, "u32"], ["raw", 28, 8, "f64"]
+      ],
+      "health": {"normal": 0, "caution": 1, "warning": 2},
+      "injected_fault": {"none": 0, "low_oil_pressure": 1, "high_cht": 2, "alternator_failure": 3, "low_fuel_pressure": 4},
+      "signals": [
+        ["engine_rpm", 600, 8], ["manifold_pressure", 601, 9],
+        ["oil_pressure", 602, 10], ["oil_temperature", 603, 11],
+        ["fuel_pressure", 604, 10], ["fuel_flow", 605, 13],
+        ["fuel_quantity_left", 606, 12], ["fuel_quantity_right", 607, 12],
+        ["bus_voltage", 608, 14], ["alternator_current", 609, 15],
+        ["cht_1", 640, 11], ["cht_2", 641, 11], ["cht_3", 642, 11], ["cht_4", 643, 11],
+        ["egt_1", 660, 11], ["egt_2", 661, 11], ["egt_3", 662, 11], ["egt_4", 663, 11]
+      ]
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "avionix-next.g1-visual-intake.v1",
+  "operator": null,
+  "captured_utc": null,
+  "boards": [
+    {
+      "slot": "G1-SLOT-01",
+      "model_observed": "SM-I-018",
+      "revision_observed": null,
+      "serial_observed": null,
+      "dip_visual_state": null,
+      "connector_labels": [],
+      "front_file": "g1-slot-01-front.jpg",
+      "back_file": "g1-slot-01-back.jpg"
+    },
+    {
+      "slot": "G1-SLOT-02",
+      "model_observed": "SM-I-011",
+      "revision_observed": null,
+      "serial_observed": null,
+      "dip_visual_state": null,
+      "connector_labels": [],
+      "front_file": "g1-slot-02-front.jpg",
+      "back_file": "g1-slot-02-back.jpg"
+    },
+    {
+      "slot": "G1-SLOT-03",
+      "model_observed": "SM-I-011",
+      "revision_observed": null,
+      "serial_observed": null,
+      "dip_visual_state": null,
+      "connector_labels": [],
+      "front_file": "g1-slot-03-front.jpg",
+      "back_file": "g1-slot-03-back.jpg"
+    },
+    {
+      "slot": "G1-SLOT-04",
+      "model_observed": "SM-I-019",
+      "revision_observed": null,
+      "serial_observed": null,
+      "dip_visual_state": null,
+      "connector_labels": [],
+      "front_file": "g1-slot-04-front.jpg",
+      "back_file": "g1-slot-04-back.jpg"
+    }
+  ],
+  "power": {
+    "supply_model": null,
+    "rated_voltage": null,
+    "rated_current": null,
+    "label_file": "g1-power-label.jpg",
+    "single_source_confirmed": false
+  },
+  "capture_declaration": {
+    "visual_only": true,
+    "dip_changed": false,
+    "wiring_changed": false,
+    "electrical_probe_performed": false,
+    "vendor_read_performed": false,
+    "output_activated": false
+  },
+  "notes": null
+}

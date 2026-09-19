@@ -1,5 +1,9 @@
 # Engine Data Protocol V1 (EDP V1)
 
+Stato: contratto wire congelato software da `AVIONIX_DATA_ICD_V1.md`. Per
+offset, dimensioni complete, enumerazioni, vettori e livelli di evidenza fa
+fede l'ICD sovraordinato.
+
 EDP V1 distribuisce uno `EngineSnapshot` normalizzato dalla Blackbox al nodo
 EMS via UDP unicast, porta predefinita `49003`.
 
@@ -17,6 +21,9 @@ Tutti gli interi sono big-endian e i `double` sono IEEE-754 a 64 bit.
 | monotonic microseconds | 8 |
 | payload length | 4 |
 | payload CRC32C | 4 |
+
+L'envelope misura 42 byte. Il payload canonico misura 652 byte (header da 4
+byte e 18 record da 36 byte), quindi il datagramma completo misura 694 byte.
 
 Il payload contiene health, eventuale fault iniettato, conteggio campioni e 18
 campioni obbligatori: RPM, MAP, pressioni/temperature olio e carburante, flusso,

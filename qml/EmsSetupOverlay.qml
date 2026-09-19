@@ -23,6 +23,7 @@ Rectangle {
     function numberOr(name) { return typeof controller[name] === "number" ? controller[name] : 0 }
     function listOr(name) { var v=controller[name]; return v && typeof v.length === "number" ? v : [] }
     function mapOr(name) { var v=controller[name]; return v && typeof v === "object" ? v : ({}) }
+    function linkColor(state) { var s=String(state); return s==="LIVE"?setup.green:(s==="SIM"?setup.cyan:setup.amber) }
     function busState(bus) { var m=String(controller.electricalTestMode||"NORMAL"); if(m==="ESSENTIAL BUS ISOLATED"&&bus==="ESSENTIAL")return "ISOLATED"; if(m==="MAIN BUS LOW"&&(bus==="MAIN"||bus==="AVIONICS"))return "LOW VOLTAGE"; return m==="ALTERNATOR OFFLINE"?"BATTERY SUPPLY":"POWERED" }
     function loadPowered(load) { return load.installed && setup.busState(String(load.bus))!=="ISOLATED" }
 
@@ -37,8 +38,8 @@ Rectangle {
     }
     Rectangle { id:rail; anchors { left:parent.left; top:top.bottom; bottom:footer.top } width:184*setup.uiScale; color:"#09151D"; border.color:setup.line
         Column { anchors.fill:parent
-            Repeater { model:["ENGINE","HOURS","SENSORS","ELECTRICAL","LOG & SERVICE","AIRCRAFT DATA"]
-                delegate:Rectangle { required property string modelData; required property int index; width:rail.width; height:rail.height/6; color:setup.section===index?"#15303C":"transparent"; border.color:setup.line
+            Repeater { model:["ENGINE","HOURS","SENSORS","ELECTRICAL","LOG & SERVICE","DATA LINK","AIRCRAFT DATA"]
+                delegate:Rectangle { required property string modelData; required property int index; width:rail.width; height:rail.height/7; color:setup.section===index?"#15303C":"transparent"; border.color:setup.line
                     Rectangle { visible:setup.section===index; width:5*setup.uiScale; height:parent.height; color:setup.cyan }
                     Text { x:22*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:modelData; color:setup.section===index?setup.cyan:"#AAB6BC"; font.pixelSize:11*setup.uiScale; font.bold:true }
                     TapHandler { onTapped:setup.section=index }
@@ -47,8 +48,8 @@ Rectangle {
         }
     }
     Item { id:content; anchors { left:rail.right; right:parent.right; top:top.bottom; bottom:footer.top; margins:14*setup.uiScale }
-        Text { text:["ENGINE INSTALLATION","RUNTIME COUNTERS","PROBE CONFIGURATION","ELECTRICAL ARCHITECTURE","LOGGING & MAINTENANCE","AIRCRAFT OPERATIONAL DATA"][setup.section]; color:"white"; font.pixelSize:18*setup.uiScale; font.bold:true }
-        Text { visible:setup.section!==5; y:29*setup.uiScale; text:"LIMIT AUTHORITY • "+String((controller.engineLimits||{}).status||"NOT CONFIGURED")+" • verify against installed-engine documentation"; color:String((controller.engineLimits||{}).status||"").indexOf("VERIFIED")===0?setup.green:setup.amber; font.pixelSize:8*setup.uiScale }
+        Text { text:["ENGINE INSTALLATION","RUNTIME COUNTERS","PROBE CONFIGURATION","ELECTRICAL ARCHITECTURE","LOGGING & MAINTENANCE","ENGINE DATA LINK","AIRCRAFT OPERATIONAL DATA"][setup.section]; color:"white"; font.pixelSize:18*setup.uiScale; font.bold:true }
+        Text { visible:setup.section!==6; y:29*setup.uiScale; text:"LIMIT AUTHORITY • "+String((controller.engineLimits||{}).status||"NOT CONFIGURED")+" • verify against installed-engine documentation"; color:String((controller.engineLimits||{}).status||"").indexOf("VERIFIED")===0?setup.green:setup.amber; font.pixelSize:8*setup.uiScale }
 
         Grid { visible:setup.section===0; y:58*setup.uiScale; columns:2; spacing:12*setup.uiScale
             Repeater { model:[
@@ -170,7 +171,45 @@ Rectangle {
                 }
             }
         }
-        OperationalProfileSetup { visible:setup.section===5; y:34*setup.uiScale; width:parent.width; height:parent.height-34*setup.uiScale; controller:setup.controller; uiScale:setup.uiScale; workflowPage:setup.operationalPreviewPage }
+        Item { id:linkPage; visible:setup.section===5; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale
+            property var link: setup.mapOr("engineLinkDiagnostics")
+            Row { spacing:8*setup.uiScale
+                Repeater { model:[
+                    {k:"LINK STATE",v:String(linkPage.link.state||"SIM"),u:"EDP HEALTH"},
+                    {k:"DATA AGE",v:Number(linkPage.link.ageMs)>=0?String(linkPage.link.ageMs)+" ms":"N/A",u:"MONOTONIC"},
+                    {k:"ACCEPTED",v:String(linkPage.link.accepted||0),u:"DATAGRAMS"},
+                    {k:"REJECTED",v:String(linkPage.link.decodeRejected||0),u:"DECODE"}]
+                    delegate:Rectangle { required property var modelData; required property int index; width:187*setup.uiScale; height:105*setup.uiScale; color:setup.panel; border.width:2; border.color:index===0?setup.linkColor(modelData.v):setup.line
+                        Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:12*setup.uiScale } text:modelData.k; color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
+                        Text { anchors.centerIn:parent; text:modelData.v; color:modelData.k==="LINK STATE"?setup.linkColor(modelData.v):"white"; font.pixelSize:20*setup.uiScale; font.bold:true }
+                        Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:10*setup.uiScale } text:modelData.u; color:"#91A2AA"; font.pixelSize:7*setup.uiScale }
+                    }
+                }
+            }
+            Rectangle { y:118*setup.uiScale; width:772*setup.uiScale; height:54*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:String(linkPage.link.transport||"EDP V1 / UDP")+"   •   "+(linkPage.link.configured?(String(linkPage.link.bindAddress||"0.0.0.0")+":"+String(linkPage.link.port||49003)):"NOT CONFIGURED")+"   •   "+String(setup.controller.sensorNodeState||"SIMULATED"); color:linkPage.link.configured?setup.cyan:setup.amber; font.pixelSize:9*setup.uiScale; font.bold:true }
+                Text { anchors { right:parent.right; rightMargin:12*setup.uiScale; bottom:parent.bottom; bottomMargin:4*setup.uiScale } text:String(linkPage.link.sessionStatus||"NOT CONFIGURED"); color:text==="SESSION CLEAN"?setup.green:setup.amber; font.pixelSize:6*setup.uiScale; font.bold:true }
+            }
+            Grid { y:184*setup.uiScale; columns:4; spacing:8*setup.uiScale
+                Repeater { model:[
+                    {k:"CRC REJECT",v:"crcRejected"},{k:"IDENTITY REJECT",v:"identityRejected"},
+                    {k:"DUPLICATES",v:"duplicates"},{k:"REVERSED",v:"reversed"},
+                    {k:"SEQUENCE GAPS",v:"sequenceGaps"},{k:"PUBLISHER RESTARTS",v:"publisherRestarts"},
+                    {k:"TOTAL DATAGRAMS",v:"datagrams"},{k:"VALID RATIO",v:"ratio"}]
+                    delegate:Rectangle { required property var modelData; width:187*setup.uiScale; height:60*setup.uiScale; color:setup.panel; border.color:modelData.v!=="ratio"&&Number(linkPage.link[modelData.v]||0)>0?setup.amber:setup.line
+                        Text { x:9*setup.uiScale; y:8*setup.uiScale; text:modelData.k; color:"#91A2AA"; font.pixelSize:7*setup.uiScale; font.bold:true }
+                        Text { x:9*setup.uiScale; y:29*setup.uiScale; text:modelData.v==="ratio"?(Number(linkPage.link.datagrams||0)>0?Number(linkPage.link.validPercent||0).toFixed(1)+" %":"N/A"):String(linkPage.link[modelData.v]||0); color:modelData.v!=="ratio"&&Number(linkPage.link[modelData.v]||0)>0?setup.amber:"white"; font.pixelSize:14*setup.uiScale; font.bold:true }
+                    }
+                }
+            }
+            Rectangle { y:312*setup.uiScale; width:772*setup.uiScale; height:70*setup.uiScale; color:"#10232D"; border.color:setup.line
+                Text { x:10*setup.uiScale; y:6*setup.uiScale; text:"AUTHORITY  EXPECTED "+String(linkPage.link.expectedSourceNode||"N/A")+"   •   ACTIVE "+String(linkPage.link.sourceNode||"N/A")+"   •   "+String(linkPage.link.authorityStatus||"NOT CONFIGURED")+"   •   STALE/LOST "+String(linkPage.link.staleAfterMs||0)+"/"+String(linkPage.link.lostAfterMs||0)+" ms"; color:String(linkPage.link.authorityStatus)==="MATCH"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+                Text { x:10*setup.uiScale; y:27*setup.uiScale; text:"PUBLISHER  "+String(linkPage.link.publisherInstance||"N/A")+"   •   SEQUENCE  "+String(linkPage.link.sequence||"N/A"); color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
+                Text { x:10*setup.uiScale; y:49*setup.uiScale; text:"LAST REJECT  "+String(linkPage.link.lastRejection||"NONE")+(Number(linkPage.link.lastRejectionAgeMs)>=0?("   •   "+String(linkPage.link.lastRejectionAgeMs)+" ms AGO"):'')+(linkPage.link.recentRejection?"   •   RECENT":""); color:String(linkPage.link.lastRejection||"NONE")==="NONE"?setup.green:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+            }
+            Text { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; bottomMargin:6*setup.uiScale } horizontalAlignment:Text.AlignHCenter; wrapMode:Text.WordWrap; text:"READ-ONLY DIAGNOSTICS • counters reset at process start • rejected traffic never refreshes data age"; color:setup.amber; font.pixelSize:7*setup.uiScale; font.bold:true }
+        }
+        OperationalProfileSetup { visible:setup.section===6; y:34*setup.uiScale; width:parent.width; height:parent.height-34*setup.uiScale; controller:setup.controller; uiScale:setup.uiScale; workflowPage:setup.operationalPreviewPage }
         Item { visible:setup.section===4; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale
             Rectangle { anchors { left:parent.left; right:parent.right; top:parent.top } height:46*setup.uiScale; color:"#10232D"; border.color:setup.line
                 Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"ROTAX 912 UL • MAINTENANCE PROGRAM"; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }

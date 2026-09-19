@@ -61,6 +61,24 @@ il prodotto: condivide alimentazione, backplane e failure mode. Nel prototipo
 sono ammesse VLAN separate; per l'architettura finale si preferiscono due
 switch o almeno due domini fisici indipendenti.
 
+### Candidato MokerLink non verificato
+
+Il titolo commerciale fornito dal proprietario il 2026-09-19 è coerente con
+il MokerLink `IND-F082GS`, dichiarato con otto porte RJ45 10/100 Mbps, una
+porta RJ45 Gigabit e una porta SFP Gigabit. È registrato esclusivamente come
+`CANDIDATE_NOT_PHYSICALLY_VERIFIED`: il modello resta presunto finché non viene
+acquisita la targhetta reale. Le nove porte rame risolverebbero soltanto il
+deficit numerico di `FLIGHT-DATA`; le otto porte Fast Ethernet e la natura
+unmanaged non lo rendono idoneo a concentrare anche il VIDEO.
+
+Il candidato non cambia lo switch installato nel piano V1, non autorizza
+cablaggio o deployment e non costituisce qualifica aeronautica. Prima di una
+decisione servono foto, port map, link test di tutte le RJ45, velocità
+negoziate, alimentazione minima/massima, brownout, assorbimento, temperatura,
+restart, fault/recovery e prova di isolamento fisico da VIDEO. La rete VIDEO
+mantiene un proprio switch Gigabit/PoE o uscite camera individualmente
+protette.
+
 ## Vincoli di sicurezza
 
 - `net.ipv4.ip_forward=0` e nessun bridge fra WLAN/service e FLIGHT-DATA;
@@ -88,3 +106,4 @@ Fonti hardware/protocollo:
 
 - [ArduPilot Ethernet / Network Setup](https://ardupilot.org/plane/docs/common-network.html)
 - [Waveshare Gigabit-Switch-5P](https://www.waveshare.com/product/gigabit-switch-5p.htm)
+- [MokerLink IND-F082GS](https://www.mokerlink.com/index.php?limit=100&manufacturer_id=24&page=2&product_id=495&route=product%2Fproduct)

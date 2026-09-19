@@ -367,12 +367,18 @@ DecodeError Consumer::consume(std::span<const std::uint8_t> d, MonoTime now) {
     ++metrics_.decode_rejected;
     if (x.error == DecodeError::crc_mismatch)
       ++metrics_.crc_rejected;
+    last_rejection_ = x.error;
+    last_rejected_at_ = now;
+    has_rejection_ = true;
     return x.error;
   }
   auto &e = x.message.envelope;
   if (policy_.expected_source_node &&
       e.source_node != policy_.expected_source_node) {
     ++metrics_.identity_rejected;
+    last_rejection_ = DecodeError::invalid_identity;
+    last_rejected_at_ = now;
+    has_rejection_ = true;
     return DecodeError::invalid_identity;
   }
   const auto exact = std::find_if(
@@ -383,10 +389,16 @@ DecodeError Consumer::consume(std::span<const std::uint8_t> d, MonoTime now) {
   if (exact != sequences_.end()) {
     if (!exact->current || e.sequence < exact->sequence) {
       ++metrics_.reversed;
+      last_rejection_ = DecodeError::reversed_sequence;
+      last_rejected_at_ = now;
+      has_rejection_ = true;
       return DecodeError::reversed_sequence;
     }
     if (e.sequence == exact->sequence) {
       ++metrics_.duplicates;
+      last_rejection_ = DecodeError::duplicate_sequence;
+      last_rejected_at_ = now;
+      has_rejection_ = true;
       return DecodeError::duplicate_sequence;
     }
     if (e.sequence > exact->sequence + 1)
@@ -412,13 +424,43 @@ DecodeError Consumer::consume(std::span<const std::uint8_t> d, MonoTime now) {
   return DecodeError::none;
 }
 LinkState Consumer::state(MonoTime now) const noexcept {
+  return status(now).state;
+}
+LinkStatus Consumer::status(MonoTime now) const noexcept {
   if (!has_snapshot_)
-    return LinkState::waiting;
-  if (now <= last_received_ || now - last_received_ <= policy_.stale_after)
-    return LinkState::live;
-  if (now - last_received_ <= policy_.lost_after)
-    return LinkState::stale;
-  return LinkState::lost;
+    return {};
+  const auto sample_age = now <= last_received_
+                              ? std::chrono::milliseconds::zero()
+                              : std::chrono::duration_cast<
+                                    std::chrono::milliseconds>(now - last_received_);
+  if (sample_age <= policy_.stale_after)
+    return {LinkState::live, sample_age};
+  if (sample_age <= policy_.lost_after)
+    return {LinkState::stale, sample_age};
+  return {LinkState::lost, sample_age};
+}
+ConsumerDiagnostics Consumer::diagnostics(MonoTime now) const noexcept {
+  ConsumerDiagnostics out;
+  out.link = status(now);
+  out.policy = policy_;
+  out.metrics = metrics_;
+  if (has_snapshot_) {
+    out.source_node = last_.source_node;
+    out.publisher_instance = last_.publisher_instance;
+    out.sequence = last_.sequence;
+  }
+  out.last_rejection = last_rejection_;
+  if (has_rejection_) {
+    out.last_rejection_age = now <= last_rejected_at_
+        ? std::chrono::milliseconds::zero()
+        : std::chrono::duration_cast<std::chrono::milliseconds>(
+              now - last_rejected_at_);
+  }
+  return out;
+}
+std::optional<std::chrono::milliseconds>
+Consumer::age(MonoTime now) const noexcept {
+  return status(now).age;
 }
 const engine::EngineSnapshot *Consumer::latest() const noexcept {
   return has_snapshot_ ? &latest_ : nullptr;

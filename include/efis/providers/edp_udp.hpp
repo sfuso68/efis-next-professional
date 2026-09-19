@@ -4,6 +4,7 @@
 #include "efis/protocol/edp_v1.hpp"
 
 #include <array>
+#include <optional>
 
 namespace efis {
 
@@ -39,8 +40,20 @@ public:
   link_state(MonoTime now) const noexcept {
     return consumer_.state(now);
   }
+  [[nodiscard]] protocol::edp::LinkStatus
+  link_status(MonoTime now) const noexcept {
+    return consumer_.status(now);
+  }
+  [[nodiscard]] std::optional<std::chrono::milliseconds>
+  data_age(MonoTime now) const noexcept {
+    return consumer_.age(now);
+  }
   [[nodiscard]] const protocol::edp::ConsumerMetrics &metrics() const noexcept {
     return consumer_.metrics();
+  }
+  [[nodiscard]] protocol::edp::ConsumerDiagnostics
+  diagnostics(MonoTime now) const noexcept {
+    return consumer_.diagnostics(now);
   }
   [[nodiscard]] const io::UdpEndpoint &local_endpoint() const noexcept {
     return receiver_.local();

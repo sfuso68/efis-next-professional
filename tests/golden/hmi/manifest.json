@@ -1,0 +1,36 @@
+{
+  "schema": "avionix.hmi-golden-manifest.v2",
+  "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
+  "generated_utc": "2026-09-17T14:18:58.237693+00:00",
+  "platform": "windows",
+  "fixture": "HmiGoldenMain.qml",
+  "role": "ems",
+  "data_state": "SIM",
+  "data_age_ms": 0,
+  "images": [
+    {
+      "file": "ems-800x480.png",
+      "width": 800,
+      "height": 480,
+      "bytes": 237527,
+      "sha256": "8d30643a51aee99855c90410be519fb8edb888319ca71a9ec59ebc18b18ab641",
+      "pixel_sha256": "372a8ef008c64224b578443eb942ca31d8afcf1e08d4d77c859c491a67897e21"
+    },
+    {
+      "file": "ems-1024x600.png",
+      "width": 1024,
+      "height": 600,
+      "bytes": 313757,
+      "sha256": "9b2ab8e7d3baa67f99109f1870456ed7d3b737a391d08f4198e555c00d080ae3",
+      "pixel_sha256": "ee4a0cda11c78091c9e70a9d1da9d75952bec763cfff826ea245e3bbf9724163"
+    },
+    {
+      "file": "ems-1280x800.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 465898,
+      "sha256": "95e6a50cb94e2fbe6bd5849f0710295a053b6d4bdb20f8874e9e4b674cbcdab4",
+      "pixel_sha256": "c861ac2c9cff1bcd9de9d0bae2b77588b57ad9c4403b735f0b135080561096f2"
+    }
+  ]
+}

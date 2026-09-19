@@ -16,6 +16,7 @@
 #include <QList>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 using namespace std::chrono_literals;
@@ -55,7 +56,7 @@ EmsController::EmsController(QObject* parent) : QObject(parent) {
         config.consumer.expected_source_node = static_cast<std::uint32_t>(node_ok ? node : 47);
         engine_network_source_ = std::make_unique<efis::EdpUdpEngineSource>(std::move(config));
         engine_data_state_ = QStringLiteral("WAITING");
-        data_source_state_ = QStringLiteral("NETWORK");
+        data_source_state_ = QStringLiteral("LOST");
         sensor_node_state_ = QStringLiteral("BLACKBOX WAITING");
     }
     loadUnitSystem();
@@ -117,6 +118,91 @@ bool EmsController::setUnitSystem(const QString& system) {
     emit unitsChanged();
     emit snapshotChanged();
     return settings.status() == QSettings::NoError;
+}
+
+QVariantMap EmsController::engineLinkDiagnostics() const {
+    QVariantMap diagnostics{
+        {QStringLiteral("transport"), QStringLiteral("EDP V1 / UDP")},
+        {QStringLiteral("configured"), bool(engine_network_source_)},
+        {QStringLiteral("state"), data_source_state_},
+        {QStringLiteral("ageMs"), data_age_ms_},
+        {QStringLiteral("datagrams"), qulonglong(0)},
+        {QStringLiteral("accepted"), qulonglong(0)},
+        {QStringLiteral("decodeRejected"), qulonglong(0)},
+        {QStringLiteral("crcRejected"), qulonglong(0)},
+        {QStringLiteral("identityRejected"), qulonglong(0)},
+        {QStringLiteral("duplicates"), qulonglong(0)},
+        {QStringLiteral("reversed"), qulonglong(0)},
+        {QStringLiteral("sequenceGaps"), qulonglong(0)},
+        {QStringLiteral("publisherRestarts"), qulonglong(0)},
+        {QStringLiteral("sourceNode"), QStringLiteral("N/A")},
+        {QStringLiteral("publisherInstance"), QStringLiteral("N/A")},
+        {QStringLiteral("sequence"), QStringLiteral("N/A")},
+        {QStringLiteral("lastRejection"), QStringLiteral("NONE")},
+        {QStringLiteral("lastRejectionAgeMs"), -1},
+        {QStringLiteral("validPercent"), 0.0},
+        {QStringLiteral("sessionStatus"), QStringLiteral("NOT CONFIGURED")},
+        {QStringLiteral("recentRejection"), false},
+        {QStringLiteral("expectedSourceNode"), QStringLiteral("N/A")},
+        {QStringLiteral("authorityStatus"), QStringLiteral("NOT CONFIGURED")},
+        {QStringLiteral("staleAfterMs"), 0},
+        {QStringLiteral("lostAfterMs"), 0}
+    };
+    if (!engine_network_source_) return diagnostics;
+    const auto snapshot = engine_network_source_->diagnostics(efis::MonoClock::now());
+    const auto& metrics = snapshot.metrics;
+    const auto& endpoint = engine_network_source_->local_endpoint();
+    diagnostics.insert(QStringLiteral("bindAddress"),
+                       QString::fromStdString(endpoint.address));
+    diagnostics.insert(QStringLiteral("port"), int(endpoint.port));
+    diagnostics.insert(QStringLiteral("datagrams"), qulonglong(metrics.datagrams));
+    diagnostics.insert(QStringLiteral("accepted"), qulonglong(metrics.accepted));
+    diagnostics.insert(QStringLiteral("decodeRejected"), qulonglong(metrics.decode_rejected));
+    diagnostics.insert(QStringLiteral("crcRejected"), qulonglong(metrics.crc_rejected));
+    diagnostics.insert(QStringLiteral("identityRejected"), qulonglong(metrics.identity_rejected));
+    diagnostics.insert(QStringLiteral("duplicates"), qulonglong(metrics.duplicates));
+    diagnostics.insert(QStringLiteral("reversed"), qulonglong(metrics.reversed));
+    diagnostics.insert(QStringLiteral("sequenceGaps"), qulonglong(metrics.sequence_gaps));
+    diagnostics.insert(QStringLiteral("publisherRestarts"), qulonglong(metrics.publisher_restarts));
+    diagnostics.insert(QStringLiteral("sourceNode"), snapshot.source_node
+        ? QString::number(snapshot.source_node) : QStringLiteral("N/A"));
+    diagnostics.insert(QStringLiteral("publisherInstance"), snapshot.publisher_instance
+        ? QString::number(snapshot.publisher_instance) : QStringLiteral("N/A"));
+    diagnostics.insert(QStringLiteral("sequence"), snapshot.sequence
+        ? QString::number(snapshot.sequence) : QStringLiteral("N/A"));
+    const auto rejection_name =
+        efis::protocol::edp::decode_error_name(snapshot.last_rejection);
+    diagnostics.insert(QStringLiteral("lastRejection"),
+        QString::fromLatin1(rejection_name.data(), int(rejection_name.size())));
+    diagnostics.insert(QStringLiteral("lastRejectionAgeMs"),
+        snapshot.last_rejection_age
+            ? int(qMin<std::int64_t>(snapshot.last_rejection_age->count(),
+                                     std::numeric_limits<int>::max()))
+            : -1);
+    diagnostics.insert(QStringLiteral("validPercent"), metrics.datagrams
+        ? 100.0 * double(metrics.accepted) / double(metrics.datagrams) : 0.0);
+    const auto session_anomalies = metrics.decode_rejected +
+        metrics.identity_rejected + metrics.duplicates + metrics.reversed +
+        metrics.sequence_gaps;
+    diagnostics.insert(QStringLiteral("sessionStatus"),
+        session_anomalies ? QStringLiteral("SESSION ANOMALIES")
+                          : QStringLiteral("SESSION CLEAN"));
+    diagnostics.insert(QStringLiteral("recentRejection"),
+        efis::protocol::edp::rejection_is_recent(snapshot));
+    diagnostics.insert(QStringLiteral("expectedSourceNode"),
+        snapshot.policy.expected_source_node
+            ? QString::number(snapshot.policy.expected_source_node)
+            : QStringLiteral("ANY"));
+    diagnostics.insert(QStringLiteral("authorityStatus"),
+        !snapshot.policy.expected_source_node ? QStringLiteral("UNRESTRICTED")
+        : !snapshot.source_node ? QStringLiteral("WAITING")
+        : snapshot.source_node == snapshot.policy.expected_source_node
+            ? QStringLiteral("MATCH") : QStringLiteral("MISMATCH"));
+    diagnostics.insert(QStringLiteral("staleAfterMs"),
+        int(snapshot.policy.stale_after.count()));
+    diagnostics.insert(QStringLiteral("lostAfterMs"),
+        int(snapshot.policy.lost_after.count()));
+    return diagnostics;
 }
 
 void EmsController::loadFuelComputer() {
@@ -617,13 +703,18 @@ void EmsController::updateSnapshot() {
     bool use_simulation = true;
     if (engine_network_source_) {
         const auto network = engine_network_source_->poll(now);
-        switch (engine_network_source_->link_state(now)) {
+        const auto link = engine_network_source_->link_status(now);
+        data_age_ms_ = link.age
+            ? static_cast<int>(qMin<std::int64_t>(link.age->count(),
+                  std::numeric_limits<int>::max()))
+            : -1;
+        switch (link.state) {
             case efis::protocol::edp::LinkState::live:
                 engine_snapshot_ = network;
                 engine_data_state_ = network.rpm.is_simulated()
                     ? QStringLiteral("LIVE • SIM") : QStringLiteral("LIVE");
                 data_source_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("NETWORK • SIM") : QStringLiteral("NETWORK");
+                    ? QStringLiteral("SIM") : QStringLiteral("LIVE");
                 sensor_node_state_ = network.rpm.is_simulated()
                     ? QStringLiteral("BLACKBOX 47 • SIM") : QStringLiteral("BLACKBOX 47");
                 use_simulation = false;
@@ -632,31 +723,50 @@ void EmsController::updateSnapshot() {
                 engine_snapshot_ = network;
                 engine_data_state_ = network.rpm.is_simulated()
                     ? QStringLiteral("STALE • SIM") : QStringLiteral("STALE");
-                data_source_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("NETWORK • SIM") : QStringLiteral("NETWORK");
+                data_source_state_ = QStringLiteral("STALE");
                 sensor_node_state_ = network.rpm.is_simulated()
                     ? QStringLiteral("BLACKBOX STALE • SIM") : QStringLiteral("BLACKBOX STALE");
                 use_simulation = false;
                 break;
             case efis::protocol::edp::LinkState::waiting:
                 engine_data_state_ = QStringLiteral("SIM FALLBACK • WAITING");
+                data_source_state_ = QStringLiteral("LOST");
+                data_age_ms_ = -1;
                 sensor_node_state_ = QStringLiteral("BLACKBOX WAITING");
                 break;
             case efis::protocol::edp::LinkState::lost:
                 engine_data_state_ = QStringLiteral("SIM FALLBACK • LINK LOST");
+                data_source_state_ = QStringLiteral("LOST");
                 sensor_node_state_ = QStringLiteral("BLACKBOX LINK LOST");
                 break;
         }
     }
     if (use_simulation) {
         engine_snapshot_ = engine_provider_.sample(now, elapsed);
-        data_source_state_ = QStringLiteral("SIMULATION");
-        if (!engine_network_source_) sensor_node_state_ = QStringLiteral("SIMULATED");
+        if (!engine_network_source_) {
+            data_source_state_ = QStringLiteral("SIM");
+            data_age_ms_ = -1;
+            sensor_node_state_ = QStringLiteral("SIMULATED");
+        }
     }
-    if (engine_data_state_ != last_logged_engine_data_state_) {
+    if (engine_data_state_ != last_logged_engine_data_state_ ||
+        data_source_state_ != last_logged_data_source_state_) {
         last_logged_engine_data_state_ = engine_data_state_;
-        qInfo().noquote() << "event=ems_engine_data_state state=" << engine_data_state_
-                          << "source=" << data_source_state_
+        last_logged_data_source_state_ = data_source_state_;
+        const auto diagnostics = engineLinkDiagnostics();
+        qInfo().noquote() << "event=ems_edp_link_transition"
+                          << "state=" << data_source_state_
+                          << "engine_state=" << engine_data_state_
+                          << "age_ms=" << data_age_ms_
+                          << "accepted=" << diagnostics.value("accepted").toULongLong()
+                          << "rejected=" << diagnostics.value("decodeRejected").toULongLong()
+                          << "crc_rejected=" << diagnostics.value("crcRejected").toULongLong()
+                          << "sequence_gaps=" << diagnostics.value("sequenceGaps").toULongLong()
+                          << "publisher_restarts=" << diagnostics.value("publisherRestarts").toULongLong()
+                          << "source_node=" << diagnostics.value("sourceNode").toString()
+                          << "publisher_instance=" << diagnostics.value("publisherInstance").toString()
+                          << "sequence=" << diagnostics.value("sequence").toString()
+                          << "last_rejection=" << diagnostics.value("lastRejection").toString()
                           << "node=" << sensor_node_state_;
     }
     if (!fuel_on_board_initialized_) {

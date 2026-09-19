@@ -41,6 +41,7 @@ add_library(efis_core
     src/providers/ddp_udp_publisher.cpp
     src/providers/edp_udp.cpp
     src/providers/engine_simulation_provider.cpp
+    src/providers/sensor_adapter_health.cpp
     src/simulation/system_simulator.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
@@ -161,6 +162,18 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/OperationalProfileSetup.qml
                 qml/EfisTouchKeyboard.qml
                 qml/Theme.qml
+                qml/HmiTokens.qml
+                qml/HmiDataStateBadge.qml
+                qml/HmiArcGaugeV4.qml
+                qml/HmiCylinderMatrixV2.qml
+                qml/HmiAirframePanel.qml
+                qml/HmiFuelStatus.qml
+                qml/HmiElectricalSynoptic.qml
+                qml/SkyViewCompassArc.qml
+                qml/HmiComponentShowcase.qml
+                qml/HmiGoldenController.qml
+                qml/HmiGoldenMain.qml
+                qml/SkyViewGoldenMain.qml
                 qml/GpuMapSurface.qml
                 qml/WeatherRadarOverlay.qml
                 qml/ProfessionalTape.qml
@@ -313,6 +326,68 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_mavlink_observer_soak.py)
         add_test(NAME efis_qgc_monitor_status_tests
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_qgc_monitor_status.py)
+        add_test(NAME efis_edp_passive_observer_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_capture_edp_observer.py)
+        add_test(NAME efis_edp_capture_assessment_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_assess_edp_capture.py)
+        add_test(NAME efis_edp_replay_session_tests
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_replay_edp_session.py)
+        add_test(NAME efis_hmi_golden_tools_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_hmi_golden_tools)
+        set_tests_properties(efis_hmi_golden_tools_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_avionix_hmi_contract_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_avionix_hmi_contract)
+        set_tests_properties(efis_avionix_hmi_contract_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_skyview_responsive_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_skyview_responsive)
+        set_tests_properties(efis_skyview_responsive_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_ems_state_presentation_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_ems_state_presentation)
+        set_tests_properties(efis_ems_state_presentation_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_ems_responsive_state_matrix_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_ems_responsive_state_matrix)
+        set_tests_properties(efis_ems_responsive_state_matrix_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_hmi_hardware_acceptance_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_hmi_hardware_acceptance)
+        set_tests_properties(efis_hmi_hardware_acceptance_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_hmi_hardware_evidence_assembler_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_assemble_hmi_hardware_evidence)
+        set_tests_properties(efis_hmi_hardware_evidence_assembler_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_g1_sensor_node_capture_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_capture_g1_sensor_node)
+        set_tests_properties(efis_g1_sensor_node_capture_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_g1_physical_inventory_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_g1_physical_inventory)
+        set_tests_properties(efis_g1_physical_inventory_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_g1_visual_inventory_import_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_g1_visual_inventory_import)
+        set_tests_properties(efis_g1_visual_inventory_import_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_g1_upstream_proposal_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_g1_upstream_proposal)
+        set_tests_properties(efis_g1_upstream_proposal_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_g1_switch_acceptance_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_g1_switch_acceptance)
+        set_tests_properties(efis_g1_switch_acceptance_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_g1_g2_readiness_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_g1_g2_readiness)
+        set_tests_properties(efis_g1_g2_readiness_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_avionix_icd_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_avionix_icd)
+        set_tests_properties(efis_avionix_icd_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         add_test(NAME efis_blackbox_broker_observer_tests
             COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_blackbox_broker_observer.py
@@ -409,6 +484,13 @@ if(EFIS_BUILD_EMS_NODE)
                 qml/OperationalProfileSetup.qml
                 qml/EfisTouchKeyboard.qml
                 qml/Theme.qml
+                qml/HmiTokens.qml
+                qml/HmiDataStateBadge.qml
+                qml/HmiArcGaugeV4.qml
+                qml/HmiCylinderMatrixV2.qml
+                qml/HmiAirframePanel.qml
+                qml/HmiFuelStatus.qml
+                qml/HmiElectricalSynoptic.qml
         )
         target_include_directories(efis-ems-qt PRIVATE
             src/nodes/ems src/renderers/qt)
@@ -440,6 +522,12 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_engine_runtime_store_tests tests/engine_runtime_store_tests.cpp)
     target_link_libraries(efis_engine_runtime_store_tests PRIVATE efis_core)
     add_test(NAME efis_engine_runtime_store_tests COMMAND efis_engine_runtime_store_tests)
+
+    add_executable(efis_sensor_adapter_health_tests
+        tests/sensor_adapter_health_tests.cpp)
+    target_link_libraries(efis_sensor_adapter_health_tests PRIVATE efis_core)
+    add_test(NAME efis_sensor_adapter_health_tests
+        COMMAND efis_sensor_adapter_health_tests)
 
     if(TARGET Qt6::Core)
         add_executable(efis_operational_profile_model_tests

@@ -1,0 +1,33 @@
+{
+  "schema": "avionix.skyview-responsive.v1",
+  "status": "DESIGN_BASELINE_NOT_FLIGHT_APPROVED",
+  "resolutions": [[1024, 600], [1280, 800], [1920, 1080]],
+  "compact_max_width_px": 1100,
+  "fma_height_logical_px": 58,
+  "tape_vertical_margin_logical_px": 12,
+  "weather_right_margin_logical_px": 8,
+  "compact_weather": {
+    "width_logical_px": 154,
+    "height_logical_px": 64,
+    "top_margin_logical_px": 62,
+    "badge_height_logical_px": 44,
+    "legend_visible": false,
+    "no_data_integrated": true
+  },
+  "regular_weather": {
+    "width_logical_px": 178,
+    "height_logical_px": 103,
+    "top_margin_logical_px": 62,
+    "badge_height_logical_px": 34,
+    "legend_visible": true,
+    "no_data_gap_logical_px": 6
+  },
+  "minimum_heading_clearance_logical_px": 4,
+  "attribution_visible": true,
+  "no_data_text": "NO DATA • CHECK HOTSPOT",
+  "state_labels": ["CURRENT", "CACHED", "STALE", "EXPIRED", "SIM"],
+  "operational_touch_enabled": true,
+  "golden_interactive": false,
+  "overlay_z": 3,
+  "no_control_authority": true
+}

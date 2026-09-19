@@ -1,0 +1,14 @@
+{
+  "schema": "avionix-next.g1-switch-results.v1",
+  "contract_revision": "1.0.0",
+  "candidate": {"manufacturer": "MokerLink", "model": "IND-F082GS"},
+  "status": "NOT_RUN",
+  "operator": null,
+  "started_utc": null,
+  "completed_utc": null,
+  "operator_confirmed": false,
+  "hardware_verified": false,
+  "flight_approval": false,
+  "measurements": {},
+  "artifacts": []
+}

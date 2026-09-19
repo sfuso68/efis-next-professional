@@ -41,6 +41,8 @@ class EmsController : public QObject {
     Q_PROPERTY(QString engineFaultMode READ engineFaultMode NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineDataState READ engineDataState NOTIFY snapshotChanged)
     Q_PROPERTY(QString dataSourceState READ dataSourceState NOTIFY snapshotChanged)
+    Q_PROPERTY(int dataAgeMs READ dataAgeMs NOTIFY snapshotChanged)
+    Q_PROPERTY(QVariantMap engineLinkDiagnostics READ engineLinkDiagnostics NOTIFY snapshotChanged)
     Q_PROPERTY(QString sensorNodeState READ sensorNodeState NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong blackBoxRecords READ blackBoxRecords NOTIFY snapshotChanged)
@@ -131,6 +133,8 @@ public:
     [[nodiscard]] QString engineFaultMode() const;
     [[nodiscard]] QString engineDataState() const { return engine_data_state_; }
     [[nodiscard]] QString dataSourceState() const { return data_source_state_; }
+    [[nodiscard]] int dataAgeMs() const { return data_age_ms_; }
+    [[nodiscard]] QVariantMap engineLinkDiagnostics() const;
     [[nodiscard]] QString sensorNodeState() const { return sensor_node_state_; }
     [[nodiscard]] QString blackBoxState() const { return black_box_state_; }
     [[nodiscard]] qulonglong blackBoxRecords() const { return black_box_records_; }
@@ -265,9 +269,11 @@ private:
     std::unique_ptr<efis::EdpUdpEngineSource> engine_network_source_;
     efis::engine::EngineSnapshot engine_snapshot_{};
     QString engine_data_state_{QStringLiteral("SIM FALLBACK")};
-    QString data_source_state_{QStringLiteral("SIMULATION")};
+    QString data_source_state_{QStringLiteral("SIM")};
+    int data_age_ms_{-1};
     QString sensor_node_state_{QStringLiteral("SIMULATED")};
     QString last_logged_engine_data_state_;
+    QString last_logged_data_source_state_;
     efis::MonoTime started_at_{efis::MonoClock::now()};
     efis::MonoTime last_recorder_check_{};
     QString recorder_status_path_;

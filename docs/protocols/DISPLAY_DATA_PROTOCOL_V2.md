@@ -1,7 +1,8 @@
 # Display Data Protocol V2
 
-Stato: codec, session layer e adapter UDP unicast implementati e verificati
-software; trasporto su hardware non ancora verificato, versione wire `2.0`.
+Stato: contratto wire congelato software da `AVIONIX_DATA_ICD_V1.md`, versione
+`2.0`. Questo documento descrive DDP; livelli di evidenza e limiti correnti
+restano nella Master Matrix e non vanno dedotti da note storiche qui presenti.
 
 ## Scopo
 
@@ -21,7 +22,7 @@ Ogni messaggio contiene:
 | `sequence` | `u64` | crescente per publisher |
 | `monotonic_us` | `u64` | tempo monotono publisher |
 | `payload_type` | enum | snapshot, alert, heartbeat, config |
-| `payload_length` | `u32` | limite da definire per trasporto |
+| `payload_length` | `u32` | massimo 65.536 byte |
 | `payload_crc32c` | `u32` | obbligatorio su datagrammi/CAN |
 
 Il wire format usa ordine di byte di rete (big endian), magic `EFN2` e un
@@ -108,6 +109,8 @@ priorità e non genera autonomamente condizioni avioniche.
   e metriche individuali; la scomparsa di un consumer non ferma gli altri né il
   recorder locale.
 
-Queste sono verifiche software e loopback locale. Mancano ancora installazione
-su Blackbox/RPi5, ingresso dal Pixhawk e dal CAN fisici, perdita/riordino
-pacchetti su Ethernet reale e replay da registrazione.
+Questo elenco conserva evidenze software del contratto. Le prove installative
+successive sono registrate in `docs/status/EFIS_NEXT_STATE.md`; non equivalgono
+automaticamente alla qualifica della baseline ICD corrente. Per offset,
+enumerazioni, vettori e livelli di evidenza fa fede
+`AVIONIX_DATA_ICD_V1.md`.

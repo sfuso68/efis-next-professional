@@ -47,6 +47,23 @@ Aggiornamento: 2026-09-15
 Baseline repository verificata: `origin/main` al commit
 `d9231f4b00f3821da530553925166569861dd435`.
 
+### Riesame audit AVIONIX NEXT — 2026-09-17
+
+- Persistito in `docs/project/AVIONIX_NEXT_PROJECT_AUDIT.md` il blocco completo
+  richiesto dalla sezione 24: repository, sistemi, gap WS0–WS12, conflitti,
+  blocchi, gate, prima modifica sicura e decisioni richieste.
+- Il branch `work/skyview-ems-hmi-contract-v1` è a `dfb3510`, 18 commit avanti
+  e zero indietro rispetto a `origin/main`; Project Control #85 e Core CI #69
+  sono PASS.
+- Il backlog registra gli avanzamenti software G2/G3 senza promuovere il
+  verticale reale o i requisiti hardware.
+- La prossima modifica proposta è il freeze documentale dell'ICD AVIONIX e
+  dell'evidence bundle. È esplicitamente **non autorizzata** finché l'utente
+  non la approva.
+- Nessun software avionico, nodo, rete, servizio, merge o deployment è stato
+  modificato in questo riesame. Le evidenze hardware restano quelle datate già
+  presenti nello stato e non sono state reinterpretate come verifiche odierne.
+
 ### Baseline documentale AVIONIX NEXT WS0/G0 — 2026-09-16
 
 Branch dedicato: `docs/avionix-master-baseline-r0`.
@@ -2737,3 +2754,1217 @@ prodotto le evidenze negative e di rollback registrate qui sotto.
   stato creato/attivato e nessuna route è stata cambiata.
 - Dopo carrier PASS serviranno profilo inattivo, rollback armato, switch da
   console locale, post-check e nuova cattura MAVLink v3.
+
+## SkyView/EMS HMI Contract V1 — 2026-09-17
+
+### Implementato
+
+- Tradotto il concept SkyView/EMS in dieci gate verificabili: piattaforma e
+  risoluzioni, design system, qualità dati, synthetic vision, strumenti volo,
+  navigazione, EMS primario, airframe/fuel/electrical, degrado e prestazioni.
+- Aggiunti manifesto `config/ui/avionix-hmi-v1.json`, specifica HMI, validatore
+  fail-closed, sei test e controllo CI dedicato.
+- Conservato il concept approvato come asset versionato con SHA-256 dichiarato
+  nella specifica; resta un riferimento visuale non operativo.
+- Resta vincolante ADR-013: SkyView su RPi5, EMS su RPi4 dedicato e VIDEO-CORE
+  su un secondo RPi4. L'HMI è esclusivamente read-only.
+
+### Verificato solo software
+
+- Validità sintattica JSON verificata. Sul commit `13d8687` il workflow Project
+  Control, incluso validatore e sei test HMI, e la regressione EFIS Core CI
+  hanno entrambi completato con esito positivo.
+
+### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware e nessuna distribuzione sui nodi.
+
+### Aperto
+
+- Implementazione QML/Scene Graph, golden alle risoluzioni target, build ARM64,
+  replay DDP/EDP e acceptance touch/visiva/termica restano aperti. Il contratto
+  è `DESIGN_BASELINE_NOT_FLIGHT_APPROVED` e non va dichiarato DONE.
+
+### Incremento software — cinque componenti HMI
+
+- Implementati token condivisi, badge qualità/età, wrapper gauge EMS V4,
+  bussola SkyView circolare ±35° e showcase 1024×600.
+- I cinque strumenti circolari della pagina EMS propagano ora lo stato sorgente
+  nel gauge V4. Poiché EMS-004 non dispone ancora del manuale applicabile, i
+  limiti restano esplicitamente `UNVERIFIED` e non vengono presentati come
+  approvati.
+- Il validatore controlla presenza e registrazione CMake dei componenti, numero
+  dei gauge V4, propagazione dello stato e geometria bussola. Sono verifiche
+  statiche/software.
+- `qmllint` Qt 6.11.1 sui cinque nuovi componenti è PASS. La build MSVC
+  19.51/Qt 6.11.1 ha completato 224/224 step e linkato sia `efis-pfd-qt` sia
+  `efis-ems-qt`. Screenshot, build ARM64 e pannelli reali restano aperti.
+
+### Incremento software — cinque componenti EMS strutturali
+
+- Implementati matrice CHT/EGT a quattro cilindri con hottest channel e spread,
+  pannello airframe con tre consensi carrello e flap verticale, riepilogo fuel
+  e sinottico elettrico read-only.
+- I quattro componenti sono integrati nella pagina EMS condivisa tra PFD RPi5
+  ed EMS RPi4 e nella showcase deterministica. Il validatore repository ne
+  controlla presenza, registrazione CMake e integrazione singola.
+- Il degrado LIVE/SIM/STALE/LOST/FAIL è preservato e un canale perso non viene
+  rappresentato come normale. I limiti CHT/EGT restano esplicitamente
+  `UNVERIFIED`.
+
+#### Verificato solo software
+
+- `qmllint` Qt 6.11.1 sui quattro nuovi componenti e sulla showcase: PASS.
+- Validatore HMI: PASS; test Python dedicati: 7/7 PASS.
+- Build MSVC/Qt 6.11.1 dei target `efis-pfd-qt` ed `efis-ems-qt`: 75/75
+  step incrementali e link finale PASS.
+- Queste prove verificano sintassi, contratto e compilazione; non costituiscono
+  acceptance grafica né verifica su hardware ARM64.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica e nessuna distribuzione su RPi4/RPi5.
+
+#### Aperto
+
+- Golden screenshot multi-risoluzione, replay DDP/EDP, build ARM64, verifica
+  touch, 40 FPS minimi, termica e prova fault di 60 minuti sui pannelli reali.
+- Approvazione dei limiti motore da manuale applicabile prima di chiudere
+  EMS-004.
+
+### Incremento software — golden EMS multi-risoluzione
+
+- Aggiunti fixture QML deterministico, ingresso `--hmi-golden`, cattura
+  normalizzata rispetto al DPI e tool Python di generazione/validazione.
+- Versionate baseline native Windows a 800×480, 1024×600 e 1280×800 con
+  manifesto, provenienza, dimensioni e SHA-256. La CI verifica anche una prova
+  negativa di manomissione.
+
+#### Verificato solo software
+
+- QML AOT/build PFD 117 step e link PASS; rebuild C++ 4/4 PASS.
+- `py_compile` PASS; test HMI congiunti 10/10 PASS; validatori contratto e
+  golden PASS. Ispezione visiva: nessun taglio strutturale e cerchi non
+  ellittici. Seconda cattura indipendente: confronto pixel tollerante PASS;
+  differenze limitate al rumore subpixel dell'anti-aliasing Windows.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento.
+
+#### Aperto / non dichiarare DONE
+
+- A 800×480 le etichette secondarie risultano ancora troppo piccole per
+  acceptance ergonomica. Servono una variante compact progettata, prova sul
+  pannello RPi4, font/contrasto diurno-notturno, touch, 40 FPS e soak termico.
+- Le golden sono `SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE`; non qualificano
+  limiti motore, dati reali o impiego in volo.
+
+### Incremento software — leggibilità EMS compact 800×480
+
+- Aggiunta una modalità compact deterministica, attiva a larghezza non
+  superiore a 820 px o altezza non superiore a 500 px. Scala geometrica e
+  scala tipografica sono separate per evitare che l'aumento dei testi deformi
+  gli strumenti circolari.
+- Header e barra di navigazione usano contenuti abbreviati; i quattro comandi
+  inferiori mantengono un'altezza minima effettiva di 44 px.
+- Gauge primari e secondari applicano valori/unità con minimi tipografici e una
+  scala compatta senza duplicare le etichette Canvas e vettoriali.
+- CHT/EGT, carrello/flap, fuel ed elettrico ricevono esplicitamente lo stato
+  compact e applicano un minimo di 8 px ai testi ausiliari.
+- Il contratto macchina registra breakpoint e soglie compact; due test
+  negativi impediscono di ridurre silenziosamente testo e touch target.
+
+#### Verificato solo software
+
+- Validatore contratto PASS; suite HMI 12/12 PASS; `qmllint` senza errori
+  (restano warning preesistenti sugli accessi non qualificati).
+- Build MSVC/Qt 6.11.1 PFD con QML AOT e link finale PASS.
+- Golden definitive rigenerate a 800×480, 1024×600 e 1280×800; validatore
+  SHA/pixel PASS e seconda cattura indipendente entro la tolleranza anti-alias.
+- Ispezione software 800×480: strumenti circolari non deformati, scala unica
+  senza duplicazioni, comandi inferiori da 44 px, header abbreviato e moduli
+  destri completi.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessuna distribuzione su RPi4/RPi5.
+
+#### Aperto / non dichiarare DONE
+
+- Eseguire acceptance visiva/touch sul pannello RPi4; le golden restano
+  `SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE`.
+- Restano aperti leggibilità sunlight/night, 40 FPS, build ARM64, replay EDP,
+  soak termico e fault test. I limiti motore restano `UNVERIFIED`.
+
+### Incremento software — stati EMS degradati
+
+- Il renderer golden accetta fixture deterministiche `LIVE/STALE/LOST/FAIL/SIM`
+  e un'età esplicita, senza modificare il percorso operativo.
+- L'header conserva lo stato effettivo invece di presentare come `LIVE` ogni
+  condizione non-SIM; `STALE/LOST` mostrano l'età del dato congelato.
+- I gauge ricevono la stessa età e, in `LOST/FAIL`, rimuovono gli archi verdi
+  sostituendoli con una scala neutra oltre ai cue testuali.
+- Verificato via test, QML AOT e link PFD/EMS. Il comando di cattura degradata è
+  implementato, ma il renderer è andato in timeout nella sessione Windows e
+  non viene dichiarata una nuova golden. Hardware RPi4, EDP reale, touch,
+  frame-rate, termica e fault fisico restano aperti.
+
+### Incremento software — isolamento delle funzioni derivate EMS
+
+Con sorgente `LOST/FAIL` il CAS segnala prioritariamente la perdita dati;
+`STALE/DEGRADED` genera caution. Trend, lean e checklist non consumano o
+convalidano valori non utilizzabili. Cilindri, airframe, fuel ed electrical
+ricevono stato ed età coerenti. Verificati soltanto codice, test e build desktop;
+fault EDP fisico e comportamento sul pannello RPi4 restano aperti.
+
+### Incremento software — stato ed età EDP operativi EMS
+
+- Il consumer EDP espone l'età monotona dell'ultimo datagramma accettato;
+  prima del primo campione restituisce assenza e protegge da regressioni
+  dell'orologio saturando l'età a zero.
+- `EdpUdpEngineSource` propaga questa informazione senza modificare payload,
+  frequenze, autorità o protocollo wire.
+- Il controller EMS pubblica `dataAgeMs` a QML e usa il vocabolario HMI
+  `LIVE/STALE/LOST/SIM` al posto del precedente valore ambiguo `NETWORK`.
+- In attesa non viene inventata un'età (`-1`); a link perso resta visibile
+  l'età dell'ultimo dato EDP, mentre la simulazione senza sorgente EDP torna a
+  `SIM` con età non applicabile. I dati di fallback sotto `LOST` restano
+  esclusi dalle funzioni derivate dalla logica fail-closed già presente.
+
+#### Verificato solo software
+
+- `efis_edp_v1_tests` compilato ed eseguito su loopback UDP: PASS.
+- Test contratto HMI 14/14: PASS.
+- Build MSVC/Qt 6.11.1 di `efis-pfd-qt` e `efis-ems-qt`, inclusi QML AOT e
+  link finali: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessuna distribuzione o fault injection su
+  Blackbox/RPi4/RPi5.
+
+#### Aperto / non dichiarare DONE
+
+- Replay EDP dalla Blackbox reale e verifica temporale `LIVE → STALE → LOST`
+  sul pannello EMS RPi4.
+- Acceptance visiva dell'età, frame-rate, touch, termica e soak/fault test.
+
+### Incremento software — transizioni e recovery EDP deterministiche
+
+- Introdotto `LinkStatus`, snapshot atomico di stato ed età: il controller non
+  effettua più due letture separate dello stesso collegamento.
+- Definiti nomi diagnostici stabili `WAITING/LIVE/STALE/LOST`, utilizzabili in
+  log e strumenti di banco senza replicare conversioni locali.
+- Verificati esattamente i confini: 250 ms resta `LIVE`, 251 ms è `STALE`,
+  1.000 ms resta `STALE` e oltre il limite lo stato è `LOST`.
+- Un datagramma con CRC errato durante la perdita viene rifiutato e non aggiorna
+  l'età. Un publisher valido successivo produce recovery atomica `LIVE/0 ms`.
+- La stessa sequenza di perdita e recovery è provata sul trasporto UDP loopback,
+  inclusa la nuova disponibilità del campione dopo il recupero.
+
+#### Verificato solo software
+
+- `efis_edp_v1_tests`: PASS con transizioni, CRC fault e recovery UDP.
+- Contratto HMI: 14/14 PASS.
+- Build MSVC/Qt 6.11.1 PFD ed EMS, link finali: PASS.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica. Le prove usano tempo deterministico e loopback locale.
+
+#### Aperto / non dichiarare DONE
+
+- Ripetere la medesima sequenza con broker Blackbox e pannello EMS RPi4,
+  raccogliendo timestamp e schermate degli stati.
+- Fault fisico Ethernet, reboot, endurance e acceptance grafica/touch restano
+  gate hardware separati.
+
+### Incremento software — diagnostica operativa EDP nel Setup EMS
+
+- Il controller espone `engineLinkDiagnostics` read-only con trasporto, bind,
+  porta, stato, età e contatori EDP: datagrammi, accettati, decode/CRC/identity
+  reject, duplicati, inversioni, gap di sequenza e restart del publisher.
+- I log producono `ems_edp_link_transition` soltanto quando cambia lo stato
+  canonico o lo stato motore; l'evento include età e contatori critici senza
+  generare log a ogni refresh da 50 ms.
+- Il Setup EMS dispone ora della settima sezione `DATA LINK`, separata dalla
+  pagina di volo, con stato, freshness, rapporto validi/totali e anomalie.
+- `AIRCRAFT DATA` è stato spostato coerentemente all'indice 6 e le modalità di
+  anteprima sono state aggiornate; aggiunto `--setup-edp-preview`.
+- La diagnostica è esplicitamente informativa: nessun pulsante modifica rete,
+  sorgente, contatori o autorità avionica.
+
+#### Verificato solo software
+
+- Contratto HMI 15/15: PASS; `qmllint` senza errori, con warning preesistenti
+  sugli accessi non qualificati.
+- Build MSVC/Qt 6.11.1 PFD ed EMS, QML AOT e link finali: PASS.
+- Il tentativo di cattura `--setup-edp-preview` su backend offscreen Windows è
+  rimasto bloccato ed è stato interrotto; nessuna immagine viene dichiarata.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; pagina e contatori non sono stati osservati sul
+  pannello RPi4.
+
+#### Aperto / non dichiarare DONE
+
+- Catturare la pagina DATA LINK su RPi4 durante `LIVE → STALE → LOST → LIVE` e
+  confrontare contatori UI, journal e broker Blackbox.
+- Verificare leggibilità/touch a 800×480 e persistenza dei log attraverso reboot
+  e fault fisico Ethernet.
+
+### Incremento software — tracciabilità del publisher EDP
+
+Il consumer EDP produce ora uno snapshot diagnostico atomico contenente stato,
+metriche, identità dell'ultimo publisher accettato, sequenza e ultimo motivo di
+rifiuto con età monotona. Un pacchetto CRC errato, duplicato, invertito o con
+source node inatteso aggiorna l'evidenza del rifiuto ma non sostituisce
+l'identità autorevole e non rinfresca l'età dei dati. Un publisher valido dopo
+la perdita aggiorna identità e sequenza e conserva l'ultimo fault per la
+diagnostica di banco.
+
+Il controller EMS propaga source node, publisher instance e sequenza come
+stringhe, evitando perdita di precisione numerica in QML, e calcola percentuale
+di datagrammi validi e stato cumulativo della sessione. La pagina DATA LINK li
+mostra senza azioni di scrittura; il journal delle sole transizioni include la
+stessa identità e l'ultimo rifiuto.
+
+#### Verificato solo software
+
+- Test EDP: PASS per attesa, CRC, identità inattesa, duplicato, restart,
+  recovery e conservazione dell'evidenza.
+- Contratto HMI: 15/15 PASS; nessun `TapHandler` o comando nella pagina DATA
+  LINK.
+- `qmllint` senza errori e build/link MSVC/Qt dei target PFD ed EMS: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento.
+
+#### Aperto / non dichiarare DONE
+
+- Confrontare UI, journal EMS e broker Blackbox sulla rete reale durante
+  perdita, traffico rifiutato, restart e recovery.
+- Verificare resa/touch 800×480, reboot, fault Ethernet ed endurance. EMS-002
+  e BBX-003 restano `PARTIAL`.
+
+### Incremento software — autorità, soglie e recenza EDP
+
+Lo snapshot diagnostico del consumer include ora la policy realmente applicata.
+Il controller EMS espone separatamente source node atteso e attivo, risultato
+dell'autorità (`UNRESTRICTED/WAITING/MATCH/MISMATCH`) e soglie monotone
+`stale/lost`. Questi valori derivano dalla configurazione operativa e non da
+costanti duplicate nel QML.
+
+L'ultimo rifiuto rimane disponibile come evidenza cumulativa della sessione.
+Un indicatore distinto `recentRejection` vale invece soltanto nella finestra
+deterministica di 5 s dal fault, così un'anomalia storica non appare come un
+allarme corrente. La pagina DATA LINK mostra policy, identità, publisher,
+sequenza e marcatore `RECENT` ed è ancora strettamente read-only.
+
+#### Verificato solo software
+
+- `efis_edp_v1_tests`: PASS per copia della policy, confine inclusivo della
+  finestra recente ed estinzione oltre 5 s.
+- Contratto HMI: 15/15 PASS.
+- `qmllint` Qt 6.11.1 senza errori; warning preesistenti non bloccanti.
+- Build e link MSVC/Qt 6.11.1 di `efis-pfd-qt` ed `efis-ems-qt`: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessuna distribuzione su RPi4/RPi5 o Blackbox.
+
+#### Aperto / non dichiarare DONE
+
+- Confrontare autorità, soglie, `RECENT`, contatori e journal sulla rete reale
+  durante publisher valido, source node errato, `STALE`, `LOST` e recovery.
+- Verificare leggibilità e touch della pagina a 800×480, reboot, fault Ethernet
+  ed endurance. EMS-002 e BBX-003 restano `PARTIAL`.
+
+### Incremento software — osservatore passivo EDP V1
+
+È disponibile un osservatore Linux `AF_PACKET` dedicato al collegamento
+Blackbox→EMS. Il processo filtra `10.77.10.2 → 10.77.10.12:49003`, non occupa la
+porta del consumer, non trasmette e non persiste dati motore grezzi. Il parser
+indipendente verifica envelope, CRC32C, identità, struttura dei 18 campioni,
+unità ingegneristiche e marcatura SIM.
+
+Il report aggregato include frequenza, timing massimo/p95, autorità del source
+node, sequenze, gap, duplicati, inversioni, restart e categorie degli errori di
+decodifica. Tutti i limiti sono espliciti; l'esito è fail-closed e contiene
+sempre `flight_approval=false`. L'output su file usa sostituzione atomica.
+
+#### Verificato solo software
+
+- Otto test deterministici PASS: frame valido, CRC noto, header/identità/
+  lunghezza/CRC errati, segnale duplicato, unità errata con CRC valido,
+  sequenze/restart e tutti i gate di accettazione.
+- `py_compile` PASS; il test è registrato in CTest.
+- Riconfigurazione CMake e compilazione MSVC del target EDP: PASS. Il processo
+  C++ non è stato avviato localmente da CTest per la restrizione applicativa
+  Windows già nota; occorre l'esito della EFIS Core CI Linux.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessuna cattura EDP reale o modifica ai nodi.
+
+#### Aperto / non dichiarare DONE
+
+- Distribuire soltanto il tool sul RPi4 EMS e acquisire una finestra passiva da
+  180 s, quindi confrontare report, pagina DATA LINK e journal.
+- Ripetere separatamente fault fisico e recovery; la cattura passiva non li
+  sostituisce. EMS-002 e BBX-003 restano `PARTIAL`.
+
+### Incremento software — qualificazione indipendente dei report EDP
+
+Il report della cattura passiva non viene più accettato sulla base del proprio
+campo `status`. Il nuovo assessor rilegge il documento con limite di dimensione,
+verifica schema, modalità passiva, privacy, endpoint, timestamp e contatori,
+riconcilia pacchetti, byte, errori, stream, sequenze, restart e campioni
+temporali, quindi ricalcola limiti, check e stato. Chiavi sconosciute o mancanti
+sono respinte in modo fail-closed.
+
+L'esito distingue integrità, autorità, continuità e uniformità e classifica i
+campioni come `NO_DATA`, `SIM_ONLY`, `REAL_ONLY` o `MIXED`. Il documento di
+assessment conserva lo SHA-256 del report sorgente, usa scrittura atomica e
+mantiene sempre `flight_approval=false`; anche un esito positivo vale soltanto
+come evidenza di banco.
+
+#### Verificato solo software
+
+- Suite cattura più assessment: 17/17 test PASS.
+- `py_compile` dei due tool e delle due suite: PASS.
+- Sono coperti report alterati, escalation di privacy/approvazione, incoerenze
+  di contatori e stream, schema/modalità/policy ignoti, classificazione
+  SIM/REAL/MIXED, digest e scrittura atomica da CLI.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun deployment e nessuna cattura reale.
+
+#### Aperto / non dichiarare DONE
+
+- Acquisire sul RPi4 EMS il report passivo da 180 s e produrre l'assessment
+  indipendente, correlando esito, pagina DATA LINK e journal Blackbox.
+- Ripetere con fault Ethernet, recovery, reboot ed endurance. EMS-002 e BBX-003
+  restano `PARTIAL` fino alle evidenze hardware previste dalla master matrix.
+
+### Incremento software — replay EDP deterministico e fail-closed
+
+È disponibile un generatore di sessioni EDP V1 riproducibili per il banco EMS.
+Produce frame completi con 18 campioni e scenari separati: nominale, gap,
+duplicato, inversione, restart, CRC errato, sorgente non autorevole, provenienza
+mista, dati reali e perdita con recovery. Duplicato e inversione sono costruiti
+senza introdurre gap collaterali, così l'esito osservato resta attribuibile al
+fault scelto.
+
+Il comando opera in `DRY_RUN` salvo `--send`. Loopback è consentito
+esplicitamente; per una destinazione diversa serve anche
+`--allow-bench-network` e sono ammesse soltanto reti IPv4 private. Frame,
+frequenza, pausa, identità e porta hanno limiti rigidi. Il manifesto atomico
+non contiene payload, include SHA-256 del wire stream e dello scheduling e
+mantiene sempre
+`flight_approval=false`.
+
+#### Verificato solo software
+
+- Nove test replay PASS; suite EDP cattura/assessment/replay 26/26 PASS.
+- Parser indipendente compatibile con frame SIM, reali e misti; fault di
+  sequenza, autorità, CRC e restart osservabili secondo il contratto.
+- `py_compile` PASS e prova CLI offline `clean` PASS con zero trasmissioni.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun datagramma è stato inviato sulla rete
+  avionica e nessun servizio è stato modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Eseguire gli scenari sul banco isolato, con motore e attuatori non alimentati,
+  correlando DATA LINK, journal EMS, cattura passiva e assessment.
+- Ripetere successivamente con il publisher Blackbox reale e con fault fisico
+  Ethernet. EMS-002 e BBX-003 restano `PARTIAL`.
+
+### Readiness documentale G2 — 2026-09-17
+
+È stato eseguito un confronto in sola lettura fra DDP V2, EDP V1, ADR-008…011,
+implementazione, test e strumenti di evidenza. Il risultato è registrato in
+`docs/project/AVIONIX_G2_FREEZE_READINESS.md`. Non costituisce il freeze
+dell'ICD e non autorizza modifiche al wire protocol.
+
+#### Verificato solo software
+
+- Test C++ mirati DDP/EDP: 3/3 PASS.
+- Suite Python EDP cattura/assessment/replay: 26/26 PASS.
+- Sono stati identificati nove disallineamenti documentali o decisioni aperte,
+  inclusi testi DDP storici, assenza di un ICD sovraordinato, test vector e
+  schema evidence bundle non ancora congelati.
+
+#### Verificato su hardware reale
+
+- Nulla in questa attività. Le evidenze installative pregresse restano
+  storiche e non sono state reinterpretate come acceptance corrente.
+
+#### Aperto / non dichiarare DONE
+
+- `AVX-G2-01` resta `OPEN/IN_PROGRESS-SW`: il freeze documentale richiede
+  conferma esplicita dell'utente.
+- `AVX-G2-02` resta `PROPOSED` e dipendente dall'inventario G1 e dalla sorgente
+  CAN reale. Nessun nodo, servizio, rete o deployment è stato modificato.
+
+### Registro decisioni G0/G1/G2 — 2026-09-17
+
+Le decisioni del proprietario sono ora separate dai fatti tecnici in
+`docs/project/AVIONIX_NEXT_DECISION_REGISTER.md`. Il registro contiene cinque
+decisioni con stato, raccomandazione, effetto e criterio di autorizzazione.
+
+#### Verificato solo software/documentazione
+
+- La ricerca nelle branch esaminate, nel mirror locale e in `sources/` non ha
+  trovato nessuno dei cinque riferimenti mancanti elencati nell'indice.
+- Le decisioni di naming, retention NAS e freeze ICD restano
+  `PENDING_USER`; recupero fonti e inventario ASSO5 restano rispettivamente
+  `BLOCKED_EXTERNAL` e `BLOCKED_HW`.
+
+#### Verificato su hardware reale
+
+- Nulla in questa attività; NAS, ASSO5 e Sequent non sono stati interrogati.
+
+#### Aperto / non dichiarare DONE
+
+- Nessuna delle cinque decisioni è stata approvata da questo documento.
+- G0 resta `PARTIAL`; nessun merge, deployment, rename, cancellazione o
+  modifica hardware è autorizzato.
+
+### Freeze documentale G2 ICD AVIONIX — 2026-09-17
+
+Il proprietario ha approvato esplicitamente `DEC-G2-001`. È stata congelata la
+baseline software `AVIONIX_DATA_ICD_V1` sopra i contratti DDP V2 ed EDP V1,
+senza cambiare byte wire, codec, processi, configurazioni installative, rete o
+hardware. Il freeze comprende JSON normativo, schema evidence bundle,
+vettori deterministici con CRC32C/SHA-256 e validator indipendente fail-closed.
+
+#### Implementato
+
+- ICD sovraordinato con autorità, direzioni, endpoint, offset, dimensioni,
+  freshness `WAITING/LIVE/STALE/LOST`, provenance e regole di evoluzione.
+- Specifica `config/protocols/avionix-data-icd-v1.json` e schema
+  `avionix-evidence-bundle-v1.schema.json`, con `flight_approval=false`.
+- Vettori canonici DDP V2 (529 byte) ed EDP V1 (694 byte), ricostruiti senza
+  usare il codec C++, e test automatici registrati in CTest.
+- Documenti DDP/EDP aggiornati per rimuovere contraddizioni storiche e rinviare
+  all'ICD normativo.
+
+#### Verificato solo software
+
+- Validator ICD: PASS; CRC32C noto, layout contigui, quantità segnali, payload,
+  digest dei due frame e invarianti dello schema evidence verificati.
+- Suite `tests.test_avionix_icd`: 7/7 PASS su workstation x86-64.
+- Controllo sintattico Python: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento. Non sono stati contattati né modificati RPi4,
+  RPi5, Blackbox, server, NAS, Pixhawk, switch o sensori.
+
+#### Aperto / non dichiarare DONE
+
+- `PRJ-003` è `VERIFY-HW` e `AVX-G2-01` resta `IN_PROGRESS`: eseguire gli
+  stessi vettori/validator su ARM64 RPi4 e RPi5 e archiviare evidence bundle.
+- Cadenza, jitter, perdita, endurance e autenticazione non sono qualificati.
+- `AVX-G2-02` (verticale reale) resta separato e non autorizzato dal freeze.
+
+#### Evidence bundle software conforme
+
+Il primo manifesto `avionix-next.evidence-bundle.v1` è archiviato in
+`docs/status/evidence/g2-icd-freeze-workstation-20260917/evidence.json`. Il
+validator ora controlla proprietà obbligatorie/ignote, ID, timestamp, ambiente,
+coerenza dell'esito, divieto di flight approval, path confinati al repository e
+ricalcola dimensione e SHA-256 degli artifact.
+
+- Suite ICD/evidence: 11/11 PASS su workstation x86-64.
+- Il bundle registra Project Control #89 e Core CI #73 PASS, ma conserva livello
+  `VERIFIED_SW` e tre limitazioni esplicite.
+- Nessuna nuova evidenza hardware: `PRJ-003` resta `VERIFY-HW`.
+
+### Checkpoint G2 ARM64 pendente — 2026-09-17
+
+Il proprietario ha autorizzato la verifica read-only sui tre nodi ARM64. Il
+tentativo SSH dal workstation è stato respinto su PFD `.45`, EMS `.36` e MFD
+`.49`; nessuna autenticazione è stata aggirata e nessun nodo è stato cambiato.
+La procedura da eseguire dal PFD è stata predisposta e il punto è congelato in
+`CHECKPOINT-2026-09-17-G2-ARM64-PENDING.md`.
+
+#### Verificato su hardware reale
+
+- Il 2026-09-18 il replay software G2 è stato eseguito sul PFD fisico
+  `efis-pfd-01` (`192.168.1.45`, `aarch64`, Python 3.13.5) usando esattamente
+  il freeze `c331a9d3846d1f59addcea76f9db530174c8ec11`. Il validator ha restituito
+  `AVIONIX ICD V1: PASS`, gli 11 test sono PASS e i digest di ICD, schema,
+  vettori e validator coincidono con quelli congelati. L'evidenza parziale è
+  in `docs/status/evidence/g2-arm64-pfd-20260918/`.
+- Il report PFD originario è stato recuperato e corrisponde byte-per-byte allo
+  SHA-256 target
+  `80f6258c2fc7c469470768fef35687e1bea7424532a1b3b4bcc039867201841f`.
+- Il 2026-09-18 lo stesso freeze è stato verificato sul MFD RPi5 fisico `pi5`
+  (`192.168.1.49`, `aarch64`, Python 3.13.5): validator PASS, 11/11 test PASS e
+  quattro digest coincidenti. Il report originario è archiviato in
+  `docs/status/evidence/g2-arm64-mfd-20260918/` con SHA-256
+  `5fb12c74488f6b0ff46d51d027e176b115dd3cc0db5937587bc34399354c7d3e`.
+- Il replay è stato completato anche sull'EMS RPi4 fisico `efis`
+  (`192.168.1.36`, `aarch64`, Python 3.13.5): validator PASS, 11/11 test PASS
+  e digest coincidenti. Il report originario copiato dal target misura 2142
+  byte e coincide esattamente con lo SHA-256
+  `e66951087e5687339353faff04fb51cdfd99bf5728b27f8267bc119049644bea`.
+- I tre bundle individuali e quello consolidato sono validi; il checkpoint di
+  chiusura del replay è `CHECKPOINT-2026-09-18-G2-ARM64-VERIFIED.md`.
+
+#### Aperto / non dichiarare DONE
+
+- `AVX-G2-01` è `ACCEPTED` per freeze e replay x86-64/ARM64.
+- `PRJ-003` resta `VERIFY-HW`: manca la prova dati live separata AVX-G2-02.
+- Non avviare AVX-G2-02 senza approvazione esplicita; questa attività non ha
+  verificato Ethernet DDP/EDP, Blackbox, Pixhawk, CAN o sensori reali.
+
+### Incremento G3 — venti controlli HMI fail-closed
+
+Il manifesto HMI SkyView/EMS è ora verificato da venti controlli stabili
+`HMI-B20-01`…`HMI-B20-20`. Il validatore rifiuta proprietà sconosciute,
+ordinamenti o matrici alterati, allocazioni di piattaforma errate, minimi
+grafici insufficienti, semantica dati incompleta e qualunque indebolimento
+delle invarianti degradate. La suite è registrata in CTest.
+
+#### Implementato
+
+- Contratto chiuso per canvas, target, risoluzioni, token e palette.
+- Controlli per stati/freshness, zone/V-speed/HSI/terrain/overlay SkyView.
+- Controlli per FPS, compact mode, gauge, cilindri, flap/carrello, pagine ed
+  elettrico EMS.
+- Invarianti degradate esatte, inclusa assenza di autorità di comando.
+- Documento `docs/project/AVIONIX_G3_HMI_BATCH20.md` con mappatura completa.
+
+#### Verificato solo software
+
+- Validatore HMI: PASS, 2 target, 10 gate e 20 controlli.
+- Suite `tests.test_avionix_hmi_contract`: 17/17 PASS, incluse venti mutazioni
+  isolate e radice non-oggetto.
+- `py_compile`: PASS; test registrato come
+  `efis_avionix_hmi_contract_tests` in CTest.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun deployment, riavvio o modifica ai nodi.
+
+#### Aperto / non dichiarare DONE
+
+- Completare le golden SkyView, inclusa 1920×1080.
+- Verificare su RPi4/RPi5 leggibilità, touch, sunlight/night, ≥40 FPS,
+  termica e fault.
+- `PRJ-004` resta `VERIFY-HW` e `AVX-G3-04` resta `IN_PROGRESS`.
+
+### Incremento G3 — matrice SkyView golden, venti punti
+
+La pipeline golden è stata resa role-aware e portata allo schema chiuso
+`avionix.hmi-golden-manifest.v2`. La nuova modalità `--skyview-golden` carica
+una fixture deterministica distinta dall'avvio operativo. Dati volo,
+navigazione, motore e meteo sono fissi; il terreno golden è sintetico e non
+dipende da rete, DEM o texture installate.
+
+#### Implementato
+
+- Matrice EMS: 800×480, 1024×600 e 1280×800.
+- Matrice SkyView: 1024×600, 1280×800 e 1920×1080.
+- Venti controlli `HMI-G20-01`…`HMI-G20-20` per schema, ruolo, provenance,
+  stato/età, path, risoluzione, dimensione, SHA-256 file e pixel.
+- Capture e comparatore selezionabili per ruolo; Project Control valida entrambi
+  i bundle.
+- Documento `AVIONIX_G3_SKYVIEW_GOLDEN_BATCH20.md` con mapping e limiti.
+
+#### Verificato solo software
+
+- Build MSVC/Qt 6.11.1 del PFD: PASS, 57/57 step finali e link.
+- Tre golden SkyView native Windows prodotte e ispezionate.
+- Seconda cattura indipendente confrontata entro le tolleranze anti-alias: PASS.
+- Suite golden 5/5 PASS con venti mutazioni; validator EMS e SkyView V2 PASS.
+- `py_compile` dei tre tool e della suite: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla; nessun nodo, servizio o cablaggio è stato contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- La cattura 1024×600 evidenzia densità nella zona superiore del riquadro
+  meteo; serve un affinamento separato con nuova golden.
+- Terrain golden sintetico non qualifica DEM, texture, LOD o proiezione reali.
+- Touch, sunlight/night, ≥40 FPS, termica e fault sui pannelli restano aperti.
+- `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS`.
+
+### Incremento G3 — SkyView responsive, venti punti
+
+La criticità software dell'overlay meteo nelle golden SkyView è stata corretta
+e congelata nel contratto `avionix.skyview-responsive.v1`. Il profilo compact
+usa un solo badge 154×64; quello regular separa badge e no-data di 6 px. In
+entrambi i casi l'overlay inizia 62 px logici sotto la FMA e non invade più la
+heading ribbon.
+
+#### Implementato
+
+- Venti controlli `HMI-R20-01`…`HMI-R20-20` fail-closed.
+- Breakpoint 1100 px, geometrie compact/regular e policy di interazione.
+- No-data integrato in compact; legenda secondaria nascosta solo in compact.
+- Modalità `--manifest-only` per firmare catture dirette senza rilanciare Qt.
+- Golden SkyView aggiornate per 1024×600, 1280×800 e 1920×1080.
+
+#### Verificato solo software
+
+- Build MSVC/Qt e QML AOT: PASS.
+- Ispezione visuale delle golden 1024×600 e 1280×800: heading libera e riquadri
+  meteo non sovrapposti.
+- Seconda cattura nativa indipendente 3/3 e confronto anti-alias: PASS.
+- Validatore responsive e venti mutazioni isolate: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo, servizio, rete o cablaggio è stato
+  contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Validare la stessa geometria su RPi5 reale, inclusi touch, ≥40 FPS,
+  sunlight/night, termica e stati meteo LIVE/CACHED/STALE/EXPIRED.
+- Terrain golden sintetico non qualifica DEM, texture, LOD o proiezione reali.
+- `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS`.
+
+### Incremento G3 — stati EMS fail-closed, venti punti
+
+La pagina EMS compact dispone ora di una matrice deterministica a sei stati:
+`LIVE`, `STALE`, `DEGRADED`, `LOST`, `FAIL` e `SIM`. Il contratto
+`avionix.ems-state-presentation.v1` e i controlli `HMI-E20-01`…`HMI-E20-20`
+rendono verificabili severità, età, uso del colore, funzioni derivate e assenza
+di autorità di comando.
+
+#### Implementato
+
+- `STALE/DEGRADED` mostrano età, cue ambra e valori leggibili, ma non archi,
+  riempimenti o consensi verdi normali.
+- `LOST/FAIL` mostrano warning rosso e invalidità esplicita; endurance non è
+  più presentata e i footer CHT/EGT non calcolano hottest channel o spread.
+- Sei golden native Windows 800×480 sono versionate con manifesto, dimensioni
+  e SHA-256.
+- Generatore, validatore, test dedicato, registrazione CTest e controllo Project
+  Control sono inclusi.
+
+#### Verificato solo software
+
+- Build MSVC/Qt 6.11.1 PFD ed EMS, QML AOT e link: PASS.
+- Sei catture ispezionate: cue distinti, età visibile per STALE/DEGRADED/LOST,
+  derivate assenti in LOST/FAIL e SIM sempre riconoscibile.
+- Validatore con venti controlli fail-closed: PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo, servizio, rete o cablaggio è stato
+  contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Ripetere la matrice con replay EDP e fault fisico sul pannello EMS RPi4.
+- Verificare touch, sunlight/night, ≥40 FPS, reboot, endurance e termica.
+- `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
+  conserva limiti `UNVERIFIED`.
+
+### Incremento G1 — ricognizione ASSO5/Sequent, venti controlli
+
+Il 2026-09-18 è stato completato il solo batch software/documentale che prepara
+la futura ricognizione read-only del nodo sensori. Il contratto non autorizza
+comandi sul banco e non costituisce inventario hardware.
+
+#### Implementato
+
+- Contratto machine-readable
+  `config/hardware/avionix-g1-sensor-node-discovery-v1.json`.
+- Venti controlli fail-closed `G1-D20-01`…`G1-D20-20`.
+- Inventario atteso D-007: 1×SM-I-018, 2×SM-I-011 e 1×SM-I-019, tutte ancora
+  `UNVERIFIED`.
+- Allowlist read-only e denylist esplicita per probing I²C, register/relay
+  write, EEPROM/firmware, installazioni, configurazione, wiring e power.
+- Validator, test di mutazione e integrazione Project Control CI.
+
+#### Verificato solo software
+
+- Il contratto conserva `PREPARED_SW_NOT_RUN`, `execution_authorized=false`,
+  `flight_approval=false` e `current_decision=NO_GO`.
+- Identità, IP, OS, architettura, alimentazione, storage, revisioni, DIP e
+  trasporto publisher non possono essere promossi senza evidenza.
+- Adapter reale `NOT_IMPLEMENTED`; soglie health e recovery restano
+  intenzionalmente non risolte.
+
+#### Verificato su hardware reale
+
+- Nulla: nodo ASSO5 0/1 e schede Sequent 0/4.
+
+#### Blocco / non dichiarare DONE
+
+- `AVX-G1-01` e `AVX-G1-02` restano `OPEN`.
+- Serve una nuova autorizzazione con il proprietario davanti al banco.
+- La prima finestra ammetterà soltanto identità sistema, elenco controller I²C
+  senza address probing e fotografie/lettura visuale delle schede.
+- Installazione CLI vendor, adapter, publisher e soak appartengono a passaggi
+  successivi e separatamente approvati.
+
+### Incremento G1 — identità hardware del nodo sensori
+
+Il 2026-09-18 il proprietario ha autorizzato la prima finestra hardware
+read-only e la sola abilitazione reversibile del controller I²C GPIO. Il nodo
+è stato verificato come `ems-sensor` all'indirizzo Wi-Fi `192.168.1.89`.
+
+#### Implementato
+
+- Backup di `/boot/firmware/config.txt` conservato come
+  `config.txt.pre-avionix-i2c-20260918`.
+- Abilitato esclusivamente `dtparam=i2c_arm=on` e riavviato il nodo.
+- Nessuna scansione indirizzi, lettura vendor, scrittura registro, modifica
+  DIP/cablaggio o comando verso uscite.
+
+#### Verificato solo software
+
+- Il kernel health G1-H20 resta separato dal bus e non è stato distribuito sul
+  nodo in questa finestra.
+
+#### Verificato su hardware reale
+
+- Raspberry Pi 4 Model B Rev 1.5, 8 GB, Debian 12 Bookworm `aarch64`, kernel
+  `6.12.109+rpt-rpi-v8`.
+- microSD 53,7 GB con circa 45 GB disponibili.
+- `/dev/i2c-1` presente; GPIO2=`SDA1`, GPIO3=`SCL1`; utente `pi` nel gruppo
+  `i2c`.
+- `throttled=0x0`, temperatura 44,8 °C dopo il riavvio.
+- Ethernet senza carrier; Wi-Fi operativo su `192.168.1.89`.
+- Evidenza e digest registrati in
+  `CHECKPOINT-2026-09-18-G1-NODE-IDENTITY-HW.md`.
+
+#### Aperto / non dichiarare DONE
+
+- Alimentatore non identificato: `AVX-G1-01` resta `IN_PROGRESS`.
+- Sequent 0/4: mancano foto, revisioni, DIP, slot e connettori;
+  `AVX-G1-02` resta `OPEN`.
+- Nessun indirizzo, CLI/driver, channel map, calibrazione o publisher è stato
+  qualificato; il gate resta NO-GO.
+
+### Incremento G1 — acquisizione read-only ripetibile, dieci punti
+
+È stato implementato e provato sul nodo reale l'acquisitore
+`capture_g1_sensor_node.py`, che sostituisce i comandi manuali con un report
+JSON deterministico e una allowlist chiusa.
+
+#### Implementato
+
+- Dieci controlli `G1-C10-01`…`G1-C10-10` per provenienza, identità, risorse,
+  rete, configurazione I²C, controller, pin, health e NO-GO.
+- Nessun comando parametrico: shell, `sudo`, utility I²C, package manager,
+  servizi, riavvio e comandi di scrittura non appartengono all'allowlist.
+- Test Python integrato in CTest e Project Control.
+
+#### Verificato solo software
+
+- 7/7 test PASS; 10/10 mutazioni fail-closed rifiutate.
+- Comando arbitrario e `i2cdetect -y 1` rifiutati prima dell'esecuzione.
+- Suite CTest completa: 42/42 PASS.
+
+#### Verificato su hardware reale
+
+- Capture sul RPi4 `ems-sensor`: 10/10 PASS.
+- Report persistente sul nodo con UTC `2026-09-18T20:53:42Z` e SHA-256
+  `f7cb1da79623c37891e662ec966f8d64be743a8d471663970993e4eac93f5e94`.
+- Decisione prodotta: `NO_GO_PENDING_PHYSICAL_BOARD_INVENTORY`.
+
+#### Aperto / non dichiarare DONE
+
+- Il tool prova esclusivamente nodo e controller: Sequent 0/4 e alimentatore
+  ancora non verificati.
+- Non autorizza address scan, vendor read, adapter, publisher o volo.
+- `AVX-G1-01` resta `IN_PROGRESS`; `AVX-G1-02` resta `OPEN`.
+
+### Incremento G1 — kernel health dell'adapter sensori, venti punti
+
+Il 2026-09-18 è stato implementato il nucleo C++20, indipendente dall'hardware,
+che governa stato, freshness, fault e recovery dei futuri canali ASSO5/Sequent.
+Questo incremento non contiene driver I²C, mappe indirizzi, calibrazioni reali,
+publisher di rete o autorizzazioni di volo.
+
+#### Implementato
+
+- Stati per canale `UNKNOWN`, `VALID`, `STALE`, `LOST`, `FAILED` e
+  `SIMULATED`, con modalità REAL/SIM esplicita e marcatore SIM persistente.
+- Configurazione fail-closed di identità, unità, revisione calibrazione e
+  policy temporali iniettate dal profilo, senza inventare soglie hardware.
+- Rifiuto di duplicati, sequenze o tempi regressivi e mismatch REAL/SIM senza
+  aggiornare la freshness del dato.
+- Conteggio dei gap, classificazione dei fault, dwell di recovery configurabile
+  e reset fail-closed dopo restart dell'adapter.
+- Mapping conservativo verso `Validity` del core e nuovo target CTest
+  `efis_sensor_adapter_health_tests`.
+
+#### Verificato solo software
+
+- Build MSVC del nuovo target e delle regressioni `efis_engine_tests` ed
+  `efis_core_tests`: PASS.
+- Suite dedicata del kernel health: 20/20 scenari PASS.
+- Suite core completa: 21/21 target CTest PASS.
+- Nessun valore viene promosso a valido senza configurazione, osservazione
+  coerente e completamento dell'eventuale dwell di recovery.
+
+#### Verificato su hardware reale
+
+- Nulla: nodo ASSO5 0/1 e schede Sequent 0/4; nessun bus o sensore contattato.
+
+#### Aperto / non dichiarare DONE
+
+- `AVX-G1-03` è `IN_PROGRESS`, non `DONE`: mancano inventario reale, driver,
+  address map, unità/calibrazioni approvate e mapping stabile dei `SourceId`.
+- Mancano publisher verso Blackbox, integrazione systemd, fault injection e
+  soak sul nodo ARM64.
+- Il kernel non abilita il gate verticale G2 e non costituisce evidenza di
+  idoneità al volo.
+
+### Incremento G2 — contratto verticale live, venti controlli
+
+Il 2026-09-18 è stato autorizzato e completato il solo batch
+software/documentale di preparazione AVX-G2-02. Nessuna prova live, modifica
+rete, deployment o azione hardware è inclusa.
+
+#### Implementato
+
+- Contratto machine-readable
+  `config/network/avionix-g2-vertical-acceptance-v1.json`.
+- Venti controlli fail-closed `G2-V20-01`…`G2-V20-20` per identità, topology,
+  autorità Blackbox, DDP/EDP, assenza comandi, provenance SIM, integrità,
+  freshness, sequenze, recorder/replay, observer, fault, evidence e rollback.
+- Cross-check del contratto contro network plan e ICD congelato.
+- Validator CLI, dieci test di regressione e integrazione Project Control CI.
+
+#### Verificato solo software
+
+- Validator: 20/20 controlli PASS.
+- Suite dedicata: 10/10 test PASS.
+- Stato intenzionalmente `PREPARED_SW_NOT_RUN`, `execution_authorized=false`,
+  `flight_approval=false`.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento.
+
+#### Blocco / non dichiarare DONE
+
+- Il trasporto autorevole adapter RPi4→Blackbox è `UNRESOLVED`; DDP/EDP
+  downstream non lo sostituiscono.
+- Servono AVX-G1-01 (nodo), AVX-G1-02 (Sequent) e AVX-G1-03 (adapter/health).
+- AVX-G2-02 passa a `IN_PROGRESS` soltanto per la preparazione software; smoke,
+  fault, endurance e replay live richiedono runbook e nuova approvazione.
+- `PRJ-003` resta `VERIFY-HW`.
+
+### Incremento G3 — harness acceptance hardware HMI, venti punti
+
+È stato aggiunto il contratto macchina `avionix.hmi-hardware-acceptance.v1`
+con i controlli `HMI-A20-01`…`HMI-A20-20` e un manifesto iniziale
+esplicitamente `NOT_RUN`.
+
+#### Implementato
+
+- Piano comune per PFD/MFD RPi5 ed EMS RPi4 con sei stati, DAY/NIGHT, touch,
+  frame timing, termica, boot/reboot, replay trasporto e fault Ethernet.
+- Provenance obbligatoria con identità nodo, operatore, UTC e SHA-256.
+- Validatore fail-closed: un PASS richiede limiti numerici rispettati e tutti
+  gli otto tipi di artefatto per ciascuno dei tre target; path non sicuri, file
+  mancanti e digest errati sono rifiutati.
+- Venti mutazioni negative, CTest e Project Control integrati.
+
+#### Verificato solo software
+
+- Template `PREPARED_SW_NOT_RUN` e manifesto `NOT_RUN`: PASS.
+- Controlli `HMI-A20-01`…`HMI-A20-20`: PASS fail-closed.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo, pannello, servizio o cablaggio è
+  stato contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Compilare il bundle sul banco per PFD, MFD ed EMS con firma operatore.
+- `AVX-G3-03` resta `OPEN`; `PRJ-004` resta `VERIFY-HW`.
+
+### Incremento G3 — packager evidence HMI, venti punti
+
+Il percorso di acceptance dispone ora di un assemblatore deterministico che
+trasforma risultati operatore completi nel manifesto hardware già validato.
+
+#### Implementato
+
+- Template risultati V1 distribuito esclusivamente come `NOT_RUN`.
+- Controlli `HMI-P20-01`…`HMI-P20-20` su identità, release, metriche, copertura,
+  artefatti, percorsi e immutabilità.
+- SHA-256 calcolato dall'assemblatore e seconda validazione indipendente prima
+  di conservare l'output.
+- `flight_approval=false` obbligatorio anche per un futuro bundle PASS.
+- Test dedicato registrato in CTest e Project Control.
+
+#### Verificato solo software
+
+- Sei test combinati validator/packager PASS, inclusi venti fault isolati,
+  bundle sintetico completo, digest e rifiuto dell'overwrite.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; non sono stati contattati nodi o pannelli.
+
+#### Aperto / non dichiarare DONE
+
+- Produrre risultati reali firmati per PFD, MFD ed EMS e assemblare il primo
+  bundle hardware. `AVX-G3-03` resta `OPEN`; `PRJ-004` resta `VERIFY-HW`.
+
+### Incremento G3 — stati EMS multi-risoluzione, venti punti
+
+La semantica EMS fail-closed è stata estesa dal solo formato compact al
+prodotto cartesiano completo di sei stati e tre risoluzioni. Il contratto
+`avionix.ems-responsive-state-matrix.v1` e i controlli
+`HMI-M20-01`…`HMI-M20-20` rendono verificabile che la risposta a perdita o
+degrado dati non cambi tra 800×480, 1024×600 e 1280×800.
+
+#### Implementato
+
+- Manifesto chiuso con 18 immagini: `LIVE`, `STALE`, `DEGRADED`, `LOST`,
+  `FAIL` e `SIM` per ciascuna delle tre risoluzioni EMS.
+- Generatore e validatore dedicati con dimensioni, byte count, SHA-256 del file
+  e SHA-256 dei pixel.
+- Test di mutazione per ciascuno dei venti controlli fail-closed.
+- Stato `DEGRADED` riconosciuto anche dal validatore golden generale, con età
+  ammessa soltanto nella finestra 251–1000 ms.
+- Test registrato in CTest e nel workflow Project Control.
+
+#### Verificato solo software
+
+- 18 catture native Windows generate dal renderer Qt e ispezionate.
+- Nessuna sovrapposizione critica riscontrata nei layout compact ed expanded.
+- Cue ambra ed età coerenti in `STALE/DEGRADED`; warning rosso e dati derivati
+  inibiti in `LOST/FAIL`; `LIVE` e `SIM` restano distinguibili.
+- Validatore della matrice: 18/18 immagini e 20/20 controlli PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo, servizio, rete o cablaggio è stato
+  contattato o modificato.
+
+#### Aperto / non dichiarare DONE
+
+- Ripetere la matrice su pannello RPi4 con replay EDP e fault fisico.
+- Verificare touch, sunlight/night, ≥40 FPS, reboot, endurance e termica.
+- `PRJ-004` resta `VERIFY-HW`; `AVX-G3-04` resta `IN_PROGRESS` e `EMS-004`
+  conserva limiti `UNVERIFIED`.
+
+### Incremento G1 — manifest inventario fisico, dieci punti
+
+Il 2026-09-18 è stato preparato il formato verificabile per acquisire le
+evidenze visuali delle quattro Sequent e dell'alimentatore del nodo sensori.
+Non sono state eseguite letture I²C, scansioni, vendor read o modifiche al
+banco.
+
+#### Implementato
+
+- Manifest V1 con quattro slot fissi: 1×SM-I-018, 2×SM-I-011 e 1×SM-I-019.
+- Controlli `G1-I10-01`…`G1-I10-10` per provenienza nodo, foto fronte/retro,
+  SHA-256, etichette, revisione, DIP visuali, connettori e alimentatore.
+- Validator fail-closed per percorsi relativi, digest, quantità, modelli,
+  divieto di probing/mutazioni e doppio NO-GO.
+- Integrazione CTest e Project Control CI.
+
+#### Verificato solo software
+
+- Template repository: 10/10 controlli PASS con 0/4 schede verificate.
+- Suite dedicata: 8/8 test PASS.
+- Manifest sintetico completo: 4/4 visuali accettati ma decisione obbligatoria
+  `NO_GO_PENDING_ENGINEERING_REVIEW` e `flight_approval=false`.
+- Mutazioni di slot, modelli, path, digest, policy, probing e approvazione
+  prematura rifiutate.
+
+#### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware in questo incremento.
+- Resta valida soltanto l'identità del nodo e il capture G1-C10 già registrato;
+  non prova presenza, modello o configurazione delle schede.
+
+#### Aperto / non dichiarare DONE
+
+- Acquisire fotografie fronte/retro, etichette, revisioni, seriali se presenti,
+  DIP e connettori delle quattro schede.
+- Acquisire modello, tensione, corrente e foto etichetta dell'alimentatore.
+- `AVX-G1-02` resta `OPEN`, schede reali 0/4 e decisione
+  `NO_GO_PENDING_PHYSICAL_BOARD_INVENTORY`.
+
+### Incremento G1/G2 — readiness di integrazione, cento punti
+
+Il 2026-09-18 è stato costruito un audit machine-readable di cento controlli
+per evitare che la futura integrazione promuova ipotesi non verificate. Il
+batch copre inventario fisico, mappa dei 18 segnali motore, calibrazione,
+trasporto RPi4→Blackbox→EMS ed evidence/release.
+
+#### Implementato
+
+- Contratto `avionix-next.g1-g2-readiness.v1` con cinque domini da venti
+  controlli e catalogo congelato tramite digest.
+- Cross-check verso il manifest fisico G1, il contratto verticale G2,
+  `SignalId`, `EngineSnapshot` e ADR EDP V1.
+- Confini espliciti per unità, raw value, `NodeId`, `ChannelId`, revisione di
+  calibrazione, `SourceId`, autorità Blackbox, EDP V1/49003, soak e replay.
+- Validator, test dedicati, CTest e Project Control CI.
+
+#### Verificato solo software
+
+- 100/100 controlli validati.
+- 100/100 mutazioni isolate del catalogo rifiutate fail-closed.
+- Suite dedicata: 8/8 test PASS.
+- Distribuzione stati: 49 `PASS`, 37 `PREPARED`, 11 `BLOCKED_HARDWARE`,
+  2 `BLOCKED_ARCHITECTURE`, 1 `BLOCKED_APPROVAL`.
+- Modello software coerente con 18 campioni motore, quattro CHT, quattro EGT e
+  Blackbox→EMS EDP V1/UDP 49003 one-way.
+
+#### Verificato su hardware reale
+
+- Nulla di nuovo in questo incremento.
+- Non sono stati contattati nodi, bus, sensori, schede, switch o Blackbox.
+
+#### Aperto / non dichiarare DONE
+
+- Le quattro Sequent restano 0/4 verificate; indirizzi, canali e tarature sono
+  irrisolti e nessuna soglia è stata inventata.
+- Il `SourceId` della catena reale richiede una decisione architetturale.
+- Il trasporto autorevole RPi4→Blackbox resta `UNRESOLVED`; EDP downstream non
+  lo sostituisce.
+- Prove live, deployment, soak e uso in volo non sono autorizzati.
+- Decisione:
+  `NO_GO_PENDING_G1_PHYSICAL_INVENTORY_AND_ARCHITECTURE_REVIEW`.
+
+### Incremento G1 — import visuale dell'inventario fisico
+
+Il 2026-09-19 è stata predisposta la prima procedura eseguibile per avanzare i
+controlli non-PASS senza interrogare o modificare l'hardware.
+
+#### Implementato
+
+- Template intake V1 per quattro schede e alimentatore.
+- Importatore fail-closed per nove immagini JPEG/PNG e relativi metadati.
+- Calcolo SHA-256, confinamento nomi, controllo magic bytes, anti-overwrite e
+  scrittura atomica del manifest.
+- CTest e Project Control CI dedicati.
+
+#### Verificato solo software
+
+- Anteprima sintetica completa: 4/4 schede, 9/9 artefatti e decisione
+  obbligatoria `NO_GO_PENDING_ENGINEERING_REVIEW`.
+- Import idempotente per artefatti identici.
+- Rifiuto di metadati incompleti, modello discordante, dichiarazione di
+  sicurezza indebolita, path escape, falso file immagine e sovrascrittura.
+- Suite dedicata: 9/9 test PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; le fotografie reali non sono ancora disponibili.
+- Non sono stati contattati nodi o bus e non sono stati modificati DIP,
+  cablaggi, alimentazione o uscite.
+
+#### Aperto / non dichiarare DONE
+
+- Acquisire e importare le nove fotografie reali con metadati completi.
+- Eseguire la revisione tecnica prima di qualsiasi identificazione attiva.
+- Le schede restano 0/4 verificate e la decisione generale resta NO-GO.
+
+### Incremento G1/G2 — proposta upstream, venti punti
+
+Il 2026-09-19 sono state formalizzate, senza attivarle, le decisioni tecniche
+candidate per il flusso dal nodo sensori alla Blackbox.
+
+#### Implementato
+
+- Contratto G1-U20 con 20 controlli per ERAP V1 raw-only, UDP unicast 49004,
+  indirizzo proposto `10.77.10.10` e autorità Blackbox.
+- Riserva append-only `SourceId::asso5_engine = 9`, non inserita nell'ICD o nel
+  runtime congelato.
+- ADR-016 in stato proposta e registro completo dei blocker.
+- Validator, test, CTest e Project Control CI.
+
+#### Verificato solo software
+
+- 20/20 controlli e 20/20 mutazioni fail-closed.
+- Suite dedicata: 8/8 PASS.
+- Cross-check con SourceId/ICD V1, piano rete, G2 verticale e R100.
+- Rilevato e reso bloccante il deficit di capacità: switch installato 5 porte,
+  minimo già dichiarato 6, minimo con nodo sensori 7.
+
+#### Verificato su hardware reale
+
+- Nulla. Nessuna porta, IP, firewall, servizio o apparato è stato modificato.
+- Il checkpoint visuale resta congelato e le schede restano 0/4.
+
+#### Aperto / non dichiarare DONE
+
+- Approvare o correggere ERAP V1, porta, indirizzo e SourceId proposti.
+- Scegliere una topologia fisica con capacità adeguata.
+- Completare inventario, channel map e calibrazione prima del freeze wire.
+- Rate e freshness restano volutamente irrisolti fino alle prove reali.
+- Decisione: `NO_GO_PENDING_ARCHITECTURE_AND_HARDWARE_REVIEW`.
+
+### Registrazione documentale candidato switch MokerLink — 2026-09-19
+
+- Il proprietario ha autorizzato esplicitamente la sola registrazione
+  documentale del MokerLink come candidato non verificato.
+- Il modello `IND-F082GS` è presunto dal titolo commerciale e non è confermato
+  da fotografia della targhetta. Non risulta installato o alimentato.
+- Il contratto G1 upstream passa alla revisione 1.1.0 e conserva il Waveshare
+  `Gigabit-Switch-5P (EU)` come unico switch installato autorevole.
+- La configurazione dichiarata del candidato è 8×RJ45 Fast Ethernet,
+  1×RJ45 Gigabit e 1×SFP Gigabit: nove porte rame contro sette richieste, con
+  margine numerico due. Stato: `CANDIDATE_CAPACITY_UNVERIFIED`.
+- Il candidato è limitato a `FLIGHT-DATA`; VIDEO e telecamere restano vietati
+  e richiedono uno switch Gigabit/PoE fisicamente separato. La SFP non conta
+  come rame senza transceiver verificato; Extend e VLAN restano vietati.
+- Sono richieste nove evidenze: targhetta modello, alimentazione/morsettiera,
+  port map/DIP, link di tutte le RJ45, velocità per porta, min/max e brownout,
+  corrente/temperatura/restart, isolamento VIDEO e fault/recovery.
+- Non sono stati modificati `avionics-network-v1.json`, nodi, flussi, IP,
+  firewall, runtime, servizi o hardware. `execution_authorized=false`,
+  `flight_approved=false` e `NO_GO_PENDING_ARCHITECTURE_AND_HARDWARE_REVIEW`
+  restano invariati.
+
+### Preparazione acceptance MokerLink G1-S20 — 2026-09-19
+
+#### Implementato
+
+- Contratto macchina con venti controlli chiusi, template risultati `NOT_RUN`,
+  validatore offline e runbook non esecutivo.
+- Dieci classi di evidenza obbligatorie: identità, porte/velocità,
+  alimentazione/brownout, corrente/termica/restart, isolamento, fault/recovery
+  e firma operatore, tutte con timestamp UTC e SHA-256.
+- Integrazione in CTest e Project Control CI.
+
+#### Verificato solo software
+
+- Template senza affermazioni hardware accettato.
+- Venti mutazioni mirate rifiutate fail-closed.
+- Bundle sintetico completo validato esclusivamente come prova del validatore;
+  path escape, digest errato e falso flight approval sono rifiutati.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento. Il MokerLink non è stato alimentato, collegato,
+  interrogato, installato o usato per modificare la rete.
+
+#### Aperto / non dichiarare DONE
+
+- Identità e pinout reali, nove RJ45, alimentazione, brownout, corrente,
+  temperatura, restart, fault/recovery e isolamento VIDEO restano `NOT_RUN`.
+- Il piano elettrico G4 e la sessione al banco richiedono approvazione separata.
+- Anche un futuro `BENCH_PASS` mantiene `flight_approval=false`; Waveshare 5P
+  resta lo switch installato autorevole e la decisione generale resta NO-GO.

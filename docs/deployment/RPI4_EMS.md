@@ -254,3 +254,93 @@ scesa a 0,18–0,22 ms. La prova equivalente con tutti i thread del renderer su
 CPU1–3, lasciando CPU0 ai due IRQ `bcmgenet`, ha dato 100/100 ping con massimo
 0,282 ms. Il drop-in `efis-ems-performance.override.conf` rende questa affinità
 parte del deployment; non è un'ottimizzazione estetica.
+
+## Osservazione passiva EDP V1
+
+`capture_edp_observer.py` misura il flusso Blackbox→EMS direttamente da
+`AF_PACKET`. Non apre la porta UDP 49003, non invia pacchetti e non crea una via
+di ritorno verso il broker. Il report conserva soltanto contatori e timing, mai
+il payload motore grezzo.
+
+Sul nodo EMS, durante una finestra di banco controllata:
+
+```sh
+cd /home/pi/efis-next
+mkdir -p /home/pi/.local/state/efis-next
+sudo python3 tools/network/capture_edp_observer.py \
+  --interface eth0 \
+  --source 10.77.10.2 \
+  --destination 10.77.10.12 \
+  --port 49003 \
+  --expected-source-node 47 \
+  --duration-seconds 180 \
+  --minimum-hz 10 \
+  --max-gap-percent 0.1 \
+  --max-malformed 0 \
+  --max-duplicates 0 \
+  --max-reversed 0 \
+  --max-publisher-restarts 0 \
+  --max-interarrival-ms 250 \
+  --max-p95-interarrival-ms 100 \
+  --output /home/pi/.local/state/efis-next/edp-passive-180s.json
+```
+
+Validare poi il file con un secondo processo che ricalcola tutti i gate e non
+si fida dei campi `checks` o `status` prodotti dalla cattura:
+
+```sh
+python3 tools/network/assess_edp_capture.py \
+  /home/pi/.local/state/efis-next/edp-passive-180s.json \
+  --output /home/pi/.local/state/efis-next/edp-assessment-180s.json
+```
+
+L'assessment collega il risultato all'originale tramite SHA-256 e separa
+`integrity`, `authority`, `continuity` e `uniformity`. Classifica inoltre il
+feed come `SIM_ONLY`, `MIXED` o `REAL_ONLY`; nessuna di queste etichette concede
+automaticamente l'idoneità al volo.
+
+L'esito `PASS` prova soltanto integrità, autorità, continuità e uniformità della
+finestra osservata. `flight_approval` resta sempre `false`. Un restart del
+publisher rende intenzionalmente il gate rosso salvo che la prova specifica
+usi un limite diverso e lo documenti. Non eseguire questa misura come
+sostituzione dei fault test fisici `LIVE → STALE → LOST → LIVE`.
+
+## Replay EDP deterministico di banco
+
+`replay_edp_session.py` prepara scenari riproducibili senza memorizzare payload.
+L'esecuzione predefinita è soltanto un piano `DRY_RUN` e non apre socket:
+
+```sh
+python3 tools/network/replay_edp_session.py \
+  --scenario clean \
+  --frames 40 \
+  --rate-hz 20 \
+  --output /home/pi/.local/state/efis-next/edp-replay-plan.json
+```
+
+Gli scenari disponibili sono `clean`, `gap`, `duplicate`, `reversed`,
+`restart`, `bad-crc`, `wrong-source`, `mixed-provenance`, `real-only` e
+`loss-recovery`. Ciascun fault è isolato dagli altri; il manifesto dichiara
+l'effetto atteso, i digest SHA-256 del wire stream e della pianificazione e
+conserva sempre
+`flight_approval=false` e `raw_payload_persisted=false`.
+
+La trasmissione è ammessa esclusivamente su banco isolato, con motore e
+attuatori non alimentati. Loopback richiede soltanto `--send`; una destinazione
+privata diversa da loopback richiede anche l'abilitazione esplicita:
+
+```sh
+python3 tools/network/replay_edp_session.py \
+  --scenario loss-recovery \
+  --frames 40 \
+  --rate-hz 20 \
+  --target 10.77.10.12 \
+  --port 49003 \
+  --send \
+  --allow-bench-network \
+  --output /home/pi/.local/state/efis-next/edp-replay-loss-recovery.json
+```
+
+Non usare il replay durante il volo, con sistemi di controllo collegati o come
+sostituto del publisher Blackbox reale. La sequenza raccomandata è: `clean`,
+fault singoli, `loss-recovery`, quindi cattura passiva e assessment indipendente.
