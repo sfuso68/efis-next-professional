@@ -1,5 +1,35 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-20 — contratto EMS testato per comportamento
+
+### Implementato
+
+- Rimossa la prova Python che cercava stringhe nel sorgente
+  `ems_controller.cpp`: poteva passare anche se le stringhe non fossero state
+  usate nel percorso operativo.
+- La trasformazione dello stato EDP in stato HMI è ora una funzione pura
+  `present_ems_link`, condivisa dal controller reale e da un test C++.
+- Il test esercita LIVE reale, LIVE simulato, STALE reale, STALE simulato,
+  WAITING e LOST, verificando autorità del dato di rete, fallback simulato e
+  conservazione esplicita del marcatore SIM.
+
+### Verificato solo software
+
+- Il test è fallito inizialmente per header comportamentale mancante.
+- `efis_ems_link_presentation_tests`: PASS.
+- Build Qt del nodo `efis-ems-qt` con la policy condivisa: PASS.
+- Suite Python `tests.test_avionix_hmi_contract`: 16/16 PASS dopo la rimozione
+  del controllo testuale.
+
+### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware è stata eseguita per questo branch.
+
+### Aperto / non dichiarare DONE
+
+- Ripetere sul RPi4 le transizioni EDP reali e verificare che badge, età e
+  fallback siano coerenti sul display. Nessuna acceptance hardware o di volo.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato

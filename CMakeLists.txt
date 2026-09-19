@@ -515,6 +515,12 @@ if(EFIS_BUILD_TESTS)
     target_link_libraries(efis_engine_tests PRIVATE efis_core)
     add_test(NAME efis_engine_tests COMMAND efis_engine_tests)
 
+    add_executable(efis_ems_link_presentation_tests
+        tests/ems_link_presentation_tests.cpp)
+    target_link_libraries(efis_ems_link_presentation_tests PRIVATE efis_core)
+    add_test(NAME efis_ems_link_presentation_tests
+        COMMAND efis_ems_link_presentation_tests)
+
     add_executable(efis_engine_runtime_tests tests/engine_runtime_tests.cpp)
     target_link_libraries(efis_engine_runtime_tests PRIVATE efis_core)
     add_test(NAME efis_engine_runtime_tests COMMAND efis_engine_runtime_tests)
