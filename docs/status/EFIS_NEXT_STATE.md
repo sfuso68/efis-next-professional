@@ -1,5 +1,35 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-20 — vettori ICD verificati dal C++ nativo
+
+### Implementato
+
+- Aggiunto `efis_avionix_icd_vector_tests`, collegato al core reale DDP/EDP.
+- Il test legge direttamente
+  `tests/data/protocols/avionix-data-icd-v1-vectors.json`, costruisce i frame
+  canonici con i codec C++ e confronta dimensione, CRC32C del payload e SHA-256
+  dell'intero frame per DDP V2 ed EDP V1.
+- La funzione SHA-256 nel test è indipendente dal generatore Python: una
+  modifica silenziosa del codec non può essere approvata dal solo validatore
+  che ha prodotto il riferimento.
+
+### Verificato solo software
+
+- Il target mancante ha prodotto l'errore CMake atteso prima
+  dell'implementazione.
+- Build MSVC del target nativo: PASS.
+- CTest `efis_avionix_icd_vector_tests`: PASS (DDP V2 ed EDP V1).
+
+### Verificato su hardware reale
+
+- Nessuna nuova verifica hardware è stata eseguita per questo branch.
+
+### Aperto / non dichiarare DONE
+
+- Restano valide le evidenze ARM64 precedenti, ma questo nuovo test deve ancora
+  essere eseguito sui nodi ARM64 e nella CI dopo review/merge.
+- Nessuna prova verticale live o autorizzazione operativa deriva dal test.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato
