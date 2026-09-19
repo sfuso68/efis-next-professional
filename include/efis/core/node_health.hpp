@@ -1,5 +1,7 @@
 #pragma once
 
+#include "efis/core/freshness_budget.hpp"
+
 #include "efis/core/types.hpp"
 
 #include <chrono>
@@ -78,10 +80,10 @@ enum class HeartbeatVerdict : std::uint8_t {
 
 struct NodeHealthPolicy final {
     // Oltre questo silenzio i dati del nodo non sono piu' attuali.
-    std::chrono::milliseconds stale_after{1000};
+    std::chrono::milliseconds stale_after{FreshnessBudget::node_stale};
 
     // Oltre questo silenzio il nodo e' considerato perduto.
-    std::chrono::milliseconds lost_after{3000};
+    std::chrono::milliseconds lost_after{FreshnessBudget::node_lost};
 };
 
 struct NodeStatus final {

@@ -8,7 +8,12 @@ namespace efis::protocol::ddp {
 namespace {
 
 MonoTime sample_time(MonoTime received_at, std::uint32_t age_ms) {
-    const auto age = std::chrono::milliseconds{age_ms};
+    // DDP carries publisher-side sample age, but monotonic clocks are not
+    // comparable across hosts. Add the centrally declared one-way uncertainty
+    // margin instead of presenting the unknown network transit as zero.
+    const auto age = std::chrono::milliseconds{
+        static_cast<std::chrono::milliseconds::rep>(age_ms)} +
+        FreshnessBudget::network_age_margin;
     if (age > received_at.time_since_epoch()) return MonoTime{};
     return received_at - age;
 }

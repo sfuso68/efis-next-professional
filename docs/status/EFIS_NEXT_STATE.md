@@ -4009,3 +4009,33 @@ candidate per il flusso dal nodo sensori alla Blackbox.
 - Il piano elettrico G4 e la sessione al banco richiedono approvazione separata.
 - Anche un futuro `BENCH_PASS` mantiene `flight_approval=false`; Waveshare 5P
   resta lo switch installato autorevole e la decisione generale resta NO-GO.
+
+### Budget unificato di freshness — 2026-09-19
+
+ID: `CORE-004`, `BBX-003`.
+
+#### Implementato
+
+- ADR-017 e `FreshnessBudget` definiscono un tick unico da 250 ms e
+  moltiplicatori espliciti per trasporto, campione, nodo e banco.
+- Default di FlightModel, DDP, EDP, NodeHealth e sensor bench derivano dallo
+  stesso contratto; il nodo passa STALE a 1250 ms, dopo il LOST link a 1000 ms.
+- Il consumer DDP somma 250 ms di incertezza di rete all'età dichiarata dal
+  publisher, evitando di assumere latenza zero fra clock monotoni non
+  confrontabili.
+
+#### Verificato solo software
+
+- Test pre-fix: FAIL sul default NodeHealth indipendente dal contratto.
+- Test post-fix e build core completa: PASS; CTest 22/22 PASS.
+- Il test DDP copre 450 ms di età dichiarata più 200 ms di ritardo simulato e
+  verifica l'applicazione del margine conservativo.
+
+#### Verificato su hardware reale
+
+- Nulla. Nessuna soglia è stata distribuita sui nodi.
+
+#### Aperto / non dichiarare DONE
+
+- Misurare latenza/jitter e provare le transizioni reali prima del tuning finale.
+- `CORE-004` e `BBX-003` restano non chiusi.

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "efis/core/cross_check.hpp"
+#include "efis/core/freshness_budget.hpp"
 #include "efis/core/flight_snapshot.hpp"
 #include "efis/core/stasis_monitor.hpp"
 
@@ -15,7 +16,7 @@ namespace efis {
 // Finche' non lo saranno, servono a far comparire un guasto grossolano, non a
 // misurare quanto un sensore stia derivando.
 struct FlightModelPolicy final {
-    std::chrono::milliseconds stale_after{500};
+    std::chrono::milliseconds stale_after{FreshnessBudget::sample_stale};
 
     // Velocita' al suolo sopra la quale l'aeromobile e' considerato in moto.
     //

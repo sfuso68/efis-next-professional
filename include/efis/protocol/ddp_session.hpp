@@ -1,5 +1,6 @@
 #pragma once
 
+#include "efis/core/freshness_budget.hpp"
 #include "efis/protocol/ddp_v2.hpp"
 
 #include <chrono>
@@ -35,8 +36,8 @@ private:
 enum class LinkState : std::uint8_t { waiting, live, stale, lost };
 
 struct ConsumerPolicy final {
-    std::chrono::milliseconds stale_after{250};
-    std::chrono::milliseconds lost_after{1000};
+    std::chrono::milliseconds stale_after{FreshnessBudget::transport_stale};
+    std::chrono::milliseconds lost_after{FreshnessBudget::transport_lost};
     // Zero accetta qualsiasi nodo. In installazione il display deve impostare
     // l'identita' della propria blackbox, evitando publisher estranei.
     std::uint32_t expected_source_node{};

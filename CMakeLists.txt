@@ -264,6 +264,10 @@ if(EFIS_BUILD_TESTS)
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_core_tests COMMAND efis_core_tests)
 
+    add_executable(efis_freshness_budget_tests tests/freshness_budget_tests.cpp)
+    target_link_libraries(efis_freshness_budget_tests PRIVATE efis_core)
+    add_test(NAME efis_freshness_budget_tests COMMAND efis_freshness_budget_tests)
+
     # Eseguibile separato: il banco prova si alimenta dalla registrazione reale
     # dell'hardware, e tenerlo distinto dai test del core rende evidente quale
     # dei due stia fallendo.
