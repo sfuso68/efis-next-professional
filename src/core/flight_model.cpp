@@ -22,7 +22,8 @@ void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
     // segnale d'origine anche quando la sorgente tace.
     if (sample.origin.signal == SignalId::unknown) return;
 
-    if (sample.validity == Validity::unavailable) {
+    if (sample.validity == Validity::unavailable ||
+        sample.validity == Validity::out_of_range) {
         ++health.unavailable_fields;
         return;
     }
@@ -37,6 +38,33 @@ void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
     }
 }
 
+// Normalizza la regolazione barometrica prima dell'invecchiamento.
+//
+// La standard applicata automaticamente non e' una scelta del pilota e non
+// puo' presentarsi come un dato valido ricevuto da una sorgente. Resta
+// utilizzabile per inizializzare l'altimetro, ma e' degradata e porta con se'
+// timestamp e qualita' espliciti. Un'impostazione gia' attribuita a una
+// sorgente che diventa indisponibile non ricade invece sulla standard: sarebbe
+// un ritorno silenzioso a 1013,25 proprio durante un guasto.
+void normalize_baro_setting(Sample<double>& setting, MonoTime now) {
+    const bool never_supplied = setting.validity == Validity::unavailable &&
+                                setting.origin.signal == SignalId::unknown;
+    if (never_supplied) {
+        setting.value = standard_pressure_hpa;
+        setting.raw = standard_pressure_hpa;
+        setting.validity = Validity::degraded;
+        setting.quality = Quality::poor;
+        setting.sampled_at = now;
+        setting.received_at = now;
+    }
+    setting.origin.signal = SignalId::baro_setting;
+    setting.origin.unit = Unit::hectopascal;
+
+    if (setting.usable() && !is_plausible_setting(setting.value)) {
+        setting.validity = Validity::out_of_range;
+    }
+}
+
 // Applica la regolazione barometrica e ricava la quota indicata.
 //
 // La quota indicata e' derivata, non misurata: eredita provenienza e validita'
@@ -45,28 +73,30 @@ void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
 void apply_baro_setting(AirDataState& air) {
     Sample<double>& setting = air.baro_setting_hpa;
 
-    // Finche' nessuno l'ha impostata, la regolazione e' la standard. E' la
-    // condizione di un altimetro appena acceso, non un dato mancante: la
-    // provenienza resta sconosciuta, e distingue la standard ereditata dalla
-    // standard scelta dal pilota.
-    if (setting.validity == Validity::unavailable) {
-        setting.value = standard_pressure_hpa;
-        setting.raw = standard_pressure_hpa;
-        setting.validity = Validity::valid;
-    }
-    setting.origin.signal = SignalId::baro_setting;
-    setting.origin.unit = Unit::hectopascal;
-
-    // Una regolazione fuori dall'intervallo di una finestra di Kollsman non e'
-    // una pressione: e' un errore di inserimento. Correggerla in silenzio lo
-    // nasconderebbe, applicarla produrrebbe una quota sbagliata di migliaia di
-    // piedi. Si dichiara fuori limite e non si applica.
-    if (setting.validity == Validity::valid && !is_plausible_setting(setting.value)) {
-        setting.validity = Validity::out_of_range;
-    }
-
     const Sample<double>& pressure = air.pressure_altitude_ft;
     Sample<double>& indicated = air.indicated_altitude_ft;
+
+    // Un QNH esplicitamente fuori scala invalida la quota indicata: mantenere
+    // a video una quota ricevuta in precedenza produrrebbe un numero plausibile
+    // ma non piu' coerente con l'impostazione selezionata dal pilota.
+    if (setting.validity == Validity::out_of_range) {
+        indicated.validity = Validity::unavailable;
+        indicated.origin.signal = SignalId::indicated_altitude;
+        indicated.origin.unit = Unit::foot;
+        return;
+    }
+
+    // Una quota indicata ricevuta direttamente resta disponibile se non e'
+    // possibile ricalcolarla localmente. Questo serve ai consumer DDP che
+    // ricevono la grandezza gia' calcolata. Se entrambi gli ingressi locali
+    // sono utilizzabili, il calcolo locale prevale ed e' riproducibile dal log.
+    if (!pressure.usable() || !setting.usable()) {
+        if (indicated.origin.signal == SignalId::unknown) {
+            indicated.origin.signal = SignalId::indicated_altitude;
+            indicated.origin.unit = Unit::foot;
+        }
+        return;
+    }
 
     indicated.source = pressure.source;
     indicated.sampled_at = pressure.sampled_at;
@@ -78,14 +108,15 @@ void apply_baro_setting(AirDataState& air) {
     indicated.origin.unit = Unit::foot;
     indicated.utc = pressure.utc;
 
-    if (!pressure.usable() || !setting.usable()) {
-        indicated.validity = Validity::unavailable;
-        indicated.value = 0.0;
-        indicated.raw = 0.0;
-        return;
+    const bool simulated = pressure.is_simulated() || setting.is_simulated();
+    indicated.origin.simulated = simulated;
+    if (pressure.validity == Validity::degraded ||
+        setting.validity == Validity::degraded) {
+        indicated.validity = Validity::degraded;
+    } else {
+        indicated.validity = simulated ? Validity::simulated : Validity::valid;
     }
-
-    indicated.validity = pressure.validity;
+    if (setting.quality == Quality::poor) indicated.quality = Quality::poor;
     // Il valore grezzo della quota indicata e' la quota di pressione: e' cio' da
     // cui viene, e conservarlo permette di ricalcolarla con un'altra
     // regolazione rileggendo la registrazione.
@@ -135,6 +166,8 @@ void FlightModel::configure_stasis() {
 }
 
 FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
+    normalize_baro_setting(input.air_data.baro_setting_hpa, now);
+
     age(input.attitude.roll_deg, now, policy_.stale_after, input.health);
     age(input.attitude.pitch_deg, now, policy_.stale_after, input.health);
     age(input.attitude.heading_deg, now, policy_.stale_after, input.health);
@@ -143,6 +176,7 @@ FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
     age(input.air_data.indicated_airspeed_kt, now, policy_.stale_after, input.health);
     age(input.air_data.pressure_altitude_ft, now, policy_.stale_after, input.health);
     age(input.air_data.vertical_speed_fpm, now, policy_.stale_after, input.health);
+    age(input.air_data.baro_setting_hpa, now, policy_.stale_after, input.health);
     age(input.position.latitude_deg, now, policy_.stale_after, input.health);
     age(input.position.longitude_deg, now, policy_.stale_after, input.health);
     age(input.position.ground_speed_kt, now, policy_.stale_after, input.health);
@@ -161,6 +195,7 @@ FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
     // indicata deve nascere gia' con la validita' definitiva di quella di
     // pressione.
     apply_baro_setting(input.air_data);
+    age(input.air_data.indicated_altitude_ft, now, policy_.stale_after, input.health);
 
     // Se l'aeromobile sia in moto si stabilisce adesso, prima di ogni altra
     // valutazione. Il confronto qui sotto puo' marcare la velocita' al suolo

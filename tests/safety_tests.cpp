@@ -6,6 +6,7 @@
 // numero sbagliato di poco, produce un numero fermo e convincente.
 
 #include "efis/core/cross_check.hpp"
+#include "efis/core/altimetry.hpp"
 #include "efis/core/stasis_monitor.hpp"
 #include "efis/core/flight_dynamics.hpp"
 #include "efis/core/flight_model.hpp"
@@ -273,6 +274,10 @@ int main() {
              efis::SignalId::indicated_airspeed);
         fill(snapshot.air_data.pressure_altitude_ft, altitude,
              efis::SignalId::pressure_altitude);
+        fill(snapshot.air_data.baro_setting_hpa, efis::standard_pressure_hpa,
+             efis::SignalId::baro_setting);
+        fill(snapshot.air_data.indicated_altitude_ft, altitude,
+             efis::SignalId::indicated_altitude);
         fill(snapshot.air_data.vertical_speed_fpm, 0.0, efis::SignalId::vertical_speed);
         fill(snapshot.position.latitude_deg, 45.6, efis::SignalId::latitude);
         fill(snapshot.position.longitude_deg, 12.2, efis::SignalId::longitude);

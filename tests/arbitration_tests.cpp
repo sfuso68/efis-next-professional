@@ -172,9 +172,10 @@ int main() {
     //
     // Il numero e' scritto per esteso di proposito. Aggiungere una grandezza
     // arbitrata fa fallire questa riga, e chi la aggiorna deve prima essersi
-    // chiesto se quella grandezza vada davvero arbitrata: la regolazione
-    // barometrica, per esempio, non va, perche' il pilota e' uno solo.
-    require(arbitrator.events().size() == 21,
+    // chiesto se quella grandezza vada davvero arbitrata. QNH e quota indicata
+    // fanno ora parte del contratto perche' attraversano DDP e devono
+    // conservare sorgente, validita' e failover come gli altri campioni.
+    require(arbitrator.events().size() == 23,
             "every arbitrated signal must announce its initial source");
     require(arbitrator.events().front().reason == efis::SourceChangeReason::initial,
             "the first selection must be recorded as initial, not as a failover");
@@ -205,6 +206,12 @@ int main() {
             "with every signal served the state is normal");
     require(arbitrated.position.latitude_deg.is_simulated(),
             "the covered position must still declare that it is simulated");
+    require(arbitrator.selected_for(efis::SignalId::baro_setting) ==
+                efis::SourceId::simulation,
+            "the altimeter setting must survive per-signal arbitration");
+    require(arbitrator.selected_for(efis::SignalId::indicated_altitude) ==
+                efis::SourceId::simulation,
+            "transported indicated altitude must survive arbitration");
 
     // --- Failover e ritorno --------------------------------------------------
     efis::SnapshotArbitrator failover{{.reversion_dwell = 2000ms}};
