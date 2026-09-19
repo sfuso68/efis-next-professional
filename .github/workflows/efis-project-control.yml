@@ -8,6 +8,7 @@ on:
       - 'work/**'
       - 'integration/**'
       - 'docs/**'
+      - 'safety/**'
 
 permissions:
   contents: read
@@ -27,7 +28,9 @@ jobs:
           python-version: '3.12'
 
       - name: Validate matrix and generated status
-        run: python tools/project_status/generate_status.py --check
+        run: |
+          python -m unittest tests.test_project_status_control -v
+          python tools/project_status/generate_status.py --check
 
       - name: Validate G1 sensor-node discovery contract
         run: |

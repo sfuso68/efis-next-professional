@@ -14,21 +14,6 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 ALLOWED = {"DONE", "PARTIAL", "TODO", "BLOCKED", "VERIFY-HW", "LEGACY"}
-STATUS_ALIASES = {
-    "DONE-SW": "VERIFY-HW",
-    "DONE-SW / VERIFY-HW": "VERIFY-HW",
-    "PARTIAL-HW": "PARTIAL",
-    "EARLY/PARTIAL": "PARTIAL",
-    "DONE/PARTIAL": "PARTIAL",
-    "DONE-ARCH": "PARTIAL",
-    "PARTIAL/DONE-DATA": "PARTIAL",
-    "PARTIAL/EXPERIMENTAL": "PARTIAL",
-    "LEGACY/REFERENCE": "LEGACY",
-    "OPERATIONAL-LEGACY": "LEGACY",
-    "OPERATIONAL-LEGACY/REFERENCE": "LEGACY",
-    "TODO/DESIGN": "TODO",
-    "DESIGN": "TODO",
-}
 ID_RE = re.compile(r"^[A-Z][A-Z0-9_-]*-\d{3}$")
 
 
@@ -38,9 +23,10 @@ def clean(cell: str) -> str:
 
 def normalise_status(raw: str) -> str:
     status = clean(raw).upper()
-    status = STATUS_ALIASES.get(status, status)
     if status not in ALLOWED:
-        raise ValueError(f"Unsupported project status: {raw!r}")
+        allowed = ", ".join(sorted(ALLOWED))
+        raise ValueError(
+            f"Unsupported project status: {raw!r}; expected exactly one of: {allowed}")
     return status
 
 

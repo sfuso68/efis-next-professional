@@ -34,7 +34,10 @@ Stati ammessi:
 
 ## Regola obbligatoria
 
-Ogni branch/commit/PR che modifica una funzione censita deve aggiornare nello stesso lavoro la relativa riga della Master Matrix oppure dichiarare esplicitamente perché lo stato non cambia.
+Ogni branch/commit/PR che modifica una funzione censita deve aggiornare nello
+stesso lavoro la relativa riga della Master Matrix. Se lo stato non cambia, la
+riga deve comunque registrare l'evidenza o motivare esplicitamente la mancata
+variazione; il solo aggiornamento di `EFIS_NEXT_STATE.md` non soddisfa il gate.
 
 Una voce non può passare a `DONE` senza evidenza verificabile.
 
@@ -53,7 +56,8 @@ All'inizio di ogni attività:
 La CI e `tools/project_status/generate_status.py`:
 - calcolare conteggi e avanzamento dalla matrice;
 - mostrare gate bloccanti;
-- fallire una PR quando cambia un sottosistema senza aggiornamento dello stato;
+- fallire una PR quando cambia un sottosistema senza aggiornamento della sua
+  riga nella Master Matrix;
 - generare un report Markdown/JSON senza duplicare manualmente le informazioni.
 
 I documenti storici `CHECKPOINT-*`, handoff, ADR e specifiche restano evidenze; non sostituiscono questi due documenti di controllo.

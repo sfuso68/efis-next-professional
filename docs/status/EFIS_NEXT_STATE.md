@@ -4009,3 +4009,37 @@ candidate per il flusso dal nodo sensori alla Blackbox.
 - Il piano elettrico G4 e la sessione al banco richiedono approvazione separata.
 - Anche un futuro `BENCH_PASS` mantiene `flight_approval=false`; Waveshare 5P
   resta lo switch installato autorevole e la decisione generale resta NO-GO.
+
+### Project Control fail-closed P1-P3 — 2026-09-19
+
+ID: `PRJ-001`.
+
+#### Implementato
+
+- Rimossi gli alias che convertivano silenziosamente stati non ammessi: il
+  generatore accetta ora soltanto i sei stati canonici documentati.
+- Ricondotte le dodici righe non canoniche della matrice a stati ammessi senza
+  promuovere evidenze: `INST-001` è `VERIFY-HW`, le voci ancora incomplete sono
+  `PARTIAL` e `PROD-001` resta `TODO`.
+- Il gate richiede esplicitamente l'aggiornamento della Master Matrix; il solo
+  `EFIS_NEXT_STATE.md` non è più sufficiente.
+- La sorveglianza copre tutte le directory `src/` e `tools/`, conservando
+  l'esenzione ricorsiva del solo tooling Project Control per evitare un ciclo.
+- Il workflow gira anche sui branch `safety/**` ed esegue i test di regressione
+  del controllo prima della validazione degli output generati.
+
+#### Verificato solo software
+
+- Prima della correzione: 16 subtest falliti su alias, STATE-only e quattordici
+  percorsi non sorvegliati; test workflow separato fallito.
+- Dopo la correzione: 5/5 test Project Control PASS.
+- Nessuna modifica al software avionico o ai nodi.
+
+#### Verificato su hardware reale
+
+- Nulla; incremento esclusivamente di governance e CI.
+
+#### Aperto / non dichiarare DONE
+
+- Il workflow remoto deve risultare verde sul branch.
+- Restano separati i rilievi documentali P4-P8; `PRJ-001` resta `PARTIAL`.
