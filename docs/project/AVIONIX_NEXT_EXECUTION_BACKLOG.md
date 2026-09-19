@@ -58,6 +58,7 @@ comandi su uscite.
 | 2026-09-18 | AVX-G1-02 | `AVIONIX_G1_PHYSICAL_INVENTORY_BATCH10.md`, manifest e validator G1-I10 | IMPLEMENTED-SW/NOT-CAPTURED/NO-GO; 10/10 controlli e 8/8 test PASS; quattro slot e alimentatore pronti per evidenza visuale, schede reali ancora 0/4 |
 | 2026-09-18 | AVX-G1-02/03, AVX-G2-02 | `AVIONIX_G1_G2_READINESS_BATCH100.md`, contratto e validator R100 | IMPLEMENTED-SW/PREPARED-NOT-RUN/NO-GO; 100/100 controlli validati, 100 mutazioni fail-closed e 8/8 test PASS; hardware 0/4, mapping/calibrazione/SourceId/trasporto upstream ancora irrisolti |
 | 2026-09-18 | AVX-G1-03 | `AVIONIX_G1_ADAPTER_HEALTH_BATCH20.md`, kernel C++ e 20 test | IMPLEMENTED-SW/HW-NOT-RUN; REAL/SIM, sequence, freshness, fault e recovery implementati senza driver, channel map o publisher |
+| 2026-09-19 | AVX-G1-02 | `AVIONIX_G1_VISUAL_INVENTORY_INTAKE.md`, template intake, importatore e 9 test | IMPLEMENTED-SW/AWAITING-EVIDENCE/NO-GO; pipeline per 9 foto con SHA-256 e anti-overwrite pronta, ma schede reali ancora 0/4 |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato

@@ -3804,3 +3804,37 @@ trasporto RPi4→Blackbox→EMS ed evidence/release.
 - Prove live, deployment, soak e uso in volo non sono autorizzati.
 - Decisione:
   `NO_GO_PENDING_G1_PHYSICAL_INVENTORY_AND_ARCHITECTURE_REVIEW`.
+
+### Incremento G1 — import visuale dell'inventario fisico
+
+Il 2026-09-19 è stata predisposta la prima procedura eseguibile per avanzare i
+controlli non-PASS senza interrogare o modificare l'hardware.
+
+#### Implementato
+
+- Template intake V1 per quattro schede e alimentatore.
+- Importatore fail-closed per nove immagini JPEG/PNG e relativi metadati.
+- Calcolo SHA-256, confinamento nomi, controllo magic bytes, anti-overwrite e
+  scrittura atomica del manifest.
+- CTest e Project Control CI dedicati.
+
+#### Verificato solo software
+
+- Anteprima sintetica completa: 4/4 schede, 9/9 artefatti e decisione
+  obbligatoria `NO_GO_PENDING_ENGINEERING_REVIEW`.
+- Import idempotente per artefatti identici.
+- Rifiuto di metadati incompleti, modello discordante, dichiarazione di
+  sicurezza indebolita, path escape, falso file immagine e sovrascrittura.
+- Suite dedicata: 9/9 test PASS.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento; le fotografie reali non sono ancora disponibili.
+- Non sono stati contattati nodi o bus e non sono stati modificati DIP,
+  cablaggi, alimentazione o uscite.
+
+#### Aperto / non dichiarare DONE
+
+- Acquisire e importare le nove fotografie reali con metadati completi.
+- Eseguire la revisione tecnica prima di qualsiasi identificazione attiva.
+- Le schede restano 0/4 verificate e la decisione generale resta NO-GO.
