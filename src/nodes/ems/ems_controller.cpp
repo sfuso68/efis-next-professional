@@ -684,9 +684,10 @@ void EmsController::updateRecorderStatus(efis::MonoTime now) {
                 std::chrono::system_clock::now().time_since_epoch()).count());
         const auto age = wall_now >= status.updated_wall_ms
             ? wall_now - status.updated_wall_ms : 0;
-        black_box_state_ = age > kRecorderStaleMs
-            ? QStringLiteral("STALE")
-            : QString::fromStdString(status.state);
+        black_box_state_ = status.write_failed
+            ? QStringLiteral("ERROR")
+            : (age > kRecorderStaleMs ? QStringLiteral("STALE")
+                                      : QString::fromStdString(status.state));
         black_box_records_ = static_cast<qulonglong>(status.records);
     } catch (...) {
         // Nessun registratore su questo nodo e' una condizione normale, non un

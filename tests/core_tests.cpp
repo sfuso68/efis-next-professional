@@ -29,6 +29,21 @@
 #include <span>
 #include <map>
 #include <vector>
+
+namespace efis::recording {
+
+class SegmentedRecorderTestAccess final {
+public:
+    static void force_stream_failure(SegmentedRecorder& recorder) {
+        recorder.stream_.setstate(std::ios::badbit);
+    }
+
+    static std::size_t records_in_segment(const SegmentedRecorder& recorder) {
+        return recorder.records_in_segment_;
+    }
+};
+
+}  // namespace efis::recording
 #include <string>
 
 namespace {
@@ -343,10 +358,72 @@ int main() {
     }
     require(std::filesystem::exists(test_directory / "interrupted.recovered.csv"),
             "recovered segment must be preserved with an explicit suffix");
+
+    const auto failure_directory = test_directory / "write-failure";
+    std::filesystem::create_directories(failure_directory);
+    std::string failed_segment;
+    bool append_failure_reported = false;
+    {
+        efis::recording::SegmentedRecorder failing{
+            failure_directory,
+            {.records_per_segment = 10, .flush_every_records = 1}};
+        failing.append(normal);
+        failed_segment = failing.current_segment_name();
+        efis::recording::SegmentedRecorderTestAccess::force_stream_failure(failing);
+        try {
+            failing.append(normal);
+        } catch (const std::runtime_error&) {
+            append_failure_reported = true;
+        }
+        require(append_failure_reported,
+                "a recorder stream failure must be reported by append");
+        require(!failing.healthy() && !failing.last_error().empty(),
+                "a recorder stream failure must remain visible in health state");
+        require(failing.records_written() == 1,
+                "the persisted record counter must exclude the failed append");
+        require(
+            efis::recording::SegmentedRecorderTestAccess::records_in_segment(failing) == 1,
+            "a failed append must not advance the segment record count");
+        try {
+            failing.close();
+        } catch (const std::runtime_error&) {
+        }
+    }
+    const auto failed_partial = failure_directory / failed_segment;
+    auto false_complete = failed_partial;
+    false_complete.replace_extension(".csv");
+    require(std::filesystem::exists(failed_partial),
+            "a failed recorder segment must remain explicitly partial");
+    require(!std::filesystem::exists(false_complete),
+            "a failed recorder segment must never be published as complete CSV");
+
+    const auto open_failure_directory = test_directory / "open-failure";
+    std::filesystem::create_directories(open_failure_directory);
+    bool open_failure_reported = false;
+    {
+        efis::recording::SegmentedRecorder failing_open{open_failure_directory};
+        std::filesystem::remove_all(open_failure_directory);
+        {
+            std::ofstream blocker{open_failure_directory};
+            blocker << "not-a-directory";
+        }
+        try {
+            failing_open.append(normal);
+        } catch (const std::runtime_error&) {
+            open_failure_reported = true;
+        }
+        require(open_failure_reported && !failing_open.healthy(),
+                "failure to open a new segment must be reported and retained");
+        require(failing_open.records_written() == 0,
+                "failure to open a segment must not advance the record count");
+    }
+    std::filesystem::remove(open_failure_directory);
+
     const auto status_path = test_directory / "run" / "recorder.status";
     efis::recording::write_recorder_status(status_path, {
         .state = "RECORDING", .updated_wall_ms = 1234,
-        .records = 5678, .segment = "flight-test.partial"});
+        .records = 5678, .segment = "flight-test.partial",
+        .write_failed = true, .last_error = "flush snapshot"});
     const auto recorder_status = efis::recording::read_recorder_status(status_path);
     require(recorder_status.state == "RECORDING",
             "recorder heartbeat must preserve state");
@@ -354,6 +431,20 @@ int main() {
             "recorder heartbeat must preserve record count");
     require(recorder_status.segment == "flight-test.partial",
             "recorder heartbeat must preserve active segment");
+    require(recorder_status.write_failed &&
+                recorder_status.last_error == "flush snapshot",
+            "recorder heartbeat must preserve write failure diagnostics");
+    const auto legacy_status_path = test_directory / "run" / "legacy.status";
+    {
+        std::ofstream legacy{legacy_status_path};
+        legacy << "EFIS_RECORDER_STATUS_V1\n"
+               << "state=RECORDING\nupdated_wall_ms=10\nrecords=11\n"
+               << "segment=legacy.partial\n";
+    }
+    const auto legacy_status =
+        efis::recording::read_recorder_status(legacy_status_path);
+    require(!legacy_status.write_failed && legacy_status.last_error.empty(),
+            "V1 recorder status must remain readable with safe defaults");
     std::filesystem::remove_all(test_directory);
 
     // --- Provenienza del campione, paragrafo 17.2 dell'handoff ---------------

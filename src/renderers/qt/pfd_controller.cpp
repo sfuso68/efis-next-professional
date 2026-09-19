@@ -1498,9 +1498,10 @@ void PfdController::updateSnapshot() {
                     std::chrono::system_clock::now().time_since_epoch()).count());
             const auto age = wall_now >= status.updated_wall_ms
                 ? wall_now - status.updated_wall_ms : 0;
-            black_box_state_ = age > 3000
-                ? QStringLiteral("STALE")
-                : QString::fromStdString(status.state);
+            black_box_state_ = status.write_failed
+                ? QStringLiteral("ERROR")
+                : (age > 3000 ? QStringLiteral("STALE")
+                              : QString::fromStdString(status.state));
             black_box_records_ = status.records;
         } catch (...) {
             black_box_state_ = QStringLiteral("OFFLINE");

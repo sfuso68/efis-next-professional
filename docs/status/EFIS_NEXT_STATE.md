@@ -1,5 +1,50 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-19 — Integrita' scrittura recorder V1
+
+### Implementato
+
+- `SegmentedRecorder` verifica lo stream dopo header, ogni scrittura, ogni
+  flush e la chiusura del segmento.
+- Un append fallito non incrementa il conteggio dei record e porta il recorder
+  in uno stato di errore persistente in memoria; gli append successivi vengono
+  rifiutati.
+- Un segmento con errore resta `.partial` e non viene mai rinominato `.csv`.
+  Anche un errore di rename viene trattato come guasto di storage.
+- `RecorderStatus` V2 trasporta `write_failed` e `last_error`, mantenendo la
+  lettura compatibile con V1.
+- `efis-recorder` pubblica `ERROR` e termina con codice non zero se apertura,
+  scrittura, flush, chiusura o pubblicazione falliscono. PFD ed EMS promuovono
+  `write_failed` a `ERROR`; il broker espone stato e conteggio nei log health.
+
+### Verificato solo software
+
+- Il test aggiunto e' stato eseguito prima della correzione e ha fallito con
+  `a recorder stream failure must be reported by append`.
+- Dopo la correzione, il test forza `badbit`, verifica eccezione, conteggio
+  invariato, health in errore, conservazione `.partial` e assenza del falso
+  `.csv` completo.
+- Coperto anche il fallimento di apertura di un nuovo segmento quando il path
+  non e' piu' una directory e la compatibilita' di lettura status V1.
+- Test di processo `efis_recorder_storage_failure_tests` PASS: exit non-zero,
+  status V2 `ERROR`, `write_failed=1`, zero record e nessun `.csv` prodotto.
+- Build completa Qt/QML PASS. Nella suite core 47 test sono PASS; Windows
+  Application Control ha bloccato l'avvio della copia `build-core` di
+  `efis_safety_tests`, mentre la stessa suite dalla build HMI e' PASS. Non e'
+  stato osservato un fallimento logico dei test.
+
+### Verificato su hardware reale
+
+- Nessuna verifica hardware e nessun deployment sono stati eseguiti.
+
+### Aperto / non dichiarare DONE
+
+- Eseguire review e CI, poi fault injection su filesystem isolato della
+  Blackbox: ENOSPC, inode exhaustion, errore I/O, recovery e retention.
+- Verificare sul banco che PFD/EMS mostrino `ERROR` e che broker/DDP/EDP non
+  presentino un segmento troncato come integro. `BBX-001` e `BBX-003` restano
+  `PARTIAL`; nessuna evidenza di volo deriva da questo lotto.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato

@@ -11,6 +11,8 @@ struct RecorderStatus final {
     std::uint64_t updated_wall_ms{};
     std::uint64_t records{};
     std::string segment;
+    bool write_failed{};
+    std::string last_error;
 };
 
 void write_recorder_status(const std::filesystem::path& path,

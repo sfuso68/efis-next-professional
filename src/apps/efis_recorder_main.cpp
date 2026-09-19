@@ -60,11 +60,14 @@ int main(int argc, char** argv) {
     std::signal(SIGTERM, stop);
 
     const Options options = parse(argc, argv);
-    efis::recording::SegmentedRecorder recorder{options.output};
-
-    const auto started = efis::MonoClock::now();
-    auto next = started;
+    std::unique_ptr<efis::recording::SegmentedRecorder> recorder;
     std::uint64_t count{};
+    try {
+        recorder = std::make_unique<efis::recording::SegmentedRecorder>(
+            options.output);
+
+        const auto started = efis::MonoClock::now();
+        auto next = started;
 
     // Due modi di registrare, e la differenza non e' un dettaglio di comodo: uno
     // porta nella black box quello che il controllore ha davvero detto, l'altro
@@ -74,12 +77,12 @@ int main(int argc, char** argv) {
     // registro, quindi la distinzione sopravvive al file.
     if (!options.replay.empty()) {
         efis::io::RecordedByteSource source{options.replay};
-        efis::ingest::RecordingSession session{recorder};
+        efis::ingest::RecordingSession session{*recorder};
 
         std::cout << "event=recorder_start mode=MAVLINK_REPLAY source="
                   << options.replay.string() << " bytes=" << source.size()
                   << " directory=" << options.output.string()
-                  << " recovered=" << recorder.recovered_segments() << '\n';
+                  << " recovered=" << recorder->recovered_segments() << '\n';
 
         while (running.load() && !source.exhausted()) {
             const auto now = efis::MonoClock::now();
@@ -89,8 +92,8 @@ int main(int argc, char** argv) {
                 efis::recording::write_recorder_status(options.status, {
                     .state = "RECORDING",
                     .updated_wall_ms = wall_milliseconds(),
-                    .records = count,
-                    .segment = recorder.current_segment_name()});
+                    .records = recorder->records_written(),
+                    .segment = recorder->current_segment_name()});
             }
             next += 20ms;
             std::this_thread::sleep_until(next);
@@ -109,29 +112,48 @@ int main(int argc, char** argv) {
 
         std::cout << "event=recorder_start mode=SIM directory="
                   << options.output.string()
-                  << " recovered=" << recorder.recovered_segments() << '\n';
+                  << " recovered=" << recorder->recovered_segments() << '\n';
 
         while (running.load()) {
             const auto now = efis::MonoClock::now();
             const auto elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(now - started);
-            recorder.append(model.normalize(provider.sample(now, elapsed), now));
+            recorder->append(model.normalize(provider.sample(now, elapsed), now));
             ++count;
             if (count == 1 || count % 50 == 0) {
                 efis::recording::write_recorder_status(options.status, {
                     .state = "RECORDING",
                     .updated_wall_ms = wall_milliseconds(),
-                    .records = count,
-                    .segment = recorder.current_segment_name()});
+                    .records = recorder->records_written(),
+                    .segment = recorder->current_segment_name()});
             }
             next += 20ms;
             std::this_thread::sleep_until(next);
         }
     }
 
-    recorder.close();
-    efis::recording::write_recorder_status(options.status, {
-        .state = "STOPPED", .updated_wall_ms = wall_milliseconds(),
-        .records = count, .segment = {}});
-    std::cout << "event=recorder_stop records=" << count << '\n';
+        recorder->close();
+        efis::recording::write_recorder_status(options.status, {
+            .state = "STOPPED", .updated_wall_ms = wall_milliseconds(),
+            .records = recorder->records_written(), .segment = {}});
+        std::cout << "event=recorder_stop records=" << recorder->records_written()
+                  << '\n';
+        return 0;
+    } catch (const std::exception& error) {
+        const auto records = recorder ? recorder->records_written() : 0;
+        const auto segment = recorder ? recorder->current_segment_name() : std::string{};
+        try {
+            efis::recording::write_recorder_status(options.status, {
+                .state = "ERROR", .updated_wall_ms = wall_milliseconds(),
+                .records = records, .segment = segment,
+                .write_failed = true,
+                .last_error = error.what()});
+        } catch (const std::exception& status_error) {
+            std::cerr << "event=recorder_status_failed reason=\""
+                      << status_error.what() << "\"\n";
+        }
+        std::cerr << "event=recorder_failed records=" << records
+                  << " reason=\"" << error.what() << "\"\n";
+        return 2;
+    }
 }

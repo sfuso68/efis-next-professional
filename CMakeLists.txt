@@ -392,6 +392,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_blackbox_broker_observer.py
                 $<TARGET_FILE:efis-blackbox-broker>)
+        add_test(NAME efis_recorder_storage_failure_tests
+            COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_recorder_storage_failure.py
+                $<TARGET_FILE:efis-recorder>)
     endif()
 
     add_executable(efis_ingest_tests tests/ingest_tests.cpp)
