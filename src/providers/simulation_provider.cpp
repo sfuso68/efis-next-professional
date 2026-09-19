@@ -1,4 +1,5 @@
 #include "efis/providers/simulation_provider.hpp"
+#include "efis/core/altimetry.hpp"
 #include "efis/core/flight_dynamics.hpp"
 
 #include <algorithm>
@@ -128,6 +129,10 @@ FlightSnapshot SimulationProvider::sample(MonoTime now,
     routeAltitude += 35.0 * std::sin(phase * 0.045);
     const double simulatedAltitude = environment_number("EFIS_SIM_ALTITUDE_FT", routeAltitude);
     out.air_data.pressure_altitude_ft = simulated(simulatedAltitude, SignalId::pressure_altitude, Unit::foot, now, sequence_);
+    out.air_data.baro_setting_hpa = simulated(
+        standard_pressure_hpa, SignalId::baro_setting, Unit::hectopascal, now, sequence_);
+    out.air_data.indicated_altitude_ft = simulated(
+        simulatedAltitude, SignalId::indicated_altitude, Unit::foot, now, sequence_);
     out.air_data.vertical_speed_fpm = simulated(routeVerticalSpeed, SignalId::vertical_speed, Unit::foot_per_minute, now, sequence_);
     out.position.latitude_deg = simulated(routeLatitude, SignalId::latitude, Unit::degree, now, sequence_);
     out.position.longitude_deg = simulated(routeLongitude, SignalId::longitude, Unit::degree, now, sequence_);

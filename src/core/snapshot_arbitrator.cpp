@@ -45,6 +45,16 @@ constexpr FieldAccess<double> numeric_fields[] = {
     {SignalId::vertical_speed,
      [](const FlightSnapshot& s) -> const Sample<double>& { return s.air_data.vertical_speed_fpm; },
      [](FlightSnapshot& s) -> Sample<double>& { return s.air_data.vertical_speed_fpm; }},
+    {SignalId::baro_setting,
+     [](const FlightSnapshot& s) -> const Sample<double>& { return s.air_data.baro_setting_hpa; },
+     [](FlightSnapshot& s) -> Sample<double>& { return s.air_data.baro_setting_hpa; }},
+    {SignalId::indicated_altitude,
+     [](const FlightSnapshot& s) -> const Sample<double>& {
+         return s.air_data.indicated_altitude_ft;
+     },
+     [](FlightSnapshot& s) -> Sample<double>& {
+         return s.air_data.indicated_altitude_ft;
+     }},
 
     {SignalId::latitude,
      [](const FlightSnapshot& s) -> const Sample<double>& { return s.position.latitude_deg; },

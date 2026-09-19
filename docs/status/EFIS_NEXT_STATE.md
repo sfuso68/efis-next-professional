@@ -1,5 +1,46 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
+
+### Implementato
+
+- `baro_setting` e `indicated_altitude` attraversano ora lo
+  `SnapshotArbitrator` conservando sorgente, timestamp, qualità e validità.
+- Il simulatore pubblica esplicitamente QNH standard e quota indicata come dati
+  simulati, senza dipendere da valori impliciti introdotti dalla UI.
+- In assenza di qualsiasi impostazione, 1013,25 hPa inizializza l'altimetro ma
+  resta `degraded/poor`: non viene presentato come QNH valido scelto dal pilota.
+  Se un QNH esplicito scade, il sistema non ritorna silenziosamente alla
+  standard.
+- La quota indicata viene ricalcolata da quota di pressione e QNH quando
+  entrambi sono utilizzabili; una quota indicata già trasportata resta
+  disponibile quando manca la quota di pressione. Un QNH fuori intervallo
+  rende invece inutilizzabile la quota indicata e contribuisce alla salute di
+  sistema.
+- QNH e quota indicata sono soggetti alla stessa policy di aging degli altri
+  segnali di volo. Uno snapshot senza sorgenti non può più risultare `NORMAL`.
+
+### Verificato solo software
+
+- Build core MSVC PASS e test mirati `efis_core_tests`, `efis_safety_tests` ed
+  `efis_arbitration_tests` PASS.
+- Suite core completa: 47/47 CTest PASS.
+- Build completa Qt/QML `build-hmi` PASS, inclusi PFD, strumenti ed EMS.
+
+### Verificato su hardware reale
+
+- Nessuna verifica hardware è stata eseguita per questo branch.
+
+### Aperto / non dichiarare DONE
+
+- Verificare su RPi5 PFD/MFD inserimento QNH, propagazione, perdita/ripristino
+  sorgente, indicazione `---` per valore fuori intervallo e coerenza con la
+  quota del Pixhawk.
+- La classificazione completa `NO DATA` di tutti i campi mai pubblicati resta
+  un lotto separato; questa modifica impedisce soltanto che l'assenza del QNH
+  produca uno stato complessivo normale.
+- Nessuna evidenza di volo o autorizzazione operativa deriva da questi test.
+
 ## Aggiornamento 2026-09-19 — PFD validity gates V1 (branch di sicurezza)
 
 ### Implementato

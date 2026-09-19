@@ -1,4 +1,5 @@
 #include "efis/core/flight_model.hpp"
+#include "efis/core/altimetry.hpp"
 #include "efis/core/source_arbitrator.hpp"
 #include "efis/core/node_health.hpp"
 #include "efis/providers/mavlink_parser.hpp"
@@ -78,6 +79,11 @@ int main() {
             "simulation must publish selected airspeed");
     require(a.navigation.to_flag.value,
             "simulation must publish typed navigation flag");
+    require(a.air_data.baro_setting_hpa.validity == efis::Validity::simulated &&
+                a.air_data.baro_setting_hpa.origin.signal == efis::SignalId::baro_setting,
+            "simulation must publish an explicit altimeter setting");
+    require(a.air_data.indicated_altitude_ft.validity == efis::Validity::simulated,
+            "simulation must publish indicated altitude explicitly");
     efis::SimulationProvider speed_profile{42};
     const auto at_vx = speed_profile.sample(epoch + 16s, 16s);
     const auto at_vy = speed_profile.sample(epoch + 24s, 24s);
@@ -122,6 +128,68 @@ int main() {
     const auto missing = model.normalize(missing_input, epoch + 1s);
     require(missing.health.level == efis::HealthLevel::warning,
             "unavailable data must raise warning health");
+
+    // Nessuna sorgente non equivale a un impianto sano. La standard applicata
+    // automaticamente inizializza l'altimetro, ma resta degradata e non puo'
+    // fingersi una regolazione ricevuta o scelta dal pilota.
+    efis::FlightModel empty_model{500ms};
+    const auto empty = empty_model.normalize({}, epoch + 1s);
+    require(empty.air_data.baro_setting_hpa.value == efis::standard_pressure_hpa,
+            "an untouched altimeter must initialise at standard pressure");
+    require(empty.air_data.baro_setting_hpa.validity == efis::Validity::degraded,
+            "automatic standard pressure must be distinguishable from a valid setting");
+    require(empty.health.level == efis::HealthLevel::warning,
+            "a snapshot with no sources must not report normal health");
+
+    auto baro_input = a;
+    baro_input.air_data.pressure_altitude_ft.value = 5000.0;
+    baro_input.air_data.pressure_altitude_ft.validity = efis::Validity::valid;
+    baro_input.air_data.pressure_altitude_ft.origin.simulated = false;
+    baro_input.air_data.baro_setting_hpa.value = 1030.0;
+    baro_input.air_data.baro_setting_hpa.raw = 1030.0;
+    baro_input.air_data.baro_setting_hpa.validity = efis::Validity::valid;
+    baro_input.air_data.baro_setting_hpa.source = efis::SourceId::pixhawk_primary;
+    baro_input.air_data.baro_setting_hpa.origin.simulated = false;
+    const auto adjusted = model.normalize(baro_input, epoch + 1s);
+    require(adjusted.air_data.baro_setting_hpa.value == 1030.0 &&
+                adjusted.air_data.baro_setting_hpa.validity == efis::Validity::valid,
+            "a supplied QNH must survive normalisation");
+    require(adjusted.air_data.indicated_altitude_ft.value > 5000.0,
+            "QNH above standard must increase indicated altitude");
+
+    const auto expired_baro = model.normalize(baro_input, epoch + 2s);
+    require(expired_baro.air_data.baro_setting_hpa.validity == efis::Validity::stale,
+            "an expired supplied QNH must age like every other flight signal");
+    require(expired_baro.air_data.baro_setting_hpa.value == 1030.0,
+            "an expired supplied QNH must not fall back silently to standard pressure");
+
+    auto invalid_baro = baro_input;
+    invalid_baro.air_data.baro_setting_hpa.value = 2000.0;
+    invalid_baro.air_data.baro_setting_hpa.raw = 2000.0;
+    const auto rejected_baro = model.normalize(invalid_baro, epoch + 1s);
+    require(rejected_baro.air_data.baro_setting_hpa.validity ==
+                efis::Validity::out_of_range,
+            "a QNH outside the Kollsman range must be rejected");
+    require(!rejected_baro.air_data.indicated_altitude_ft.usable(),
+            "an invalid QNH must not leave a convincing indicated altitude");
+    require(rejected_baro.health.unavailable_fields >= 1 &&
+                rejected_baro.health.level == efis::HealthLevel::warning,
+            "out-of-range flight data must contribute to system health");
+
+    auto transported_altitude = a;
+    transported_altitude.air_data.pressure_altitude_ft.validity =
+        efis::Validity::unavailable;
+    transported_altitude.air_data.indicated_altitude_ft.value = 4321.0;
+    transported_altitude.air_data.indicated_altitude_ft.raw = 4321.0;
+    transported_altitude.air_data.indicated_altitude_ft.validity = efis::Validity::valid;
+    transported_altitude.air_data.indicated_altitude_ft.source =
+        efis::SourceId::pixhawk_primary;
+    transported_altitude.air_data.indicated_altitude_ft.origin.simulated = false;
+    const auto direct_altitude = model.normalize(transported_altitude, epoch + 1s);
+    require(direct_altitude.air_data.indicated_altitude_ft.value == 4321.0 &&
+                direct_altitude.air_data.indicated_altitude_ft.validity ==
+                    efis::Validity::valid,
+            "a directly transported indicated altitude must survive without pressure altitude");
 
     auto multiple_input = a;
     multiple_input.air_data.indicated_airspeed_kt.validity = efis::Validity::unavailable;
