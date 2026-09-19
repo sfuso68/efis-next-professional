@@ -1,7 +1,9 @@
 # AVIONIX G1 — MokerLink switch acceptance, batch 20
 
-Data: 2026-09-19  
-Stato: `PREPARED-SW / NOT_RUN / NO-GO`  
+Data: 2026-09-19
+
+Stato: `PREPARED-SW / NOT_RUN / NO-GO`
+
 Oggetto: candidato MokerLink `IND-F082GS`, identità ancora presunta.
 
 Questo batch rende verificabile l'accettazione al banco ma non la esegue. Il

@@ -1,6 +1,7 @@
 # Checkpoint G1 — switch acceptance batch 20
 
-Data: 2026-09-19  
+Data: 2026-09-19
+
 Stato: `PREPARED-SW / NOT_RUN / NO-GO`
 
 ## Implementato
