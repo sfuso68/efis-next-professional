@@ -1,5 +1,35 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-19 — Conteggio health del sistema non inizializzato
+
+ID matrice: `CORE-004`.
+
+### Implementato
+
+- `FlightModel` dichiara prima dell'aging i dieci campi primari attesi: roll,
+  pitch, heading, IAS, pressure altitude, vertical speed, latitude, longitude,
+  ground speed e indicated altitude derivata.
+- Un campo opzionale mai promesso resta escluso dal conteggio; un sistema che
+  non ha mai ricevuto alcuna sorgente non può più apparire quasi completo.
+
+### Verificato solo software
+
+- Prima della correzione la nuova asserzione `unavailable_fields == 10`
+  falliva sullo snapshot vuoto.
+- Dopo la correzione `efis_core_tests` e l'intera suite CTest 47/47 passano su
+  Windows/MSVC.
+
+### Verificato su hardware reale
+
+- Nulla in questo incremento; nessun nodo o bus è stato interrogato.
+
+### Aperto
+
+- Eseguire la suite su CI/ARM64 e verificare la rappresentazione health sul
+  PFD reale dopo review, merge e deployment autorizzato.
+- Il profilo dei campi attesi è quello minimo del core V1; profili prodotto
+  diversi dovranno renderlo configurabile senza introdurre default silenziosi.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato
