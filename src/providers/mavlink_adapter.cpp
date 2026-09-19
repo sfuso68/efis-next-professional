@@ -135,15 +135,22 @@ void MavlinkAdapter::apply(const mavlink::Frame& frame, MonoTime now) {
                                                            : Validity::unavailable);
             }
             if (altitude) {
+                const bool estimator_healthy = !estimator_.reported ||
+                    estimator_.vertical_position_healthy;
                 snapshot_.air_data.pressure_altitude_ft =
                     measured(*altitude * feet_per_meter, *altitude,
-                             SignalId::pressure_altitude, Unit::foot, Validity::valid);
+                             SignalId::pressure_altitude, Unit::foot,
+                             absolute_pressure_healthy_ && estimator_healthy
+                                 ? Validity::valid : Validity::unavailable);
             }
             if (climb) {
+                const bool estimator_healthy = !estimator_.reported ||
+                    estimator_.vertical_velocity_healthy;
                 snapshot_.air_data.vertical_speed_fpm =
                     measured(*climb * feet_per_minute_per_meter_per_second, *climb,
                              SignalId::vertical_speed, Unit::foot_per_minute,
-                             Validity::valid);
+                             absolute_pressure_healthy_ && estimator_healthy
+                                 ? Validity::valid : Validity::unavailable);
             }
             ++statistics_.frames_applied;
             break;
@@ -193,6 +200,7 @@ void MavlinkAdapter::apply(const mavlink::Frame& frame, MonoTime now) {
             constexpr std::uint32_t ekf_attitude = 1U;
             constexpr std::uint32_t ekf_velocity_horizontal = 2U;
             constexpr std::uint32_t ekf_velocity_vertical = 4U;
+            constexpr std::uint32_t ekf_position_vertical_absolute = 8U;
             constexpr std::uint32_t ekf_position_horizontal_absolute = 16U;
             constexpr std::uint32_t ekf_constant_position_mode = 128U;
             constexpr std::uint32_t ekf_uninitialised = 1024U;
@@ -208,6 +216,8 @@ void MavlinkAdapter::apply(const mavlink::Frame& frame, MonoTime now) {
                     (bits & ekf_velocity_horizontal) != 0;
                 estimator_.vertical_velocity_healthy =
                     (bits & ekf_velocity_vertical) != 0;
+                estimator_.vertical_position_healthy =
+                    (bits & ekf_position_vertical_absolute) != 0;
                 estimator_.horizontal_position_healthy =
                     (bits & ekf_position_horizontal_absolute) != 0;
                 estimator_.uninitialised = (bits & ekf_uninitialised) != 0;
@@ -320,11 +330,16 @@ void MavlinkAdapter::apply(const mavlink::Frame& frame, MonoTime now) {
             if (present) {
                 air_data_.declared_present =
                     (*present & sensor_bit_differential_pressure) != 0;
+                air_data_.absolute_pressure_present =
+                    (*present & sensor_bit_absolute_pressure) != 0;
             }
             if (healthy) {
                 differential_pressure_healthy_ =
                     (*healthy & sensor_bit_differential_pressure) != 0;
                 air_data_.declared_healthy = differential_pressure_healthy_;
+                absolute_pressure_healthy_ =
+                    (*healthy & sensor_bit_absolute_pressure) != 0;
+                air_data_.absolute_pressure_healthy = absolute_pressure_healthy_;
             }
             revalidate();
             ++statistics_.frames_applied;
@@ -411,6 +426,20 @@ void MavlinkAdapter::revalidate() {
                 }
             }
         }
+    }
+
+    const Validity altitude = absolute_pressure_healthy_ &&
+            (!estimator_.reported || estimator_.vertical_position_healthy)
+        ? Validity::valid : Validity::unavailable;
+    if (snapshot_.air_data.pressure_altitude_ft.origin.signal != SignalId::unknown) {
+        snapshot_.air_data.pressure_altitude_ft.validity = altitude;
+    }
+
+    const Validity vertical_speed = absolute_pressure_healthy_ &&
+            (!estimator_.reported || estimator_.vertical_velocity_healthy)
+        ? Validity::valid : Validity::unavailable;
+    if (snapshot_.air_data.vertical_speed_fpm.origin.signal != SignalId::unknown) {
+        snapshot_.air_data.vertical_speed_fpm.validity = vertical_speed;
     }
 
     const Validity airspeed = differential_pressure_healthy_ ? Validity::valid

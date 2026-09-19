@@ -1,5 +1,40 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-19 — Validità quota e VS da SYS_STATUS/EKF
+
+ID matrice: `PIX-001`, `PIX-002`.
+
+### Implementato
+
+- Decodificato `MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE` separatamente dal
+  sensore differenziale dell'anemometro.
+- Aggiunta la health EKF della posizione verticale assoluta oltre a quella
+  della velocità verticale.
+- Quota di pressione e variometro da `VFR_HUD` partono non utilizzabili finché
+  il barometro non è dichiarato sano; `revalidate()` li aggiorna anche quando
+  SYS_STATUS o EKF arrivano dopo il valore.
+- Le due health EKF sono indipendenti: vertical-position governa la quota,
+  vertical-velocity governa il variometro.
+
+### Verificato solo software
+
+- Prima della correzione il test con bit absolute-pressure guasto falliva e i
+  due campioni restavano utilizzabili.
+- Dopo la correzione passano: barometro guasto, recupero barometro sano, EKF
+  senza velocità verticale e EKF senza posizione verticale.
+- `efis_core_tests` e la suite completa CTest 47/47 PASS su Windows/MSVC.
+
+### Verificato su hardware reale
+
+- Nulla in questo incremento. Nessun parametro o collegamento Pixhawk è stato
+  modificato.
+
+### Aperto
+
+- Eseguire suite CI/ARM64 e fault injection controllata su Pixhawk reale.
+- Confermare nei log ArduPlane 4.7 i bit effettivi durante perdita/ripristino
+  del barometro prima di promuovere l'evidenza a hardware.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato
