@@ -4,11 +4,12 @@
 - Branch: `safety/mavlink-fanout-isolation-v1`
 - Baseline: `80791a4e72430dd7e9e14491fcb428e8716b750c`
 - Ambito: hardening software; nessun deployment o intervento hardware
-- Requisiti interessati: `NET-001`, `BBX-003`
+- Requisiti interessati: `NET-001`, `PIX-002`
 
 ## Dieci punti eseguiti
 
-1. Formalizzata nel codice la rete protetta FLIGHT-DATA `10.77.10.0/24`.
+1. Formalizzata nel codice una sottorete protetta derivata dal bind runtime e
+   dal prefisso V1, senza cablare l'indirizzo FLIGHT-DATA nel fan-out.
 2. Collegata la sorgente MAVLink configurata alla policy del fan-out.
 3. Impedita ogni destinazione observer interna alla rete protetta.
 4. Impedita una destinazione observer uguale alla sorgente configurata.
@@ -21,7 +22,7 @@
 8. Aggiunti test Python e registrata la suite nel CTest di progetto.
 9. Aggiunti test di processo del broker per entrambe le configurazioni
    vietate e aggiornata la documentazione operativa/ADR.
-10. Aggiornati stato e master matrix, lasciando `NET-001` e `BBX-003` in
+10. Aggiornati stato e master matrix, lasciando `NET-001` e `PIX-002` in
     `PARTIAL` fino a CI, deployment e prove hardware autorizzate.
 
 ## Evidenza software

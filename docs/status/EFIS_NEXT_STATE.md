@@ -4,15 +4,17 @@
 
 ### Implementato
 
-- Il fan-out del broker rifiuta in modo fail-closed ogni observer nella rete
-  FLIGHT-DATA `10.77.10.0/24`, incluso il Pixhawk `10.77.10.3`.
+- Il fan-out del broker rifiuta in modo fail-closed ogni observer nella
+  sottorete protetta derivata dal bind runtime e dal prefisso V1 `/24`, incluso
+  il Pixhawk nella topologia corrente.
 - Il broker passa al fan-out la sorgente MAVLink configurata e rifiuta un
   observer con lo stesso indirizzo, anche quando non appartiene alla rete
   FLIGHT-DATA.
 - Restano vietati wildcard, broadcast, multicast e duplicati; una rete
   adiacente non viene confusa con `10.77.10.0/24`.
-- Il forwarder USB read-only applica la stessa esclusione a indirizzi CLI e a
-  destinazioni fornite direttamente alla classe.
+- Il forwarder USB read-only richiede il CIDR protetto a runtime e applica la
+  stessa esclusione a indirizzi CLI e a destinazioni fornite direttamente alla
+  classe.
 - La suite CTest include ora la policy Python del forwarder insieme alle prove
   C++ e al test di processo del broker.
 
@@ -42,8 +44,8 @@
 - Dopo autorizzazione separata, distribuire sulla Blackbox e verificare
   startup valido, rifiuto di configurazioni vietate, continuita' di broker,
   recorder, DDP/EDP e due observer ammessi.
-- Ripetere fault/recovery ed endurance sul banco isolato. NET-001 e BBX-003
-  restano `PARTIAL`; questa modifica non autorizza comandi o volo.
+- Ripetere fault/recovery ed endurance sul banco isolato. `NET-001` e
+  `PIX-002` restano `PARTIAL`; questa modifica non autorizza comandi o volo.
 
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 

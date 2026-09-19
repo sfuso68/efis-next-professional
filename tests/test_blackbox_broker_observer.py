@@ -27,6 +27,7 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
         records: Path,
         *,
         ingress_port: int,
+        bind: str = "127.0.0.1",
         source: str,
         observer: str,
         observer_port: int,
@@ -35,7 +36,7 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
     ) -> list[str]:
         return [
             str(BROKER),
-            "--mavlink-bind", "127.0.0.1",
+            "--mavlink-bind", bind,
             "--mavlink-port", str(ingress_port),
             "--mavlink-source", source,
             "--mavlink-observer", observer,
@@ -55,14 +56,14 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary, \
              socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as observer, \
              socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as display:
-            observer.bind(("127.0.0.1", 0))
+            observer.bind(("127.0.1.1", 0))
             display.bind(("127.0.0.1", 0))
             observer.settimeout(0.30)
             command = self.broker_command(
                 Path(temporary) / "records",
                 ingress_port=ingress_port,
                 source="127.0.0.2",
-                observer="127.0.0.1",
+                observer="127.0.1.1",
                 observer_port=int(observer.getsockname()[1]),
                 display_port=int(display.getsockname()[1]),
             )
@@ -122,14 +123,14 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
             self.assertNotEqual(process.returncode, 0, process.stdout)
             self.assertIn("must not equal the protected MAVLink source", process.stdout)
 
-    def test_flight_data_observer_fails_closed(self) -> None:
+    def test_runtime_bind_subnet_observer_fails_closed(self) -> None:
         self.assertIsNotNone(BROKER, "broker executable argument is required")
         with tempfile.TemporaryDirectory() as temporary:
             command = self.broker_command(
                 Path(temporary) / "records",
                 ingress_port=free_udp_port(),
                 source="127.0.0.2",
-                observer="10.77.10.3",
+                observer="127.0.0.3",
                 observer_port=14550,
                 display_port=free_udp_port(),
                 seconds=1,
@@ -143,7 +144,7 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
                 check=False,
             )
             self.assertNotEqual(process.returncode, 0, process.stdout)
-            self.assertIn("must not be in FLIGHT-DATA", process.stdout)
+            self.assertIn("must not be in the protected MAVLink subnet", process.stdout)
 
 
 if __name__ == "__main__":

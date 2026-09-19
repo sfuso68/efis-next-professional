@@ -41,7 +41,7 @@ int main() {
     efis::io::ReadOnlyUdpFanout fanout{{
         {"127.0.0.1", laptop.local().port},
         {"127.0.0.1", server.local().port},
-    }};
+    }, "10.77.10.2", "10.77.10.3"};
 
     const std::vector<std::uint8_t> mavlink_datagram{
         0xFDU, 0x01U, 0x00U, 0x00U, 0x2AU, 0x01U, 0x01U,
@@ -73,7 +73,7 @@ int main() {
         efis::io::ReadOnlyUdpFanout invalid{{
             {"127.0.0.1", laptop.local().port},
             {"127.0.0.1", laptop.local().port},
-        }};
+        }, "10.77.10.2", "10.77.10.3"};
     } catch (const std::invalid_argument&) {
         duplicate_rejected = true;
     }
@@ -85,7 +85,7 @@ int main() {
         efis::io::ReadOnlyUdpFanout invalid{{
             {"127.0.0.1", laptop.local().port},
             {"127.000.000.001", laptop.local().port},
-        }};
+        }, "10.77.10.2", "10.77.10.3"};
     } catch (const std::invalid_argument&) {
         equivalent_duplicate_rejected = true;
     }
@@ -94,7 +94,8 @@ int main() {
 
     bool broadcast_rejected = false;
     try {
-        efis::io::ReadOnlyUdpFanout invalid{{{"255.255.255.255", 14550}}};
+        efis::io::ReadOnlyUdpFanout invalid{
+            {{"255.255.255.255", 14550}}, "10.77.10.2", "10.77.10.3"};
     } catch (const std::invalid_argument&) {
         broadcast_rejected = true;
     }
@@ -103,7 +104,8 @@ int main() {
 
     bool multicast_rejected = false;
     try {
-        efis::io::ReadOnlyUdpFanout invalid{{{"239.1.2.3", 14550}}};
+        efis::io::ReadOnlyUdpFanout invalid{
+            {{"239.1.2.3", 14550}}, "10.77.10.2", "10.77.10.3"};
     } catch (const std::invalid_argument&) {
         multicast_rejected = true;
     }
@@ -112,7 +114,8 @@ int main() {
 
     bool flight_data_rejected = false;
     try {
-        efis::io::ReadOnlyUdpFanout invalid{{{"10.77.10.3", 14550}}};
+        efis::io::ReadOnlyUdpFanout invalid{
+            {{"10.77.10.3", 14550}}, "10.77.10.2", "10.77.10.3"};
     } catch (const std::invalid_argument&) {
         flight_data_rejected = true;
     }
@@ -121,7 +124,8 @@ int main() {
 
     bool flight_data_node_rejected = false;
     try {
-        efis::io::ReadOnlyUdpFanout invalid{{{"10.77.10.11", 14550}}};
+        efis::io::ReadOnlyUdpFanout invalid{
+            {{"10.77.10.11", 14550}}, "10.77.10.2", "10.77.10.3"};
     } catch (const std::invalid_argument&) {
         flight_data_node_rejected = true;
     }
@@ -131,7 +135,7 @@ int main() {
     bool protected_source_rejected = false;
     try {
         efis::io::ReadOnlyUdpFanout invalid{
-            {{"192.168.1.47", 14550}}, "192.168.1.47"};
+            {{"192.168.1.47", 14550}}, "10.77.10.2", "192.168.1.47"};
     } catch (const std::invalid_argument&) {
         protected_source_rejected = true;
     }
@@ -140,12 +144,23 @@ int main() {
 
     bool adjacent_service_network_allowed = true;
     try {
-        efis::io::ReadOnlyUdpFanout allowed{{{"10.77.11.3", 14550}}};
+        efis::io::ReadOnlyUdpFanout allowed{
+            {{"10.77.11.3", 14550}}, "10.77.10.2", "10.77.10.3"};
     } catch (const std::invalid_argument&) {
         adjacent_service_network_allowed = false;
     }
     require(adjacent_service_network_allowed,
             "the policy must reject exactly FLIGHT-DATA /24, not adjacent networks");
+
+    bool moved_subnet_rejected = false;
+    try {
+        efis::io::ReadOnlyUdpFanout invalid{
+            {{"172.20.40.11", 14550}}, "172.20.40.2", "172.20.40.3"};
+    } catch (const std::invalid_argument&) {
+        moved_subnet_rejected = true;
+    }
+    require(moved_subnet_rejected,
+            "the protected subnet must be derived from the runtime bind address");
 
     std::cout << "MAVLink read-only observer fan-out tests passed\n";
     return EXIT_SUCCESS;

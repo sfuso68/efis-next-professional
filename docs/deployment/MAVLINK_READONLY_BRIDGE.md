@@ -11,10 +11,11 @@ parametri. Non interpreta MAVLink: conserva i byte e lascia parsing, health e
 arbitraggio al broker Blackbox, secondo ADR-003.
 
 Le destinazioni devono essere indirizzi IPv4 numerici unicast. Il forwarder
-rifiuta wildcard, multicast, broadcast, duplicati e l'intera rete avionica
-FLIGHT-DATA `10.77.10.0/24`; quindi non puo' essere configurato per inviare una
-copia al Pixhawk o a un altro nodo avionico. La policy viene rivalidata anche
-quando `ReadOnlyForwarder` e' costruito direttamente, senza parser CLI.
+richiede `--protected-network CIDR` e rifiuta wildcard, multicast, broadcast,
+duplicati e ogni indirizzo in quella rete; quindi non puo' essere configurato
+per inviare una copia al Pixhawk o a un altro nodo avionico. La policy viene
+rivalidata anche quando `ReadOnlyForwarder` e' costruito direttamente, senza
+parser CLI.
 
 ## Installazione utente
 
@@ -35,6 +36,7 @@ La configurazione specifica del banco appartiene al file non versionato
 
 ```ini
 EFIS_PIXHAWK_SERIAL=/dev/serial/by-id/usb-ArduPilot_Pixhawk6X_3F001D000751333439393536-if00
+EFIS_MAVLINK_PROTECTED_NETWORK=10.77.10.0/24
 EFIS_MAVLINK_DEST_ARGS=--destination 192.168.1.47:14550 --destination 127.0.0.1:14550
 ```
 

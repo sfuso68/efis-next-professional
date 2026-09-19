@@ -28,7 +28,6 @@ except ImportError:  # pragma: no cover - runtime target is Linux
 
 
 MAX_UDP_PAYLOAD = 65_507
-FLIGHT_DATA_NETWORK = ipaddress.IPv4Network("10.77.10.0/24")
 
 
 @dataclass
@@ -62,11 +61,21 @@ def destination(value: str) -> tuple[str, int]:
         raise argparse.ArgumentTypeError(
             "destination must be explicit IPv4 unicast"
         )
-    if address in FLIGHT_DATA_NETWORK:
-        raise argparse.ArgumentTypeError(
-            "destination must not be in FLIGHT-DATA 10.77.10.0/24"
-        )
     return str(address), port
+
+
+def protected_network(value: str) -> ipaddress.IPv4Network:
+    try:
+        network = ipaddress.ip_network(value, strict=False)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(
+            "protected network must be numeric IPv4 CIDR"
+        ) from error
+    if not isinstance(network, ipaddress.IPv4Network) or network.prefixlen == 0:
+        raise argparse.ArgumentTypeError(
+            "protected network must be IPv4 CIDR with prefix 1..32"
+        )
+    return network
 
 
 class ReadOnlyForwarder:
@@ -74,6 +83,7 @@ class ReadOnlyForwarder:
         self,
         serial_path: str,
         destinations: Iterable[tuple[str, int]],
+        protected: ipaddress.IPv4Network | str,
         *,
         read_size: int = 4096,
         report_seconds: float = 5.0,
@@ -82,12 +92,24 @@ class ReadOnlyForwarder:
         if read_size < 1 or read_size > MAX_UDP_PAYLOAD:
             raise ValueError("read_size outside UDP payload range")
         self.serial_path = serial_path
+        try:
+            self.protected_network = (
+                protected if isinstance(protected, ipaddress.IPv4Network)
+                else protected_network(protected)
+            )
+        except argparse.ArgumentTypeError as error:
+            raise ValueError(str(error)) from error
         validated: list[tuple[str, int]] = []
         for host, port in destinations:
             try:
-                validated.append(destination(f"{host}:{port}"))
+                target = destination(f"{host}:{port}")
             except argparse.ArgumentTypeError as error:
                 raise ValueError(str(error)) from error
+            if ipaddress.IPv4Address(target[0]) in self.protected_network:
+                raise ValueError(
+                    "destination must not be in the protected MAVLink network"
+                )
+            validated.append(target)
         self.destinations = tuple(validated)
         if not self.destinations:
             raise ValueError("at least one destination is required")
@@ -192,6 +214,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--destination", action="append", type=destination, required=True,
         help="repeatable HOST:PORT UDP output",
     )
+    parser.add_argument(
+        "--protected-network", type=protected_network, required=True,
+        help="IPv4 CIDR that must never receive observer traffic",
+    )
     parser.add_argument("--read-size", type=int, default=4096)
     parser.add_argument("--report-seconds", type=float, default=5.0)
     parser.add_argument("--retry-seconds", type=float, default=2.0)
@@ -204,6 +230,7 @@ def main(argv: list[str] | None = None) -> int:
     forwarder = ReadOnlyForwarder(
         args.serial,
         args.destination,
+        args.protected_network,
         read_size=args.read_size,
         report_seconds=args.report_seconds,
         retry_seconds=args.retry_seconds,
