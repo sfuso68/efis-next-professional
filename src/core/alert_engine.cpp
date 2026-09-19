@@ -11,7 +11,7 @@ int priority(AlertSeverity severity) {
 }
 
 bool is_simulated(const Sample<double>& sample) {
-    return sample.validity == Validity::simulated;
+    return sample.is_simulated();
 }
 
 }  // namespace

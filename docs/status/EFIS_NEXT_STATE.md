@@ -1,5 +1,33 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-19 — Allarme simulazione basato sulla provenienza
+
+### Implementato
+
+- `AlertEngine` usa ora `Sample::is_simulated()` per i dati primari di volo.
+- Il marker persistente `origin.simulated=true` attiva quindi `SIMULATION
+  ACTIVE` anche se uno stadio di trasporto o normalizzazione ha impostato la
+  validity a `valid`.
+- È stata aggiunta una regressione mirata che costruisce esattamente questa
+  combinazione di provenance e validity.
+
+### Verificato solo software
+
+- Prima della correzione il nuovo test falliva con
+  `origin.simulated must raise SIMULATION ACTIVE even when validity is valid`.
+- Dopo la correzione `efis_core_tests` passa su Windows/MSVC.
+
+### Verificato su hardware reale
+
+- Nulla in questo incremento. Nessun nodo, bus, servizio o display è stato
+  contattato o modificato.
+
+### Aperto / non dichiarare verificato su hardware
+
+- Eseguire la suite su ARM64/CI e verificare l'annuncio sul display reale dopo
+  review, merge e distribuzione autorizzata.
+- Estendere lo stesso audit di provenance a tutti i SignalId safety-relevant.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato
