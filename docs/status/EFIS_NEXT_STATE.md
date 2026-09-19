@@ -1,5 +1,38 @@
 # EFIS NEXT — stato verificato
 
+## Aggiornamento 2026-09-20 — rerender reale golden EMS (branch di sicurezza)
+
+### Implementato
+
+- Il controllo golden EMS non si limita più a validare gli hash dei PNG già
+  versionati: avvia il renderer Qt/PFD in modalità `--hmi-golden`, rigenera le
+  18 combinazioni di stato e risoluzione in una directory temporanea e confronta
+  i pixel con limiti espliciti per le sole differenze di antialiasing.
+- Su Windows l'orchestrazione usa `Start-Process`, evitando il blocco del
+  processo Qt quando viene avviato come figlio diretto del runtime Python.
+- Il test è registrato in CTest solo sul sistema operativo dichiarato dal
+  manifesto golden (`windows`); non viene fatta passare per regressione HMI la
+  diversa rasterizzazione di font e backend grafici Linux.
+
+### Verificato solo software
+
+- Build Release MSVC/Qt 6.11.1 di `efis-pfd-qt`: PASS.
+- Rerender nativo Windows di 18/18 combinazioni (`LIVE`, `STALE`, `DEGRADED`,
+  `LOST`, `FAIL`, `SIM` × 800×480, 1024×600, 1280×800): PASS entro tolleranze.
+- Test Python della matrice e del confronto semantico: PASS.
+
+### Verificato su hardware reale
+
+- Nessuna verifica hardware è stata eseguita per questo branch.
+
+### Aperto / non dichiarare DONE
+
+- Restano necessari leggibilità, touch, frame-rate, termica e fault injection
+  sui pannelli RPi4/RPi5. Il gate desktop non costituisce accettazione hardware
+  né autorizzazione al volo.
+- Il confronto è deliberatamente associato al backend Windows del manifesto;
+  un baseline Linux separato richiederebbe immagini e provenance proprie.
+
 ## Aggiornamento 2026-09-19 — Catena barometrica V1 (branch di sicurezza)
 
 ### Implementato
