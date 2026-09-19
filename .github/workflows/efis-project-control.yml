@@ -37,6 +37,8 @@ jobs:
           python tools/hardware/validate_g1_physical_inventory.py
           python -m unittest tests.test_g1_physical_inventory -v
           python -m unittest tests.test_g1_visual_inventory_import -v
+          python tools/network/validate_g1_upstream_proposal.py
+          python -m unittest tests.test_g1_upstream_proposal -v
           python tools/hardware/validate_g1_g2_readiness.py
           python -m unittest tests.test_g1_g2_readiness -v
 

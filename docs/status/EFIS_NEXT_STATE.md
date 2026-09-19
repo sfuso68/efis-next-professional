@@ -3838,3 +3838,38 @@ controlli non-PASS senza interrogare o modificare l'hardware.
 - Acquisire e importare le nove fotografie reali con metadati completi.
 - Eseguire la revisione tecnica prima di qualsiasi identificazione attiva.
 - Le schede restano 0/4 verificate e la decisione generale resta NO-GO.
+
+### Incremento G1/G2 — proposta upstream, venti punti
+
+Il 2026-09-19 sono state formalizzate, senza attivarle, le decisioni tecniche
+candidate per il flusso dal nodo sensori alla Blackbox.
+
+#### Implementato
+
+- Contratto G1-U20 con 20 controlli per ERAP V1 raw-only, UDP unicast 49004,
+  indirizzo proposto `10.77.10.10` e autorità Blackbox.
+- Riserva append-only `SourceId::asso5_engine = 9`, non inserita nell'ICD o nel
+  runtime congelato.
+- ADR-016 in stato proposta e registro completo dei blocker.
+- Validator, test, CTest e Project Control CI.
+
+#### Verificato solo software
+
+- 20/20 controlli e 20/20 mutazioni fail-closed.
+- Suite dedicata: 8/8 PASS.
+- Cross-check con SourceId/ICD V1, piano rete, G2 verticale e R100.
+- Rilevato e reso bloccante il deficit di capacità: switch installato 5 porte,
+  minimo già dichiarato 6, minimo con nodo sensori 7.
+
+#### Verificato su hardware reale
+
+- Nulla. Nessuna porta, IP, firewall, servizio o apparato è stato modificato.
+- Il checkpoint visuale resta congelato e le schede restano 0/4.
+
+#### Aperto / non dichiarare DONE
+
+- Approvare o correggere ERAP V1, porta, indirizzo e SourceId proposti.
+- Scegliere una topologia fisica con capacità adeguata.
+- Completare inventario, channel map e calibrazione prima del freeze wire.
+- Rate e freshness restano volutamente irrisolti fino alle prove reali.
+- Decisione: `NO_GO_PENDING_ARCHITECTURE_AND_HARDWARE_REVIEW`.
