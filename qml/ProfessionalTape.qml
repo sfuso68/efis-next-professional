@@ -7,7 +7,9 @@ Rectangle {
     required property real selectedValue
     required property real trend
     required property bool valid
+    required property bool selectedValid
     property real verticalSpeed: 0
+    property bool verticalSpeedValid: false
     property real step: role === "IAS" ? 10 : 100
     property real uiScale: 1
     property bool rightSide: role === "ALT"
@@ -37,7 +39,7 @@ Rectangle {
         return theme.warning
     }
 
-    Item { anchors.fill: parent; visible: tape.role === "IAS" && tape.speedProfile.vne !== undefined; clip: true
+    Item { anchors.fill: parent; visible: tape.valid && tape.role === "IAS" && tape.speedProfile.vne !== undefined; clip: true
         Rectangle { x: tape.width-7*tape.uiScale; width: 3*tape.uiScale; color: "white"
             y: Math.min(tape.speedY(tape.speedProfile.vso),tape.speedY(tape.speedProfile.vfe));
             height: Math.abs(tape.speedY(tape.speedProfile.vso)-tape.speedY(tape.speedProfile.vfe)) }
@@ -88,6 +90,7 @@ Rectangle {
         delegate: Item {
             required property int index
             property real tickValue: Math.round(tape.value/(tape.step/2))*(tape.step/2) - (index-6)*(tape.step/2)
+            visible: tape.valid
             y: tape.height/2 + (index-6)*25*tape.uiScale; width: tape.width; height: 1
             Rectangle { anchors.right: tape.rightSide ? undefined : parent.right; anchors.left: tape.rightSide ? parent.left : undefined;
                 width: (index%2===0 ? 22 : 11)*tape.uiScale; height: (index%2===0 ? 2 : 1)*tape.uiScale;
@@ -109,6 +112,7 @@ Rectangle {
     }
 
     Rectangle {
+        visible: tape.valid && tape.selectedValid
         y: Math.max(38*tape.uiScale, Math.min(tape.height-28*tape.uiScale,
            tape.height/2-(tape.selectedValue-tape.value)/(tape.step/2)*25*tape.uiScale))
         anchors.right: tape.rightSide ? undefined : parent.right
@@ -171,7 +175,7 @@ Rectangle {
         Text { anchors { top: parent.top; horizontalCenter: parent.horizontalCenter; topMargin: 8*tape.uiScale } text: "VS"; color: theme.secondary; font.pixelSize: 7*tape.uiScale; font.bold: true }
         Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 36*tape.uiScale;
             color: "#F003080D"; border.color: theme.borderBright
-            Text { anchors.centerIn: parent; text: Math.round(tape.verticalSpeed/100)*100; color: theme.primary; font.pixelSize: 10*tape.uiScale; font.bold: true }
+            Text { anchors.centerIn: parent; text: tape.verticalSpeedValid ? Math.round(tape.verticalSpeed/100)*100 : "---"; color: tape.verticalSpeedValid ? theme.primary : theme.warning; font.pixelSize: 10*tape.uiScale; font.bold: true }
         }
     }
 

@@ -14,6 +14,13 @@ Rectangle {
     required property real commandedRoll
     required property real commandedPitch
     required property bool flightDirectorActive
+    required property bool flightDirectorGuidanceValid
+    required property bool attitudeValid
+    required property bool headingValid
+    required property bool altitudeValid
+    required property bool positionValid
+    required property bool groundSpeedValid
+    required property bool selectedCourseValid
     required property bool navigationValid
     // Larghezza degli strumenti che coprono i bordi della superficie. La
     // superficie si estende sotto i nastri, quindi senza questa misura le sue
@@ -31,6 +38,8 @@ Rectangle {
     property bool goldenMode: false
     signal navigationRequested()
     function distanceNm() {
+        if (!positionValid || selectedAirport.latitude_deg === undefined || selectedAirport.longitude_deg === undefined)
+            return NaN
         const targetLat=selectedAirport.latitude_deg === undefined ? 45.6484 : selectedAirport.latitude_deg
         const targetLon=selectedAirport.longitude_deg === undefined ? 12.1944 : selectedAirport.longitude_deg
         const lat1=latitude*Math.PI/180, lat2=targetLat*Math.PI/180
@@ -39,14 +48,45 @@ Rectangle {
         return 3440.065*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
     }
     function eteText() {
-        const minutes=groundSpeed>1 ? Math.round(distanceNm()/groundSpeed*60) : 0
+        if (!positionValid || !groundSpeedValid || groundSpeed <= 1 || !isFinite(distanceNm()))
+            return "--:--"
+        const minutes=Math.round(distanceNm()/groundSpeed*60)
         return ("0"+Math.floor(minutes/60)).slice(-2)+":"+("0"+(minutes%60)).slice(-2)
     }
     Theme { id: theme }
     color: "#155D91"; clip: true; border.color: theme.border
 
-    Terrain3DSurface { anchors.fill: parent; roll: vision.roll; pitch: vision.pitch; heading: vision.heading; latitude: vision.latitude; longitude: vision.longitude; altitude: vision.altitude; goldenMode: vision.goldenMode }
+    Terrain3DSurface {
+        anchors.fill: parent
+        visible: vision.attitudeValid && vision.headingValid && vision.positionValid && vision.altitudeValid
+        roll: vision.attitudeValid ? vision.roll : 0
+        pitch: vision.attitudeValid ? vision.pitch : 0
+        heading: vision.headingValid ? vision.heading : 0
+        latitude: vision.positionValid ? vision.latitude : 0
+        longitude: vision.positionValid ? vision.longitude : 0
+        altitude: vision.altitude
+        goldenMode: vision.goldenMode
+    }
 
+    Rectangle {
+        z: 35
+        visible: !vision.attitudeValid
+        anchors.centerIn: parent
+        width: 244*vision.uiScale; height: 60*vision.uiScale; radius: 5*vision.uiScale
+        color: "#E02A1014"; border.color: theme.warning; border.width: 3*vision.uiScale
+        Text {
+            anchors.centerIn: parent; text: "ATTITUDE INVALID"
+            color: theme.warning; font.pixelSize: 17*vision.uiScale; font.bold: true
+        }
+    }
+
+    Text {
+        z: 34
+        visible: vision.attitudeValid && !(vision.headingValid && vision.positionValid && vision.altitudeValid)
+        anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 72*vision.uiScale }
+        text: "SVS DATA INVALID"; color: theme.amber
+        font.pixelSize: 10*vision.uiScale; font.bold: true
+    }
     // Targhette di stato della superficie, raccolte in una colonna sola.
     //
     // Stanno a destra dei nastri e sotto l'arco di prua: sono le uniche due
@@ -81,7 +121,7 @@ Rectangle {
     }
 
     // Transparent, finely graduated upper heading arc.
-    Item { id: headingArc; anchors { horizontalCenter: parent.horizontalCenter; top: parent.top } width: parent.width*.68; height: 66*vision.uiScale
+    Item { id: headingArc; visible: vision.headingValid; anchors { horizontalCenter: parent.horizontalCenter; top: parent.top } width: parent.width*.68; height: 66*vision.uiScale
         Repeater { model: 48; delegate: Item { required property int index; anchors.fill: parent
                 property real d1: (index-24)*2.5; property real d2: d1+2.5
                 property real x1: parent.width/2+d1*parent.width/130; property real x2: parent.width/2+d2*parent.width/130
@@ -109,7 +149,7 @@ Rectangle {
     }
 
     // Pitch ladder remains screen-readable while following attitude.
-    Item { anchors.fill: parent; rotation: -vision.roll; transform: Translate { y: vision.pitch*vision.height/75 }
+    Item { visible: vision.attitudeValid; anchors.fill: parent; rotation: vision.attitudeValid ? -vision.roll : 0; transform: Translate { y: vision.attitudeValid ? vision.pitch*vision.height/75 : 0 }
         Repeater { model: [-20,-15,-10,-5,5,10,15,20]; delegate: Item { required property int modelData;
                 x: parent.width/2-width/2; y: parent.height*0.46-modelData*vision.height/75;
                 width: (Math.abs(modelData)%10===0 ? 96 : 56)*vision.uiScale; height: 2
@@ -119,7 +159,7 @@ Rectangle {
         } }
     }
 
-    Row { anchors { top: parent.top; horizontalCenter: parent.horizontalCenter; topMargin: 54*vision.uiScale } spacing: 16*vision.uiScale
+    Row { visible: vision.attitudeValid; anchors { top: parent.top; horizontalCenter: parent.horizontalCenter; topMargin: 54*vision.uiScale } spacing: 16*vision.uiScale
         Repeater { model: ["30","20","10","▲","10","20","30"]; delegate: Text { required property string modelData;
                 text: modelData; color: modelData==="▲" ? theme.cyan : theme.primary; font.pixelSize: (modelData==="▲" ? 12 : 7)*vision.uiScale; font.bold: true }
         } }
@@ -129,14 +169,14 @@ Rectangle {
         Rectangle { x: 0; y: 27*vision.uiScale; width: 78*vision.uiScale; height: 4*vision.uiScale; color: "#F2D13D" }
         Rectangle { x: 136*vision.uiScale; y: 27*vision.uiScale; width: 78*vision.uiScale; height: 4*vision.uiScale; color: "#F2D13D" }
         Rectangle { anchors.centerIn: parent; width: 12*vision.uiScale; height: 12*vision.uiScale; radius: width/2; color: "transparent"; border.color: "#F2D13D"; border.width: 3 }
-        Row { visible: vision.flightDirectorActive; anchors.centerIn: parent; spacing: 41*vision.uiScale; y: (vision.commandedPitch-vision.pitch)*-3*vision.uiScale
+        Row { visible: vision.flightDirectorActive && vision.flightDirectorGuidanceValid && vision.attitudeValid; anchors.centerIn: parent; spacing: 41*vision.uiScale; y: visible ? (vision.commandedPitch-vision.pitch)*-3*vision.uiScale : 0
             Rectangle { width: 58*vision.uiScale; height: 5*vision.uiScale; color: theme.magenta }
             Rectangle { width: 58*vision.uiScale; height: 5*vision.uiScale; color: theme.magenta }
         }
     }
 
     // Flight-path vector
-    Item { x: parent.width/2-14*vision.uiScale; y: parent.height*0.42; width: 28*vision.uiScale; height: 28*vision.uiScale
+    Item { visible: vision.attitudeValid && vision.positionValid; x: parent.width/2-14*vision.uiScale; y: parent.height*0.42; width: 28*vision.uiScale; height: 28*vision.uiScale
         Rectangle { anchors.centerIn: parent; width: 13*vision.uiScale; height: 13*vision.uiScale; radius: width/2; color: "transparent"; border.color: theme.green; border.width: 2 }
         Rectangle { anchors { left: parent.left; verticalCenter: parent.verticalCenter } width: 8*vision.uiScale; height: 2*vision.uiScale; color: theme.green }
         Rectangle { anchors { right: parent.right; verticalCenter: parent.verticalCenter } width: 8*vision.uiScale; height: 2*vision.uiScale; color: theme.green }
@@ -149,14 +189,15 @@ Rectangle {
             TapHandler { acceptedButtons: Qt.LeftButton; onTapped: vision.navigationRequested() }
         }
         Repeater { model: 8; delegate: Text { required property int index
+                visible: vision.headingValid
                 property real compassAngle: (235+index*10)*Math.PI/180
                 property real compassRadius: vision.width*.402
                 x: vision.width*.5 + Math.cos(compassAngle)*compassRadius - width/2
                 y: vision.height*.96+vision.width*.4257*.81915204 + Math.sin(compassAngle)*compassRadius - height/2
-                text: ("000"+Math.round((vision.heading-35+index*10+360)%360)).slice(-3)
+                text: vision.headingValid ? ("000"+Math.round((vision.heading-35+index*10+360)%360)).slice(-3) : "---"
                 color: (index===3||index===4) ? theme.primary : "#C9D6DA"; font.pixelSize: 8*vision.uiScale; font.bold: true
         } }
-        Rectangle { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 17*vision.uiScale }
+        Rectangle { visible: vision.selectedCourseValid; anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 17*vision.uiScale }
             width: 2*vision.uiScale; height: 52*vision.uiScale; color: theme.magenta }
         Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 4*vision.uiScale }
             text: "▲"; color: theme.primary; font.pixelSize: 15*vision.uiScale; font.bold: true }
@@ -164,8 +205,8 @@ Rectangle {
             width: 292*vision.uiScale; height: 36*vision.uiScale
             Column { anchors.left: parent.left; spacing: 1*vision.uiScale
                 Text { text: "GPS1 • SIM"; color: theme.magenta; font.pixelSize: 8*vision.uiScale; font.bold: true }
-                Text { text: "DTK  "+Math.round(vision.selectedCourse)+"°"; color: theme.primary; font.pixelSize: 7*vision.uiScale; font.bold: true }
-                Text { text: "DIS  "+vision.distanceNm().toFixed(1)+" NM"; color: theme.cyan; font.pixelSize: 7*vision.uiScale; font.bold: true }
+                Text { text: "DTK  "+(vision.selectedCourseValid ? Math.round(vision.selectedCourse)+"°" : "---"); color: vision.selectedCourseValid ? theme.primary : theme.amber; font.pixelSize: 7*vision.uiScale; font.bold: true }
+                Text { text: "DIS  "+(vision.positionValid && isFinite(vision.distanceNm()) ? vision.distanceNm().toFixed(1)+" NM" : "---"); color: vision.positionValid ? theme.cyan : theme.amber; font.pixelSize: 7*vision.uiScale; font.bold: true }
             }
             Column { anchors.right: parent.right; spacing: 1*vision.uiScale
                 Text { anchors.right: parent.right; text: vision.selectedAirport.icao || "----"; color: theme.magenta; font.pixelSize: 8*vision.uiScale; font.bold: true }

@@ -1066,11 +1066,27 @@ bool PfdController::positionValid() const {
     return snapshot_.position.latitude_deg.usable() &&
            snapshot_.position.longitude_deg.usable();
 }
+bool PfdController::groundSpeedValid() const {
+    return snapshot_.position.ground_speed_kt.usable();
+}
 double PfdController::commandedRoll() const { return snapshot_.guidance.commanded_roll_deg.value; }
 double PfdController::commandedPitch() const { return snapshot_.guidance.commanded_pitch_deg.value; }
+bool PfdController::flightDirectorGuidanceValid() const {
+    return snapshot_.guidance.commanded_roll_deg.usable() &&
+           snapshot_.guidance.commanded_pitch_deg.usable();
+}
 double PfdController::selectedAltitude() const { return snapshot_.guidance.selected_altitude_ft.value; }
+bool PfdController::selectedAltitudeValid() const {
+    return snapshot_.guidance.selected_altitude_ft.usable();
+}
 double PfdController::selectedCourse() const { return snapshot_.guidance.selected_course_deg.value; }
+bool PfdController::selectedCourseValid() const {
+    return snapshot_.guidance.selected_course_deg.usable();
+}
 double PfdController::selectedAirspeed() const { return snapshot_.guidance.selected_airspeed_kt.value; }
+bool PfdController::selectedAirspeedValid() const {
+    return snapshot_.guidance.selected_airspeed_kt.usable();
+}
 double PfdController::cdiDeviation() const { return snapshot_.navigation.cdi_deviation_dots.value; }
 double PfdController::glideSlope() const { return snapshot_.navigation.glide_slope_dots.value; }
 double PfdController::airspeedTrend() const { return airspeed_trend_; }

@@ -147,6 +147,53 @@ int main() {
             "cockpit renderer must honor resolution");
     require(compact_svg.find("EFIS") != std::string::npos,
             "renderer must include product identity");
+    require(compact_svg.find("AP  ALT 12000") == std::string::npos,
+            "renderer must never invent an autopilot altitude");
+    require(compact_svg.find("TREND +2") == std::string::npos,
+            "renderer must never invent an airspeed trend");
+
+    auto invalid_pfd = view;
+    invalid_pfd.roll_deg.value = 87.654;
+    invalid_pfd.roll_deg.validity = efis::Validity::unavailable;
+    invalid_pfd.pitch_deg.value = -43.210;
+    invalid_pfd.pitch_deg.validity = efis::Validity::unavailable;
+    invalid_pfd.heading_deg.value = 321.0;
+    invalid_pfd.heading_deg.validity = efis::Validity::unavailable;
+    invalid_pfd.ground_speed_kt.value = 987.0;
+    invalid_pfd.ground_speed_kt.validity = efis::Validity::unavailable;
+    invalid_pfd.vertical_speed_fpm.value = 8765.0;
+    invalid_pfd.vertical_speed_fpm.validity = efis::Validity::unavailable;
+    invalid_pfd.selected_altitude_ft.value = 54321.0;
+    invalid_pfd.selected_altitude_ft.validity = efis::Validity::unavailable;
+    invalid_pfd.selected_course_deg.value = 319.0;
+    invalid_pfd.selected_course_deg.validity = efis::Validity::unavailable;
+    invalid_pfd.commanded_roll_deg.validity = efis::Validity::unavailable;
+    invalid_pfd.commanded_pitch_deg.validity = efis::Validity::unavailable;
+    const auto invalid_svg = efis::display::SvgPfdRenderer{}.render(invalid_pfd, {1024, 600});
+    require(invalid_svg.find("id='attitude-invalid'") != std::string::npos &&
+                invalid_svg.find("ATTITUDE INVALID") != std::string::npos,
+            "invalid attitude must replace the moving horizon with an explicit warning");
+    require(invalid_svg.find("id='attitude-valid'") == std::string::npos,
+            "invalid attitude must not render a plausible moving horizon");
+    require(invalid_svg.find("id='flight-director-mode'") == std::string::npos,
+            "invalid guidance must suppress the flight-director mode claim");
+    const auto heading_marker = invalid_svg.find("id='heading-value'");
+    require(heading_marker != std::string::npos &&
+                invalid_svg.substr(heading_marker, 320).find(">---</text>") != std::string::npos,
+            "invalid heading must be represented by dashes");
+    require(invalid_svg.find("321°") == std::string::npos &&
+                invalid_svg.find("987 KT") == std::string::npos &&
+                invalid_svg.find("8765 FPM") == std::string::npos &&
+                invalid_svg.find("54321") == std::string::npos &&
+                invalid_svg.find("319°") == std::string::npos,
+            "unavailable PFD fields must not leak their last plausible numeric values");
+
+    const auto multiple_view = efis::display::make_pfd_view(
+        multiple, efis::display::DisplayProfile::professional);
+    const auto multiple_svg = efis::display::SvgPfdRenderer{}.render(multiple_view, {1024, 600});
+    require(multiple_svg.find("id='additional-alert-count'") != std::string::npos &&
+                multiple_svg.find("+" + std::to_string(multiple_view.alerts.size()-1) + " MORE") != std::string::npos,
+            "a compact alert banner must disclose how many alerts are not expanded");
 
     auto source_sample = [&](double value, efis::SourceId source,
                              efis::Validity validity) {
