@@ -41,6 +41,8 @@ con una nuova ADR o con una revisione esplicita del brief.
 | `AVIONIX_G3_EMS_RESPONSIVE_BATCH20.md` | matrice EMS 6×3 e venti controlli multi-risoluzione | VERIFIED-SW; hardware aperto |
 | `AVIONIX_G3_HMI_HARDWARE_ACCEPTANCE_BATCH20.md` | harness e venti controlli per acceptance PFD/MFD/EMS | PREPARED-SW/NOT_RUN; hardware aperto |
 | `AVIONIX_G3_HMI_EVIDENCE_PACKAGER_BATCH20.md` | assemblatore immutabile e venti controlli evidence HMI | VERIFIED-SW/NOT_RUN; hardware aperto |
+| `AVIONIX_G1_SWITCH_ACCEPTANCE_BATCH20.md` | venti controlli per accettazione al banco del candidato MokerLink | PREPARED-SW/NOT_RUN; hardware aperto |
+| `docs/deployment/MOKERLINK_G1_ACCEPTANCE.md` | runbook non esecutivo e requisiti evidence switch | PREPARED; richiede autorizzazione separata |
 | `AVIONIX_NEXT_DECISION_REGISTER.md` | decisioni G0/G1/G2 separate da evidenze e implementazione | DEC-G2-001 approvata; altre aperte |
 | `AVIONIX_NEXT_EXECUTION_BACKLOG.md` | attività ordinate per gate e registro evidenze | controllato |
 | `docs/status/EFIS_NEXT_STATE.md` | stato verificato e livelli di evidenza | autorevole |

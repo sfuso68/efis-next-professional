@@ -376,6 +376,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_g1_upstream_proposal)
         set_tests_properties(efis_g1_upstream_proposal_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_g1_switch_acceptance_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_g1_switch_acceptance)
+        set_tests_properties(efis_g1_switch_acceptance_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         add_test(NAME efis_g1_g2_readiness_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_g1_g2_readiness)
         set_tests_properties(efis_g1_g2_readiness_tests PROPERTIES

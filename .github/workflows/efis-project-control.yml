@@ -39,6 +39,8 @@ jobs:
           python -m unittest tests.test_g1_visual_inventory_import -v
           python tools/network/validate_g1_upstream_proposal.py
           python -m unittest tests.test_g1_upstream_proposal -v
+          python tools/network/validate_g1_switch_acceptance.py
+          python -m unittest tests.test_g1_switch_acceptance -v
           python tools/hardware/validate_g1_g2_readiness.py
           python -m unittest tests.test_g1_g2_readiness -v
 

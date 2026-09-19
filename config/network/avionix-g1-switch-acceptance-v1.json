@@ -1,0 +1,81 @@
+{
+  "schema": "avionix-next.g1-switch-acceptance.v1",
+  "revision": "1.0.0",
+  "status": "PREPARED_SW_NOT_RUN",
+  "execution_authorized": false,
+  "flight_approval": false,
+  "candidate": {
+    "manufacturer": "MokerLink",
+    "model": "IND-F082GS",
+    "identity_status": "PRESUMED_FROM_MARKETING_TITLE_NOT_LABEL_VERIFIED",
+    "installed": false,
+    "replaces_installed_switch": false
+  },
+  "authority": "READ_ONLY_BENCH_ACCEPTANCE_NO_NETWORK_MUTATION",
+  "scope": {
+    "segment": "flight-data",
+    "video_attachment": "FORBIDDEN",
+    "camera_attachment": "FORBIDDEN",
+    "ip_change": "FORBIDDEN",
+    "firewall_change": "FORBIDDEN",
+    "vlan_mode": "FORBIDDEN_UNTIL_SEPARATELY_VERIFIED",
+    "extend_mode": "FORBIDDEN"
+  },
+  "expected_ports": {
+    "rj45_fast_ethernet": 8,
+    "rj45_gigabit": 1,
+    "sfp_gigabit": 1,
+    "copper_total": 9,
+    "sfp_counts_as_copper": false,
+    "required_copper_ports": 7,
+    "theoretical_margin_ports": 2
+  },
+  "vendor_claims": {
+    "input_vdc": [12, 55],
+    "redundant_inputs": true,
+    "operating_c": [-40, 75],
+    "ingress_protection": "IP40",
+    "status": "VENDOR_CLAIMS_NOT_ACCEPTANCE_EVIDENCE"
+  },
+  "required_evidence": [
+    "MODEL_LABEL_PHOTO",
+    "TERMINAL_AND_POWER_LABEL_PHOTO",
+    "PORT_MAP_AND_MODE_SWITCH_PHOTO",
+    "ALL_RJ45_PORTS_LINK_TEST",
+    "NEGOTIATED_SPEED_PER_PORT",
+    "MIN_MAX_INPUT_AND_BROWNOUT_TEST",
+    "CURRENT_TEMPERATURE_AND_RESTART_REPORT",
+    "FLIGHT_DATA_VIDEO_PHYSICAL_ISOLATION_TEST",
+    "FAULT_AND_RECOVERY_TEST",
+    "OPERATOR_SIGNOFF"
+  ],
+  "result_contract": {
+    "allowed_status": ["NOT_RUN", "BENCH_PASS", "FAIL"],
+    "artifact_hash": "SHA-256",
+    "timestamp": "UTC_RFC3339",
+    "bench_pass_is_flight_approval": false,
+    "missing_evidence_policy": "FAIL_CLOSED"
+  },
+  "controls": [
+    {"id": "G1-S20-01", "key": "contract_identity", "state": "DEFINED"},
+    {"id": "G1-S20-02", "key": "closed_schema", "state": "DEFINED"},
+    {"id": "G1-S20-03", "key": "prepared_not_run", "state": "DEFINED"},
+    {"id": "G1-S20-04", "key": "zero_mutation_authority", "state": "DEFINED"},
+    {"id": "G1-S20-05", "key": "candidate_cross_check", "state": "DEFINED"},
+    {"id": "G1-S20-06", "key": "installed_switch_unchanged", "state": "DEFINED"},
+    {"id": "G1-S20-07", "key": "port_map_exact", "state": "DEFINED"},
+    {"id": "G1-S20-08", "key": "sfp_excluded_from_copper", "state": "DEFINED"},
+    {"id": "G1-S20-09", "key": "capacity_theoretical_only", "state": "DEFINED"},
+    {"id": "G1-S20-10", "key": "flight_data_only", "state": "DEFINED"},
+    {"id": "G1-S20-11", "key": "video_physically_separate", "state": "DEFINED"},
+    {"id": "G1-S20-12", "key": "modes_forbidden", "state": "DEFINED"},
+    {"id": "G1-S20-13", "key": "identity_photos_required", "state": "DEFINED"},
+    {"id": "G1-S20-14", "key": "all_rj45_link_speed_required", "state": "DEFINED"},
+    {"id": "G1-S20-15", "key": "power_brownout_required", "state": "DEFINED"},
+    {"id": "G1-S20-16", "key": "current_thermal_restart_required", "state": "DEFINED"},
+    {"id": "G1-S20-17", "key": "fault_recovery_required", "state": "DEFINED"},
+    {"id": "G1-S20-18", "key": "evidence_provenance", "state": "DEFINED"},
+    {"id": "G1-S20-19", "key": "not_run_has_no_claims", "state": "DEFINED"},
+    {"id": "G1-S20-20", "key": "bench_pass_not_flight_approval", "state": "DEFINED"}
+  ]
+}

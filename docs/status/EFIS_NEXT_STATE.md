@@ -3895,3 +3895,34 @@ candidate per il flusso dal nodo sensori alla Blackbox.
   firewall, runtime, servizi o hardware. `execution_authorized=false`,
   `flight_approved=false` e `NO_GO_PENDING_ARCHITECTURE_AND_HARDWARE_REVIEW`
   restano invariati.
+
+### Preparazione acceptance MokerLink G1-S20 — 2026-09-19
+
+#### Implementato
+
+- Contratto macchina con venti controlli chiusi, template risultati `NOT_RUN`,
+  validatore offline e runbook non esecutivo.
+- Dieci classi di evidenza obbligatorie: identità, porte/velocità,
+  alimentazione/brownout, corrente/termica/restart, isolamento, fault/recovery
+  e firma operatore, tutte con timestamp UTC e SHA-256.
+- Integrazione in CTest e Project Control CI.
+
+#### Verificato solo software
+
+- Template senza affermazioni hardware accettato.
+- Venti mutazioni mirate rifiutate fail-closed.
+- Bundle sintetico completo validato esclusivamente come prova del validatore;
+  path escape, digest errato e falso flight approval sono rifiutati.
+
+#### Verificato su hardware reale
+
+- Nulla in questo incremento. Il MokerLink non è stato alimentato, collegato,
+  interrogato, installato o usato per modificare la rete.
+
+#### Aperto / non dichiarare DONE
+
+- Identità e pinout reali, nove RJ45, alimentazione, brownout, corrente,
+  temperatura, restart, fault/recovery e isolamento VIDEO restano `NOT_RUN`.
+- Il piano elettrico G4 e la sessione al banco richiedono approvazione separata.
+- Anche un futuro `BENCH_PASS` mantiene `flight_approval=false`; Waveshare 5P
+  resta lo switch installato autorevole e la decisione generale resta NO-GO.
