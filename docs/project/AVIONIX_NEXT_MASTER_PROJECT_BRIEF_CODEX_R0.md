@@ -9,6 +9,17 @@
 
 ---
 
+> **Nota di controllo del 20 settembre 2026.** Questo file conserva
+> intenzionalmente la baseline R0 e il repository conosciuto al momento della
+> sua emissione. Il repository oggi autorevole è
+> `sfuso68/efis-next-professional`. Lo stato corrente, gli scostamenti rispetto
+> a questo piano e le priorità aggiornate sono documentati in
+> [`AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md`](AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md).
+> In caso di conflitto prevalgono evidenza reale, Master Matrix, stato corrente
+> e ADR accettate secondo l'ordine definito nell'indice documentale.
+
+---
+
 ## 0. Istruzione iniziale per Codex
 
 Codex deve leggere integralmente questo documento prima di proporre o applicare modifiche.
@@ -1516,4 +1527,3 @@ Codex deve terminare l'audit prima di iniziare modifiche estese.
 - rinviato FUEL/AIRFRAME analogico;
 - inseriti workstream, gate, criteri di test e fonti ufficiali;
 - definita procedura di audit prima dello sviluppo.
-

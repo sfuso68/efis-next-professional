@@ -1,0 +1,15 @@
+Sep 20 19:17:09 efis efis-ems-qt[755301]: event=render_health node=ems presentation_hz= 49.0 presentation_interval_ms= 20.41 snapshot_hz= 19.6 sequence= 56490
+Sep 20 19:17:09 efis systemd[1]: Stopping efis-ems.service - EFIS Next Engine Monitoring Node...
+Sep 20 19:17:09 efis systemd[1]: efis-ems.service: Deactivated successfully.
+Sep 20 19:17:09 efis systemd[1]: Stopped efis-ems.service - EFIS Next Engine Monitoring Node.
+Sep 20 19:17:09 efis systemd[1]: efis-ems.service: Consumed 46min 4.018s CPU time.
+Sep 20 19:17:09 efis systemd[1]: Starting efis-ems.service - EFIS Next Engine Monitoring Node...
+Sep 20 19:17:09 efis python3[757419]: {"artifacts_checked": 1, "artifacts_declared": 1, "flight_approval": false, "platform": "RPI4_AARCH64", "release_id": "ems-7655799-primary-v1", "roles": ["EMS"], "schema": "efis-next.release-validation.v1", "status": "PASS"}
+Sep 20 19:17:09 efis systemd[1]: Started efis-ems.service - EFIS Next Engine Monitoring Node.
+Sep 20 19:17:10 efis efis-ems-qt[757423]: event=operational_catalog_loaded profiles= 3 fields= 447
+Sep 20 19:17:10 efis efis-ems-qt[757423]: event=ems_edp_link_transition state= SIM engine_state= LIVE • SIM age_ms= 0 accepted= 3 rejected= 0 crc_rejected= 0 sequence_gaps= 0 publisher_restarts= 0 source_node= 47 publisher_instance= 7279915684873551698 sequence= 810937 last_rejection= NONE node= BLACKBOX 47 • SIM
+Sep 20 19:17:11 efis efis-ems-qt[757423]: event=startup product=efis-next component=ems version=0.1.0 qt= 6.8.2 platform= eglfs
+Sep 20 19:17:11 efis efis-ems-qt[757423]: event=capture_armed node=ems signal=SIGUSR1 directory= /home/pi/.local/state/efis-next/ems/captures pid= 757423
+Sep 20 19:17:11 efis efis-ems-qt[757423]: event=fuel_leak_monitor state= MONITORING excess_gph= -0.122899
+Sep 20 19:17:16 efis efis-ems-qt[757423]: event=render_health node=ems presentation_hz= 51.1 presentation_interval_ms= 19.58 snapshot_hz= 20.0 sequence= 811054
+Sep 20 19:17:21 efis efis-ems-qt[757423]: event=render_health node=ems presentation_hz= 52.5 presentation_interval_ms= 19.07 snapshot_hz= 20.1 sequence= 811154

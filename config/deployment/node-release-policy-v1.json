@@ -1,0 +1,52 @@
+{
+  "schema": "efis-next.node-release-policy.v1",
+  "repository": "sfuso68/efis-next-professional",
+  "flight_approval": false,
+  "nodes": [
+    {
+      "node": "efis-pfd-01",
+      "role": "PFD",
+      "platform": "RPI5_AARCH64",
+      "service_scope": "user",
+      "service": "efis-pfd.service",
+      "current": "/home/efis/efis-next-current",
+      "executable": "bin/efis-pfd-qt"
+    },
+    {
+      "node": "pi5",
+      "role": "MFD",
+      "platform": "RPI5_AARCH64",
+      "service_scope": "system",
+      "service": "efis-next-mfd-direct.service",
+      "current": "/home/pi/efis-next-current",
+      "executable": "bin/efis-pfd-qt"
+    },
+    {
+      "node": "efis",
+      "role": "EMS",
+      "platform": "RPI4_AARCH64",
+      "service_scope": "system",
+      "service": "efis-ems.service",
+      "current": "/home/pi/efis-next-current",
+      "executable": "bin/efis-ems-qt"
+    },
+    {
+      "node": "efis-pfd-01",
+      "role": "RECORDER",
+      "platform": "RPI5_AARCH64",
+      "service_scope": "user",
+      "service": "efis-recorder.service",
+      "current": "/home/efis/efis-next-current",
+      "executable": "bin/efis-recorder"
+    },
+    {
+      "node": "efisblackbox",
+      "role": "BLACKBOX",
+      "platform": "RPI5_AARCH64",
+      "service_scope": "system",
+      "service": "efis-blackbox-broker.service",
+      "current": "/opt/efis-blackbox-current",
+      "executable": "bin/efis-blackbox-broker"
+    }
+  ]
+}

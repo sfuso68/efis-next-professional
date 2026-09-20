@@ -1,6 +1,6 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
-Aggiornamento: 2026-09-17
+Aggiornamento: 2026-09-20
 Stato: controllato da WS0/G0; nessuna attività hardware autorizzata da questo documento.
 
 Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
@@ -62,6 +62,10 @@ comandi su uscite.
 | 2026-09-19 | AVX-G1-03/AVX-G2-02 | `AVIONIX_G1_UPSTREAM_PROPOSAL_BATCH20.md`, ADR-016, contratto e validator G1-U20 | PROPOSED-SW/NOT-APPROVED/NO-GO; ERAP V1/UDP 49004 e SourceId 9 riservati senza modificare runtime/ICD; switch 5 porte bloccante per requisito ≥7 |
 | 2026-09-19 | AVX-G1-03/AVX-G4-01 | `CHECKPOINT-2026-09-19-G1-SWITCH-CANDIDATE.md`, contratto G1 V1.1 e test fail-closed | DOCUMENTED-CANDIDATE/NOT-VERIFIED/NO-GO; MokerLink `IND-F082GS` presunto con 9 porte rame dichiarate e margine numerico +2, ma Waveshare resta installato e servono identità più 9 evidenze hardware; VIDEO separato invariato |
 | 2026-09-19 | AVX-G1-03/AVX-G4-01 | `AVIONIX_G1_SWITCH_ACCEPTANCE_BATCH20.md`, contratto/risultati/validator G1-S20 | PREPARED-SW/NOT_RUN/NO-GO; 20 controlli fail-closed e dieci evidenze definite, bundle sintetico ammesso solo per test; nessuna alimentazione, rete o prova hardware eseguita |
+| 2026-09-20 | AVX-G0-02/AVX-G6-01 | inventario read-only release e `docs/status/EFIS_NEXT_ACTIVE_RELEASES.md` | PARTIAL; PFD `60b3526` e MFD `3432402` osservati, EMS da `build/dev`, Blackbox senza manifest e MFD con supervisore ignoto |
+| 2026-09-20 | AVX-G6-01 | schema manifest/piano transizione, policy nodi, builder, validator e preflight nella PR #15 | IMPLEMENTED-SW/NOT-DEPLOYED; 19 test mirati, 18 PASS e 1 SKIP Windows symlink; CI Linux PASS, nessun nodo modificato |
+| 2026-09-20 | AVX-G6-01 / PROD-005 | `release-immutability-20260920` e registro release | VERIFIED-HW su MFD/EMS/Blackbox: manifest, eseguibile canonico, rollback drill e reboot PASS; EMS EDP `LIVE • SIM` e runtime persistente; PFD/recorder restano aperti |
+| 2026-09-20 | Program control | `AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md` | DOCUMENTED; 44,7% ponderato su 71 requisiti, gate/workstream/nodi confrontati con il piano; nessuna promozione di evidenza software a hardware |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato

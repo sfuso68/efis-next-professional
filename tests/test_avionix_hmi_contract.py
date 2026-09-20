@@ -132,6 +132,21 @@ class AvionixHmiContractTests(unittest.TestCase):
         self.assertNotIn('data_source_state_ = QStringLiteral("NETWORK")', source)
         self.assertNotIn('QStringLiteral("SIMULATION")', header)
 
+    def test_ems_limit_authority_is_consolidated_without_false_link_alarm(self):
+        ems = (ROOT / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
+        gauge = (ROOT / "qml/HmiArcGaugeV4.qml").read_text(encoding="utf-8")
+        cylinders = (ROOT / "qml/HmiCylinderMatrixV2.qml").read_text(encoding="utf-8")
+
+        self.assertIn('engineLimits.status||"NOT CONFIGURED"', ems)
+        self.assertIn('engineLimitsVerified: engineLimitsStatus==="VERIFIED"', ems)
+        self.assertIn("limitsVerified:root.engineLimitsVerified", ems)
+        self.assertIn('text:"LIMITS INDICATIVE"', ems)
+        self.assertNotIn("LIMITS UNVERIFIED", gauge)
+        self.assertNotIn("LIMITS UNVERIFIED", cylinders)
+        self.assertNotIn("BLACKBOX LINK LOST", ems)
+        self.assertIn('centralLogSyncOffline ? "CENTRAL LOG SYNC OFFLINE"', ems)
+        self.assertIn('normalizedDataState:', ems)
+
     def test_ems_setup_exposes_read_only_edp_diagnostics(self):
         header = (ROOT / "src/nodes/ems/ems_controller.hpp").read_text(encoding="utf-8")
         source = (ROOT / "src/nodes/ems/ems_controller.cpp").read_text(encoding="utf-8")

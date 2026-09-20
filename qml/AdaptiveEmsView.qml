@@ -21,6 +21,8 @@ Item {
     readonly property var engineLimits: controller.engineLimits||({})
     readonly property var engineCapabilities: controller.engineCapabilities||({})
     readonly property bool mixtureControlAvailable: engineCapabilities.mixture_control===true
+    readonly property string engineLimitsStatus: String(engineLimits.status||"NOT CONFIGURED").toUpperCase()
+    readonly property bool engineLimitsVerified: engineLimitsStatus==="VERIFIED"
     function engineLimit(name,fallback) { var value=Number(engineLimits[name]); return isFinite(value)&&value>0?value:fallback }
     readonly property real oilPressureMinimum: engineLimit("oil_pressure_min_psi",25)
     readonly property real oilPressureMaximum: engineLimit("oil_pressure_max_psi",100)
@@ -67,7 +69,10 @@ Item {
     readonly property real fuelDiscrepancyGallons: Math.abs(fuelMeasuredGallons-fuelTotalGallons)
     readonly property string fuelLeakState: String(controller.fuelLeakState||"INITIALIZING")
     readonly property bool fuelLeakAlarm: fuelLeakState==="POSSIBLE LEAK"||fuelLeakState==="FUEL LEAK WARNING"
-    readonly property bool blackBoxLinkLost: String(controller.centralBlackBoxState||"OFFLINE")!=="ONLINE"
+    // centralBlackBoxState describes the replicated maintenance/log cache.  The
+    // live engine transport is dataSourceState and must never be inferred from
+    // the cache, otherwise a healthy EDP link is announced as lost.
+    readonly property bool centralLogSyncOffline: String(controller.centralBlackBoxState||"OFFLINE")!=="ONLINE"
     function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
     readonly property string casLevel: !dataUsable ? "WARNING" : dataDegraded ? "CAUTION" :
@@ -75,7 +80,7 @@ Item {
                                        maximumCht>chtMaximum || controller.oilTemperature>oilTemperatureMaximum ? "WARNING" :
                                        fuelTotalGallons<=fuelReserveGallons*.5 || fuelLeakAlarm || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
                                        controller.busVoltage<12.5 || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
-                                       fuelImbalanceGallons>3 || blackBoxLinkLost ? "ADVISORY" : "NORMAL"
+                                       fuelImbalanceGallons>3 || centralLogSyncOffline ? "ADVISORY" : "NORMAL"
     readonly property string casHeadline: !dataUsable ? "ENGINE DATA "+normalizedDataState :
                                           dataDegraded ? "ENGINE DATA "+normalizedDataState :
                                           controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
@@ -87,7 +92,7 @@ Item {
                                           fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "FUEL QUANTITY DISAGREE" :
                                           fuelTotalGallons<=fuelReserveGallons ? "FINAL RESERVE" :
                                           fuelImbalanceGallons>3 ? "FUEL IMBALANCE" :
-                                          blackBoxLinkLost ? "BLACKBOX LINK LOST" : "SYSTEM NORMAL"
+                                          centralLogSyncOffline ? "CENTRAL LOG SYNC OFFLINE" : "SYSTEM NORMAL"
     readonly property string casAction: !dataUsable ? "USE STANDBY INDICATIONS • CHECK EMS LINK" :
                                         dataDegraded ? "VALUES MAY BE DELAYED • VERIFY SOURCE" :
                                         controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
@@ -99,7 +104,7 @@ Item {
                                         fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "CHECK FOR LEAK OR SENSOR FAULT" :
                                         fuelTotalGallons<=fuelReserveGallons ? "VERIFY ENDURANCE AND DIVERT" :
                                         fuelImbalanceGallons>3 ? "SELECT FULLER TANK" :
-                                        blackBoxLinkLost ? "LOCAL RECORDING CONTINUES • CHECK NETWORK" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
+                                        centralLogSyncOffline ? "ENGINE DATA LINK UNAFFECTED • CHECK CACHE SYNC" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
     readonly property color casColor: casLevel==="WARNING" ? "#FF3933" : casLevel==="CAUTION" ? amber : casLevel==="ADVISORY" ? cyan : green
     property var casEvents: []
     property string lastCasHeadline: "SYSTEM NORMAL"
@@ -207,14 +212,14 @@ Item {
         width: body.width*.63 }
     Row { id: primary; anchors { left: gauges.left; right: gauges.right; top: gauges.top }
         height: gauges.height*.59; spacing: 7*root.uiScale
-        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: root.rpmMaximum; greenStart: root.rpmMaximum*.24; greenEnd: root.rpmMaximum*.95; majorStep: root.rpmMaximum>4000?1000:500; minorStep: root.rpmMaximum>4000?200:100; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: false }
-        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: false }
+        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: root.rpmMaximum; greenStart: root.rpmMaximum*.24; greenEnd: root.rpmMaximum*.95; majorStep: root.rpmMaximum>4000?1000:500; minorStep: root.rpmMaximum>4000?200:100; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
     }
     Row { anchors { left: gauges.left; right: gauges.right; top: primary.bottom; bottom: gauges.bottom; topMargin: -3*root.uiScale }
         spacing: 5*root.uiScale
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.pressure(root.oilPressureMaximum); greenStart:root.pressure(root.oilPressureMinimum); greenEnd:root.pressure(root.oilPressureMaximum*.85); majorStep:root.pressure(root.oilPressureMaximum)/5; minorStep:root.pressure(root.oilPressureMaximum)/25; decimals:root.metricUnits?1:0; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: false }
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.temp(20); maximum:root.temp(root.oilTemperatureMaximum*1.1); greenStart:root.temp(50); greenEnd:root.temp(root.oilTemperatureMaximum*.92); majorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/5; minorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/25; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: false }
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: false }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.pressure(root.oilPressureMaximum); greenStart:root.pressure(root.oilPressureMinimum); greenEnd:root.pressure(root.oilPressureMaximum*.85); majorStep:root.pressure(root.oilPressureMaximum)/5; minorStep:root.pressure(root.oilPressureMaximum)/25; decimals:root.metricUnits?1:0; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.temp(20); maximum:root.temp(root.oilTemperatureMaximum*1.1); greenStart:root.temp(50); greenEnd:root.temp(root.oilTemperatureMaximum*.92); majorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/5; minorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/25; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
     }
 
     Item { id: rightColumn; anchors { left: gauges.right; right: body.right; top: body.top; bottom: body.bottom; leftMargin: 8*root.uiScale } }
@@ -222,6 +227,10 @@ Item {
         height: rightColumn.height*.42; color: root.panel; border.color: root.line; radius: 5*root.uiScale
         Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 5*root.uiScale }
         text: "CAS MESSAGES"; color: "#E7ECEE"; font.pixelSize:hmiTokens.legibleText(10,root.textScale,9) }
+        Rectangle { visible:!root.engineLimitsVerified; anchors { right:parent.right; top:parent.top; rightMargin:6*root.uiScale; topMargin:4*root.uiScale }
+            width:limitsStatusText.implicitWidth+10*root.uiScale; height:16*root.uiScale; radius:2*root.uiScale; color:"#301F1700"; border.color:root.amber
+            Text { id:limitsStatusText; anchors.centerIn:parent; text:"LIMITS INDICATIVE"; color:root.amber; font.pixelSize:hmiTokens.legibleText(6,root.textScale,8); font.bold:true }
+        }
         Rectangle { id:casBanner; x: 1; y: 25*root.uiScale; width: parent.width-2; height: 34*root.uiScale; color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
             SequentialAnimation on opacity { running:root.casLevel==="WARNING"&&!root.casAcknowledged; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
             Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:(root.casLevel==="NORMAL"?"✓   ":"⚠   ")+root.casHeadline; color:root.casColor; font.pixelSize:hmiTokens.legibleText(11,root.textScale,10); font.bold:true }
@@ -237,7 +246,7 @@ Item {
         }
     }
 
-    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:root.compactLayout; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified:false }
+    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:root.compactLayout; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified:root.engineLimitsVerified }
 
     Rectangle { id: summary; anchors { left: nav.right; right: parent.right; bottom: actions.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
         height: root.compactLayout ? 62 : 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale

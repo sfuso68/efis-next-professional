@@ -1,0 +1,211 @@
+Sep 20 07:59:57 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1369 mavlink_bytes=43003 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=1777 node_events=0 source_events=10 recorded=1047 ddp_datagrams=2094 ddp_bytes=1107726 ddp_failures=0
+Sep 20 07:59:57 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=2738 bytes=86006 failures=0
+Sep 20 07:59:57 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1369 bytes=43003 failures=0
+Sep 20 07:59:57 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1369 bytes=43003 failures=0
+Sep 20 07:59:57 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1047 edp_bytes=726618
+Sep 20 07:59:57 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1047 bytes=553863 failures=0
+Sep 20 07:59:57 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1047 bytes=553863 failures=0
+Sep 20 07:59:58 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1412 mavlink_bytes=44387 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=1814 node_events=0 source_events=10 recorded=1068 ddp_datagrams=2136 ddp_bytes=1129944 ddp_failures=0
+Sep 20 07:59:58 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=2824 bytes=88774 failures=0
+Sep 20 07:59:58 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1412 bytes=44387 failures=0
+Sep 20 07:59:58 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1412 bytes=44387 failures=0
+Sep 20 07:59:58 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1068 edp_bytes=741192
+Sep 20 07:59:58 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1068 bytes=564972 failures=0
+Sep 20 07:59:58 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1068 bytes=564972 failures=0
+Sep 20 07:59:59 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1447 mavlink_bytes=45448 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=1848 node_events=0 source_events=10 recorded=1089 ddp_datagrams=2178 ddp_bytes=1152162 ddp_failures=0
+Sep 20 07:59:59 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=2894 bytes=90896 failures=0
+Sep 20 07:59:59 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1447 bytes=45448 failures=0
+Sep 20 07:59:59 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1447 bytes=45448 failures=0
+Sep 20 07:59:59 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1089 edp_bytes=755766
+Sep 20 07:59:59 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1089 bytes=576081 failures=0
+Sep 20 07:59:59 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1089 bytes=576081 failures=0
+Sep 20 08:00:00 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1473 mavlink_bytes=46263 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=1882 node_events=0 source_events=10 recorded=1109 ddp_datagrams=2218 ddp_bytes=1173322 ddp_failures=0
+Sep 20 08:00:00 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=2946 bytes=92526 failures=0
+Sep 20 08:00:00 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1473 bytes=46263 failures=0
+Sep 20 08:00:00 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1473 bytes=46263 failures=0
+Sep 20 08:00:00 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1109 edp_bytes=769646
+Sep 20 08:00:00 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1109 bytes=586661 failures=0
+Sep 20 08:00:00 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1109 bytes=586661 failures=0
+Sep 20 08:00:01 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1500 mavlink_bytes=47105 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=1919 node_events=0 source_events=10 recorded=1130 ddp_datagrams=2260 ddp_bytes=1195540 ddp_failures=0
+Sep 20 08:00:01 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3000 bytes=94210 failures=0
+Sep 20 08:00:01 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1500 bytes=47105 failures=0
+Sep 20 08:00:01 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1500 bytes=47105 failures=0
+Sep 20 08:00:01 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1130 edp_bytes=784220
+Sep 20 08:00:01 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1130 bytes=597770 failures=0
+Sep 20 08:00:01 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1130 bytes=597770 failures=0
+Sep 20 08:00:02 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1526 mavlink_bytes=47920 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=1953 node_events=0 source_events=10 recorded=1150 ddp_datagrams=2300 ddp_bytes=1216700 ddp_failures=0
+Sep 20 08:00:02 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3052 bytes=95840 failures=0
+Sep 20 08:00:02 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1526 bytes=47920 failures=0
+Sep 20 08:00:02 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1526 bytes=47920 failures=0
+Sep 20 08:00:02 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1150 edp_bytes=798100
+Sep 20 08:00:02 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1150 bytes=608350 failures=0
+Sep 20 08:00:02 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1150 bytes=608350 failures=0
+Sep 20 08:00:04 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1552 mavlink_bytes=48735 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=1987 node_events=0 source_events=10 recorded=1171 ddp_datagrams=2342 ddp_bytes=1238918 ddp_failures=0
+Sep 20 08:00:04 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3104 bytes=97470 failures=0
+Sep 20 08:00:04 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1552 bytes=48735 failures=0
+Sep 20 08:00:04 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1552 bytes=48735 failures=0
+Sep 20 08:00:04 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1171 edp_bytes=812674
+Sep 20 08:00:04 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1171 bytes=619459 failures=0
+Sep 20 08:00:04 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1171 bytes=619459 failures=0
+Sep 20 08:00:05 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1578 mavlink_bytes=49550 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2028 node_events=0 source_events=10 recorded=1192 ddp_datagrams=2384 ddp_bytes=1261136 ddp_failures=0
+Sep 20 08:00:05 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3156 bytes=99100 failures=0
+Sep 20 08:00:05 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1578 bytes=49550 failures=0
+Sep 20 08:00:05 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1578 bytes=49550 failures=0
+Sep 20 08:00:05 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1192 edp_bytes=827248
+Sep 20 08:00:05 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1192 bytes=630568 failures=0
+Sep 20 08:00:05 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1192 bytes=630568 failures=0
+Sep 20 08:00:06 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1604 mavlink_bytes=50365 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2062 node_events=0 source_events=10 recorded=1213 ddp_datagrams=2426 ddp_bytes=1283354 ddp_failures=0
+Sep 20 08:00:06 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3208 bytes=100730 failures=0
+Sep 20 08:00:06 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1604 bytes=50365 failures=0
+Sep 20 08:00:06 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1604 bytes=50365 failures=0
+Sep 20 08:00:06 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1213 edp_bytes=841822
+Sep 20 08:00:06 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1213 bytes=641677 failures=0
+Sep 20 08:00:06 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1213 bytes=641677 failures=0
+Sep 20 08:00:07 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1630 mavlink_bytes=51180 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2096 node_events=0 source_events=10 recorded=1233 ddp_datagrams=2466 ddp_bytes=1304514 ddp_failures=0
+Sep 20 08:00:07 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3260 bytes=102360 failures=0
+Sep 20 08:00:07 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1630 bytes=51180 failures=0
+Sep 20 08:00:07 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1630 bytes=51180 failures=0
+Sep 20 08:00:07 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1233 edp_bytes=855702
+Sep 20 08:00:07 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1233 bytes=652257 failures=0
+Sep 20 08:00:07 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1233 bytes=652257 failures=0
+Sep 20 08:00:08 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1656 mavlink_bytes=51995 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2130 node_events=0 source_events=10 recorded=1253 ddp_datagrams=2506 ddp_bytes=1325674 ddp_failures=0
+Sep 20 08:00:08 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3312 bytes=103990 failures=0
+Sep 20 08:00:08 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1656 bytes=51995 failures=0
+Sep 20 08:00:08 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1656 bytes=51995 failures=0
+Sep 20 08:00:08 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1253 edp_bytes=869582
+Sep 20 08:00:08 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1253 bytes=662837 failures=0
+Sep 20 08:00:08 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1253 bytes=662837 failures=0
+Sep 20 08:00:09 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1682 mavlink_bytes=52810 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2167 node_events=0 source_events=10 recorded=1274 ddp_datagrams=2548 ddp_bytes=1347892 ddp_failures=0
+Sep 20 08:00:09 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3364 bytes=105620 failures=0
+Sep 20 08:00:09 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1682 bytes=52810 failures=0
+Sep 20 08:00:09 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1682 bytes=52810 failures=0
+Sep 20 08:00:09 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1274 edp_bytes=884156
+Sep 20 08:00:09 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1274 bytes=673946 failures=0
+Sep 20 08:00:09 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1274 bytes=673946 failures=0
+Sep 20 08:00:10 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1708 mavlink_bytes=53625 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2201 node_events=0 source_events=10 recorded=1295 ddp_datagrams=2590 ddp_bytes=1370110 ddp_failures=0
+Sep 20 08:00:10 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3416 bytes=107250 failures=0
+Sep 20 08:00:10 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1708 bytes=53625 failures=0
+Sep 20 08:00:10 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1708 bytes=53625 failures=0
+Sep 20 08:00:10 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1295 edp_bytes=898730
+Sep 20 08:00:10 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1295 bytes=685055 failures=0
+Sep 20 08:00:10 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1295 bytes=685055 failures=0
+Sep 20 08:00:11 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1734 mavlink_bytes=54440 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2238 node_events=0 source_events=10 recorded=1316 ddp_datagrams=2632 ddp_bytes=1392328 ddp_failures=0
+Sep 20 08:00:11 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3468 bytes=108880 failures=0
+Sep 20 08:00:11 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1734 bytes=54440 failures=0
+Sep 20 08:00:11 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1734 bytes=54440 failures=0
+Sep 20 08:00:11 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1316 edp_bytes=913304
+Sep 20 08:00:11 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1316 bytes=696164 failures=0
+Sep 20 08:00:11 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1316 bytes=696164 failures=0
+Sep 20 08:00:12 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1761 mavlink_bytes=55282 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2272 node_events=0 source_events=10 recorded=1337 ddp_datagrams=2674 ddp_bytes=1414546 ddp_failures=0
+Sep 20 08:00:12 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3522 bytes=110564 failures=0
+Sep 20 08:00:12 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1761 bytes=55282 failures=0
+Sep 20 08:00:12 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1761 bytes=55282 failures=0
+Sep 20 08:00:12 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1337 edp_bytes=927878
+Sep 20 08:00:12 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1337 bytes=707273 failures=0
+Sep 20 08:00:12 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1337 bytes=707273 failures=0
+Sep 20 08:00:13 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1793 mavlink_bytes=56341 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2306 node_events=0 source_events=10 recorded=1357 ddp_datagrams=2714 ddp_bytes=1435706 ddp_failures=0
+Sep 20 08:00:13 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3586 bytes=112682 failures=0
+Sep 20 08:00:13 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1793 bytes=56341 failures=0
+Sep 20 08:00:13 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1793 bytes=56341 failures=0
+Sep 20 08:00:13 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1357 edp_bytes=941758
+Sep 20 08:00:13 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1357 bytes=717853 failures=0
+Sep 20 08:00:13 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1357 bytes=717853 failures=0
+Sep 20 08:00:14 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1819 mavlink_bytes=57156 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2340 node_events=0 source_events=10 recorded=1377 ddp_datagrams=2754 ddp_bytes=1456866 ddp_failures=0
+Sep 20 08:00:14 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3638 bytes=114312 failures=0
+Sep 20 08:00:14 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1819 bytes=57156 failures=0
+Sep 20 08:00:14 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1819 bytes=57156 failures=0
+Sep 20 08:00:14 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1377 edp_bytes=955638
+Sep 20 08:00:14 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1377 bytes=728433 failures=0
+Sep 20 08:00:14 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1377 bytes=728433 failures=0
+Sep 20 08:00:15 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1845 mavlink_bytes=57971 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2377 node_events=0 source_events=10 recorded=1398 ddp_datagrams=2796 ddp_bytes=1479084 ddp_failures=0
+Sep 20 08:00:15 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3690 bytes=115942 failures=0
+Sep 20 08:00:15 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1845 bytes=57971 failures=0
+Sep 20 08:00:15 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1845 bytes=57971 failures=0
+Sep 20 08:00:15 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1398 edp_bytes=970212
+Sep 20 08:00:15 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1398 bytes=739542 failures=0
+Sep 20 08:00:15 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1398 bytes=739542 failures=0
+Sep 20 08:00:16 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1871 mavlink_bytes=58786 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2411 node_events=0 source_events=10 recorded=1419 ddp_datagrams=2838 ddp_bytes=1501302 ddp_failures=0
+Sep 20 08:00:16 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3742 bytes=117572 failures=0
+Sep 20 08:00:16 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1871 bytes=58786 failures=0
+Sep 20 08:00:16 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1871 bytes=58786 failures=0
+Sep 20 08:00:16 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1419 edp_bytes=984786
+Sep 20 08:00:16 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1419 bytes=750651 failures=0
+Sep 20 08:00:16 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1419 bytes=750651 failures=0
+Sep 20 08:00:17 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1897 mavlink_bytes=59601 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2445 node_events=0 source_events=10 recorded=1439 ddp_datagrams=2878 ddp_bytes=1522462 ddp_failures=0
+Sep 20 08:00:17 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3794 bytes=119202 failures=0
+Sep 20 08:00:17 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1897 bytes=59601 failures=0
+Sep 20 08:00:17 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1897 bytes=59601 failures=0
+Sep 20 08:00:17 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1439 edp_bytes=998666
+Sep 20 08:00:17 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1439 bytes=761231 failures=0
+Sep 20 08:00:17 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1439 bytes=761231 failures=0
+Sep 20 08:00:18 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1923 mavlink_bytes=60416 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2482 node_events=0 source_events=10 recorded=1460 ddp_datagrams=2920 ddp_bytes=1544680 ddp_failures=0
+Sep 20 08:00:18 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3846 bytes=120832 failures=0
+Sep 20 08:00:18 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1923 bytes=60416 failures=0
+Sep 20 08:00:18 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1923 bytes=60416 failures=0
+Sep 20 08:00:18 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1460 edp_bytes=1013240
+Sep 20 08:00:18 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1460 bytes=772340 failures=0
+Sep 20 08:00:18 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1460 bytes=772340 failures=0
+Sep 20 08:00:19 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1949 mavlink_bytes=61231 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2516 node_events=0 source_events=10 recorded=1481 ddp_datagrams=2962 ddp_bytes=1566898 ddp_failures=0
+Sep 20 08:00:19 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3898 bytes=122462 failures=0
+Sep 20 08:00:19 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1949 bytes=61231 failures=0
+Sep 20 08:00:19 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1949 bytes=61231 failures=0
+Sep 20 08:00:19 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1481 edp_bytes=1027814
+Sep 20 08:00:19 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1481 bytes=783449 failures=0
+Sep 20 08:00:19 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1481 bytes=783449 failures=0
+Sep 20 08:00:20 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=1975 mavlink_bytes=62046 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2550 node_events=0 source_events=10 recorded=1501 ddp_datagrams=3002 ddp_bytes=1588058 ddp_failures=0
+Sep 20 08:00:20 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=3950 bytes=124092 failures=0
+Sep 20 08:00:20 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=1975 bytes=62046 failures=0
+Sep 20 08:00:20 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=1975 bytes=62046 failures=0
+Sep 20 08:00:20 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1501 edp_bytes=1041694
+Sep 20 08:00:20 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1501 bytes=794029 failures=0
+Sep 20 08:00:20 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1501 bytes=794029 failures=0
+Sep 20 08:00:21 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_health mavlink_datagrams=2001 mavlink_bytes=62861 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=2584 node_events=0 source_events=10 recorded=1521 ddp_datagrams=3042 ddp_bytes=1609218 ddp_failures=0
+Sep 20 08:00:21 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=4002 bytes=125722 failures=0
+Sep 20 08:00:21 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=2001 bytes=62861 failures=0
+Sep 20 08:00:21 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=2001 bytes=62861 failures=0
+Sep 20 08:00:21 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1521 edp_bytes=1055574
+Sep 20 08:00:21 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1521 bytes=804609 failures=0
+Sep 20 08:00:21 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1521 bytes=804609 failures=0
+Sep 20 08:00:21 efisblackbox systemd[1]: Stopping efis-blackbox-broker.service - EFIS Next Blackbox normalized DDP broker...
+Sep 20 08:00:21 efisblackbox efis-blackbox-broker[1142073]: event=blackbox_broker_stop ddp_datagrams=3054 ddp_failures=0 mavlink_observer_datagrams=4002 mavlink_observer_failures=0
+Sep 20 08:00:21 efisblackbox systemd[1]: efis-blackbox-broker.service: Deactivated successfully.
+Sep 20 08:00:21 efisblackbox systemd[1]: Stopped efis-blackbox-broker.service - EFIS Next Blackbox normalized DDP broker.
+Sep 20 08:00:21 efisblackbox systemd[1]: Starting efis-blackbox-broker.service - EFIS Next Blackbox normalized DDP broker...
+Sep 20 08:00:21 efisblackbox python3[1142467]: {"artifacts_checked": 1, "artifacts_declared": 1, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "blackbox-7655799-primary-v1", "roles": ["BLACKBOX"], "schema": "efis-next.release-validation.v1", "status": "PASS"}
+Sep 20 08:00:21 efisblackbox systemd[1]: Started efis-blackbox-broker.service - EFIS Next Blackbox normalized DDP broker.
+Sep 20 08:00:22 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_broker_start mode=LIVE_READ_ONLY mavlink_bind=10.77.10.2:14550 mavlink_source=10.77.10.3 mavlink_observer_mode=TX_ONLY mavlink_observers=2 mavlink_observer_port=14550 can=can_a displays=2 display_port=49002 engine_display=10.77.10.12 engine_port=49003 engine_source=SIMULATION records=/var/lib/blackbox/flight source_node=47 instance=1794096437701414109 rate_hz=20
+Sep 20 08:00:22 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_broker_health mavlink_datagrams=0 mavlink_bytes=0 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=0 node_events=0 source_events=0 recorded=1 ddp_datagrams=2 ddp_bytes=1058 ddp_failures=0
+Sep 20 08:00:22 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=0 bytes=0 failures=0
+Sep 20 08:00:22 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=0 bytes=0 failures=0
+Sep 20 08:00:22 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=0 bytes=0 failures=0
+Sep 20 08:00:22 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=1 edp_bytes=694
+Sep 20 08:00:22 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=1 bytes=529 failures=0
+Sep 20 08:00:22 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=1 bytes=529 failures=0
+Sep 20 08:00:23 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_broker_health mavlink_datagrams=26 mavlink_bytes=815 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=34 node_events=0 source_events=9 recorded=21 ddp_datagrams=42 ddp_bytes=22218 ddp_failures=0
+Sep 20 08:00:23 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=52 bytes=1630 failures=0
+Sep 20 08:00:23 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=26 bytes=815 failures=0
+Sep 20 08:00:23 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=26 bytes=815 failures=0
+Sep 20 08:00:23 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=21 edp_bytes=14574
+Sep 20 08:00:23 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=21 bytes=11109 failures=0
+Sep 20 08:00:23 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=21 bytes=11109 failures=0
+Sep 20 08:00:24 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_broker_health mavlink_datagrams=52 mavlink_bytes=1630 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=75 node_events=0 source_events=9 recorded=42 ddp_datagrams=84 ddp_bytes=44436 ddp_failures=0
+Sep 20 08:00:24 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=104 bytes=3260 failures=0
+Sep 20 08:00:24 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=52 bytes=1630 failures=0
+Sep 20 08:00:24 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=52 bytes=1630 failures=0
+Sep 20 08:00:24 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=42 edp_bytes=29148
+Sep 20 08:00:24 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=42 bytes=22218 failures=0
+Sep 20 08:00:24 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=42 bytes=22218 failures=0
+Sep 20 08:00:25 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_broker_health mavlink_datagrams=78 mavlink_bytes=2445 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=109 node_events=0 source_events=10 recorded=62 ddp_datagrams=124 ddp_bytes=65596 ddp_failures=0
+Sep 20 08:00:25 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=156 bytes=4890 failures=0
+Sep 20 08:00:25 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=78 bytes=2445 failures=0
+Sep 20 08:00:25 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=78 bytes=2445 failures=0
+Sep 20 08:00:25 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=62 edp_bytes=43028
+Sep 20 08:00:25 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=62 bytes=32798 failures=0
+Sep 20 08:00:25 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=62 bytes=32798 failures=0
+Sep 20 08:00:26 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_broker_health mavlink_datagrams=104 mavlink_bytes=3260 mavlink_socket_errors=0 mavlink_truncated=0 mavlink_source_rejected=0 can_frames=143 node_events=0 source_events=10 recorded=83 ddp_datagrams=166 ddp_bytes=87814 ddp_failures=0
+Sep 20 08:00:26 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_health mode=TX_ONLY datagrams=208 bytes=6520 failures=0
+Sep 20 08:00:26 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.39:14550 datagrams=104 bytes=3260 failures=0
+Sep 20 08:00:26 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_mavlink_observer_target destination=192.168.1.6:14550 datagrams=104 bytes=3260 failures=0
+Sep 20 08:00:26 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_engine_health destination=10.77.10.12:49003 source=SIMULATION edp_datagrams=83 edp_bytes=57602
+Sep 20 08:00:26 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.11:49002 datagrams=83 bytes=43907 failures=0
+Sep 20 08:00:26 efisblackbox efis-blackbox-broker[1142469]: event=blackbox_display_health destination=10.77.10.13:49002 datagrams=83 bytes=43907 failures=0

@@ -1,0 +1,6 @@
+MainPID=354083
+NRestarts=0
+ExecStart={ path=/home/pi/efis-next-current/bin/efis-pfd-qt ; argv[]=/home/pi/efis-next-current/bin/efis-pfd-qt ; ignore_errors=no ; start_time=[Sun 2026-09-20 07:52:38 CEST] ; stop_time=[n/a] ; pid=354083 ; code=(null) ; status=0/0 }
+ActiveState=active
+SubState=running
+DropInPaths=/etc/systemd/system/efis-next-mfd-direct.service.d/release-v1.conf

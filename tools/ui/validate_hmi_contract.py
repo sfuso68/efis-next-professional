@@ -198,8 +198,10 @@ def validate_repository(root: Path = ROOT) -> list[str]:
     for marker, label in integrations.items():
         if ems.count(marker) != 1:
             errors.append(f"AdaptiveEmsView must integrate exactly one {label}")
-    if "limitsVerified:false" not in ems:
-        errors.append("EMS cylinder limits must remain explicitly unverified")
+    if ('engineLimits.status||"NOT CONFIGURED"' not in ems or
+            'engineLimitsVerified: engineLimitsStatus==="VERIFIED"' not in ems or
+            "limitsVerified:root.engineLimitsVerified" not in ems):
+        errors.append("EMS limit authority must remain bound fail-closed to the engine profile")
     compass = (root / "qml/SkyViewCompassArc.qml").read_text(encoding="utf-8")
     if "readonly property real halfAngle: 35" not in compass:
         errors.append("SkyView compass implementation diverges from the 35 degree contract")

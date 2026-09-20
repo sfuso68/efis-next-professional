@@ -1,0 +1,2 @@
+bff584977cf590e61699a1851d79ad51e3e3df0f6df3e512933a95daa5a1f079  /home/pi/efis-next-releases/ems-7655799-v1/bin/efis-ems-qt
+9c0b4a3e83d62ce76e0b4befc2cb3cad8981df772882c8ee2383103f0c602dbf  /home/pi/efis-next-releases/ems-67aee2e-rollback-v1/bin/efis-ems-qt

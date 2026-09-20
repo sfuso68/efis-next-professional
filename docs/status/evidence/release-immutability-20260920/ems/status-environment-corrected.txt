@@ -1,0 +1,5 @@
+MainPID=757423
+NRestarts=0
+Environment=HOME=/home/pi QT_QPA_PLATFORM=eglfs EFIS_ENGINE_RUNTIME_STATE=/home/pi/.local/state/efis-next/ems/engine-runtime.state EFIS_BLACKBOX_FUEL_EVENTS=/home/pi/.local/state/efis-next/ems/blackbox-fuel-events.jsonl EFIS_CAPTURE_DIR=/home/pi/.local/state/efis-next/ems/captures EFIS_RECORDER_STATUS=/home/pi/.local/state/efis-next/recorder.status EFIS_KIOSK=1 QSG_RENDER_LOOP=threaded EFIS_EDP_BIND=10.77.10.12 EFIS_EDP_PORT=49003 EFIS_EDP_SOURCE_NODE=47
+ActiveState=active
+SubState=running

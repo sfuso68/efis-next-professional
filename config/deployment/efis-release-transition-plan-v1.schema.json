@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://efis-next.local/schemas/efis-release-transition-plan-v1.schema.json",
+  "title": "EFIS NEXT non-executable release transition plan V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "status", "decision", "flight_approval", "execution_authorized",
+    "node", "role", "platform", "service_scope", "service", "current_link",
+    "candidate_target", "rollback_target", "release_id", "source_commit",
+    "manifest_sha256", "policy_sha256", "artifacts_checked", "required_gates",
+    "mutating_commands"
+  ],
+  "properties": {
+    "schema": { "const": "efis-next.release-transition-plan.v1" },
+    "status": { "const": "PREPARED_NOT_EXECUTED" },
+    "decision": { "const": "NO_GO_UNTIL_SEPARATE_HARDWARE_AUTHORIZATION" },
+    "flight_approval": { "const": false },
+    "execution_authorized": { "const": false },
+    "node": { "type": "string", "minLength": 1 },
+    "role": { "enum": ["PFD", "MFD", "EMS", "RECORDER", "BLACKBOX"] },
+    "platform": { "enum": ["RPI4_AARCH64", "RPI5_AARCH64"] },
+    "service_scope": { "enum": ["system", "user"] },
+    "service": { "type": "string", "pattern": "^[a-z0-9@_.-]+\\.service$" },
+    "current_link": { "type": "string", "pattern": "^/" },
+    "candidate_target": { "type": "string", "pattern": "^/" },
+    "rollback_target": { "type": "string", "pattern": "^/" },
+    "release_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{6,63}$" },
+    "source_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "manifest_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "policy_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "artifacts_checked": { "type": "integer", "minimum": 1 },
+    "required_gates": { "type": "array", "minItems": 9, "uniqueItems": true, "items": { "type": "string" } },
+    "mutating_commands": { "type": "array", "maxItems": 0 }
+  }
+}
