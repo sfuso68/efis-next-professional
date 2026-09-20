@@ -25,7 +25,7 @@ Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
 | PFD/MFD | PARTIAL | PFD `60b3526` confermato; MFD su release immutabile `mfd-3432402-primary-v1` con rollback/reboot PASS; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
-| EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-62ba90b-hmi-cas-v1`; attivazione e rollback drill PASS, reboot della nuova release aperto, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
+| EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-62ba90b-hmi-cas-v1`; attivazione, rollback drill e reboot acceptance PASS, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
 | Blackbox/rete | PARTIAL | broker su release immutabile `blackbox-7655799-primary-v1`, rollback/reboot PASS; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
 | Server/NAS/Ground station | PARTIAL | Servizi e copie esistono; manifest release, CA, lifecycle e doppia copia verificata non chiusi | `SRV-001`…`003`, `GS-001`…`003`, `AVX-G0-02`, `03` |
@@ -206,6 +206,16 @@ generata sul nodo (`ems-20260920-190524045.png`, SHA-256
 stata ispezionata: mostra un solo `LIMITS INDICATIVE`, marcatori compatti sui
 quadranti e `CENTRAL LOG SYNC OFFLINE`, senza il falso `BLACKBOX LINK LOST`.
 
-Restano aperti e non sono dichiarati PASS: reboot acceptance della nuova
-release, ispezione diretta sul pannello fisico/touch, prova con limiti motore
-approvati e sorgente CAN motore reale. Lo stato resta `PARTIAL`/`VERIFY-HW`.
+Reboot acceptance del 2026-09-20: il boot ID è cambiato in
+`ec0eed02-052f-426b-804e-53be70646081`; la release candidata è rimasta attiva,
+il servizio si è avviato automaticamente con `NRestarts=0`, manifesto PASS,
+ambiente kiosk/EDP corretto e socket `10.77.10.12:49003` aperto. Il journal
+post-boot ha confermato `LIVE • SIM`, quattro pacchetti già accettati e zero
+reject, gap o restart del publisher. `get_throttled=0x0`. La nuova cattura
+runtime `ems-20260920-192921616.png` (SHA-256
+`28491481cf0b3eb0efd69701f0c2384c4cafcca814327e572cc43deacb10a082`) è
+coerente con la cattura pre-reboot.
+
+Restano aperti e non sono dichiarati PASS: ispezione diretta sul pannello
+fisico/touch, prova con limiti motore approvati e sorgente CAN motore reale. Lo
+stato resta `PARTIAL`/`VERIFY-HW`.
