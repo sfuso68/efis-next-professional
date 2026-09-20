@@ -87,7 +87,7 @@ python3 tools/deployment/build_release_manifest.py \
   --role EMS \
   --platform RPI4_AARCH64 \
   --simulation-mode \
-  --artifact build-rpi4/efis-ems-qt:exec
+  --artifact bin/efis-ems-qt:exec
 ```
 
 `--simulation-mode` e `--no-simulation-mode` sono mutuamente esclusivi e
@@ -111,12 +111,18 @@ Il preflight rifiuta target relativi, symlink, candidato uguale al rollback,
 manifesto esterno alla release e profilo nodo/ruolo ambiguo. Esso non sostituisce
 la conferma read-only dello stato corrente né autorizza lo switch.
 
-I cinque drop-in sotto `deploy/systemd/release-v1/` sono candidati non
-installati. Usano `ExecCondition`, così un manifesto assente o non valido rende
+I cinque drop-in sotto `deploy/systemd/release-v1/` sono gli asset canonici;
+MFD, EMS e Blackbox sono stati installati e verificati il 2026-09-20. Usano
+`ExecCondition`, così un manifesto assente o non valido rende
 l'unità non avviabile senza generare un ciclo di restart su un binario non
 verificato. Il validatore va installato separatamente e in sola lettura come
 `/usr/local/lib/efis-next/validate_release_manifest.py`; la sua presenza non
 autorizza l'abilitazione dei drop-in.
+
+Gli eseguibili canonici sono sempre file regolari sotto `bin/`. Alias di build
+come `build-rpi5 -> build/release` sono utili durante lo sviluppo, ma non sono
+ammessi nel percorso verificato dal manifesto: il validatore rifiuta ogni
+symlink intermedio e l'unità esegue esattamente lo stesso file controllato.
 
 ## Sequenza di futura attivazione
 
@@ -133,14 +139,18 @@ Questa sequenza richiede un ordine separato e una finestra di banco:
 9. in caso di gate rosso, ripristinare il symlink precedente e documentare;
 10. aggiornare `EFIS_NEXT_ACTIVE_RELEASES.md` solo con evidenza acquisita.
 
-## Gap attuali
+## Stato hardware 2026-09-20 e gap attuali
 
 - PFD: release corretta, ma recorder ancora da `build/dev`.
-- MFD: binario corretto; supervisore effettivo non identificato.
-- EMS: processo da checkout mutabile, nessuna release immutabile attiva.
-- Blackbox: unità attiva ma binario senza manifest e hash non riconducibile alla
-  copia `.e916548`; `--engine-simulation` resta correttamente esplicito.
+- MFD: release `mfd-3432402-primary-v1`, supervisore systemd, rollback e reboot
+  verificati.
+- EMS: release `ems-7655799-primary-v1`, rollback e reboot verificati; le
+  scritture runtime sono fuori dalla release; EDP Blackbox è `LIVE • SIM`.
+- Blackbox: release `blackbox-7655799-primary-v1`, rollback, reboot e broker
+  health verificati; `--engine-simulation` resta correttamente esplicito.
 
 Nessuno di questi gap viene chiuso dalla sola presenza del contratto V1.
 Il packager e il preflight riducono il rischio di staging ma non costituiscono
-evidenza hardware, reboot o rollback.
+evidenza hardware, reboot o rollback. L'evidenza del rollout eseguito è in
+`docs/status/evidence/release-immutability-20260920/`; PFD e recorder restano
+fuori da questo batch, quindi `PROD-005` non è globalmente chiuso.

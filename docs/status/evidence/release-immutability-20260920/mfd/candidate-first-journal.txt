@@ -1,0 +1,20 @@
+Sep 20 07:52:24 pi5 systemd[1]: Stopping efis-next-mfd-direct.service - EFIS NEXT MFD/Canvas (direct DRM/EGLFS)...
+Sep 20 07:52:25 pi5 systemd[1]: efis-next-mfd-direct.service: Main process exited, code=exited, status=1/FAILURE
+Sep 20 07:52:25 pi5 systemd[1]: efis-next-mfd-direct.service: Failed with result 'exit-code'.
+Sep 20 07:52:25 pi5 systemd[1]: Stopped efis-next-mfd-direct.service - EFIS NEXT MFD/Canvas (direct DRM/EGLFS).
+Sep 20 07:52:25 pi5 systemd[1]: efis-next-mfd-direct.service: Consumed 6d 9h 7min 6.043s CPU time.
+Sep 20 07:52:25 pi5 systemd[1]: Starting efis-next-mfd-direct.service - EFIS NEXT MFD/Canvas (direct DRM/EGLFS)...
+Sep 20 07:52:25 pi5 python3[354004]: {"artifacts_checked": 1, "artifacts_declared": 1, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "mfd-3432402-primary-v1", "roles": ["MFD"], "schema": "efis-next.release-validation.v1", "status": "PASS"}
+Sep 20 07:52:26 pi5 systemd[1]: Started efis-next-mfd-direct.service - EFIS NEXT MFD/Canvas (direct DRM/EGLFS).
+Sep 20 07:52:26 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:26.329 event=ddp_receiver_start bind= 0.0.0.0 port= 49002 source_node= 47 receive_buffer_bytes= 8388608
+Sep 20 07:52:26 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:26.329 event=simulation_role role= FALLBACK
+Sep 20 07:52:26 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:26.330 event=aircraft_profile_loaded path= /home/pi/efis-next-release-mfd-3432402-v1/config/active/aircraft-profile.json profile= Vidor • Asso V Jolly state= SIMULATION
+Sep 20 07:52:26 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:26.361 event=catalog_index_loaded aircraft= 70 engines= 24 path= /home/pi/efis-next-release-mfd-3432402-v1/data/catalog/efis-catalog-index.json
+Sep 20 07:52:26 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:26.363 event=navigation_index_loaded airports= 65 version= 0.2.0-ourairports-development path= /home/pi/efis-next-release-mfd-3432402-v1/data/navigation/navigation-index.json
+Sep 20 07:52:26 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:26.363 event=radionavigation_index_loaded facilities= 0 version= 0.1.0-empty-development status= NO_DATA path= /home/pi/efis-next-release-mfd-3432402-v1/data/navigation/radionavigation-index.json
+Sep 20 07:52:26 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:26.363 event=imagery_package_loaded state= OFFLINE_READY tiles= 1326 coverage_gaps= 27 path= /home/pi/efis-data/imagery/active-package.json
+Sep 20 07:52:26 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:26.372 QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-pi'
+Sep 20 07:52:29 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:29.423 event=startup product=efis-next component=pfd version=0.1.0 qt= 6.8.2 platform= eglfs
+Sep 20 07:52:29 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:29.424 QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-pi'
+Sep 20 07:52:29 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:29.479 event=fuel_leak_monitor state= MONITORING excess_gph= -0.00779897
+Sep 20 07:52:29 pi5 efis-pfd-qt[354008]: 2026-09-20T07:52:29.497 QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-pi'

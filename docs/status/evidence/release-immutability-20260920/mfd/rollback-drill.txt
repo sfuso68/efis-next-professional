@@ -1,0 +1,5 @@
+MainPID=354046
+NRestarts=0
+ExecStart={ path=/home/pi/efis-next-current/bin/efis-pfd-qt ; argv[]=/home/pi/efis-next-current/bin/efis-pfd-qt ; ignore_errors=no ; start_time=[Sun 2026-09-20 07:52:32 CEST] ; stop_time=[n/a] ; pid=354046 ; code=(null) ; status=0/0 }
+ActiveState=active
+SubState=running

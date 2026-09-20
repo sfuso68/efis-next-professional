@@ -23,9 +23,9 @@ non possono sovrascrivere questo registro.
 | Nodo | Ruolo | Indirizzo noto | Ultima release osservata | Data evidenza | Stato canonico corrente | Evidenza | Prossima verifica |
 |---|---|---:|---|---|---|---|---|
 | `efis-pfd-01` | PFD RPi5 | `192.168.1.45` | `60b3526` | 2026-09-20 03:48 UTC | ATTIVA CONFERMATA | symlink immutabile, unità, PID, processo e SHA-256 acquisiti read-only | ricondurre il recorder legacy `build/dev` alla gestione release senza modificarlo durante l'audit |
-| `pi5` | MFD RPi5 | `192.168.1.49` | `3432402` | 2026-09-20 03:48 UTC | ATTIVA CONFERMATA / SUPERVISORE APERTO | symlink, processo e SHA-256 coincidono; `efis-mfd.service` assente | identificare il meccanismo reale di avvio e documentarne restart/boot policy |
-| `efis` | EMS RPi4 | `192.168.1.36` | non identificabile | 2026-09-20 03:48 UTC | ATTIVA NON IMMUTABILE / NON CONFORME | processo reale da `/home/pi/efis-next/build/dev/efis-ems-qt`; unità nominativa e manifest assenti | creare profilo release immutabile solo dopo review, senza dedurre un commit dal checkout mutabile |
-| `efisblackbox` | Blackbox RPi5 | `192.168.1.47` | broker attivo non identificato | 2026-09-20 03:48 UTC | ATTIVA NON IDENTIFICATA | servizio attivo; hash corrente diverso dalla copia `.e916548`; nessun manifest nodo | produrre manifest completo e rimuovere l'ambiguità di versione; feed motore resta SIM |
+| `pi5` | MFD RPi5 | `192.168.1.49` | `mfd-3432402-primary-v1` (`3432402ae35c168a14a14fe408a2b635fe750c92`) | 2026-09-20 | ATTIVA IMMUTABILE CONFERMATA | manifest PASS, unità `efis-next-mfd-direct.service`, eseguibile canonico, rollback drill e reboot PASS | acceptance touch/terrain e soak della release corrente |
+| `efis` | EMS RPi4 | `192.168.1.36` | `ems-7655799-primary-v1` (`765579959f7970a17eb212ca1ef13628aaa4d71f`) | 2026-09-20 17:20 UTC | ATTIVA IMMUTABILE CONFERMATA | manifest PASS, rollback e reboot PASS; EDP Blackbox 47 `LIVE • SIM`; stato runtime persistente esterno alla release | sorgenti motore reali, calibrazioni, touch e soak restano aperti |
+| `efisblackbox` | Blackbox RPi5 | `192.168.1.47` | `blackbox-7655799-primary-v1` (`765579959f7970a17eb212ca1ef13628aaa4d71f`) | 2026-09-20 | ATTIVA IMMUTABILE CONFERMATA | manifest PASS, binario canonico, rollback drill, reboot e broker health PASS | engine resta esplicitamente SIM; CAN reale, endurance e power qualification aperti |
 | `ems-sensor` | ASSO5 sensor RPi4 | `192.168.1.89` | nessuna release distribuita | 2026-09-18 | NON DISTRIBUITA | identità nodo verificata; adapter reale non distribuito | nessun deployment prima di inventario e approvazione G1 |
 | `PORTATILE` | Ground station | `192.168.1.39` | non applicabile/untracked | 2026-09-15 | DA INVENTARIARE | QGC e firewall osservati separatamente | registrare package/versioni/config hash in sola lettura |
 | `serverha` | Server mappe | `192.168.1.6` | non applicabile/untracked | 2026-09-14 | DA INVENTARIARE | container osservati Up; nessun release manifest canonico | acquisire image digest e compose revision |
@@ -38,6 +38,8 @@ del 2026-09-20 conferma `60b3526`. Per lo stesso motivo `f27508a`, `1d02b84` e
 `3432402` sono la sequenza storica MFD; la lettura corrente conferma il processo
 e il binario `3432402`, ma non il suo supervisore.
 
-L'acquisizione corrente è documentata in
+L'inventario iniziale è documentato in
 [`evidence/release-inventory-20260920/README.md`](evidence/release-inventory-20260920/README.md).
+La migrazione autorizzata MFD/EMS/Blackbox e le prove di rollback/reboot sono in
+[`evidence/release-immutability-20260920/README.md`](evidence/release-immutability-20260920/README.md).
 Nessuna riga di questo registro autorizza deployment, rollback o uso in volo.

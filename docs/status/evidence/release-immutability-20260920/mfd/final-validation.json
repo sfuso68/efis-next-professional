@@ -1,0 +1,1 @@
+{"artifacts_checked": 1, "artifacts_declared": 1, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "mfd-3432402-primary-v1", "roles": ["MFD"], "schema": "efis-next.release-validation.v1", "status": "PASS"}

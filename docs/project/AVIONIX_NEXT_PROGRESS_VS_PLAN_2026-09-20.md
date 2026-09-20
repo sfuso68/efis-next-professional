@@ -55,7 +55,7 @@ ripetibile in software; non equivale ad acceptance hardware.
 | G3 — Integrated bench EFIS | HMI, SV, EMS e pannelli integrati al banco | PARTIAL / PASS-SW | contratti e golden HMI, stati EMS, responsive matrix, packager evidence e harness acceptance pronti | touch e pannelli reali, LOD/proiezione terreno, frame-rate/termica, MGL passivo e sorgenti motore reali |
 | G4 — Installable electrical prototype | alimentazione, switch, harness, enclosure e schema filo-per-filo | PROPOSED / PREPARED-SW | architettura reti e candidato MokerLink documentati; acceptance switch preparata | identità/prova MokerLink, PSU qualificate, brownout/load test, cablaggi, protezioni, enclosure e review installativa |
 | G5 — Dynamic tests | HIL, fault injection ed endurance integrati | PROPOSED | simulatori e diversi validator software disponibili | banco HIL completo, scenari di guasto reali, prove dinamiche, endurance e criteri di accettazione firmati |
-| G6 — EFIS Next baseline | release controllata, configuration index, recovery e acceptance completa | IN PREPARAZIONE, non raggiunto | inventario release; schema manifest, policy nodo, builder e preflight transizione nella PR #15 | merge, deploy autorizzato, manifest su ogni nodo, rollback provato, CI/evidence completi e chiusura G0–G5 |
+| G6 — EFIS Next baseline | release controllata, configuration index, recovery e acceptance completa | IN PROGRESS, non raggiunto | contratto V1; MFD, EMS e Blackbox con manifest, rollback drill e reboot acceptance PASS | PFD/recorder, CI/evidence complessivi e chiusura G0–G5 |
 | G7 — CM / Next Plus | porting su hardware industriale con parità verificata | NON AVVIATO | linee architetturali soltanto | baseline G6, scelta hardware, profilo prodotto, benchmark e replay equivalenti |
 
 ### Valutazione critica del percorso
@@ -81,12 +81,12 @@ ripetibile in software; non equivale ad acceptance hardware.
 | WS3 EFIS HMI | PFD, MFD, EMS coerenti e adattivi | design, golden, stati degradati e responsive matrix testati; acceptance pannelli non eseguita | VERIFIED-SW / VERIFY-HW | P0 |
 | WS4 Synthetic vision e NAV | terreno, ostacoli, aeroporti, rotta e meteo | pipeline dati e rendering esistono; terreno vicino/LOD e qualità pianura non accettabili | PARTIAL | P1 |
 | WS5 Air data e AHRS | Pixhawk/M10/DLVR con qualità e fallback | MAVLink read-only osservato; M10 e DLVR non qualificati/calibrati; sorgenti non arbitrate in modo completo | PARTIAL-HW | P0 |
-| WS6 EMS Rotax/MGL | EMS completo, calibrazioni, log, ore, fuel/electrical | UI e simulatore avanzati; RPi4 attivo da build mutabile; CAN/MGL e sensori reali non chiusi | PARTIAL / NON-CONFORMING DEPLOY | P0 |
+| WS6 EMS Rotax/MGL | EMS completo, calibrazioni, log, ore, fuel/electrical | UI e simulatore avanzati; release immutabile RPi4, persistenza e EDP SIM verificati; CAN/MGL e sensori reali non chiusi | PARTIAL / DEPLOY VERIFIED-HW | P0 |
 | WS7 Pixhawk/autopilot | integrazione osservativa senza autorità di volo | collegamento e fan-out read-only presenti; nessun comando a servi/autopilota autorizzato | PARTIAL-HW | P1 |
-| WS8 Blackbox/server/laptop | broker, recording, servizi e manutenzione controllata | Blackbox operativa, server/NAS/GS presenti; release broker ignota, autenticazione/lifecycle/endurance incompleti | PARTIAL | P0 |
+| WS8 Blackbox/server/laptop | broker, recording, servizi e manutenzione controllata | Blackbox su release immutabile verificata; server/NAS/GS presenti; autenticazione/lifecycle/endurance incompleti | PARTIAL | P0 |
 | WS9 Electrical/enclosure | rete, PSU, protezioni, cablaggi ed enclosure | segmentazione definita; MokerLink candidato non verificato; storico undervoltage Blackbox | PROPOSED / VERIFY-HW | P0 |
 | WS10 Quality/testing/safety | test, HIL, fault, safety case ed evidence | numerosi test fail-closed e packager; HIL e campagne reali non eseguite | STRONG-SW / WEAK-HW | P0 |
-| WS11 Configuration management | release immutabili, manifest, rollback e tracciabilità | stato nodi inventariato; contratto release e preflight in PR #15; EMS/Blackbox/MFD ancora non conformi | IN PROGRESS | P0 |
+| WS11 Configuration management | release immutabili, manifest, rollback e tracciabilità | MFD/EMS/Blackbox conformi V1 con rollback/reboot; PFD e recorder ancora aperti | IN PROGRESS / VERIFIED-HW 3 NODES | P0 |
 | WS12 Next Plus | piattaforma industrializzata successiva | non avviata; correttamente subordinata alla baseline G6 | TODO | P3 |
 
 ## 4. Stato dei nodi e delle infrastrutture
@@ -94,10 +94,10 @@ ripetibile in software; non equivale ad acceptance hardware.
 | Nodo | Ruolo previsto | Stato osservato | Conformità al piano | Azione necessaria |
 |---|---|---|---|---|
 | PFD RPi5 `.45` | PFD/SkyView principale | release `60b3526` confermata; recorder esterno alla release | PARTIAL | migrazione manifestata, acceptance touch/termica/visuale e rollback |
-| MFD RPi5 `.49` | MFD/NAV/servizi display | processo `3432402` confermato, supervisore ignoto | PARTIAL | identificare supervisor, rendere release immutabile, acceptance pannello |
-| EMS RPi4 `.36` | EMS dedicato | applicazione attiva da `build/dev` mutabile | NON CONFORME | pacchetto immutabile, manifest, sorgenti reali, calibrazioni e soak |
+| MFD RPi5 `.49` | MFD/NAV/servizi display | `mfd-3432402-primary-v1`, systemd, rollback e reboot PASS | PARTIAL | acceptance pannello, touch, terrain e soak |
+| EMS RPi4 `.36` | EMS dedicato | `ems-7655799-primary-v1`, rollback/reboot, runtime e EDP `LIVE • SIM` PASS | PARTIAL / DEPLOY CONFORME | sorgenti reali, calibrazioni, touch e soak |
 | ASSO5-SENSOR RPi4 `.89` | acquisizione sensori motore | RPi4 8 GB identificato; Ethernet senza carrier; Sequent non identificate | BLOCKED-HW | fotografie/inventario, PSU, DIP, mapping, I²C controllato e driver |
-| Blackbox RPi5 `.47` | ingestione, broker, recorder e distribuzione | broker operativo senza manifest; hash diverso dalla copia nota; engine in SIM | PARTIAL / RELEASE UNKNOWN | identificare binario, confezionare, provare recording/recovery/endurance |
+| Blackbox RPi5 `.47` | ingestione, broker, recorder e distribuzione | `blackbox-7655799-primary-v1`, rollback/reboot e broker health PASS; engine SIM | PARTIAL / DEPLOY CONFORME | CAN reale, power, recording/recovery/endurance |
 | Pixhawk 6X | sorgente flight data read-only | MAVLink osservato e distribuito; no authority | PARTIAL-HW | qualificare link, parametri, M10, airspeed e failure modes |
 | Server `.6` | mappe, meteo, navdata e servizi | servizi disponibili e cache imagery usata | PARTIAL | versionare dataset, autenticazione, CA/lifecycle, restore e offline policy |
 | Portatile `.39` | ground station monitor-only | monitor MAVLink e firewall provati; timing Wi-Fi degradato | PARTIAL | profilo di manutenzione controllato, test rete cablata e recovery |
@@ -140,10 +140,11 @@ Il branch `work/release-supervision-contract-v1` aggiunge:
 - preflight non esecutivo della transizione;
 - test e integrazione CI.
 
-Verifica corrente: 19 test mirati, 18 PASS e 1 SKIP su Windows per una prova di
-symlink; la stessa suite Linux in CI è PASS. Non sono stati eseguiti deployment,
-switch di symlink, riavvii o modifiche hardware. Di conseguenza `PROD-005`
-resta `PARTIAL` e la PR non va descritta come rollout completato.
+Verifica software iniziale: 19 test mirati, 18 PASS e 1 SKIP su Windows per una
+prova symlink, coperta dalla CI Linux. La successiva finestra autorizzata ha
+completato deployment, rollback drill e reboot su MFD, EMS e Blackbox. Il
+rollout globale non è completo perché PFD/recorder restano fuori dal batch;
+`PROD-005` resta quindi `PARTIAL`.
 
 ## 7. Scostamenti principali dal planning
 
@@ -151,7 +152,8 @@ resta `PARTIAL` e la PR non va descritta come rollout completato.
 
 1. Il lavoro HMI e contrattuale è avanzato più rapidamente della sensoristica
    e dell'impianto elettrico.
-2. EMS, Blackbox e MFD non condividono ancora lo stesso modello di release.
+2. EMS, Blackbox e MFD condividono ora il modello V1; PFD/recorder devono
+   ancora essere ricondotti allo stesso contratto.
 3. Il synthetic vision ha dati e pipeline, ma non la qualità visiva e le
    prestazioni richieste dal concept professionale.
 4. Il percorso FPV a quattro telecamere non ha ancora un VIDEO-CORE qualificato

@@ -24,10 +24,10 @@ Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
 | Nodo sensori ASSO5 | BLOCKED-HW | RPi4 `.89` identificato; Sequent 0/4, alimentatore, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
-| PFD/MFD | PARTIAL | PFD `60b3526` confermato; MFD `3432402` confermato ma supervisore ignoto; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
-| EMS | PARTIAL / NON CONFORME DEPLOY | processo RPi4 attivo da checkout `build/dev`, senza release immutabile; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
+| PFD/MFD | PARTIAL | PFD `60b3526` confermato; MFD su release immutabile `mfd-3432402-primary-v1` con rollback/reboot PASS; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
+| EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-7655799-primary-v1`, rollback/reboot e persistenza PASS, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
-| Blackbox/rete | PARTIAL | broker attivo ma release non identificata e diversa dalla copia `.e916548`; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
+| Blackbox/rete | PARTIAL | broker su release immutabile `blackbox-7655799-primary-v1`, rollback/reboot PASS; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
 | Server/NAS/Ground station | PARTIAL | Servizi e copie esistono; manifest release, CA, lifecycle e doppia copia verificata non chiusi | `SRV-001`…`003`, `GS-001`…`003`, `AVX-G0-02`, `03` |
 | Alimentazione | VERIFY-HW | Storico Blackbox `get_throttled=0x50000`; PSU/cavo e prove brownout non qualificati | `PWR-001`, `PROD-002`, `VER-003` |
 
@@ -50,12 +50,13 @@ Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
 ## 3. Release e configurazione
 
 Lo stato “attivo” non viene dedotto dai checkpoint. La verifica read-only del
-2026-09-20 ha confermato PFD `60b3526` e il processo MFD `3432402`; sul MFD il
-supervisore resta ignoto. EMS esegue invece una build `dev` mutabile e Blackbox
-un broker privo di manifest il cui hash non coincide con la copia `.e916548`.
+2026-09-20 ha confermato PFD `60b3526`. La successiva finestra autorizzata ha
+migrato MFD, EMS e Blackbox al contratto immutabile V1, con manifest, processo
+canonico, rollback drill e reboot acceptance PASS su tutti e tre i nodi.
 Il dettaglio è nel registro canonico
 [`EFIS_NEXT_ACTIVE_RELEASES.md`](EFIS_NEXT_ACTIVE_RELEASES.md) e nell'evidenza
-[`release-inventory-20260920`](evidence/release-inventory-20260920/README.md)
+[`release-inventory-20260920`](evidence/release-inventory-20260920/README.md) e
+[`release-immutability-20260920`](evidence/release-immutability-20260920/README.md)
 (`PFD-001`, `MFD-001`, `EMS-002`, `BBX-003`, `PROD-005`).
 
 ## 4. Verificato solo software/documentazione
@@ -95,9 +96,9 @@ Il dettaglio è nel registro canonico
    fotografie non acquisiti (`PRJ-002`, `AVX-G1-02`).
 2. Alimentazione: storico undervoltage Blackbox, nessuna prova brownout/load
    controllata e nessuna PSU finale qualificata (`PWR-001`, `PROD-002`).
-3. Release: EMS usa `build/dev`, Blackbox non ha manifest e MFD non ha un
-   supervisore identificato; anche il recorder PFD resta fuori release
-   (`PROD-005`).
+3. Release: MFD, EMS e Blackbox sono conformi al contratto V1; PFD non ha
+   ancora il manifesto V1 e il recorder PFD resta fuori release, quindi
+   `PROD-005` resta `PARTIAL`.
 4. HMI: touch, leggibilità, sunlight/night, frame-rate, termica e fault su
    pannelli reali non accettati (`PRJ-004`, `AVX-G3-03`).
 5. Synthetic vision: terreno vicino stirato/sfocato e LOD/proiezione non
@@ -109,8 +110,8 @@ Il dettaglio è nel registro canonico
 
 ## 7. Prossima sequenza controllata
 
-1. Revisionare il contratto release V1 candidato; solo dopo review autorizzare
-   staging e verifica nodo per nodo di MFD, EMS, recorder PFD e Blackbox
+1. Conservare l'evidenza MFD/EMS/Blackbox e completare separatamente PFD e
+   recorder con la stessa disciplina di manifest, rollback e reboot
    (`PROD-005`).
 2. Acquisire le nove immagini e i metadati dell'inventario ASSO5 senza probing
    o modifica DIP (`PRJ-002`, `AVX-G1-02`).
@@ -154,8 +155,9 @@ Il blocco candidato introduce schema manifesto, validatore fail-closed, policy
 nominativa dei cinque processi e drop-in systemd candidati. I test software
 verificano hash, traversal, ruolo/piattaforma,
 `flight_approval=false`, assenza di `build/dev` e mantenimento esplicito della
-simulazione Blackbox. Gli asset non sono installati e `PROD-005` resta
-`PARTIAL` fino a staging, reboot e rollback verificati sui nodi reali.
+simulazione Blackbox. Gli asset sono installati su MFD, EMS e Blackbox con
+rollback e reboot verificati. `PROD-005` resta `PARTIAL` perché PFD/recorder non
+fanno parte del batch concluso e i gate hardware complessivi restano aperti.
 
 ## 11. Packaging e preflight release V1
 
@@ -167,11 +169,9 @@ nodo, ruolo, piattaforma, servizio, candidato, rollback e digest, mantiene
 `execution_authorized=false`, non contiene comandi mutanti e richiede nove gate
 prima di ogni futura finestra di banco (`PROD-005`).
 
-Verificato solo software: 19 test mirati eseguiti sul runtime Windows, 18 PASS
-e il solo caso POSIX di creazione symlink SKIP per assenza del privilegio; sintassi
-Python e `git diff --check` PASS. Il caso symlink resta affidato anche alla CI
-Linux della PR. Non è stato generato né installato alcun pacchetto reale, non è
-stato cambiato alcun puntatore `current`, non sono stati riavviati servizi e non
-è stata acquisita nuova evidenza hardware. Restano aperti review/CI della PR,
-staging candidato, identificazione supervisore MFD e prove nodo-per-nodo di
-reboot/rollback; `PROD-005` rimane `PARTIAL`.
+Verifica software iniziale: 19 test mirati, 18 PASS e un caso symlink SKIP su
+Windows, coperto dalla CI Linux. Verifica hardware successiva: MFD, EMS e
+Blackbox hanno manifest PASS, eseguibile canonico, rollback drill e reboot
+acceptance PASS. Sull'EMS sono state inoltre corrette e verificate la separazione
+dei dati mutabili e la conservazione delle variabili EDP/kiosk del launcher.
+PFD e recorder restano aperti; `PROD-005` rimane `PARTIAL`.

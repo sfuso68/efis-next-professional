@@ -1,0 +1,6 @@
+MainPID=1142469
+NRestarts=0
+ExecStart={ path=/opt/efis-blackbox-current/bin/efis-blackbox-broker ; argv[]=/opt/efis-blackbox-current/bin/efis-blackbox-broker --mavlink-bind ${EFIS_MAVLINK_BIND} --mavlink-port ${EFIS_MAVLINK_PORT} --mavlink-source ${EFIS_MAVLINK_SOURCE} $EFIS_MAVLINK_OBSERVER_ARGS --mavlink-observer-port ${EFIS_MAVLINK_OBSERVER_PORT} --can-interface ${EFIS_SENSOR_CAN} $EFIS_DDP_DISPLAY_ARGS --display-port ${EFIS_PFD_DDP_PORT} --engine-display ${EFIS_EDP_EMS_ADDRESS} --engine-port ${EFIS_EDP_EMS_PORT} --engine-simulation --source-node ${EFIS_BLACKBOX_NODE} --records /var/lib/blackbox/flight --rate-hz 20 ; ignore_errors=no ; start_time=[Sun 2026-09-20 08:00:21 CEST] ; stop_time=[n/a] ; pid=1142469 ; code=(null) ; status=0/0 }
+ActiveState=active
+SubState=running
+DropInPaths=/etc/systemd/system/efis-blackbox-broker.service.d/multidisplay.conf /etc/systemd/system/efis-blackbox-broker.service.d/release-v1.conf

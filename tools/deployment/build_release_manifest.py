@@ -100,6 +100,8 @@ def atomic_write(path: pathlib.Path, payload: dict[str, object]) -> None:
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary_path, path)
+        if os.name != "nt":
+            os.chmod(path, 0o644)
     finally:
         temporary_path.unlink(missing_ok=True)
 

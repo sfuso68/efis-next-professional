@@ -42,9 +42,49 @@ class ReleaseSupervisionAssetTests(unittest.TestCase):
             self.assertIn(f"--expected-platform {profile['platform']}", combined)
             self.assertIn(profile["current"], combined)
 
+    def test_all_policy_executables_use_canonical_non_symlink_bin_paths(self):
+        for profile in self.policy["nodes"]:
+            self.assertTrue(profile["executable"].startswith("bin/"), profile)
+            self.assertNotIn("build-rpi", profile["executable"])
+
+        combined = "\n".join(
+            path.read_text(encoding="utf-8") for path in self.units.glob("*.conf")
+        )
+        self.assertNotIn("/build-rpi", combined)
+
     def test_blackbox_candidate_remains_explicitly_simulated(self):
         content = (self.units / "efis-blackbox-release-v1.override.conf").read_text(encoding="utf-8")
         self.assertIn("--engine-simulation", content)
+
+    def test_mfd_does_not_write_logs_below_immutable_release(self):
+        content = (self.units / "efis-mfd-release-v1.override.conf").read_text(encoding="utf-8")
+        self.assertIn("StandardOutput=journal", content)
+        self.assertIn("StandardError=journal", content)
+        self.assertNotIn("efis-next-current/logs", content)
+
+    def test_ems_runtime_writes_are_outside_immutable_release(self):
+        content = (ROOT / "deploy/systemd/release-v1/efis-ems-release-v1.override.conf").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "EFIS_ENGINE_RUNTIME_STATE=/home/pi/.local/state/efis-next/ems/engine-runtime.state",
+            content,
+        )
+        self.assertIn(
+            "EFIS_BLACKBOX_FUEL_EVENTS=/home/pi/.local/state/efis-next/ems/blackbox-fuel-events.jsonl",
+            content,
+        )
+        self.assertIn(
+            "EFIS_CAPTURE_DIR=/home/pi/.local/state/efis-next/ems/captures",
+            content,
+        )
+        self.assertIn("Environment=EFIS_KIOSK=1", content)
+        self.assertIn("Environment=QSG_RENDER_LOOP=threaded", content)
+        self.assertIn("Environment=EFIS_EDP_BIND=10.77.10.12", content)
+        self.assertIn("Environment=EFIS_EDP_PORT=49003", content)
+        self.assertIn("Environment=EFIS_EDP_SOURCE_NODE=47", content)
+        self.assertNotIn("EFIS_ENGINE_RUNTIME_STATE=/home/pi/efis-next-current", content)
+        self.assertNotIn("EFIS_CAPTURE_DIR=/home/pi/efis-next-current", content)
 
 
 if __name__ == "__main__":

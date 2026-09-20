@@ -1,4 +1,5 @@
 import json
+import os
 import pathlib
 import tempfile
 import unittest
@@ -19,7 +20,7 @@ class ReleasePreparationTests(unittest.TestCase):
         self.previous = self.base / "previous"
         self.candidate.mkdir()
         self.previous.mkdir()
-        artifact = self.candidate / "build-rpi4" / "efis-ems-qt"
+        artifact = self.candidate / "bin" / "efis-ems-qt"
         artifact.parent.mkdir()
         artifact.write_bytes(b"candidate fixture\n")
 
@@ -35,7 +36,7 @@ class ReleasePreparationTests(unittest.TestCase):
             ["EMS"],
             "RPI4_AARCH64",
             True,
-            ["build-rpi4/efis-ems-qt:data"],
+            ["bin/efis-ems-qt:data"],
         )
 
     def test_build_is_deterministic_and_fail_closed(self):
@@ -52,19 +53,21 @@ class ReleasePreparationTests(unittest.TestCase):
             "2026-09-20T06:00:00Z", ["EMS"], "RPI4_AARCH64", True,
         )
         with self.assertRaises(ValueError):
-            build_manifest(*common, ["build-rpi4/efis-ems-qt:data"] * 2)
+            build_manifest(*common, ["bin/efis-ems-qt:data"] * 2)
         with self.assertRaises(ValueError):
             build_manifest(*common, ["../escape:data"])
         with self.assertRaises(ValueError):
             build_manifest(
                 self.candidate, "ems-test-0123456", "a" * 40,
                 "2026-09-20T06:00:00Z", ["EMS", "EMS"],
-                "RPI4_AARCH64", True, ["build-rpi4/efis-ems-qt:data"],
+                "RPI4_AARCH64", True, ["bin/efis-ems-qt:data"],
             )
 
     def test_atomic_write_refuses_overwrite(self):
         output = self.candidate / "release-manifest.json"
         atomic_write(output, self.manifest())
+        if os.name != "nt":
+            self.assertEqual(output.stat().st_mode & 0o777, 0o644)
         with self.assertRaises(ValueError):
             atomic_write(output, self.manifest())
 
@@ -98,6 +101,17 @@ class ReleasePreparationTests(unittest.TestCase):
         self.assertEqual(len(plan["policy_sha256"]), 64)
         schema = json.loads((ROOT / "config" / "deployment" / "efis-release-transition-plan-v1.schema.json").read_text(encoding="utf-8"))
         self.assertEqual(schema["properties"]["execution_authorized"]["const"], False)
+
+    def test_transition_output_is_service_readable(self):
+        manifest_path = self.candidate / "release-manifest.json"
+        atomic_write(manifest_path, self.manifest())
+        output = self.base / "transition.json"
+        from tools.deployment.prepare_release_transition import atomic_write as write_plan
+        write_plan(output, prepare(
+            POLICY, manifest_path, self.candidate, self.previous, "efis", "EMS",
+        ))
+        if os.name != "nt":
+            self.assertEqual(output.stat().st_mode & 0o777, 0o644)
 
     def test_transition_rejects_manifest_outside_candidate(self):
         outside = self.base / "release-manifest.json"
