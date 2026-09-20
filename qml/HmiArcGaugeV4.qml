@@ -56,18 +56,17 @@ Item {
     }
     Rectangle {
         visible: !gauge.limitsVerified
-        anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 2 * gauge.uiScale }
-        width: limitLabel.implicitWidth + 12 * gauge.uiScale
-        height: Math.max(16, 18 * gauge.uiScale)
-        radius: 2 * gauge.uiScale
-        color: "#E0061119"
+        anchors { left: parent.left; top: parent.top; margins: 7 * gauge.uiScale }
+        width: Math.max(15, 17 * gauge.uiScale)
+        height: width
+        radius: width / 2
+        color: "#C0251B00"
         border.color: tokens.caution
         Text {
-            id: limitLabel
             anchors.centerIn: parent
-            text: "LIMITS UNVERIFIED"
+            text: "!"
             color: tokens.caution
-            font.pixelSize: Math.max(8, 9 * gauge.uiScale)
+            font.pixelSize: Math.max(9, 11 * gauge.uiScale)
             font.bold: true
         }
     }

@@ -40,8 +40,7 @@ Rectangle {
 
     Text { x:9*root.uiScale; y:5*root.uiScale; text:"CHT / EGT  •  4 CYLINDER MATRIX"; color:root.cyan; font.pixelSize:root.textSize(8,8); font.bold:true }
     Text { anchors { right:parent.right; top:parent.top; rightMargin:8*root.uiScale; topMargin:5*root.uiScale }
-        text:root.limitsVerified ? root.stateLabel() : "LIMITS UNVERIFIED  •  "+root.stateLabel()
-        color:root.limitsVerified ? root.cyan : root.caution; font.pixelSize:root.textSize(6,8); font.bold:true }
+        text:root.stateLabel(); color:root.cyan; font.pixelSize:root.textSize(6,8); font.bold:true }
     Row {
         id:cylinderRow
         anchors { left:parent.left; right:parent.right; top:parent.top; bottom:footer.top; leftMargin:8*root.uiScale; rightMargin:8*root.uiScale; topMargin:23*root.uiScale; bottomMargin:4*root.uiScale }

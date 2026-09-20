@@ -175,3 +175,25 @@ Blackbox hanno manifest PASS, eseguibile canonico, rollback drill e reboot
 acceptance PASS. Sull'EMS sono state inoltre corrette e verificate la separazione
 dei dati mutabili e la conservazione delle variabili EDP/kiosk del launcher.
 PFD e recorder restano aperti; `PROD-005` rimane `PARTIAL`.
+
+## 12. Correzione candidata HMI EMS — limiti e stato CAS
+
+Sul branch `fix/ems-limit-cas-status-v1` la dicitura ripetuta
+`LIMITS UNVERIFIED` è stata sostituita da un solo stato ambra
+`LIMITS INDICATIVE` nel pannello CAS e da piccoli marcatori sui quadranti. La
+provenienza non è stata promossa: il profilo attivo resta
+`INDICATIVE_UNVERIFIED` e soltanto il valore esatto `VERIFIED` può rimuovere
+l'avviso (`EMS-004`, `PRJ-004`).
+
+È stato inoltre corretto il falso `BLACKBOX LINK LOST`: il CAS usa
+`dataSourceState` per la perdita del trasporto EDP, mentre
+`centralBlackBoxState` segnala esclusivamente `CENTRAL LOG SYNC OFFLINE`. La
+catena EDP osservata sul nodo prima della modifica era `LIVE • SIM`; nessuna
+sorgente reale è stata introdotta (`EMS-002`, ADR-011).
+
+Verifica esclusivamente software: build Windows dei target PFD ed EMS PASS,
+18 test HMI PASS, sette test dei tool golden PASS, validatori HMI/EMS PASS, tre
+test CTest mirati PASS e cattura software 800×480 ispezionata senza
+sovrapposizioni. Nessuna release è stata creata o distribuita e nessuna
+verifica sul pannello RPi4 è ancora avvenuta; lo stato resta
+`PARTIAL`/`VERIFY-HW`.
