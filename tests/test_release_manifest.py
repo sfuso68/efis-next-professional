@@ -50,6 +50,22 @@ class ReleaseManifestTests(unittest.TestCase):
         with self.assertRaises(ManifestError):
             validate(self.manifest, self.root, check_files=True)
 
+    def test_rejects_symlink_artifact(self):
+        target = self.root / "bin" / "real"
+        target.write_bytes(b"real\n")
+        link = self.root / "bin" / "linked"
+        try:
+            link.symlink_to(target)
+        except OSError as error:
+            self.skipTest(f"symlink unavailable: {error}")
+        self.manifest["artifacts"][0] = {
+            "path": "bin/linked",
+            "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+            "executable": False,
+        }
+        with self.assertRaises(ManifestError):
+            validate(self.manifest, self.root, check_files=True)
+
     def test_rejects_wrong_role_or_platform(self):
         with self.assertRaises(ManifestError):
             validate(self.manifest, self.root, "PFD", "RPI4_AARCH64")

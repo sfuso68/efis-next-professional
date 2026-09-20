@@ -64,7 +64,52 @@ python3 tools/deployment/validate_release_manifest.py \
 
 Ogni errore produce exit code non zero e JSON con `status=FAIL`. Il validatore
 rifiuta campi ignoti, percorsi assoluti o con `..`, duplicati, hash errati,
-ruolo/piattaforma non corrispondenti e qualsiasi `flight_approval=true`.
+ruolo/piattaforma non corrispondenti, symlink nel percorso degli artefatti e
+qualsiasi `flight_approval=true`.
+
+## Packaging deterministico
+
+`tools/deployment/build_release_manifest.py` genera soltanto il manifesto; non
+installa unità, non cambia symlink e non riavvia processi. Release, commit, UTC,
+ruolo, piattaforma, stato SIM e ogni artefatto sono parametri espliciti. Gli
+hash vengono calcolati sui file della directory candidata e il risultato viene
+validato prima della scrittura atomica. Un manifesto esistente non viene mai
+sovrascritto implicitamente.
+
+Esempio EMS di staging:
+
+```sh
+python3 tools/deployment/build_release_manifest.py \
+  --release-root /home/pi/efis-next-ems-<commit> \
+  --release-id ems-<commit> \
+  --source-commit <sha40> \
+  --built-utc 2026-09-20T06:00:00Z \
+  --role EMS \
+  --platform RPI4_AARCH64 \
+  --simulation-mode \
+  --artifact build-rpi4/efis-ems-qt:exec
+```
+
+`--simulation-mode` e `--no-simulation-mode` sono mutuamente esclusivi e
+obbligatori: il packager non deduce né nasconde la provenienza dei dati.
+
+## Preflight non eseguibile
+
+`tools/deployment/prepare_release_transition.py` lega candidato, rollback,
+manifesto e policy del nodo in un record conforme a
+`config/deployment/efis-release-transition-plan-v1.schema.json`. Il record ha
+sempre:
+
+- `status=PREPARED_NOT_EXECUTED`;
+- `execution_authorized=false` e `flight_approval=false`;
+- decisione `NO_GO_UNTIL_SEPARATE_HARDWARE_AUTHORIZATION`;
+- zero comandi mutanti;
+- digest SHA-256 di manifesto e policy;
+- nove gate obbligatori, inclusi supervisore unico, reboot e rollback drill.
+
+Il preflight rifiuta target relativi, symlink, candidato uguale al rollback,
+manifesto esterno alla release e profilo nodo/ruolo ambiguo. Esso non sostituisce
+la conferma read-only dello stato corrente né autorizza lo switch.
 
 I cinque drop-in sotto `deploy/systemd/release-v1/` sono candidati non
 installati. Usano `ExecCondition`, così un manifesto assente o non valido rende
@@ -97,3 +142,5 @@ Questa sequenza richiede un ordine separato e una finestra di banco:
   copia `.e916548`; `--engine-simulation` resta correttamente esplicito.
 
 Nessuno di questi gap viene chiuso dalla sola presenza del contratto V1.
+Il packager e il preflight riducono il rischio di staging ma non costituiscono
+evidenza hardware, reboot o rollback.

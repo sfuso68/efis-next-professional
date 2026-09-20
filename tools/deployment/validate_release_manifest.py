@@ -46,9 +46,15 @@ def _safe_artifact(root: pathlib.Path, relative: Any) -> pathlib.Path:
     candidate = pathlib.PurePosixPath(relative)
     _require(not candidate.is_absolute(), f"artifact path must be relative: {relative}")
     _require(".." not in candidate.parts, f"artifact path escapes release: {relative}")
-    resolved = (root / pathlib.Path(*candidate.parts)).resolve()
+    root_resolved = root.resolve()
+    lexical = root_resolved / pathlib.Path(*candidate.parts)
+    current = root_resolved
+    for part in candidate.parts:
+        current = current / part
+        _require(not current.is_symlink(), f"artifact path contains symlink: {relative}")
+    resolved = lexical.resolve()
     try:
-        resolved.relative_to(root.resolve())
+        resolved.relative_to(root_resolved)
     except ValueError as exc:
         raise ManifestError(f"artifact resolves outside release: {relative}") from exc
     return resolved
@@ -133,6 +139,7 @@ def main() -> int:
     parser.add_argument("--check-files", action="store_true")
     args = parser.parse_args()
     try:
+        _require(not args.manifest.is_symlink(), "manifest must not be a symlink")
         manifest_path = args.manifest.resolve(strict=True)
         root = (args.release_root or manifest_path.parent).resolve(strict=True)
         with manifest_path.open("r", encoding="utf-8") as stream:

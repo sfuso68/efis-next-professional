@@ -2,7 +2,7 @@
 
 Aggiornamento: 2026-09-20
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline osservata per questo aggiornamento: `origin/main` `80791a4`
+Baseline osservata per questo aggiornamento: `origin/main` `67aee2e`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
@@ -153,3 +153,22 @@ verificano hash, traversal, ruolo/piattaforma,
 `flight_approval=false`, assenza di `build/dev` e mantenimento esplicito della
 simulazione Blackbox. Gli asset non sono installati e `PROD-005` resta
 `PARTIAL` fino a staging, reboot e rollback verificati sui nodi reali.
+
+## 11. Packaging e preflight release V1
+
+Implementato sul branch `work/release-supervision-contract-v1` un packager
+deterministico del manifesto e un generatore di piano di transizione puramente
+descrittivo. Il validatore rifiuta ora anche symlink negli artefatti; manifesto
+e piano sono scritti atomicamente senza sovrascrittura implicita. Il piano lega
+nodo, ruolo, piattaforma, servizio, candidato, rollback e digest, mantiene
+`execution_authorized=false`, non contiene comandi mutanti e richiede nove gate
+prima di ogni futura finestra di banco (`PROD-005`).
+
+Verificato solo software: 19 test mirati eseguiti sul runtime Windows, 18 PASS
+e il solo caso POSIX di creazione symlink SKIP per assenza del privilegio; sintassi
+Python e `git diff --check` PASS. Il caso symlink resta affidato anche alla CI
+Linux della PR. Non è stato generato né installato alcun pacchetto reale, non è
+stato cambiato alcun puntatore `current`, non sono stati riavviati servizi e non
+è stata acquisita nuova evidenza hardware. Restano aperti review/CI della PR,
+staging candidato, identificazione supervisore MFD e prove nodo-per-nodo di
+reboot/rollback; `PROD-005` rimane `PARTIAL`.
