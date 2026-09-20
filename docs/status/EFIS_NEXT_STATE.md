@@ -106,9 +106,9 @@ Il dettaglio è nel registro canonico
 
 ## 7. Prossima sequenza controllata
 
-1. Definire senza deployment i profili di supervisione/manifest mancanti per
-   MFD, EMS, recorder PFD e Blackbox; ogni applicazione deve essere ricondotta
-   a una release immutabile e riproducibile (`PROD-005`).
+1. Revisionare il contratto release V1 candidato; solo dopo review autorizzare
+   staging e verifica nodo per nodo di MFD, EMS, recorder PFD e Blackbox
+   (`PROD-005`).
 2. Acquisire le nove immagini e i metadati dell'inventario ASSO5 senza probing
    o modifica DIP (`PRJ-002`, `AVX-G1-02`).
 3. Qualificare alimentatore/cavo Blackbox e nodo sensori con piano brownout e
@@ -144,3 +144,12 @@ Verifica iniziale del blocco P4–P8: generatore e `--check` PASS, controllo
 sintattico Python PASS e `git diff --check` PASS. La successiva acquisizione
 read-only del 2026-09-20 ha eseguito 20 controlli sui quattro nodi principali;
 non ha modificato hardware o runtime e non promuove alcun requisito a `DONE`.
+
+## 10. Contratto release immutabili V1 candidato
+
+Il blocco candidato introduce schema manifesto, validatore fail-closed, policy
+nominativa dei cinque processi e drop-in systemd candidati. I test software
+verificano hash, traversal, ruolo/piattaforma,
+`flight_approval=false`, assenza di `build/dev` e mantenimento esplicito della
+simulazione Blackbox. Gli asset non sono installati e `PROD-005` resta
+`PARTIAL` fino a staging, reboot e rollback verificati sui nodi reali.

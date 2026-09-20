@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://efis-next.local/schemas/efis-release-manifest-v1.schema.json",
+  "title": "EFIS NEXT immutable release manifest V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "release_id",
+    "source_commit",
+    "built_utc",
+    "roles",
+    "platform",
+    "repository",
+    "flight_approval",
+    "simulation_mode",
+    "artifacts"
+  ],
+  "properties": {
+    "schema": { "const": "efis-next.release-manifest.v1" },
+    "release_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{6,63}$" },
+    "source_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "built_utc": { "type": "string", "format": "date-time" },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["PFD", "MFD", "EMS", "RECORDER", "BLACKBOX"] }
+    },
+    "platform": { "enum": ["RPI4_AARCH64", "RPI5_AARCH64"] },
+    "repository": { "const": "sfuso68/efis-next-professional" },
+    "flight_approval": { "const": false },
+    "simulation_mode": { "type": "boolean" },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "executable"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "executable": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

@@ -67,6 +67,11 @@ jobs:
           python tools/ui/validate_hmi_golden.py tests/golden/hmi
           python tools/ui/validate_hmi_golden.py tests/golden/skyview
 
+      - name: Validate immutable release and supervision contract
+        run: |
+          python -m unittest tests.test_release_manifest -v
+          python -m unittest tests.test_release_supervision_assets -v
+
       - name: Determine changed files
         id: changes
         shell: bash
