@@ -21,10 +21,10 @@ Il registro operativo riga-per-riga resta
 | Nodo sensori ASSO5 | BLOCKED-HW | RPi4 `.89` identificato; Sequent 0/4, alimentatore, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
-| PFD/MFD | PARTIAL | Runtime osservati su RPi5; release correnti da riconfermare, terrain vicino e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
-| EMS | PARTIAL | RPi4 dedicato, EDP e fallback osservati; input motore reale e limiti controllati mancanti | `EMS-002`…`004` |
+| PFD/MFD | PARTIAL | PFD `60b3526` confermato; MFD `3432402` confermato ma supervisore ignoto; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
+| EMS | PARTIAL / NON CONFORME DEPLOY | processo RPi4 attivo da checkout `build/dev`, senza release immutabile; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
-| Blackbox/rete | PARTIAL | Broker, recorder e fan-out monitor-only presenti; verticale sensori, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001` |
+| Blackbox/rete | PARTIAL | broker attivo ma release non identificata e diversa dalla copia `.e916548`; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
 | Server/NAS/Ground station | PARTIAL | Servizi e copie esistono; manifest release, CA, lifecycle e doppia copia verificata non chiusi | `SRV-001`…`003`, `GS-001`…`003`, `AVX-G0-02`, `03` |
 | Alimentazione | VERIFY-HW | Storico Blackbox `get_throttled=0x50000`; PSU/cavo e prove brownout non qualificati | `PWR-001`, `PROD-002`, `VER-003` |
 
@@ -46,12 +46,14 @@ Il registro operativo riga-per-riga resta
 
 ## 3. Release e configurazione
 
-Lo stato “attivo” non viene più dedotto dai checkpoint. Il registro canonico
-[`EFIS_NEXT_ACTIVE_RELEASES.md`](EFIS_NEXT_ACTIVE_RELEASES.md) conserva l'ultima
-release osservata e richiede riconferma read-only su PFD, MFD, EMS e Blackbox.
-Le precedenti affermazioni PFD `1d25e62`/`93bbe44`/`e902973`/`60b3526` e MFD
-`f27508a`/`1d02b84`/`3432402` sono trattate come cronologia, non come stato
-simultaneo (`PFD-001`, `MFD-001`, `PROD-005`).
+Lo stato “attivo” non viene dedotto dai checkpoint. La verifica read-only del
+2026-09-20 ha confermato PFD `60b3526` e il processo MFD `3432402`; sul MFD il
+supervisore resta ignoto. EMS esegue invece una build `dev` mutabile e Blackbox
+un broker privo di manifest il cui hash non coincide con la copia `.e916548`.
+Il dettaglio è nel registro canonico
+[`EFIS_NEXT_ACTIVE_RELEASES.md`](EFIS_NEXT_ACTIVE_RELEASES.md) e nell'evidenza
+[`release-inventory-20260920`](evidence/release-inventory-20260920/README.md)
+(`PFD-001`, `MFD-001`, `EMS-002`, `BBX-003`, `PROD-005`).
 
 ## 4. Verificato solo software/documentazione
 
@@ -70,10 +72,11 @@ simultaneo (`PFD-001`, `MFD-001`, `PROD-005`).
 
 ## 5. Ultime verifiche hardware che restano valide
 
-- PFD `.45`, MFD `.49`, EMS `.36`, Blackbox `.47`, server `.6`, portatile
-  `.39`, NAS `.22` e sensor node `.89` sono stati raggiunti in attività
-  precedenti; ciò non prova la loro disponibilità attuale (`PRJ-002`,
-  `PFD-001`, `MFD-001`, `EMS-002`, `BBX-003`, `GS-001`, `SRV-001`).
+- PFD `.45`, MFD `.49`, EMS `.36` e Blackbox `.47` sono stati raggiunti e
+  inventariati read-only il 2026-09-20 con 20 controlli complessivi. Server
+  `.6`, portatile `.39`, NAS `.22` e sensor node `.89` non sono stati
+  riconfermati in questo blocco (`PFD-001`, `MFD-001`, `EMS-002`, `BBX-003`,
+  `GS-001`, `SRV-001`).
 - G2 ARM64 ha prodotto validator e 11/11 test PASS su PFD, MFD ed EMS con
   digest coincidenti (`PRJ-003`, `AVX-G2-01`).
 - La catena EDP SIM Blackbox→EMS ha mostrato LIVE, STALE, LOST, fallback e
@@ -89,8 +92,9 @@ simultaneo (`PFD-001`, `MFD-001`, `PROD-005`).
    fotografie non acquisiti (`PRJ-002`, `AVX-G1-02`).
 2. Alimentazione: storico undervoltage Blackbox, nessuna prova brownout/load
    controllata e nessuna PSU finale qualificata (`PWR-001`, `PROD-002`).
-3. Release: stato corrente dei processi sui nodi da riconfermare e manifest
-   immutabile non uniforme (`PROD-005`).
+3. Release: EMS usa `build/dev`, Blackbox non ha manifest e MFD non ha un
+   supervisore identificato; anche il recorder PFD resta fuori release
+   (`PROD-005`).
 4. HMI: touch, leggibilità, sunlight/night, frame-rate, termica e fault su
    pannelli reali non accettati (`PRJ-004`, `AVX-G3-03`).
 5. Synthetic vision: terreno vicino stirato/sfocato e LOD/proiezione non
@@ -102,8 +106,9 @@ simultaneo (`PFD-001`, `MFD-001`, `PROD-005`).
 
 ## 7. Prossima sequenza controllata
 
-1. Riconfermare in sola lettura release e processi dei quattro nodi principali
-   e aggiornare il registro canonico (`PROD-005`).
+1. Definire senza deployment i profili di supervisione/manifest mancanti per
+   MFD, EMS, recorder PFD e Blackbox; ogni applicazione deve essere ricondotta
+   a una release immutabile e riproducibile (`PROD-005`).
 2. Acquisire le nove immagini e i metadati dell'inventario ASSO5 senza probing
    o modifica DIP (`PRJ-002`, `AVX-G1-02`).
 3. Qualificare alimentatore/cavo Blackbox e nodo sensori con piano brownout e
@@ -135,6 +140,7 @@ in questo documento modifica hardware, rete, servizio o release (`PRJ-001`,
 - P8: le 4.011 righe pregresse sono state spostate nell'archivio immutato e lo
   stato corrente è stato ricostruito come sintesi operativa (`PRJ-001`).
 
-Verifica di questo blocco: generatore e `--check` PASS, controllo sintattico
-Python PASS e `git diff --check` PASS. Nessuna verifica hardware è stata
-eseguita; nessun elemento viene promosso a `DONE`.
+Verifica iniziale del blocco P4–P8: generatore e `--check` PASS, controllo
+sintattico Python PASS e `git diff --check` PASS. La successiva acquisizione
+read-only del 2026-09-20 ha eseguito 20 controlli sui quattro nodi principali;
+non ha modificato hardware o runtime e non promuove alcun requisito a `DONE`.

@@ -22,10 +22,10 @@ non possono sovrascrivere questo registro.
 
 | Nodo | Ruolo | Indirizzo noto | Ultima release osservata | Data evidenza | Stato canonico corrente | Evidenza | Prossima verifica |
 |---|---|---:|---|---|---|---|---|
-| `efis-pfd-01` | PFD RPi5 | `192.168.1.45` | `60b3526` | 2026-09-12 | DA RICONFERMARE | archivio storico, sezione Emergency Assist `60b3526` | leggere target di `/home/efis/efis-next-current`, `ExecStart`, PID e commit senza effettuare switch |
-| `pi5` | MFD RPi5 | `192.168.1.49` | `3432402` | 2026-09-12 | DA RICONFERMARE | archivio storico, sezione MFD `3432402` | leggere symlink, unità e processo senza modifiche |
-| `efis` | EMS RPi4 | `192.168.1.36` | non determinata da commit | 2026-09-12 | DA RICONFERMARE | EDP V1 e runtime osservati, ma nessun hash release univoco | registrare symlink/processo/commit e versione EDP |
-| `efisblackbox` | Blackbox RPi5 | `192.168.1.47` | broker `e916548` soltanto | 2026-09-08 | DA RICONFERMARE | broker installato e provato; non identifica l'intera release nodo | registrare release completa, broker, recorder e unità attive |
+| `efis-pfd-01` | PFD RPi5 | `192.168.1.45` | `60b3526` | 2026-09-20 03:48 UTC | ATTIVA CONFERMATA | symlink immutabile, unità, PID, processo e SHA-256 acquisiti read-only | ricondurre il recorder legacy `build/dev` alla gestione release senza modificarlo durante l'audit |
+| `pi5` | MFD RPi5 | `192.168.1.49` | `3432402` | 2026-09-20 03:48 UTC | ATTIVA CONFERMATA / SUPERVISORE APERTO | symlink, processo e SHA-256 coincidono; `efis-mfd.service` assente | identificare il meccanismo reale di avvio e documentarne restart/boot policy |
+| `efis` | EMS RPi4 | `192.168.1.36` | non identificabile | 2026-09-20 03:48 UTC | ATTIVA NON IMMUTABILE / NON CONFORME | processo reale da `/home/pi/efis-next/build/dev/efis-ems-qt`; unità nominativa e manifest assenti | creare profilo release immutabile solo dopo review, senza dedurre un commit dal checkout mutabile |
+| `efisblackbox` | Blackbox RPi5 | `192.168.1.47` | broker attivo non identificato | 2026-09-20 03:48 UTC | ATTIVA NON IDENTIFICATA | servizio attivo; hash corrente diverso dalla copia `.e916548`; nessun manifest nodo | produrre manifest completo e rimuovere l'ambiguità di versione; feed motore resta SIM |
 | `ems-sensor` | ASSO5 sensor RPi4 | `192.168.1.89` | nessuna release distribuita | 2026-09-18 | NON DISTRIBUITA | identità nodo verificata; adapter reale non distribuito | nessun deployment prima di inventario e approvazione G1 |
 | `PORTATILE` | Ground station | `192.168.1.39` | non applicabile/untracked | 2026-09-15 | DA INVENTARIARE | QGC e firewall osservati separatamente | registrare package/versioni/config hash in sola lettura |
 | `serverha` | Server mappe | `192.168.1.6` | non applicabile/untracked | 2026-09-14 | DA INVENTARIARE | container osservati Up; nessun release manifest canonico | acquisire image digest e compose revision |
@@ -33,9 +33,11 @@ non possono sovrascrivere questo registro.
 ## Conflitti chiusi documentalmente
 
 I valori PFD `1d25e62`, `93bbe44`, `e902973` e `60b3526` descrivono una
-sequenza storica, non quattro stati correnti simultanei. `60b3526` è l'ultima
-release PFD documentata come osservata; fino alla nuova lettura hardware lo
-stato rimane `DA RICONFERMARE`. Per lo stesso motivo `f27508a`, `1d02b84` e
-`3432402` sono la sequenza storica MFD, con `3432402` ultima osservata.
+sequenza storica, non quattro stati correnti simultanei. La lettura hardware
+del 2026-09-20 conferma `60b3526`. Per lo stesso motivo `f27508a`, `1d02b84` e
+`3432402` sono la sequenza storica MFD; la lettura corrente conferma il processo
+e il binario `3432402`, ma non il suo supervisore.
 
+L'acquisizione corrente è documentata in
+[`evidence/release-inventory-20260920/README.md`](evidence/release-inventory-20260920/README.md).
 Nessuna riga di questo registro autorizza deployment, rollback o uso in volo.
