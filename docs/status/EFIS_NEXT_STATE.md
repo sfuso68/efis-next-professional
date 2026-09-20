@@ -25,7 +25,7 @@ Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
 | PFD/MFD | PARTIAL | PFD `60b3526` confermato; MFD su release immutabile `mfd-3432402-primary-v1` con rollback/reboot PASS; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
-| EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-7655799-primary-v1`, rollback/reboot e persistenza PASS, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
+| EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-62ba90b-hmi-cas-v1`; attivazione e rollback drill PASS, reboot della nuova release aperto, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
 | Blackbox/rete | PARTIAL | broker su release immutabile `blackbox-7655799-primary-v1`, rollback/reboot PASS; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
 | Server/NAS/Ground station | PARTIAL | Servizi e copie esistono; manifest release, CA, lifecycle e doppia copia verificata non chiusi | `SRV-001`…`003`, `GS-001`…`003`, `AVX-G0-02`, `03` |
@@ -191,9 +191,21 @@ l'avviso (`EMS-004`, `PRJ-004`).
 catena EDP osservata sul nodo prima della modifica era `LIVE • SIM`; nessuna
 sorgente reale è stata introdotta (`EMS-002`, ADR-011).
 
-Verifica esclusivamente software: build Windows dei target PFD ed EMS PASS,
-18 test HMI PASS, sette test dei tool golden PASS, validatori HMI/EMS PASS, tre
-test CTest mirati PASS e cattura software 800×480 ispezionata senza
-sovrapposizioni. Nessuna release è stata creata o distribuita e nessuna
-verifica sul pannello RPi4 è ancora avvenuta; lo stato resta
-`PARTIAL`/`VERIFY-HW`.
+Verifica software: build Windows dei target PFD ed EMS PASS, 18 test HMI PASS,
+sette test dei tool golden PASS, validatori HMI/EMS PASS e tre test CTest mirati
+PASS. La build ARM64 nativa sul nodo EMS ha ripetuto con esito PASS i tre CTest,
+i 18 test HMI e i validatori HMI/EMS.
+
+Verifica hardware del 2026-09-20: la release immutabile
+`ems-62ba90b-hmi-cas-v1` è stata attivata sul RPi4 EMS reale dopo validazione
+manifesto, prova candidato, rollback drill e ritorno al candidato. Il servizio
+`efis-ems.service` è `active/running`, `NRestarts=0`, l'eseguibile proviene
+dalla release attiva e `get_throttled=0x0`. Una cattura runtime 800×480
+generata sul nodo (`ems-20260920-190524045.png`, SHA-256
+`2e74c0a4d6e5f5f1a2fb7da6321764460ce929ef42bf5ac6070162ed4b0e9831`) è
+stata ispezionata: mostra un solo `LIMITS INDICATIVE`, marcatori compatti sui
+quadranti e `CENTRAL LOG SYNC OFFLINE`, senza il falso `BLACKBOX LINK LOST`.
+
+Restano aperti e non sono dichiarati PASS: reboot acceptance della nuova
+release, ispezione diretta sul pannello fisico/touch, prova con limiti motore
+approvati e sorgente CAN motore reale. Lo stato resta `PARTIAL`/`VERIFY-HW`.
