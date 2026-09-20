@@ -12,6 +12,9 @@ Il registro operativo riga-per-riga resta
 [`EFIS_NEXT_MASTER_MATRIX.md`](EFIS_NEXT_MASTER_MATRIX.md); la release dei nodi
 è governata esclusivamente da
 [`EFIS_NEXT_ACTIVE_RELEASES.md`](EFIS_NEXT_ACTIVE_RELEASES.md).
+Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
+è in
+[`AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md`](../project/AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md).
 
 ## 1. Quadro immediato
 

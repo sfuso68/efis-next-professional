@@ -1,6 +1,6 @@
 # AVIONIX NEXT — indice documentale e regole di autorità
 
-Aggiornamento: 2026-09-17
+Aggiornamento: 2026-09-20
 Stato: baseline documentale WS0/G0, DEVELOPMENT / NON-CERT
 
 ## Repository autorevole
@@ -31,6 +31,7 @@ con una nuova ADR o con una revisione esplicita del brief.
 | Documento | Ruolo | Stato |
 |---|---|---|
 | `AVIONIX_NEXT_MASTER_PROJECT_BRIEF_CODEX_R0.md` | specifica e piano generale AVIONIX Next | importato integralmente |
+| `AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md` | quadro direzionale dettagliato di avanzamento, scostamenti, rischi e piano aggiornato | corrente; branch release supervision, nessun deployment |
 | `AVIONIX_NEXT_PROJECT_AUDIT.md` | audit completo sezione 24 e proposta successiva | aggiornato all'HEAD del branch di lavoro |
 | `AVIONIX_G2_FREEZE_READINESS.md` | confronto read-only di contratti, codice e test DDP/EDP | storico; superato dal freeze approvato |
 | `docs/protocols/AVIONIX_DATA_ICD_V1.md` | contratto sovraordinato DDP/EDP, vettori ed evidence bundle | FROZEN-SW; ARM64/HW aperti |
@@ -51,9 +52,11 @@ con una nuova ADR o con una revisione esplicita del brief.
 | `CLAUDE_CODE_HANDOFF_2026-08-21.md` | handoff storico | riferimento |
 | `CHECKPOINT-*` | evidenze e checkpoint cronologici | riferimento |
 
-Il checkpoint `docs/status/CHECKPOINT-2026-09-17-G2-ARM64-PENDING.md`
-registra l'autorizzazione ARM64 senza trasformarla in evidenza: i risultati dei
-tre nodi sono ancora pendenti.
+Il checkpoint `docs/status/CHECKPOINT-2026-09-17-G2-ARM64-PENDING.md` conserva
+lo stato precedente all'esecuzione. L'esito successivo e autorevole è
+`docs/status/CHECKPOINT-2026-09-18-G2-ARM64-VERIFIED.md`: PFD, MFD ed EMS hanno
+superato validator e 11/11 test con digest coerenti. La verticale live resta
+esclusa e aperta.
 
 ## Riferimenti richiesti dal brief ma non reperiti
 
@@ -103,3 +106,13 @@ del 16 settembre: aggiorna repository, branch, divergenza, component map,
 workstream, gate e attività software successive. L'HEAD `dfb3510` ha superato
 EFIS Project Control #85 ed EFIS Core CI #69. Non è stato autorizzato alcun
 merge, deployment o nuovo intervento hardware.
+
+## Riesame operativo 2026-09-20
+
+Il confronto aggiornato fra Master Brief, gate G0–G7, workstream WS0–WS12,
+Master Matrix e nodi osservati è in
+`AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md`. La baseline integrata resta
+`origin/main` `67aee2e`. Il branch `work/release-supervision-contract-v1`
+`8dc7895`, proposto dalla PR #15, aggiunge contratti e preflight non esecutivi
+per le release immutabili. La PR non è ancora parte di `main` e non prova alcun
+deployment sui nodi.
