@@ -6,27 +6,16 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-CONTROL_FILES = {
-    "docs/status/EFIS_NEXT_STATE.md",
-    "docs/status/EFIS_NEXT_MASTER_MATRIX.md",
-}
+REQUIRED_CONTROL_FILE = "docs/status/EFIS_NEXT_MASTER_MATRIX.md"
 
 WATCHED_PREFIXES = (
     "include/efis/",
-    "src/core/",
-    "src/providers/",
-    "src/ingest/",
-    "src/io/",
-    "src/nodes/",
-    "src/instruments/",
-    "src/renderers/",
+    "src/",
     "qml/",
     "server/",
     "deploy/",
     "config/",
-    "tools/terrain/",
-    "tools/imagery/",
-    "tools/navigation/",
+    "tools/",
     "docs/hardware/",
     "docs/protocols/",
 )
@@ -53,14 +42,14 @@ def main() -> int:
         p for p in changed
         if p.startswith(WATCHED_PREFIXES) and not p.startswith(EXEMPT_PREFIXES)
     ]
-    control_updated = any(p in CONTROL_FILES for p in changed)
+    matrix_updated = REQUIRED_CONTROL_FILE in changed
 
-    if substantive and not control_updated:
+    if substantive and not matrix_updated:
         print("EFIS project-control check FAILED")
         print("Subsystem files changed without updating project status:")
         for path in substantive:
             print(f"  - {path}")
-        print("Update docs/status/EFIS_NEXT_MASTER_MATRIX.md or EFIS_NEXT_STATE.md in the same PR.")
+        print(f"Update {REQUIRED_CONTROL_FILE} in the same PR.")
         return 2
 
     print("EFIS project-control check OK")
