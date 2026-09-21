@@ -120,9 +120,10 @@ def validate_contract(data: object, root: Path = ROOT) -> list[str]:
 def _artifact_path(root: Path, relative: object) -> Path | None:
     if not isinstance(relative, str) or not relative or Path(relative).is_absolute():
         return None
-    candidate = (root / relative).resolve()
+    candidate = root / relative
+    resolved = candidate.resolve()
     try:
-        candidate.relative_to(root.resolve())
+        resolved.relative_to(root.resolve())
     except ValueError:
         return None
     return candidate
