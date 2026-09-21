@@ -14,7 +14,10 @@ dichiarato sulla base di una singola cattura scelta a posteriori.
 
 La baseline è in
 `config/terrain/avionix-synthetic-vision-benchmark-v1.json`; il validatore è
-`tools/terrain/validate_synthetic_vision_benchmark.py`.
+`tools/terrain/validate_synthetic_vision_benchmark.py`. La sessione PFD+MFD è
+preparata e finalizzata da
+`tools/terrain/manage_synthetic_vision_session.py`, secondo
+`SYNTHETIC_VISION_SESSION_V1.md`.
 
 ## Tracciato congelato
 
@@ -67,6 +70,10 @@ Il secondo comando accetta soltanto percorsi relativi confinati, file regolari
 non vuoti, digest coincidenti, commit sorgente completo, release nominata,
 tutte le misure e tutti i checkpoint. Symlink, escape, omissioni e soglie
 allentate falliscono chiusi.
+
+Per un'acquisizione completa sui due RPi5 usare il session manager C10, che
+congela il contratto e il commit installato, separa PFD e MFD e impedisce la
+finalizzazione finché entrambi i risultati non superano questo validatore.
 
 ## Evidenze richieste
 

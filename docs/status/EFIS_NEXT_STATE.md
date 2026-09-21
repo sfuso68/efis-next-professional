@@ -83,6 +83,11 @@ Il dettaglio è nel registro canonico
   p95 25 ms, fault missing-tile ed evidence con digest. Contratto e test
   fail-closed sono verificati solo software; renderer, rotta e pannelli non
   sono stati eseguiti (`AVX-G3-01`, `SV-001`, `PFD-001`, `MFD-001`).
+- Il blocco C10 rende C9 operativamente acquisibile senza inventare risultati:
+  prepara una sessione non sovrascrivibile per PFD e MFD, congela commit e
+  contratto, separa gli artefatti e finalizza soltanto due run validi con
+  conferma operatore. I test sintetici sono PASS, ma nessun nodo o renderer è
+  stato eseguito (`AVX-G3-01`, `SV-001`, `PFD-001`, `MFD-001`).
 - Inventario, readiness e proposta upstream ASSO5: formati fail-closed pronti,
   ma nessun modello, DIP, channel map o calibrazione reale verificata
   (`PRJ-002`, `AVX-G1-02`, `03`).
