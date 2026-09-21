@@ -3,6 +3,7 @@
 Aggiornamento: 2026-09-21
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline integrata precedente a questo aggiornamento: `origin/main` `5891f75`
+HEAD `main` verificato all'ingresso del blocco C3: `9f95862f200e93d107b7da520177da12b21586cc`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
