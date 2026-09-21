@@ -106,6 +106,31 @@ int main() {
     using namespace std::chrono_literals;
     const auto epoch = efis::MonoTime{};
 
+    // --- Le primitive di lettura rispettano DLC e capienza -----------------
+    {
+        efis::can::Frame short_frame{};
+        short_frame.length = 1;
+        short_frame.data[0] = 0x34;
+        short_frame.data[1] = 0x12;
+        require(!efis::can::read_i16(short_frame, 0).has_value(),
+                "a short frame must not be completed with backing-array zeros");
+
+        efis::can::Frame full{};
+        full.length = 8;
+        require(!efis::can::read_u16(full, 7).has_value(),
+                "a 16-bit read beyond the payload must fail");
+        require(!efis::can::read_i32(full, 6).has_value(),
+                "a 32-bit read beyond the backing array must fail");
+        require(!efis::can::read_i16(full, 250).has_value(),
+                "a hostile offset must fail without integer wraparound");
+
+        full.data[6] = 0x34;
+        full.data[7] = 0x12;
+        const auto valid = efis::can::read_u16(full, 6);
+        require(valid.has_value() && *valid == 0x1234,
+                "a valid boundary read must keep little-endian decoding");
+    }
+
     // --- Scale e ordine dei byte --------------------------------------------
     {
         efis::Esp32CanAdapter adapter;
