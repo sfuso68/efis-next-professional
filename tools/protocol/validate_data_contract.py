@@ -17,14 +17,59 @@ class ContractError(ValueError):
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def _restricted_integer_expression(expression: str) -> int:
+    """Evaluate integers, multiplication and grouping without executing code."""
+    pieces = re.findall(r"[0-9]+|[()*]|\s+", expression)
+    if not expression or "".join(pieces) != expression:
+        raise ContractError(f"unsupported C++ integer expression: {expression}")
+    tokens = [piece for piece in pieces if not piece.isspace()]
+    if not tokens:
+        raise ContractError(f"unsupported C++ integer expression: {expression}")
+
+    position = 0
+
+    def factor() -> int:
+        nonlocal position
+        if position >= len(tokens):
+            raise ContractError(f"incomplete C++ integer expression: {expression}")
+        token = tokens[position]
+        if token.isdigit():
+            position += 1
+            return int(token)
+        if token == "(":
+            position += 1
+            value = product()
+            if position >= len(tokens) or tokens[position] != ")":
+                raise ContractError(f"unbalanced C++ integer expression: {expression}")
+            position += 1
+            return value
+        raise ContractError(f"unsupported C++ integer expression: {expression}")
+
+    def product() -> int:
+        nonlocal position
+        value = factor()
+        while position < len(tokens) and tokens[position] == "*":
+            position += 1
+            value *= factor()
+        return value
+
+    result = product()
+    if position != len(tokens):
+        raise ContractError(f"unsupported C++ integer expression: {expression}")
+    return result
+
+
 def _integer(source: str, name: str) -> int:
     match = re.search(rf"\b{name}\s*(?:=\s*([^;]+)|\{{\s*([0-9]+)\s*\}})\s*;", source)
     if not match:
         raise ContractError(f"C++ constant not found: {name}")
     expression = (match.group(1) or match.group(2)).strip().replace("U", "")
-    if not re.fullmatch(r"[0-9* ()]+", expression):
-        raise ContractError(f"unsupported C++ integer expression for {name}: {expression}")
-    return int(eval(expression, {"__builtins__": {}}, {}))
+    try:
+        return _restricted_integer_expression(expression)
+    except ContractError as error:
+        raise ContractError(
+            f"unsupported C++ integer expression for {name}: {expression}"
+        ) from error
 
 
 def _freshness_milliseconds(source: str, name: str) -> int:

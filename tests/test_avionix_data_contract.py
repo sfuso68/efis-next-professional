@@ -30,6 +30,22 @@ class DataContractTests(unittest.TestCase):
     def test_repository_contract_passes(self) -> None:
         self.assertEqual(MODULE.validate(ROOT, self.path)["status"], "PASS")
 
+    def test_restricted_integer_expression_supports_products_and_grouping(self) -> None:
+        self.assertEqual(MODULE._restricted_integer_expression("16 * (2 * 4)"), 128)
+
+    def test_restricted_integer_expression_rejects_other_syntax(self) -> None:
+        for expression in ("2 + 2", "2 ** 3", "value * 4", "4 * ()", "1 2"):
+            with self.subTest(expression=expression):
+                with self.assertRaises(MODULE.ContractError):
+                    MODULE._restricted_integer_expression(expression)
+
+    def test_freshness_budget_supports_tick_times_four(self) -> None:
+        source = """
+        inline static constexpr auto tick = std::chrono::milliseconds{250};
+        inline static constexpr auto transport_lost = tick * 4;
+        """
+        self.assertEqual(MODULE._freshness_milliseconds(source, "transport_lost"), 1000)
+
     def test_wrong_port_fails_closed(self) -> None:
         document = copy.deepcopy(self.document)
         document["contracts"][0]["port"] = 49003
