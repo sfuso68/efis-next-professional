@@ -10,15 +10,21 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import errno
+import ipaddress
 import os
 import selectors
 import signal
 import socket
 import sys
-import termios
 import time
-import tty
 from typing import Iterable
+
+try:
+    import termios
+    import tty
+except ImportError:  # pragma: no cover - runtime target is Linux
+    termios = None
+    tty = None
 
 
 MAX_UDP_PAYLOAD = 65_507
@@ -45,7 +51,31 @@ def destination(value: str) -> tuple[str, int]:
         raise argparse.ArgumentTypeError("destination port must be numeric") from error
     if port < 1 or port > 65_535:
         raise argparse.ArgumentTypeError("destination port out of range")
-    return host, port
+    try:
+        address = ipaddress.IPv4Address(host)
+    except ipaddress.AddressValueError as error:
+        raise argparse.ArgumentTypeError(
+            "destination host must be numeric IPv4"
+        ) from error
+    if address.packed[0] == 0 or address.is_multicast or address.packed[-1] == 255:
+        raise argparse.ArgumentTypeError(
+            "destination must be explicit IPv4 unicast"
+        )
+    return str(address), port
+
+
+def protected_network(value: str) -> ipaddress.IPv4Network:
+    try:
+        network = ipaddress.ip_network(value, strict=False)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(
+            "protected network must be numeric IPv4 CIDR"
+        ) from error
+    if not isinstance(network, ipaddress.IPv4Network) or network.prefixlen == 0:
+        raise argparse.ArgumentTypeError(
+            "protected network must be IPv4 CIDR with prefix 1..32"
+        )
+    return network
 
 
 class ReadOnlyForwarder:
@@ -53,6 +83,7 @@ class ReadOnlyForwarder:
         self,
         serial_path: str,
         destinations: Iterable[tuple[str, int]],
+        protected: ipaddress.IPv4Network | str,
         *,
         read_size: int = 4096,
         report_seconds: float = 5.0,
@@ -61,9 +92,29 @@ class ReadOnlyForwarder:
         if read_size < 1 or read_size > MAX_UDP_PAYLOAD:
             raise ValueError("read_size outside UDP payload range")
         self.serial_path = serial_path
-        self.destinations = tuple(destinations)
+        try:
+            self.protected_network = (
+                protected if isinstance(protected, ipaddress.IPv4Network)
+                else protected_network(protected)
+            )
+        except argparse.ArgumentTypeError as error:
+            raise ValueError(str(error)) from error
+        validated: list[tuple[str, int]] = []
+        for host, port in destinations:
+            try:
+                target = destination(f"{host}:{port}")
+            except argparse.ArgumentTypeError as error:
+                raise ValueError(str(error)) from error
+            if ipaddress.IPv4Address(target[0]) in self.protected_network:
+                raise ValueError(
+                    "destination must not be in the protected MAVLink network"
+                )
+            validated.append(target)
+        self.destinations = tuple(validated)
         if not self.destinations:
             raise ValueError("at least one destination is required")
+        if len(set(self.destinations)) != len(self.destinations):
+            raise ValueError("duplicate destination")
         self.read_size = read_size
         self.report_seconds = max(0.1, report_seconds)
         self.retry_seconds = max(0.1, retry_seconds)
@@ -85,6 +136,8 @@ class ReadOnlyForwarder:
         )
 
     def _forward_session(self, udp: socket.socket, deadline: float | None) -> None:
+        if termios is None or tty is None:
+            raise RuntimeError("read-only serial forwarding requires a POSIX runtime")
         # O_RDONLY is the safety boundary: this process cannot write commands,
         # heartbeats, parameters or stream requests to the Pixhawk.
         fd = os.open(self.serial_path, os.O_RDONLY | os.O_NOCTTY | os.O_NONBLOCK)
@@ -161,6 +214,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--destination", action="append", type=destination, required=True,
         help="repeatable HOST:PORT UDP output",
     )
+    parser.add_argument(
+        "--protected-network", type=protected_network, required=True,
+        help="IPv4 CIDR that must never receive observer traffic",
+    )
     parser.add_argument("--read-size", type=int, default=4096)
     parser.add_argument("--report-seconds", type=float, default=5.0)
     parser.add_argument("--retry-seconds", type=float, default=2.0)
@@ -173,6 +230,7 @@ def main(argv: list[str] | None = None) -> int:
     forwarder = ReadOnlyForwarder(
         args.serial,
         args.destination,
+        args.protected_network,
         read_size=args.read_size,
         report_seconds=args.report_seconds,
         retry_seconds=args.retry_seconds,

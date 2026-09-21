@@ -418,6 +418,11 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_blackbox_broker_observer.py
                 $<TARGET_FILE:efis-blackbox-broker>)
+        add_test(NAME efis_mavlink_readonly_forwarder_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest
+                tests.test_mavlink_readonly_forwarder)
+        set_tests_properties(efis_mavlink_readonly_forwarder_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
 
     add_executable(efis_ingest_tests tests/ingest_tests.cpp)

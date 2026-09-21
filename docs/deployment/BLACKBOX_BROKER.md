@@ -106,6 +106,14 @@ totale e continua a essere emesso anche se una destinazione fallisce.
 `blackbox_mavlink_observer_target` espongono i contatori del fan-out. Il loro
 stato non autorizza comandi e non dichiara raggiungibile il Pixhawk dalla LAN.
 
+Il broker rifiuta l'avvio se un `--mavlink-observer` appartiene alla sottorete
+protetta calcolata da `--mavlink-bind` con il prefisso V1 `/24`, oppure coincide
+con `--mavlink-source`. L'indirizzo della rete non e' cablato nel fan-out: se
+il bind cambia, cambia anche la rete esclusa. La verifica precede la creazione
+del sender e non deve essere sostituita da una sola regola firewall. Sono
+ammessi esclusivamente indirizzi IPv4 unicast numerici, non duplicati e
+appartenenti alla rete di servizio prevista dal piano approvato.
+
 ## Gate prima dell'attivazione persistente
 
 1. confermare quale interfaccia fisica (`can_a`/`can_b`) porta ESP32 e Matek;

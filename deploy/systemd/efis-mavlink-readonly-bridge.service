@@ -11,8 +11,9 @@ Environment=EFIS_PIXHAWK_SERIAL=/dev/ttyACM0
 # Pixhawk alla Blackbox sulla rete FLIGHT-DATA; duplicarlo qui confonderebbe
 # provenienza, sequenze e metriche.
 Environment="EFIS_MAVLINK_DEST_ARGS=--destination 127.0.0.1:14550"
+Environment=EFIS_MAVLINK_PROTECTED_NETWORK=10.77.10.0/24
 EnvironmentFile=-%h/.config/efis/mavlink-readonly-bridge.env
-ExecStart=/usr/bin/python3 %h/.local/lib/efis-next/mavlink_readonly_forwarder.py --serial ${EFIS_PIXHAWK_SERIAL} $EFIS_MAVLINK_DEST_ARGS
+ExecStart=/usr/bin/python3 %h/.local/lib/efis-next/mavlink_readonly_forwarder.py --serial ${EFIS_PIXHAWK_SERIAL} --protected-network ${EFIS_MAVLINK_PROTECTED_NETWORK} $EFIS_MAVLINK_DEST_ARGS
 Restart=always
 RestartSec=2
 NoNewPrivileges=true

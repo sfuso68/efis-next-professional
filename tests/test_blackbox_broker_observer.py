@@ -22,6 +22,33 @@ def free_udp_port() -> int:
 
 
 class BlackboxBrokerObserverTests(unittest.TestCase):
+    def broker_command(
+        self,
+        records: Path,
+        *,
+        ingress_port: int,
+        bind: str = "127.0.0.1",
+        source: str,
+        observer: str,
+        observer_port: int,
+        display_port: int,
+        seconds: int = 2,
+    ) -> list[str]:
+        return [
+            str(BROKER),
+            "--mavlink-bind", bind,
+            "--mavlink-port", str(ingress_port),
+            "--mavlink-source", source,
+            "--mavlink-observer", observer,
+            "--mavlink-observer-port", str(observer_port),
+            "--display", "127.0.0.1",
+            "--display-port", str(display_port),
+            "--source-node", "47",
+            "--records", str(records),
+            "--rate-hz", "20",
+            "--seconds", str(seconds),
+        ]
+
     def test_only_declared_source_is_mirrored(self) -> None:
         self.assertIsNotNone(BROKER, "broker executable argument is required")
         self.assertTrue(BROKER.is_file(), f"broker executable not found: {BROKER}")
@@ -29,23 +56,17 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary, \
              socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as observer, \
              socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as display:
-            observer.bind(("127.0.0.1", 0))
+            observer.bind(("127.0.1.1", 0))
             display.bind(("127.0.0.1", 0))
             observer.settimeout(0.30)
-            command = [
-                str(BROKER),
-                "--mavlink-bind", "127.0.0.1",
-                "--mavlink-port", str(ingress_port),
-                "--mavlink-source", "127.0.0.1",
-                "--mavlink-observer", "127.0.0.1",
-                "--mavlink-observer-port", str(observer.getsockname()[1]),
-                "--display", "127.0.0.1",
-                "--display-port", str(display.getsockname()[1]),
-                "--source-node", "47",
-                "--records", str(Path(temporary) / "records"),
-                "--rate-hz", "20",
-                "--seconds", "2",
-            ]
+            command = self.broker_command(
+                Path(temporary) / "records",
+                ingress_port=ingress_port,
+                source="127.0.0.2",
+                observer="127.0.1.1",
+                observer_port=int(observer.getsockname()[1]),
+                display_port=int(display.getsockname()[1]),
+            )
             process = subprocess.Popen(
                 command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 text=True,
@@ -54,7 +75,7 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
                 time.sleep(0.20)
                 rejected = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 try:
-                    rejected.bind(("127.0.0.2", 0))
+                    rejected.bind(("127.0.0.3", 0))
                     rejected.sendto(b"rejected-source", ("127.0.0.1", ingress_port))
                 finally:
                     rejected.close()
@@ -63,7 +84,7 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
 
                 accepted = b"\xfd\x01\x00\x00\x01\x01\x01\x00\x00\x00\x00\x00\x00"
                 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as source:
-                    source.bind(("127.0.0.1", 0))
+                    source.bind(("127.0.0.2", 0))
                     source.sendto(accepted, ("127.0.0.1", ingress_port))
                 observer.settimeout(1.5)
                 mirrored, _ = observer.recvfrom(65535)
@@ -78,6 +99,52 @@ class BlackboxBrokerObserverTests(unittest.TestCase):
                 if process.poll() is None:
                     process.kill()
                     process.communicate(timeout=2)
+
+    def test_observer_equal_to_source_fails_closed(self) -> None:
+        self.assertIsNotNone(BROKER, "broker executable argument is required")
+        with tempfile.TemporaryDirectory() as temporary:
+            command = self.broker_command(
+                Path(temporary) / "records",
+                ingress_port=free_udp_port(),
+                source="127.0.0.2",
+                observer="127.0.0.2",
+                observer_port=free_udp_port(),
+                display_port=free_udp_port(),
+                seconds=1,
+            )
+            process = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+            self.assertNotEqual(process.returncode, 0, process.stdout)
+            self.assertIn("must not equal the protected MAVLink source", process.stdout)
+
+    def test_runtime_bind_subnet_observer_fails_closed(self) -> None:
+        self.assertIsNotNone(BROKER, "broker executable argument is required")
+        with tempfile.TemporaryDirectory() as temporary:
+            command = self.broker_command(
+                Path(temporary) / "records",
+                ingress_port=free_udp_port(),
+                source="127.0.0.2",
+                observer="127.0.0.3",
+                observer_port=14550,
+                display_port=free_udp_port(),
+                seconds=1,
+            )
+            process = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+            self.assertNotEqual(process.returncode, 0, process.stdout)
+            self.assertIn("must not be in the protected MAVLink subnet", process.stdout)
 
 
 if __name__ == "__main__":

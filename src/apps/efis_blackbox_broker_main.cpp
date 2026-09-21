@@ -156,7 +156,8 @@ int main(int argc, char** argv) {
                 destinations.push_back({address, options.mavlink_observer_port});
             }
             mavlink_observers = std::make_unique<efis::io::ReadOnlyUdpFanout>(
-                std::move(destinations));
+                std::move(destinations), options.mavlink_bind,
+                options.mavlink_source);
         }
         std::unique_ptr<efis::io::SocketCanSource> can;
         if (!options.can_interface.empty()) {
