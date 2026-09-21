@@ -435,6 +435,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_synthetic_vision_benchmark)
         set_tests_properties(efis_synthetic_vision_benchmark_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_synthetic_vision_session_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_manage_synthetic_vision_session)
+        set_tests_properties(efis_synthetic_vision_session_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         add_test(NAME efis_g1_sensor_node_capture_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_capture_g1_sensor_node)
         set_tests_properties(efis_g1_sensor_node_capture_tests PROPERTIES
