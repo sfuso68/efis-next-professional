@@ -6,6 +6,7 @@
 #include "efis/providers/ddp_udp_source.hpp"
 #include "efis/core/engine_source.hpp"
 #include "efis/core/engine_runtime.hpp"
+#include "efis/core/derived_state.hpp"
 #include "efis/providers/engine_simulation_source.hpp"
 #include "efis/simulation/system_simulator.hpp"
 #include "efis/emergency/emergency_assist.hpp"
@@ -517,6 +518,7 @@ private:
     QString black_box_state_{QStringLiteral("OFFLINE")};
     qulonglong black_box_records_{};
     efis::MonoTime last_recorder_check_{};
+    efis::PublicationFreshness recorder_freshness_{};
     QVariantMap aircraft_speed_profile_;
     QString aircraft_profile_name_{QStringLiteral("LSA SIM • BENCH")};
     QString aircraft_profile_state_{QStringLiteral("SIMULATION")};

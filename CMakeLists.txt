@@ -26,6 +26,7 @@ add_library(efis_core
     src/core/snapshot_arbitrator.cpp
     src/core/flight_source.cpp
     src/core/engine_source.cpp
+    src/core/derived_state.cpp
     src/core/engine_runtime.cpp
     src/core/engine_runtime_store.cpp
     src/core/stasis_monitor.cpp
@@ -263,6 +264,10 @@ if(EFIS_BUILD_TESTS)
     target_compile_definitions(efis_core_tests PRIVATE
         EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     add_test(NAME efis_core_tests COMMAND efis_core_tests)
+
+    add_executable(efis_derived_state_tests tests/derived_state_tests.cpp)
+    target_link_libraries(efis_derived_state_tests PRIVATE efis_core)
+    add_test(NAME efis_derived_state_tests COMMAND efis_derived_state_tests)
 
     # Eseguibile separato: il banco prova si alimenta dalla registrazione reale
     # dell'hardware, e tenerlo distinto dai test del core rende evidente quale
