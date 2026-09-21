@@ -8,6 +8,32 @@ namespace efis {
 namespace {
 
 template <class T>
+void declare_required(Sample<T>& sample, SignalId signal, Unit unit) {
+    if (sample.origin.signal != SignalId::unknown) return;
+    sample.origin.signal = signal;
+    sample.origin.unit = unit;
+}
+
+void declare_required_flight_fields(FlightSnapshot& input) {
+    // Questi sono i dieci campi minimi sui quali FlightModel costruisce la
+    // salute primaria. Dichiararli prima dell'aging distingue un sistema mai
+    // inizializzato da una grandezza opzionale che nessuna sorgente promette.
+    // La quota indicata, decima, viene dichiarata da apply_baro_setting().
+    declare_required(input.attitude.roll_deg, SignalId::roll, Unit::degree);
+    declare_required(input.attitude.pitch_deg, SignalId::pitch, Unit::degree);
+    declare_required(input.attitude.heading_deg, SignalId::heading, Unit::degree);
+    declare_required(input.air_data.indicated_airspeed_kt,
+                     SignalId::indicated_airspeed, Unit::knot);
+    declare_required(input.air_data.pressure_altitude_ft,
+                     SignalId::pressure_altitude, Unit::foot);
+    declare_required(input.air_data.vertical_speed_fpm,
+                     SignalId::vertical_speed, Unit::foot_per_minute);
+    declare_required(input.position.latitude_deg, SignalId::latitude, Unit::degree);
+    declare_required(input.position.longitude_deg, SignalId::longitude, Unit::degree);
+    declare_required(input.position.ground_speed_kt, SignalId::ground_speed, Unit::knot);
+}
+
+template <class T>
 void age(Sample<T>& sample, MonoTime now, std::chrono::milliseconds limit,
          SystemHealth& health) {
     // Un campo che nessuna sorgente ha mai pubblicato non e' un campo guasto:
@@ -166,6 +192,7 @@ void FlightModel::configure_stasis() {
 }
 
 FlightSnapshot FlightModel::normalize(FlightSnapshot input, MonoTime now) {
+    declare_required_flight_fields(input);
     normalize_baro_setting(input.air_data.baro_setting_hpa, now);
 
     age(input.attitude.roll_deg, now, policy_.stale_after, input.health);

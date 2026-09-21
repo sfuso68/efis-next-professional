@@ -140,6 +140,8 @@ int main() {
             "automatic standard pressure must be distinguishable from a valid setting");
     require(empty.health.level == efis::HealthLevel::warning,
             "a snapshot with no sources must not report normal health");
+    require(empty.health.unavailable_fields == 10,
+            "an uninitialised flight model must count all ten required flight fields");
 
     auto baro_input = a;
     baro_input.air_data.pressure_altitude_ft.value = 5000.0;
