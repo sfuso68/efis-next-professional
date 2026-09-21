@@ -57,6 +57,11 @@ congelata soltanto l'animazione del banner CAS. Il lampeggio operativo resta
 attivo nell'applicazione normale. La correzione è coperta dal test di contratto
 QML e non modifica la logica degli allarmi.
 
+I sei frame LOST/FAIL aggiornati provengono dal run #135 e dal relativo
+artifact `ems-responsive-states-linux-failed-rerender`, SHA-256
+`b7567fb0a2e32067e9e6a2ad14cef5a4b1d4bc8e5af665c0bde52105851de0c9`.
+Gli altri dodici frame sono rimasti pixel-identici alla baseline #131.
+
 ## Verificato solo software
 
 - compilazione e link del renderer Qt su runner Linux x86-64;

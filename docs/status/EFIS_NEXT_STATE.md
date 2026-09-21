@@ -67,6 +67,10 @@ Il dettaglio è nel registro canonico
 - Contratti HMI e golden SkyView/EMS multi-risoluzione: validatori e test PASS.
   Il branch C7 Linux aggiunge una baseline separata `offscreen`, compilazione
   Qt 6.8.2 e confronto pixel bloccante; il run bootstrap Core CI #131 è PASS.
+  I run diagnostici #133/#134 hanno isolato nei soli stati LOST/FAIL il
+  lampeggio CAS non deterministico; la fixture golden lo congela senza
+  disabilitarlo nel runtime operativo e i sei frame interessati sono stati
+  rigenerati dal run #135 con artifact verificato.
   È verifica software x86-64/Mesa, non acceptance del pilota sui pannelli
   (`PRJ-004`, `AVX-G3-04`).
 - Inventario, readiness e proposta upstream ASSO5: formati fail-closed pronti,

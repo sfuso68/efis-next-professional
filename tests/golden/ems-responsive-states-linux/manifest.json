@@ -1,7 +1,7 @@
 {
   "schema": "avionix.ems-responsive-state-golden.v1",
   "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
-  "generated_utc": "2026-09-21T15:45:07.722765+00:00",
+  "generated_utc": "2026-09-21T16:26:49.421471+00:00",
   "platform": "offscreen",
   "role": "ems",
   "fixture": "HmiGoldenMain.qml",
@@ -42,9 +42,9 @@
       "width": 800,
       "height": 480,
       "file": "ems-800x480-lost.png",
-      "bytes": 190839,
-      "sha256": "95d4c1c98d134835e28a5494e0d49a98e23550a80f075215117b35fad67afbd5",
-      "pixel_sha256": "73c67caf6fbef1407cd5ea1c4089f6fad2fa9d561ebef18ca118090501db2506"
+      "bytes": 190675,
+      "sha256": "0fd86ff6c0610639551475b011ad64e91d03428196fd937845b9405113bda1d9",
+      "pixel_sha256": "742beca255d5a753a70f3f46075235348d30356c5ff11fdbf91341cf4b0ae722"
     },
     {
       "state": "FAIL",
@@ -52,9 +52,9 @@
       "width": 800,
       "height": 480,
       "file": "ems-800x480-fail.png",
-      "bytes": 188337,
-      "sha256": "541839f28bb22b83391504830acb6cd92e62fd10b69d09a4eb8467d60b48578a",
-      "pixel_sha256": "e3a4adb683a8c12770f30ce09d4b9d0e2755222caee9fbb3083a5d2262432bd5"
+      "bytes": 188179,
+      "sha256": "7107c911d3317b1647cc6671461bffa4fc4df63fe16b6fb203965e45eea51993",
+      "pixel_sha256": "4425e9344da7fb5d5398a595eb1eaa303c4d3a236d39b6fed56f33bb4e7a7ab6"
     },
     {
       "state": "SIM",
@@ -102,9 +102,9 @@
       "width": 1024,
       "height": 600,
       "file": "ems-1024x600-lost.png",
-      "bytes": 240037,
-      "sha256": "de8cd376d900cbc4bf11dd252abc4e24accfad179dec453cad6e8dfb25182430",
-      "pixel_sha256": "f9f64a62e9e22ac1a047147d1f99ee4f7a7973b103771b305c08ed624c1e2872"
+      "bytes": 239817,
+      "sha256": "0fe2284bc500b3ec204d21ccaaeaad3f3e030aeed2fd60ee4152eeb98535006e",
+      "pixel_sha256": "bc7e5cacecad3f5da2c60604a844f3adb945b4987449a2ba8c7983ce0bead178"
     },
     {
       "state": "FAIL",
@@ -112,9 +112,9 @@
       "width": 1024,
       "height": 600,
       "file": "ems-1024x600-fail.png",
-      "bytes": 238244,
-      "sha256": "5127e3060405cb5ec6d7399263d8c90281e79411121c42de42d8ced1fd79f297",
-      "pixel_sha256": "9597dbfdca48cf41b520b510945c71791e0c6e3688d7c311c1146f8eda66b127"
+      "bytes": 237979,
+      "sha256": "98f9b2a44bce063de962702ab5c215abe6cf4ab69dc8f4bc5fd269f65bbf03c7",
+      "pixel_sha256": "b86ce7ac241405b5bc9f94126807c0aba129700d912eeaca68df366d85d51e02"
     },
     {
       "state": "SIM",
@@ -162,9 +162,9 @@
       "width": 1280,
       "height": 800,
       "file": "ems-1280x800-lost.png",
-      "bytes": 354317,
-      "sha256": "a0096359dbd4c56c975741b3012f25bf44fff697b8cb6d42e0f4e942b373dd1d",
-      "pixel_sha256": "3c8330f6704bf723c972f4ae4ac54d40c6b58f4a4ba053d52a6eac6e0201d898"
+      "bytes": 354336,
+      "sha256": "6d710fd29f30a2a7b9334782a896642065f0189eb8b936ea096a573fab94df12",
+      "pixel_sha256": "50224431d0e419ffb501aa19802e6abb6c07770e5fca6c0cc5849c0c46f8b83a"
     },
     {
       "state": "FAIL",
@@ -172,9 +172,9 @@
       "width": 1280,
       "height": 800,
       "file": "ems-1280x800-fail.png",
-      "bytes": 351000,
-      "sha256": "c9ada7d809246ee1ee2c7ff2a92c79cadce6a711bdfabb33785d6d937ceb2cb4",
-      "pixel_sha256": "d5749c27a6ec5dfcabb4e7dedc3d6ccbd6dda39d6a2838ded6204c4448d97b51"
+      "bytes": 351001,
+      "sha256": "995500ef639f8294a2cf3888a9fe50de92c2b433bc0a6fc3cc671557b0f92622",
+      "pixel_sha256": "d7e845e9bab7166ea4fe5fe3adfb82843b4a9a7f0198258c610ce458663ff92d"
     },
     {
       "state": "SIM",
