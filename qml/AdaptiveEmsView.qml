@@ -4,6 +4,7 @@ Item {
     id: root
     required property var controller
     property string clockOverride:""
+    property bool goldenMode: false
     property real uiScale: Math.min(width/1024, height/600)
     readonly property bool compactLayout: width <= 820 || height <= 500
     readonly property real textScale: compactLayout ? Math.max(1.0, uiScale) : uiScale
@@ -232,7 +233,7 @@ Item {
             Text { id:limitsStatusText; anchors.centerIn:parent; text:"LIMITS INDICATIVE"; color:root.amber; font.pixelSize:hmiTokens.legibleText(6,root.textScale,8); font.bold:true }
         }
         Rectangle { id:casBanner; x: 1; y: 25*root.uiScale; width: parent.width-2; height: 34*root.uiScale; color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
-            SequentialAnimation on opacity { running:root.casLevel==="WARNING"&&!root.casAcknowledged; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
+            SequentialAnimation on opacity { running:!root.goldenMode&&root.casLevel==="WARNING"&&!root.casAcknowledged; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
             Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:(root.casLevel==="NORMAL"?"✓   ":"⚠   ")+root.casHeadline; color:root.casColor; font.pixelSize:hmiTokens.legibleText(11,root.textScale,10); font.bold:true }
             Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:root.casAction; color:"#D9E3E6"; font.pixelSize:hmiTokens.legibleText(5.5,root.textScale,8); font.bold:root.casLevel!=="NORMAL" }
             TapHandler { onTapped:{root.selectedPanel="CAS";root.activeNavigation="INDICATIONS"} }

@@ -100,9 +100,14 @@ class AvionixHmiContractTests(unittest.TestCase):
 
     def test_golden_fixture_accepts_explicit_state_and_age(self):
         fixture = (ROOT / "qml/HmiGoldenController.qml").read_text(encoding="utf-8")
+        golden_main = (ROOT / "qml/HmiGoldenMain.qml").read_text(encoding="utf-8")
+        ems = (ROOT / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
         main = (ROOT / "src/renderers/qt/main.cpp").read_text(encoding="utf-8")
         self.assertIn("hmiGoldenDataState", fixture)
         self.assertIn("hmiGoldenDataAgeMs", fixture)
+        self.assertIn("goldenMode:true", golden_main)
+        self.assertIn("property bool goldenMode: false", ems)
+        self.assertIn("running:!root.goldenMode&&root.casLevel", ems)
         self.assertIn("EFIS_HMI_GOLDEN_STATE", main)
         self.assertIn("EFIS_HMI_GOLDEN_AGE_MS", main)
 

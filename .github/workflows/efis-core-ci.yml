@@ -7,11 +7,79 @@ on:
       - main
       - 'work/**'
       - 'integration/**'
+      - 'test/**'
 
 permissions:
   contents: read
 
 jobs:
+  linux-qt-golden:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      QT_QPA_PLATFORM: offscreen
+      QT_SCALE_FACTOR: '1'
+      QSG_RHI_BACKEND: opengl
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Qt 6.8.2 with Quick 3D
+        uses: jurplel/install-qt-action@48d3ad6db93f3627c8ee7a0454bc6f3744f7e730
+        with:
+          version: '6.8.2'
+          modules: 'qtquick3d qtquicktimeline qtshadertools'
+          # A module-blind cache can restore Qt base without Qt6Quick3D and
+          # make CMake fail even though the requested module is declared.
+          cache: false
+
+      - name: Configure Qt renderer
+        run: >-
+          cmake -S . -B build/linux-qt -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DEFIS_BUILD_QT_RENDERER=ON
+          -DEFIS_REQUIRE_QT_RENDERER=ON
+          -DEFIS_BUILD_TESTS=ON
+
+      - name: Build Qt renderer
+        run: cmake --build build/linux-qt --target efis-pfd-qt --parallel 4
+
+      - name: Capture bootstrap candidate or verify committed Linux baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          reference=tests/golden/ems-responsive-states-linux
+          if [[ -f "$reference/manifest.json" ]]; then
+            ctest --test-dir build/linux-qt --output-on-failure \
+              -R '^efis_ems_golden_rerender_tests$'
+          else
+            python3 tools/ui/capture_ems_responsive_state_matrix.py \
+              --executable build/linux-qt/efis-pfd-qt \
+              --output-dir build/linux-golden-candidate \
+              --platform offscreen \
+              --delay-ms 1200
+            echo 'Linux golden baseline is absent; candidate artifact created for review.'
+          fi
+
+      - name: Upload Linux golden candidate
+        if: ${{ !cancelled() && hashFiles('tests/golden/ems-responsive-states-linux/manifest.json') == '' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ems-responsive-states-linux-candidate
+          path: build/linux-golden-candidate
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload failed Linux rerender for diagnosis
+        if: ${{ failure() && hashFiles('tests/golden/ems-responsive-states-linux/manifest.json') != '' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ems-responsive-states-linux-failed-rerender
+          path: build/linux-qt/linux-golden-rerender
+          if-no-files-found: error
+          retention-days: 7
+
   linux-core:
     runs-on: ubuntu-latest
     steps:

@@ -4,9 +4,13 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from unittest import mock
 
 from tools.ui.validate_ems_responsive_state_matrix import validate
-from tools.ui.verify_ems_golden_rerender import compare_manifests
+from tools.ui.verify_ems_golden_rerender import (
+    compare_manifests, verify, visual_drift_exceeds_tolerance,
+)
+from tests.test_hmi_golden_tools import fake_png
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +30,66 @@ class EmsResponsiveStateMatrixTests(unittest.TestCase):
 
     def test_repository_matrix_passes(self):
         self.assertEqual(validate(ROOT), [])
+
+    def test_linux_raster_rounding_tolerance_is_bounded(self):
+        self.assertFalse(visual_drift_exceeds_tolerance(1, 1.0, 1.0))
+        self.assertTrue(visual_drift_exceeds_tolerance(2, 0.004738, 0.004738))
+        self.assertTrue(visual_drift_exceeds_tolerance(9, 0.0, 0.0))
+
+    def test_direct_renderer_path_compares_fresh_pixels(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            reference_dir = root / "reference"
+            reference_dir.mkdir()
+            executable = root / "renderer"
+            executable.write_bytes(b"fixture")
+            reference_image = reference_dir / "ems-2x2-live.png"
+            fake_png(reference_image, 2, 2)
+            manifest = {
+                "images": [{
+                    "file": reference_image.name,
+                    "width": 2,
+                    "height": 2,
+                    "state": "LIVE",
+                }]
+            }
+            (reference_dir / "manifest.json").write_text(
+                json.dumps(manifest), encoding="utf-8"
+            )
+
+            def capture_with_visual_drift(_executable, output_dir, _platform, _delay_ms):
+                output_dir.mkdir(parents=True, exist_ok=True)
+                drifted = output_dir / reference_image.name
+                fake_png(drifted, 2, 2)
+                # Replace the image with a valid red RGBA fixture so dimensions
+                # and matrix still match while decoded pixels do not.
+                import struct
+                import zlib
+
+                def chunk(kind, payload):
+                    body = kind + payload
+                    return (struct.pack(">I", len(payload)) + body
+                            + struct.pack(">I", zlib.crc32(body)))
+
+                rows = b"".join(b"\x00" + bytes([255, 0, 0, 255]) * 2
+                                for _ in range(2))
+                drifted.write_bytes(
+                    b"\x89PNG\r\n\x1a\n"
+                    + chunk(b"IHDR", struct.pack(">IIBBBBB", 2, 2, 8, 6, 0, 0, 0))
+                    + chunk(b"IDAT", zlib.compress(rows))
+                    + chunk(b"IEND", b"")
+                )
+                (output_dir / "manifest.json").write_text(
+                    json.dumps(manifest), encoding="utf-8"
+                )
+                return manifest
+
+            with mock.patch(
+                "tools.ui.verify_ems_golden_rerender.capture",
+                side_effect=capture_with_visual_drift,
+            ):
+                errors = verify(executable, reference_dir, "offscreen", 0)
+            self.assertTrue(any("[HMI-RERENDER-03]" in error for error in errors))
 
     def test_all_twenty_controls_fail_closed(self):
         source_config = ROOT / "config/ui/avionix-ems-responsive-state-matrix-v1.json"

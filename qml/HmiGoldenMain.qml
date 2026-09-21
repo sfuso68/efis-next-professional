@@ -9,5 +9,6 @@ Window {
         anchors.fill:parent
         controller:fixture
         clockOverride:"12:45:30"
+        goldenMode:true
     }
 }
