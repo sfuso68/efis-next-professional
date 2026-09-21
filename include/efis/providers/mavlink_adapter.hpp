@@ -34,6 +34,12 @@ struct AirDataSensorState final {
     // si distingue "non usato" da "guasto", e per questo la velocita' che ne
     // deriva non viene presentata come valida.
     bool declared_healthy{};
+
+    // Stato del barometro assoluto usato per quota e velocita' verticale.
+    // Separato dal differenziale: i due bit SYS_STATUS descrivono sensori e
+    // conseguenze operative differenti.
+    bool absolute_pressure_present{};
+    bool absolute_pressure_healthy{};
 };
 
 // Cio' che l'adapter ha incontrato, oltre ai valori.
@@ -61,6 +67,7 @@ struct EstimatorState final {
     bool attitude_healthy{};
     bool horizontal_velocity_healthy{};
     bool vertical_velocity_healthy{};
+    bool vertical_position_healthy{};
     bool horizontal_position_healthy{};
 
     // Il filtro non e' inizializzato: non esiste alcuna stima, il che e'
@@ -214,6 +221,7 @@ private:
     std::int64_t gnss_fix_type_{};
     std::int64_t gnss_satellites_{};
     bool differential_pressure_healthy_{};
+    bool absolute_pressure_healthy_{};
     EstimatorState estimator_{};
     VibrationState vibration_{};
     UtcMicros utc_{utc_unavailable};
@@ -225,5 +233,8 @@ inline constexpr std::int64_t gnss_fix_3d = 3;
 
 // MAV_SYS_STATUS_SENSOR_DIFFERENTIAL_PRESSURE
 inline constexpr std::uint64_t sensor_bit_differential_pressure = 0x20;
+
+// MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE
+inline constexpr std::uint64_t sensor_bit_absolute_pressure = 0x08;
 
 }  // namespace efis

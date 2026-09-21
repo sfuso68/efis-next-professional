@@ -58,6 +58,55 @@ efis::RecordedSampleLookup find_recorded(
     }
     return {};
 }
+
+void mavlink_crc_accumulate(std::uint8_t byte, std::uint16_t& crc) {
+    auto tmp = static_cast<std::uint8_t>(byte ^ static_cast<std::uint8_t>(crc & 0xFF));
+    tmp = static_cast<std::uint8_t>(tmp ^ static_cast<std::uint8_t>(tmp << 4));
+    crc = static_cast<std::uint16_t>(
+        (crc >> 8) ^ (static_cast<std::uint16_t>(tmp) << 8) ^
+        (static_cast<std::uint16_t>(tmp) << 3) ^
+        (static_cast<std::uint16_t>(tmp) >> 4));
+}
+
+std::vector<std::uint8_t> sys_status_with_health(std::uint32_t health) {
+    std::vector<std::uint8_t> frame(
+        std::begin(efis::mavlink::reference::sys_status),
+        std::end(efis::mavlink::reference::sys_status));
+    constexpr std::size_t payload_start = 10;
+    constexpr std::size_t health_offset = 8;
+    for (std::size_t i = 0; i < 4; ++i) {
+        frame[payload_start + health_offset + i] =
+            static_cast<std::uint8_t>((health >> (i * 8U)) & 0xFFU);
+    }
+    std::uint16_t crc = 0xFFFFU;
+    const std::size_t checksum = payload_start + frame[1];
+    for (std::size_t i = 1; i < checksum; ++i) mavlink_crc_accumulate(frame[i], crc);
+    mavlink_crc_accumulate(efis::mavlink::find_message(1)->crc_extra, crc);
+    frame[checksum] = static_cast<std::uint8_t>(crc & 0xFFU);
+    frame[checksum + 1] = static_cast<std::uint8_t>(crc >> 8U);
+    return frame;
+}
+
+std::vector<std::uint8_t> ekf_status_with_flags(std::uint16_t flags) {
+    constexpr std::size_t payload_length = 22;
+    std::vector<std::uint8_t> frame(10 + payload_length + 2, 0);
+    frame[0] = 0xFDU;
+    frame[1] = static_cast<std::uint8_t>(payload_length);
+    frame[5] = 1;
+    frame[6] = 1;
+    frame[7] = 193U;
+    frame[8] = 0;
+    frame[9] = 0;
+    frame[10 + 20] = static_cast<std::uint8_t>(flags & 0xFFU);
+    frame[10 + 21] = static_cast<std::uint8_t>(flags >> 8U);
+    std::uint16_t crc = 0xFFFFU;
+    const std::size_t checksum = 10 + payload_length;
+    for (std::size_t i = 1; i < checksum; ++i) mavlink_crc_accumulate(frame[i], crc);
+    mavlink_crc_accumulate(efis::mavlink::find_message(193)->crc_extra, crc);
+    frame[checksum] = static_cast<std::uint8_t>(crc & 0xFFU);
+    frame[checksum + 1] = static_cast<std::uint8_t>(crc >> 8U);
+    return frame;
+}
 }  // namespace
 
 int main() {
@@ -632,6 +681,43 @@ int main() {
     require(value(status, "onboard_control_sensors_health").value ==
                 static_cast<double>(0x1400000FU),
             "the sensor health mask must decode bit for bit");
+
+    // VFR_HUD continua a trasmettere numeri plausibili anche quando SYS_STATUS
+    // dichiara guasto il barometro assoluto. Quei numeri non devono diventare
+    // quota e variometro utilizzabili solo perche' sono arrivati.
+    efis::MavlinkAdapter failed_barometer;
+    failed_barometer.consume(reference::vfr_hud, epoch + 1s);
+    const auto barometer_unhealthy = sys_status_with_health(0x14000007U);
+    failed_barometer.consume(barometer_unhealthy, epoch + 1s);
+    require(!failed_barometer.snapshot().air_data.pressure_altitude_ft.usable() &&
+                !failed_barometer.snapshot().air_data.vertical_speed_fpm.usable(),
+            "an unhealthy absolute barometer must invalidate altitude and variometer");
+
+    efis::MavlinkAdapter vertical_health;
+    vertical_health.consume(reference::vfr_hud, epoch + 1s);
+    vertical_health.consume(reference::sys_status, epoch + 1s);
+    require(vertical_health.snapshot().air_data.pressure_altitude_ft.usable() &&
+                vertical_health.snapshot().air_data.vertical_speed_fpm.usable(),
+            "healthy absolute pressure must make received altitude and climb usable");
+    constexpr std::uint16_t ekf_attitude = 1U;
+    constexpr std::uint16_t ekf_horizontal_velocity = 2U;
+    constexpr std::uint16_t ekf_vertical_velocity = 4U;
+    constexpr std::uint16_t ekf_vertical_position = 8U;
+    constexpr std::uint16_t ekf_horizontal_position = 16U;
+    const auto no_vertical_velocity = ekf_status_with_flags(
+        ekf_attitude | ekf_horizontal_velocity | ekf_vertical_position |
+        ekf_horizontal_position);
+    vertical_health.consume(no_vertical_velocity, epoch + 1s);
+    require(vertical_health.snapshot().air_data.pressure_altitude_ft.usable() &&
+                !vertical_health.snapshot().air_data.vertical_speed_fpm.usable(),
+            "EKF vertical velocity health must independently gate the variometer");
+    const auto no_vertical_position = ekf_status_with_flags(
+        ekf_attitude | ekf_horizontal_velocity | ekf_vertical_velocity |
+        ekf_horizontal_position);
+    vertical_health.consume(no_vertical_position, epoch + 1s);
+    require(!vertical_health.snapshot().air_data.pressure_altitude_ft.usable() &&
+                vertical_health.snapshot().air_data.vertical_speed_fpm.usable(),
+            "EKF vertical position health must independently gate altitude");
 
     // Tempo a 64 bit. Resta esatto perche' sotto i 2^53 rappresentabili.
     const auto system_time = single(reference::system_time,
