@@ -352,6 +352,20 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_ems_responsive_state_matrix)
         set_tests_properties(efis_ems_responsive_state_matrix_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        if(TARGET efis-pfd-qt AND WIN32)
+            # The committed manifest declares a Windows reference. Running a
+            # pixel gate through another font/graphics backend would measure
+            # platform rasterisation instead of HMI regression.
+            add_test(NAME efis_ems_golden_rerender_tests
+                COMMAND powershell.exe -NoProfile -ExecutionPolicy Bypass -File
+                    ${CMAKE_CURRENT_SOURCE_DIR}/tools/ui/verify_ems_golden_rerender.ps1
+                    -Python ${Python3_EXECUTABLE}
+                    -Executable $<TARGET_FILE:efis-pfd-qt>
+                    -ReferenceDir ${CMAKE_CURRENT_SOURCE_DIR}/tests/golden/ems-responsive-states)
+            set_tests_properties(efis_ems_golden_rerender_tests PROPERTIES
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                TIMEOUT 180)
+        endif()
         add_test(NAME efis_hmi_hardware_acceptance_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_hmi_hardware_acceptance)
         set_tests_properties(efis_hmi_hardware_acceptance_tests PROPERTIES

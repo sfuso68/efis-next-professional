@@ -6,12 +6,24 @@ import tempfile
 import unittest
 
 from tools.ui.validate_ems_responsive_state_matrix import validate
+from tools.ui.verify_ems_golden_rerender import compare_manifests
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class EmsResponsiveStateMatrixTests(unittest.TestCase):
+    def test_rerender_manifest_requires_the_same_semantic_matrix(self):
+        reference = {
+            "images": [{"file": "ems-800x480-live.png", "width": 800, "height": 480,
+                        "state": "LIVE", "pixel_sha256": "a" * 64}]
+        }
+        rerendered = copy.deepcopy(reference)
+        rerendered["images"][0]["sha256"] = "b" * 64
+        self.assertEqual(compare_manifests(reference, rerendered), [])
+        rerendered["images"][0]["state"] = "STALE"
+        self.assertTrue(compare_manifests(reference, rerendered))
+
     def test_repository_matrix_passes(self):
         self.assertEqual(validate(ROOT), [])
 
