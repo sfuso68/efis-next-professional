@@ -466,6 +466,14 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_edp_v1_tests tests/edp_v1_tests.cpp)
     target_link_libraries(efis_edp_v1_tests PRIVATE efis_core)
     add_test(NAME efis_edp_v1_tests COMMAND efis_edp_v1_tests)
+
+    add_executable(efis_avionix_icd_vector_tests
+        tests/avionix_icd_vector_tests.cpp)
+    target_link_libraries(efis_avionix_icd_vector_tests PRIVATE efis_core)
+    target_compile_definitions(efis_avionix_icd_vector_tests PRIVATE
+        EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
+    add_test(NAME efis_avionix_icd_vector_tests
+        COMMAND efis_avionix_icd_vector_tests)
 endif()
 
 # --- Nodo EMS ---------------------------------------------------------------
