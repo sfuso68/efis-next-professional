@@ -1,0 +1,27 @@
+minimum_pre_commit_version: '3.5.0'
+default_stages: [pre-commit]
+
+exclude: '^include/efis/providers/.*_table\.hpp$'
+
+repos:
+  - repo: local
+    hooks:
+      - id: clang-format-check
+        name: clang-format check (changed C/C++ files)
+        entry: clang-format --dry-run --Werror
+        language: system
+        files: '\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$'
+
+      - id: project-status-check
+        name: EFIS project status generated files are current
+        entry: python tools/project_status/generate_status.py --check
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: clang-tidy
+        name: clang-tidy (manual, requires build/dev/compile_commands.json)
+        entry: clang-tidy -p build/dev
+        language: system
+        files: '\.(c|cc|cpp|cxx)$'
+        stages: [manual]
