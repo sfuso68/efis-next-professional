@@ -31,6 +31,15 @@ Item {
         selectedValue: controller.selectedAirspeed; selectedValid: controller.selectedAirspeedValid
         trend: controller.airspeedTrend; valid: controller.airspeedValid }
 
+    Rectangle {
+        z: 4; visible: !controller.aircraftSpeedProfileAvailable
+        anchors { left: speed.right; top: speed.top; leftMargin: 5*root.uiScale }
+        width: 122*root.uiScale; height: 20*root.uiScale; radius: 2*root.uiScale
+        color: "#E01A1103"; border.color: theme.amber
+        Text { anchors.centerIn: parent; text: controller.aircraftSpeedProfileMessage
+            color: theme.amber; font.pixelSize: 6*root.uiScale; font.bold: true }
+    }
+
     ProfessionalTape { id: altitude; z: 2; anchors { right: context.left; top: fma.bottom; topMargin: 12*root.uiScale; bottom: deck.top; bottomMargin: 12*root.uiScale }
         width: 120*root.uiScale; uiScale: root.uiScale; role: "ALT"; value: controller.altitude;
         selectedValue: controller.selectedAltitude; selectedValid: controller.selectedAltitudeValid

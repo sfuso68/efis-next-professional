@@ -60,6 +60,8 @@ QtObject {
     property bool navigationValid:true
     property var selectedAirport:({icao:"LIDB",latitude_deg:46.16655,longitude_deg:12.25039})
     property var aircraftSpeedProfile:({vso:39,vs1:45,vx:61,vy:68,vfe:81,vno:118,vne:145,va:97,bestGlide:65,vref:55})
+    property bool aircraftSpeedProfileAvailable: true
+    property string aircraftSpeedProfileMessage: "V-SPEEDS VERIFIED PROFILE"
     property string imageryState:"GOLDEN FIXTURE"
     property bool imageryOfflineReady:true
     property int imageryTileCount:24
