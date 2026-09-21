@@ -91,6 +91,7 @@ presunto.
 | C-007 | `sv3d-fondamenta` vs renderer Professional | il branch storico è sorgente di requisiti/algoritmi, non base di merge | audit selettivo WS4 |
 | C-008 | Nome AVIONIX NEXT vs EFIS NEXT | nessun rename automatico di servizi/repository | decisione prodotto dell'utente |
 | C-009 | Copie Git multiple tra serverha, Blackbox e NAS | chiuso da ADR-018: GitHub autorità condivisa, serverha mirror primario, bare Professional NAS archivio, Blackbox temporanea, `git-repos/efis.git` legacy | restore drill e futuro ritiro controllato della copia Blackbox |
+| C-010 | STATE indicava un ID release EMS stale, diverso dal registro canonico e dal bundle hardware | chiuso: prevalgono `EFIS_NEXT_ACTIVE_RELEASES.md`, `EMS-002` e bundle `release-immutability-20260920`; ID corretto `ems-7655799-primary-v1` | nessuna: riconciliazione documentale, stato `EMS-002` invariato `PARTIAL` |
 
 ## Evidenza dell'audit R0
 
