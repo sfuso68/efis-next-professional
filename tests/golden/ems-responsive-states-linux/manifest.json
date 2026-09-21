@@ -1,0 +1,190 @@
+{
+  "schema": "avionix.ems-responsive-state-golden.v1",
+  "status": "SOFTWARE_REFERENCE_NOT_HARDWARE_ACCEPTANCE",
+  "generated_utc": "2026-09-21T15:45:07.722765+00:00",
+  "platform": "offscreen",
+  "role": "ems",
+  "fixture": "HmiGoldenMain.qml",
+  "images": [
+    {
+      "state": "LIVE",
+      "age_ms": 0,
+      "width": 800,
+      "height": 480,
+      "file": "ems-800x480-live.png",
+      "bytes": 182130,
+      "sha256": "fa35e3f46e123cb8430afc0c74f3c6b2e9b129fb05e8ee394de6788fe1e80927",
+      "pixel_sha256": "2ddc9d64322af0ec1cb941b17b553f7d2c1394915ab68024f817d4737657fa53"
+    },
+    {
+      "state": "STALE",
+      "age_ms": 600,
+      "width": 800,
+      "height": 480,
+      "file": "ems-800x480-stale.png",
+      "bytes": 212577,
+      "sha256": "55c9922f2742b59d29a3055b830e0001d9cbdadb6ac967e554da9958f5d87038",
+      "pixel_sha256": "f8858934f8e2d8d7a12e8c52feb5857f6f3d37e1f7576ff9d7e3310c1125598b"
+    },
+    {
+      "state": "DEGRADED",
+      "age_ms": 600,
+      "width": 800,
+      "height": 480,
+      "file": "ems-800x480-degraded.png",
+      "bytes": 212945,
+      "sha256": "7648ffa25717fa0d9c6a094ea9f157e8d5f4f17ce512752b08afd310e8251221",
+      "pixel_sha256": "f95e433ce7488c575b500b3c2015bc385440ced6cdf2c0d708b8af14b8e5408d"
+    },
+    {
+      "state": "LOST",
+      "age_ms": 1500,
+      "width": 800,
+      "height": 480,
+      "file": "ems-800x480-lost.png",
+      "bytes": 190839,
+      "sha256": "95d4c1c98d134835e28a5494e0d49a98e23550a80f075215117b35fad67afbd5",
+      "pixel_sha256": "73c67caf6fbef1407cd5ea1c4089f6fad2fa9d561ebef18ca118090501db2506"
+    },
+    {
+      "state": "FAIL",
+      "age_ms": 0,
+      "width": 800,
+      "height": 480,
+      "file": "ems-800x480-fail.png",
+      "bytes": 188337,
+      "sha256": "541839f28bb22b83391504830acb6cd92e62fd10b69d09a4eb8467d60b48578a",
+      "pixel_sha256": "e3a4adb683a8c12770f30ce09d4b9d0e2755222caee9fbb3083a5d2262432bd5"
+    },
+    {
+      "state": "SIM",
+      "age_ms": 0,
+      "width": 800,
+      "height": 480,
+      "file": "ems-800x480-sim.png",
+      "bytes": 184011,
+      "sha256": "460702177b36be4f43b33c2212b7678aff188ba9bea4e30836d9e2c694832c13",
+      "pixel_sha256": "0ce41c86ca62f282bb2b63fe1060e947649b8a820c96325e5d00872d4efb8f6e"
+    },
+    {
+      "state": "LIVE",
+      "age_ms": 0,
+      "width": 1024,
+      "height": 600,
+      "file": "ems-1024x600-live.png",
+      "bytes": 237422,
+      "sha256": "c48ed1a81c557cb22e059e65e1bc3b43ebb3dbbd482f1ae8d0b4771c3b2baf80",
+      "pixel_sha256": "33ecdebc250c35839cea813cb6858b9f153609ab1da72aaafb7eb57939093d94"
+    },
+    {
+      "state": "STALE",
+      "age_ms": 600,
+      "width": 1024,
+      "height": 600,
+      "file": "ems-1024x600-stale.png",
+      "bytes": 273789,
+      "sha256": "7e64af31be2da1e4b221b5bd90503fcc3c2aea7f9ba04a751d6280ee83491e4c",
+      "pixel_sha256": "ae6eb1ca24f73efd730148bd016523160712b298dc8a2c99d05c29baa5c6fd69"
+    },
+    {
+      "state": "DEGRADED",
+      "age_ms": 600,
+      "width": 1024,
+      "height": 600,
+      "file": "ems-1024x600-degraded.png",
+      "bytes": 274458,
+      "sha256": "083df796cae0916b7a6ab01d2883bc2bfd8f871c09ddbf0d8be766202de6f0bd",
+      "pixel_sha256": "431ff3fbe474c19b356a44a30a4412a554a2d299cc799918063329f6621b9d7f"
+    },
+    {
+      "state": "LOST",
+      "age_ms": 1500,
+      "width": 1024,
+      "height": 600,
+      "file": "ems-1024x600-lost.png",
+      "bytes": 240037,
+      "sha256": "de8cd376d900cbc4bf11dd252abc4e24accfad179dec453cad6e8dfb25182430",
+      "pixel_sha256": "f9f64a62e9e22ac1a047147d1f99ee4f7a7973b103771b305c08ed624c1e2872"
+    },
+    {
+      "state": "FAIL",
+      "age_ms": 0,
+      "width": 1024,
+      "height": 600,
+      "file": "ems-1024x600-fail.png",
+      "bytes": 238244,
+      "sha256": "5127e3060405cb5ec6d7399263d8c90281e79411121c42de42d8ced1fd79f297",
+      "pixel_sha256": "9597dbfdca48cf41b520b510945c71791e0c6e3688d7c311c1146f8eda66b127"
+    },
+    {
+      "state": "SIM",
+      "age_ms": 0,
+      "width": 1024,
+      "height": 600,
+      "file": "ems-1024x600-sim.png",
+      "bytes": 239919,
+      "sha256": "e3aab2cf6d9dffe915188d0ec1f672c4658ad2353090ac60d1e37e24248572e4",
+      "pixel_sha256": "3533c2f17c24991c21409e141296608c8df2c7ebcea89c0ee4d59d0247bd11f4"
+    },
+    {
+      "state": "LIVE",
+      "age_ms": 0,
+      "width": 1280,
+      "height": 800,
+      "file": "ems-1280x800-live.png",
+      "bytes": 357584,
+      "sha256": "c3ed421056bc9ff9c8c2cae1bc21d5aa1a47c40d3556dbd7f121adb58e71828c",
+      "pixel_sha256": "68c43b706fe77c6a3e9ce49c12b479b1973e2d40cb1ba11cfddb1ac3266e8afc"
+    },
+    {
+      "state": "STALE",
+      "age_ms": 600,
+      "width": 1280,
+      "height": 800,
+      "file": "ems-1280x800-stale.png",
+      "bytes": 410287,
+      "sha256": "79fe95404c09302930eb81e9897f6a1bdb3c92d60fe21562980950f090e724b5",
+      "pixel_sha256": "c4b9dd8898fd78da20a87dbcc50a47ba673acc90eabc3c1e80cc3013b9fe2f85"
+    },
+    {
+      "state": "DEGRADED",
+      "age_ms": 600,
+      "width": 1280,
+      "height": 800,
+      "file": "ems-1280x800-degraded.png",
+      "bytes": 410821,
+      "sha256": "f391a78e52a5fa3605f373d40ac5cb3f68a368e708436b504df19c5cb49aefe9",
+      "pixel_sha256": "10ddd9377519ac7802a0f8318f0911630e4b3c28c3404ba1ddf273f5e55b7d00"
+    },
+    {
+      "state": "LOST",
+      "age_ms": 1500,
+      "width": 1280,
+      "height": 800,
+      "file": "ems-1280x800-lost.png",
+      "bytes": 354317,
+      "sha256": "a0096359dbd4c56c975741b3012f25bf44fff697b8cb6d42e0f4e942b373dd1d",
+      "pixel_sha256": "3c8330f6704bf723c972f4ae4ac54d40c6b58f4a4ba053d52a6eac6e0201d898"
+    },
+    {
+      "state": "FAIL",
+      "age_ms": 0,
+      "width": 1280,
+      "height": 800,
+      "file": "ems-1280x800-fail.png",
+      "bytes": 351000,
+      "sha256": "c9ada7d809246ee1ee2c7ff2a92c79cadce6a711bdfabb33785d6d937ceb2cb4",
+      "pixel_sha256": "d5749c27a6ec5dfcabb4e7dedc3d6ccbd6dda39d6a2838ded6204c4448d97b51"
+    },
+    {
+      "state": "SIM",
+      "age_ms": 0,
+      "width": 1280,
+      "height": 800,
+      "file": "ems-1280x800-sim.png",
+      "bytes": 360041,
+      "sha256": "5a2dbaa4bf0778bfa19d537b5e88647f65973346f8c0137b4e9db6bef5706118",
+      "pixel_sha256": "fa8885cb24697111789d01afdad294ef3c6ac00142fe932ddc6309b5df15b487"
+    }
+  ]
+}

@@ -2,8 +2,8 @@
 
 Aggiornamento: 2026-09-21
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata precedente a questo aggiornamento: `origin/main` `5891f75`
-HEAD `main` verificato all'ingresso del blocco C3: `9f95862f200e93d107b7da520177da12b21586cc`
+Baseline integrata precedente a questo aggiornamento: `origin/main` `fa91bee09a5fc62afb9a7fe778954f172e1a77f7`
+HEAD `main` verificato all'ingresso del blocco C7 Linux: `fa91bee09a5fc62afb9a7fe778954f172e1a77f7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
@@ -64,16 +64,18 @@ Il dettaglio è nel registro canonico
 
 - ICD V1, CRC/SHA, evidence bundle e replay: workstation più PFD/MFD/EMS ARM64
   PASS; il verticale sensore reale resta escluso (`PRJ-003`, `AVX-G2-01`).
-- Contratti HMI e golden SkyView/EMS multi-risoluzione: validatori e test PASS;
-  nessuna acceptance del pilota sui pannelli (`PRJ-004`, `AVX-G3-04`).
+- Contratti HMI e golden SkyView/EMS multi-risoluzione: validatori e test PASS.
+  Il branch C7 Linux aggiunge una baseline separata `offscreen`, compilazione
+  Qt 6.8.2 e confronto pixel bloccante; il run bootstrap Core CI #131 è PASS.
+  È verifica software x86-64/Mesa, non acceptance del pilota sui pannelli
+  (`PRJ-004`, `AVX-G3-04`).
 - Inventario, readiness e proposta upstream ASSO5: formati fail-closed pronti,
   ma nessun modello, DIP, channel map o calibrazione reale verificata
   (`PRJ-002`, `AVX-G1-02`, `03`).
-- I branch non ancora integrati `safety/hmi-golden-rerender-v1`,
-  `safety/icd-cpp-vectors-v1` e `safety/hmi-behavioral-contract-v1` aggiungono
-  rispettivamente rerender golden reale, vettori wire C++ e test comportamentali
-  EMS. Sono evidenze software candidate, non baseline `main` e non deployment
-  (`PRJ-003`, `PRJ-004`, `EMS-002`).
+- I controlli rerender golden Windows, vettori wire C++ e test comportamentali
+  EMS risultano integrati nella baseline corrente. Il gate Linux/Qt resta
+  candidato nel branch dedicato fino a PR revisionata e CI finale verde; non è
+  deployment né acceptance hardware (`PRJ-003`, `PRJ-004`, `EMS-002`).
 
 ## 5. Ultime verifiche hardware che restano valide
 

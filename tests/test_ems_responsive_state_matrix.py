@@ -54,7 +54,6 @@ class EmsResponsiveStateMatrixTests(unittest.TestCase):
                 output_dir.mkdir(parents=True, exist_ok=True)
                 drifted = output_dir / reference_image.name
                 fake_png(drifted, 2, 2)
-                data = bytearray(drifted.read_bytes())
                 # Replace the image with a valid red RGBA fixture so dimensions
                 # and matrix still match while decoded pixels do not.
                 import struct
