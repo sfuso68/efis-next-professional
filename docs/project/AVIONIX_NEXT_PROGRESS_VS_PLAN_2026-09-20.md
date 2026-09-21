@@ -1,5 +1,15 @@
 # AVIONIX NEXT — stato di avanzamento rispetto al piano
 
+> **SNAPSHOT STORICO AL 2026-09-20.** Conteggi, percentuali, release e stato
+> della PR #15 riportati sotto descrivono esclusivamente la situazione alla
+> data di riferimento e non sono valori correnti. Per lo stato a HEAD usare
+> [`EFIS_NEXT_STATUS_GENERATED.md`](../status/EFIS_NEXT_STATUS_GENERATED.md),
+> [`EFIS_NEXT_STATE.md`](../status/EFIS_NEXT_STATE.md) e
+> [`EFIS_NEXT_ACTIVE_RELEASES.md`](../status/EFIS_NEXT_ACTIVE_RELEASES.md).
+> La PR #15 risulta integrata nella baseline `5891f75`; `PROD-005` è ora
+> `DONE` e il PFD non è più identificato dalla sola release storica indicata
+> in questo snapshot. `flight_approval=false` resta invariato.
+
 Data di riferimento: 2026-09-20  
 Repository autorevole: `sfuso68/efis-next-professional`  
 Baseline integrata osservata: `origin/main` `67aee2e`  
