@@ -255,3 +255,25 @@ sono in `evidence/release-immutability-20260920/pfd-recorder/`.
 
 `PROD-005` è `DONE`; `PFD-001` resta `PARTIAL` per visuale/touch, terrain,
 sorgenti reali e fault injection. `flight_approval=false` resta invariato.
+
+## 14. Integrazione software candidata — 2026-09-21
+
+Il branch `integration/main-ready-20260921`, costruito da `origin/main`, integra
+con merge espliciti la release immutabile PFD/recorder, tredici correzioni
+safety e il contratto dati offline AVIONIX. I conflitti sono stati risolti
+conservando gli stati hardware più recenti e combinando i comportamenti
+fail-closed: health/freshness, provenance SIM, air-data MAVLink, integratori,
+isolamento fan-out, CAN bounds, profilo V-speed atomico, integrità recorder,
+golden/HMI e vettori ICD.
+
+Project Control accetta ora soltanto i sei stati canonici della Master Matrix;
+le qualifiche composite storiche sono state normalizzate senza promuovere
+evidenza hardware. Il validatore del contratto offline legge le soglie dalla
+nuova autorità unica `FreshnessBudget`. Configurazione e build Windows MSVC/Qt
+sono PASS (402/402). I test che richiedono eseguibili freschi restano soggetti
+alla policy Windows Smart App Control; CI Linux è il gate autorevole prima del
+merge finale.
+
+Questo incremento è verificato soltanto software/documentazione. Non sono stati
+modificati nodi, servizi, cablaggi, rete o hardware e non viene dichiarata
+alcuna nuova approvazione al volo.

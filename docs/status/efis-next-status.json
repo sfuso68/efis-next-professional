@@ -2,7 +2,7 @@
   "areas": {
     "AIR": {
       "items": 3,
-      "progress": 33.3
+      "progress": 41.7
     },
     "BBX": {
       "items": 4,
@@ -14,7 +14,7 @@
     },
     "CORE": {
       "items": 4,
-      "progress": 81.2
+      "progress": 87.5
     },
     "EMS": {
       "items": 4,
@@ -30,7 +30,7 @@
     },
     "GNSS": {
       "items": 2,
-      "progress": 50.0
+      "progress": 75.0
     },
     "GS": {
       "items": 3,
@@ -38,7 +38,7 @@
     },
     "INST": {
       "items": 2,
-      "progress": 75.0
+      "progress": 62.5
     },
     "LEG": {
       "items": 2,
@@ -66,7 +66,7 @@
     },
     "PIX": {
       "items": 3,
-      "progress": 33.3
+      "progress": 41.7
     },
     "PRJ": {
       "items": 4,
@@ -110,18 +110,22 @@
     "BLOCKED": 2,
     "DONE": 4,
     "LEGACY": 2,
-    "PARTIAL": 42,
+    "PARTIAL": 38,
     "TODO": 14,
-    "VERIFY-HW": 7
+    "VERIFY-HW": 11
   },
   "verify_hw": [
     "PRJ-003",
     "PRJ-004",
     "CORE-003",
-    "INST-001",
+    "CORE-004",
     "INST-002",
+    "PIX-002",
+    "GNSS-001",
+    "GNSS-002",
+    "AIR-001",
     "GS-002",
     "PWR-001"
   ],
-  "weighted_progress": 45.4
+  "weighted_progress": 46.8
 }

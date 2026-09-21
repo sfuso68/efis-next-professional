@@ -27,6 +27,24 @@ def _integer(source: str, name: str) -> int:
     return int(eval(expression, {"__builtins__": {}}, {}))
 
 
+def _freshness_milliseconds(source: str, name: str) -> int:
+    """Resolve a FreshnessBudget member expressed as tick or tick * N."""
+    tick_match = re.search(
+        r"\btick\s*=\s*std::chrono::milliseconds\{\s*([0-9]+)\s*\}\s*;",
+        source,
+    )
+    if not tick_match:
+        raise ContractError("FreshnessBudget tick not found")
+    member_match = re.search(
+        rf"\b{name}\s*=\s*tick(?:\s*\*\s*([0-9]+))?\s*;",
+        source,
+    )
+    if not member_match:
+        raise ContractError(f"FreshnessBudget member not found: {name}")
+    multiplier = int(member_match.group(1) or "1")
+    return int(tick_match.group(1)) * multiplier
+
+
 def _contract(document: dict, contract_id: str) -> dict:
     matches = [item for item in document.get("contracts", []) if item.get("id") == contract_id]
     if len(matches) != 1:
@@ -49,19 +67,27 @@ def validate(root: Path, manifest_path: Path) -> dict:
         "ddp-v2": (root / "include/efis/protocol/ddp_v2.hpp").read_text(encoding="utf-8"),
         "edp-v1": (root / "include/efis/protocol/edp_v1.hpp").read_text(encoding="utf-8"),
     }
-    ddp_session = (root / "include/efis/protocol/ddp_session.hpp").read_text(encoding="utf-8")
+    freshness_budget = (root / "include/efis/core/freshness_budget.hpp").read_text(
+        encoding="utf-8"
+    )
+    transport_stale_ms = _freshness_milliseconds(
+        freshness_budget, "transport_stale"
+    )
+    transport_lost_ms = _freshness_milliseconds(
+        freshness_budget, "transport_lost"
+    )
 
     expected = {
         "ddp-v2": {"schema_version": _integer(headers["ddp-v2"], "schema_version"),
                    "envelope_bytes": _integer(headers["ddp-v2"], "envelope_size"),
                    "maximum_payload_bytes": _integer(headers["ddp-v2"], "max_payload_size"),
-                   "stale_after_ms": _integer(ddp_session, "stale_after"),
-                   "lost_after_ms": _integer(ddp_session, "lost_after")},
+                   "stale_after_ms": transport_stale_ms,
+                   "lost_after_ms": transport_lost_ms},
         "edp-v1": {"schema_version": _integer(headers["edp-v1"], "schema_version"),
                    "envelope_bytes": _integer(headers["edp-v1"], "envelope_size"),
                    "sample_count": _integer(headers["edp-v1"], "engine_sample_count"),
-                   "stale_after_ms": _integer(headers["edp-v1"], "stale_after"),
-                   "lost_after_ms": _integer(headers["edp-v1"], "lost_after")},
+                   "stale_after_ms": transport_stale_ms,
+                   "lost_after_ms": transport_lost_ms},
     }
     for contract, actual in ((ddp, expected["ddp-v2"]), (edp, expected["edp-v1"])):
         for key, value in actual.items():
