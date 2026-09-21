@@ -1,5 +1,7 @@
 #pragma once
 
+#include "efis/core/freshness_budget.hpp"
+
 #include "efis/engine/engine_snapshot.hpp"
 
 #include <chrono>
@@ -114,8 +116,8 @@ private:
 };
 
 struct ConsumerPolicy final {
-  std::chrono::milliseconds stale_after{250};
-  std::chrono::milliseconds lost_after{1000};
+  std::chrono::milliseconds stale_after{FreshnessBudget::transport_stale};
+  std::chrono::milliseconds lost_after{FreshnessBudget::transport_lost};
   std::uint32_t expected_source_node{};
 };
 

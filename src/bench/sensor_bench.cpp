@@ -1,4 +1,5 @@
 #include "efis/bench/sensor_bench.hpp"
+#include "efis/core/freshness_budget.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -10,7 +11,7 @@ namespace {
 // piu' generoso della soglia del modello di volo, perche' qui non si pilota:
 // serve a distinguere un valore fermo da uno appena arrivato, non a proteggere
 // un comando.
-constexpr std::chrono::milliseconds bench_stale_after{2000};
+constexpr auto bench_stale_after = FreshnessBudget::bench_stale;
 
 constexpr std::size_t read_chunk = 4096;
 
