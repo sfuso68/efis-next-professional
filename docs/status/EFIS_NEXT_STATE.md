@@ -2,7 +2,7 @@
 
 Aggiornamento: 2026-09-21
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline osservata per questo aggiornamento: `origin/main` `d52e377`
+Baseline integrata precedente a questo aggiornamento: `origin/main` `5891f75`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
@@ -20,7 +20,7 @@ Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
 
 | Gate/area | Stato | Sintesi | ID autorevoli |
 |---|---|---|---|
-| Governance e fonti | PARTIAL | Brief, indice, backlog e controllo progetto presenti; naming, cinque fonti e bare NAS duplicato aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
+| Governance e fonti | PARTIAL | Brief, indice, backlog e controllo progetto presenti; topologia Git chiusa da ADR-018; naming e cinque fonti restano aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
 | Nodo sensori ASSO5 | BLOCKED-HW | RPi4 `.89` identificato; Sequent 0/4, alimentatore, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
@@ -28,7 +28,7 @@ Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
 | EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-62ba90b-hmi-cas-v1`; attivazione, rollback drill e reboot acceptance PASS, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
 | Blackbox/rete | PARTIAL | broker su release immutabile `blackbox-7655799-primary-v1`, rollback/reboot PASS; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
-| Server/NAS/Ground station | PARTIAL | Servizi e copie esistono; manifest release, CA, lifecycle e doppia copia verificata non chiusi | `SRV-001`…`003`, `GS-001`…`003`, `AVX-G0-02`, `03` |
+| Server/NAS/Ground station | PARTIAL | GitHub/serverha/Blackbox/NAS allineati e replica NAS ristretta attiva; restore drill, CA/lifecycle e ritiro copia temporanea aperti | `SRV-001`…`003`, `GS-001`…`003`, ADR-018 |
 | Alimentazione | VERIFY-HW | Storico Blackbox `get_throttled=0x50000`; PSU/cavo e prove brownout non qualificati | `PWR-001`, `PROD-002`, `VER-003` |
 
 ## 2. Architettura vincolante
@@ -277,3 +277,19 @@ merge finale.
 Questo incremento è verificato soltanto software/documentazione. Non sono stati
 modificati nodi, servizi, cablaggi, rete o hardware e non viene dichiarata
 alcuna nuova approvazione al volo.
+
+## 15. Topologia repository G0 — 2026-09-21
+
+ADR-018 chiude `AVX-G0-02` e `AVX-G0-03` senza cancellazioni. GitHub
+`sfuso68/efis-next-professional` è l'autorità condivisa; serverha ospita il
+mirror locale primario e la working copy Claude; il bare Professional sul NAS
+è l'archivio replicato; il bare Blackbox è temporaneo e non autorevole; il
+precedente `git-repos/efis.git` è `LEGACY`.
+
+I quattro `main` sono stati verificati allo stesso commit
+`5891f754ee06948349f711c57c90e8700137d09f`. Il timer serverha→NAS e l'ultimo
+oneshot sono risultati rispettivamente attivo e `SUCCESS`; la chiave NAS
+dedicata ha rifiutato una richiesta shell. Restano aperti il restore drill, la
+protezione fuori sito, il limite crittografico del DS214 e l'eventuale ritiro
+controllato della copia Blackbox. Nessun runtime avionico dipende da questa
+catena e nessuna verifica di volo è implicata.

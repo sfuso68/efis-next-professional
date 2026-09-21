@@ -1,6 +1,6 @@
 # AVIONIX NEXT — decision register
 
-Aggiornamento: 2026-09-17  
+Aggiornamento: 2026-09-21
 Stato: registro decisioni; ogni approvazione resta esplicita e tracciata
 
 Questo registro separa le decisioni del proprietario dalle constatazioni
@@ -10,7 +10,7 @@ configurazioni e non diventa vincolante finché non viene approvata.
 | ID | Gate | Decisione | Raccomandazione | Stato | Effetto dopo approvazione |
 |---|---|---|---|---|---|
 | DEC-G0-001 | G0 | Nome prodotto e alias tecnico | `AVIONIX NEXT` come prodotto; `EFIS NEXT` resta alias tecnico/compatibilità fino a G6 | PENDING_USER | ADR di naming, nessun rename automatico |
-| DEC-G0-002 | G0 | Secondo bare repository NAS | conservarlo read-only come archivio finché percorso, refs e unicità non sono nuovamente inventariati | PENDING_USER | decisione di retention; nessuna cancellazione |
+| DEC-G0-002 | G0 | Secondo bare repository NAS | applicare i ruoli GitHub/serverha/NAS/Blackbox congelati da ADR-018; conservare le copie legacy senza cancellarle | APPROVED 2026-09-21 | autorità e retention definite; nessuna cancellazione |
 | DEC-G0-003 | G0 | Cinque documenti mancanti | acquisire gli originali dal proprietario, calcolare hash e classificarli; vietata la ricostruzione presunta | BLOCKED_EXTERNAL | import controllato in `docs/reference/` o registro esterno |
 | DEC-G0-004 | G0/G1 | Nodo ASSO5 e quattro Sequent | inventario fisico/read-only con modello, revisione, DIP, I2C, alimentazione e foto | BLOCKED_HW | abilita G1 senza autorizzare uscite o scritture |
 | DEC-G2-001 | G2 | Freeze ICD DDP/EDP ed evidence bundle | approvare il solo freeze documentale definito nel readiness report | APPROVED 2026-09-17 | documento ICD, vector, validator; nessun deployment |
@@ -27,13 +27,11 @@ Risposta sufficiente: `Approvo DEC-G0-001`.
 
 ## DEC-G0-002 — repository NAS duplicato
 
-Non esiste evidenza sufficiente per cancellare o promuovere il secondo bare.
-La scelta più sicura è conservarlo read-only, identificarne percorso, HEAD,
-refs, object count e rapporto con il bare ufficiale
-`/volume1/homes/sfuso/git-repos/efis.git`. Solo un incarico successivo potrà
-autorizzare rinomina, archiviazione o rimozione.
-
-Risposta sufficiente: `Approvo DEC-G0-002`.
+La decisione è chiusa da ADR-018. GitHub è l'autorità condivisa; serverha è il
+mirror locale primario e replica `main` e tag nel bare Professional sul NAS.
+La copia Blackbox resta temporanea e non autorevole. Il precedente
+`/volume1/homes/sfuso/git-repos/efis.git` resta `LEGACY`, intatto e fuori dalla
+catena di pubblicazione. Nessuna copia viene cancellata da questa decisione.
 
 ## DEC-G0-003 — fonti mancanti
 

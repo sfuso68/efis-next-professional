@@ -1,6 +1,6 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
-Aggiornamento: 2026-09-20
+Aggiornamento: 2026-09-21
 Stato: controllato da WS0/G0; nessuna attività hardware autorizzata da questo documento.
 
 Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
@@ -9,8 +9,8 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | ID | Gate | Descrizione | Input | Output | Dipendenze | Rischio | Accettazione | File previsti | Test | Stima | Stato |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | AVX-G0-01 | G0 | Importare brief e indice nel repo autorevole | Brief R0 storico, audit | baseline documentale tracciata | nessuna | basso | brief integro e regole di autorità esplicite | `docs/project/*` | hash/confronto, link check | S | ACCEPTED |
-| AVX-G0-02 | G0 | Formalizzare GitHub/NAS e divergenze | refs Git/NAS | registro repository | accesso NAS | medio | `origin/main` e `professional/main` coerenti | indice, stato | rev-parse/read-only | S | OPEN |
-| AVX-G0-03 | G0 | Decidere il bare NAS duplicato | inventario NAS | decisione conservazione | autorizzazione utente | medio | nessuna copia ambigua | indice | verifica refs | S | BLOCKED |
+| AVX-G0-02 | G0 | Formalizzare GitHub/NAS e divergenze | refs Git/NAS | registro repository | accesso NAS | medio | GitHub, serverha, Blackbox e NAS coerenti | ADR-018, indice, stato | quattro `rev-parse` read-only sullo stesso hash | S | ACCEPTED |
+| AVX-G0-03 | G0 | Decidere il bare NAS duplicato | inventario NAS | decisione conservazione | autorizzazione utente | medio | nessuna copia ambigua | ADR-018, indice | autorità/retention esplicite; nessuna cancellazione | S | ACCEPTED |
 | AVX-G0-04 | G0 | Recuperare cinque documenti mancanti | file del proprietario | indice con hash | disponibilità file | alto | 5/5 acquisiti e classificati | `docs/reference/` o registro esterno | hash e apertura | M | BLOCKED |
 | AVX-G0-05 | G0 | Congelare nomenclatura AVIONIX/EFIS | decisione prodotto | naming policy | utente | medio | nomi e alias approvati | ADR o brief R1 | controllo riferimenti | S | BLOCKED |
 | AVX-G1-01 | G1 | Identificare nodo ASSO5 dedicato | RPi4 reale | identità OS/IP/power/storage | hardware | alto | inventario firmato | inventario HW | comandi read-only | S | IN_PROGRESS |
@@ -66,6 +66,7 @@ comandi su uscite.
 | 2026-09-20 | AVX-G6-01 | schema manifest/piano transizione, policy nodi, builder, validator e preflight nella PR #15 | IMPLEMENTED-SW/NOT-DEPLOYED; 19 test mirati, 18 PASS e 1 SKIP Windows symlink; CI Linux PASS, nessun nodo modificato |
 | 2026-09-20 | AVX-G6-01 / PROD-005 | `release-immutability-20260920` e registro release | VERIFIED-HW su MFD/EMS/Blackbox: manifest, eseguibile canonico, rollback drill e reboot PASS; EMS EDP `LIVE • SIM` e runtime persistente; PFD/recorder restano aperti |
 | 2026-09-20 | Program control | `AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md` | DOCUMENTED; 44,7% ponderato su 71 requisiti, gate/workstream/nodi confrontati con il piano; nessuna promozione di evidenza software a hardware |
+| 2026-09-21 | AVX-G0-02/03 | ADR-018, GitHub/serverha/Blackbox/NAS e timer replica | ACCEPTED; quattro `main` coincidenti a `5891f754ee06948349f711c57c90e8700137d09f`, ruoli e retention espliciti; restore drill e ritiro copia Blackbox restano attività separate |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato

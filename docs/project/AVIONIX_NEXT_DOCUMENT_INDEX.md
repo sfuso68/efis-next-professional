@@ -1,6 +1,6 @@
 # AVIONIX NEXT — indice documentale e regole di autorità
 
-Aggiornamento: 2026-09-20
+Aggiornamento: 2026-09-21
 Stato: baseline documentale WS0/G0, DEVELOPMENT / NON-CERT
 
 ## Repository autorevole
@@ -9,6 +9,11 @@ Il software AVIONIX/EFIS Next è sviluppato in
 `sfuso68/efis-next-professional`. Il repository `sfuso68/efis-evolved` resta
 storico e non è una base di merge. Il Master Brief R0 è stato importato dal
 repository storico senza importarne la genealogia.
+
+ADR-018 definisce la replica: GitHub è l'autorità condivisa; serverha ospita il
+mirror locale primario e la working copy Claude; il NAS riceve `main` e tag
+come archivio; la Blackbox conserva una copia temporanea non autorevole. Il
+precedente bare NAS `git-repos/efis.git` è `LEGACY` e resta intatto.
 
 ## Ordine di autorità
 
@@ -48,7 +53,7 @@ con una nuova ADR o con una revisione esplicita del brief.
 | `AVIONIX_NEXT_EXECUTION_BACKLOG.md` | attività ordinate per gate e registro evidenze | controllato |
 | `docs/status/EFIS_NEXT_STATE.md` | stato verificato e livelli di evidenza | autorevole |
 | `docs/status/EFIS_NEXT_MASTER_MATRIX.md` | requisiti, stato e criteri di chiusura | autorevole |
-| `docs/adr/ADR-001` … `ADR-015` | decisioni architetturali | vigenti secondo stato ADR |
+| `docs/adr/ADR-001` … `ADR-018` | decisioni architetturali | vigenti secondo stato ADR |
 | `CLAUDE_CODE_HANDOFF_2026-08-21.md` | handoff storico | riferimento |
 | `CHECKPOINT-*` | evidenze e checkpoint cronologici | riferimento |
 
@@ -85,7 +90,7 @@ presunto.
 | C-006 | Waveshare 5P come rete complessiva | ammesso solo nel banco FLIGHT-DATA minimo; non sufficiente al prodotto finale | selezione switch finale e VIDEO |
 | C-007 | `sv3d-fondamenta` vs renderer Professional | il branch storico è sorgente di requisiti/algoritmi, non base di merge | audit selettivo WS4 |
 | C-008 | Nome AVIONIX NEXT vs EFIS NEXT | nessun rename automatico di servizi/repository | decisione prodotto dell'utente |
-| C-009 | Due bare repository sul NAS | nessuna cancellazione; `git-repos/efis.git` è il backup ufficiale corrente | decisione di conservazione/rimozione |
+| C-009 | Copie Git multiple tra serverha, Blackbox e NAS | chiuso da ADR-018: GitHub autorità condivisa, serverha mirror primario, bare Professional NAS archivio, Blackbox temporanea, `git-repos/efis.git` legacy | restore drill e futuro ritiro controllato della copia Blackbox |
 
 ## Evidenza dell'audit R0
 
@@ -124,3 +129,12 @@ validatore verificano la coerenza fra DDP/EDP, piano di rete e costanti sorgente
 Il checkpoint `CHECKPOINT-2026-09-16-AVIONIX-OFFLINE-GATES.md` conserva i test
 fail-closed. Questa evidenza è esclusivamente software: non sostituisce la prova
 verticale ARM64 né autorizza modifiche hardware o deployment.
+
+## Topologia Git verificata 2026-09-21
+
+ADR-018 chiude AVX-G0-02 e AVX-G0-03. I quattro riferimenti `main` letti su
+GitHub, serverha, Blackbox e NAS coincidevano a
+`5891f754ee06948349f711c57c90e8700137d09f`. Il timer serverha→NAS era attivo,
+l'ultimo servizio oneshot era concluso con successo e la chiave NAS dedicata
+ha rifiutato l'accesso shell. Il limite OpenSSH del DS214, il restore drill e
+il ritiro della copia Blackbox restano rischi/attività espliciti, non nascosti.
