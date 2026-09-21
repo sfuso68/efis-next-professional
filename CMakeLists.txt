@@ -334,11 +334,11 @@ if(EFIS_BUILD_TESTS)
     add_test(NAME efis_voice_assist_tests COMMAND efis_voice_assist_tests)
 
     find_package(Python3 QUIET COMPONENTS Interpreter)
-    if(NOT (Python3_Interpreter_FOUND AND TARGET efis-pfd-qt AND WIN32))
+    set(EFIS_EMS_GOLDEN_GATE_REGISTERED OFF)
+    if(NOT (Python3_Interpreter_FOUND AND TARGET efis-pfd-qt))
         message(STATUS
             "EFIS EMS golden rerender gate: NOT REGISTERED "
-            "(platform-bound Windows baseline; requires Python3, WIN32 and target efis-pfd-qt). "
-            "Linux/core-only CI does not execute a pixel rerender gate.")
+            "(requires Python3 and target efis-pfd-qt).")
     endif()
     if(Python3_Interpreter_FOUND)
         add_test(NAME efis_emergency_event_transport_tests
@@ -396,6 +396,27 @@ if(EFIS_BUILD_TESTS)
             set_tests_properties(efis_ems_golden_rerender_tests PROPERTIES
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 TIMEOUT 180)
+            set(EFIS_EMS_GOLDEN_GATE_REGISTERED ON)
+        elseif(TARGET efis-pfd-qt AND UNIX AND
+               EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/golden/ems-responsive-states-linux/manifest.json")
+            # Linux owns a separate reference because platform font and graphics
+            # rasterisation must never be compared against the Windows baseline.
+            add_test(NAME efis_ems_golden_rerender_tests
+                COMMAND ${Python3_EXECUTABLE}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/tools/ui/verify_ems_golden_rerender.py
+                    --executable $<TARGET_FILE:efis-pfd-qt>
+                    --reference-dir ${CMAKE_CURRENT_SOURCE_DIR}/tests/golden/ems-responsive-states-linux
+                    --platform offscreen
+                    --delay-ms 1200)
+            set_tests_properties(efis_ems_golden_rerender_tests PROPERTIES
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                ENVIRONMENT "QT_SCALE_FACTOR=1;QSG_RHI_BACKEND=software;QT_QUICK_BACKEND=software;LIBGL_ALWAYS_SOFTWARE=1"
+                TIMEOUT 240)
+            set(EFIS_EMS_GOLDEN_GATE_REGISTERED ON)
+        elseif(TARGET efis-pfd-qt AND UNIX)
+            message(STATUS
+                "EFIS EMS golden rerender gate: NOT REGISTERED "
+                "(Linux reference tests/golden/ems-responsive-states-linux/manifest.json is absent).")
         endif()
         add_test(NAME efis_hmi_hardware_acceptance_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_hmi_hardware_acceptance)

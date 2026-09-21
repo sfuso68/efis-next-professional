@@ -78,10 +78,10 @@ def verify(executable: Path, reference_dir: Path, platform: str, delay_ms: int) 
         return [f"[HMI-RERENDER-04] renderer not found: {executable}"]
     if not manifest_path.is_file():
         return [f"[HMI-RERENDER-05] reference manifest not found: {manifest_path}"]
-    reference = json.loads(manifest_path.read_text(encoding="utf-8"))
     with tempfile.TemporaryDirectory(prefix="avionix-ems-rerender-") as temporary:
-        rerendered = capture(executable, Path(temporary), platform, delay_ms)
-        return compare_manifests(reference, rerendered)
+        rerender_dir = Path(temporary)
+        capture(executable, rerender_dir, platform, delay_ms)
+        return compare_directories(reference_dir, rerender_dir)
 
 
 def main() -> int:
