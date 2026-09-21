@@ -25,7 +25,7 @@ Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
 | PFD/MFD | PARTIAL | PFD+recorder su `pfdrec-d52e377-primary-v1` e MFD su `mfd-3432402-primary-v1`, entrambi con rollback/reboot PASS; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
-| EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-62ba90b-hmi-cas-v1`; attivazione, rollback drill e reboot acceptance PASS, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
+| EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-7655799-primary-v1`; attivazione, rollback drill e reboot acceptance PASS, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
 | Blackbox/rete | PARTIAL | broker su release immutabile `blackbox-7655799-primary-v1`, rollback/reboot PASS; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
 | Server/NAS/Ground station | PARTIAL | GitHub/serverha/Blackbox/NAS allineati e replica NAS ristretta attiva; restore drill, CA/lifecycle e ritiro copia temporanea aperti | `SRV-001`…`003`, `GS-001`…`003`, ADR-018 |
@@ -197,7 +197,7 @@ PASS. La build ARM64 nativa sul nodo EMS ha ripetuto con esito PASS i tre CTest,
 i 18 test HMI e i validatori HMI/EMS.
 
 Verifica hardware del 2026-09-20: la release immutabile
-`ems-62ba90b-hmi-cas-v1` è stata attivata sul RPi4 EMS reale dopo validazione
+`ems-7655799-primary-v1` è stata attivata sul RPi4 EMS reale dopo validazione
 manifesto, prova candidato, rollback drill e ritorno al candidato. Il servizio
 `efis-ems.service` è `active/running`, `NRestarts=0`, l'eseguibile proviene
 dalla release attiva e `get_throttled=0x0`. Una cattura runtime 800×480
