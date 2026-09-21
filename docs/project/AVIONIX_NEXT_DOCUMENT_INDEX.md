@@ -116,3 +116,11 @@ Master Matrix e nodi osservati è in
 `8dc7895`, proposto dalla PR #15, aggiunge contratti e preflight non esecutivi
 per le release immutabili. La PR non è ancora parte di `main` e non prova alcun
 deployment sui nodi.
+
+## Contratto dati offline AVIONIX
+
+Il contratto offline `AVIONIX_DATA_CONTRACT_V1.md`, il manifesto macchina e il
+validatore verificano la coerenza fra DDP/EDP, piano di rete e costanti sorgente.
+Il checkpoint `CHECKPOINT-2026-09-16-AVIONIX-OFFLINE-GATES.md` conserva i test
+fail-closed. Questa evidenza è esclusivamente software: non sostituisce la prova
+verticale ARM64 né autorizza modifiche hardware o deployment.
