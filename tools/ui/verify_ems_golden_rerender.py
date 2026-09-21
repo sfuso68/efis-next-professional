@@ -82,12 +82,17 @@ def compare_directories(reference_dir: Path, rerender_dir: Path) -> list[str]:
     return errors
 
 
-def verify(executable: Path, reference_dir: Path, platform: str, delay_ms: int) -> list[str]:
+def verify(executable: Path, reference_dir: Path, platform: str, delay_ms: int,
+           output_dir: Path | None = None) -> list[str]:
     manifest_path = reference_dir / "manifest.json"
     if not executable.is_file():
         return [f"[HMI-RERENDER-04] renderer not found: {executable}"]
     if not manifest_path.is_file():
         return [f"[HMI-RERENDER-05] reference manifest not found: {manifest_path}"]
+    if output_dir is not None:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        capture(executable, output_dir, platform, delay_ms)
+        return compare_directories(reference_dir, output_dir)
     with tempfile.TemporaryDirectory(prefix="avionix-ems-rerender-") as temporary:
         rerender_dir = Path(temporary)
         capture(executable, rerender_dir, platform, delay_ms)
@@ -100,13 +105,16 @@ def main() -> int:
     group.add_argument("--executable", type=Path)
     group.add_argument("--rerender-dir", type=Path)
     parser.add_argument("--reference-dir", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path,
+                        help="persist fresh captures for CI diagnostics")
     parser.add_argument("--platform", default="offscreen")
     parser.add_argument("--delay-ms", type=int, default=800)
     args = parser.parse_args()
     try:
         errors = (compare_directories(args.reference_dir, args.rerender_dir)
                   if args.rerender_dir is not None else
-                  verify(args.executable, args.reference_dir, args.platform, args.delay_ms))
+                  verify(args.executable, args.reference_dir, args.platform, args.delay_ms,
+                         args.output_dir))
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError,
             subprocess.SubprocessError) as error:
         errors = [f"[HMI-RERENDER-06] rerender failed: {error}"]

@@ -406,6 +406,7 @@ if(EFIS_BUILD_TESTS)
                     ${CMAKE_CURRENT_SOURCE_DIR}/tools/ui/verify_ems_golden_rerender.py
                     --executable $<TARGET_FILE:efis-pfd-qt>
                     --reference-dir ${CMAKE_CURRENT_SOURCE_DIR}/tests/golden/ems-responsive-states-linux
+                    --output-dir ${CMAKE_CURRENT_BINARY_DIR}/linux-golden-rerender
                     --platform offscreen
                     --delay-ms 1200)
             set_tests_properties(efis_ems_golden_rerender_tests PROPERTIES

@@ -71,6 +71,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      - name: Upload failed Linux rerender for diagnosis
+        if: ${{ failure() && hashFiles('tests/golden/ems-responsive-states-linux/manifest.json') != '' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ems-responsive-states-linux-failed-rerender
+          path: build/linux-qt/linux-golden-rerender
+          if-no-files-found: error
+          retention-days: 7
+
   linux-core:
     runs-on: ubuntu-latest
     steps:
