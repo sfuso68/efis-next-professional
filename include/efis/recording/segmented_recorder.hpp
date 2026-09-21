@@ -49,11 +49,23 @@ public:
     [[nodiscard]] std::string current_segment_name() const {
         return partial_path_.filename().string();
     }
+    [[nodiscard]] bool healthy() const noexcept { return !write_failed_; }
+    [[nodiscard]] std::size_t records_written() const noexcept {
+        return records_written_;
+    }
+    [[nodiscard]] const std::string& last_error() const noexcept {
+        return last_error_;
+    }
 
 private:
+    friend class SegmentedRecorderTestAccess;
+
     void recover_partials();
     void open_segment();
     void close_segment();
+    void require_healthy() const;
+    void verify_stream(const char* operation);
+    [[noreturn]] void fail(const std::string& operation);
 
     std::filesystem::path directory_;
     RecorderSettings settings_;
@@ -63,6 +75,9 @@ private:
     std::size_t records_in_segment_{};
     std::size_t records_since_flush_{};
     std::size_t recovered_segments_{};
+    std::size_t records_written_{};
+    bool write_failed_{};
+    std::string last_error_;
 };
 
 }  // namespace efis::recording

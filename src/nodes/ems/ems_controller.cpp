@@ -682,11 +682,13 @@ void EmsController::updateRecorderStatus(efis::MonoTime now) {
         const auto status = efis::recording::read_recorder_status(
             recorder_status_path_.toStdString());
         recorder_freshness_.observe(status.updated_wall_ms, now);
-        black_box_state_ = recorder_freshness_.fresh(
-            now, std::chrono::milliseconds{
-                     static_cast<std::chrono::milliseconds::rep>(kRecorderStaleMs)})
-            ? QString::fromStdString(status.state)
-            : QStringLiteral("STALE");
+        black_box_state_ = status.write_failed
+            ? QStringLiteral("ERROR")
+            : (recorder_freshness_.fresh(
+                   now, std::chrono::milliseconds{
+                            static_cast<std::chrono::milliseconds::rep>(kRecorderStaleMs)})
+                   ? QString::fromStdString(status.state)
+                   : QStringLiteral("STALE"));
         black_box_records_ = static_cast<qulonglong>(status.records);
     } catch (...) {
         // Nessun registratore su questo nodo e' una condizione normale, non un

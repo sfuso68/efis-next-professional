@@ -13,11 +13,13 @@ void write_recorder_status(const std::filesystem::path& path,
     {
         std::ofstream output{temporary, std::ios::trunc};
         if (!output) throw std::runtime_error("unable to write recorder status");
-        output << "EFIS_RECORDER_STATUS_V1\n"
+        output << "EFIS_RECORDER_STATUS_V2\n"
                << "state=" << status.state << '\n'
                << "updated_wall_ms=" << status.updated_wall_ms << '\n'
                << "records=" << status.records << '\n'
-               << "segment=" << status.segment << '\n';
+               << "segment=" << status.segment << '\n'
+               << "write_failed=" << (status.write_failed ? 1 : 0) << '\n'
+               << "last_error=" << status.last_error << '\n';
         output.flush();
         if (!output) throw std::runtime_error("unable to flush recorder status");
     }
@@ -34,7 +36,8 @@ void write_recorder_status(const std::filesystem::path& path,
 RecorderStatus read_recorder_status(const std::filesystem::path& path) {
     std::ifstream input{path};
     std::string line;
-    if (!input || !std::getline(input, line) || line != "EFIS_RECORDER_STATUS_V1") {
+    if (!input || !std::getline(input, line) ||
+        (line != "EFIS_RECORDER_STATUS_V1" && line != "EFIS_RECORDER_STATUS_V2")) {
         throw std::runtime_error("invalid recorder status");
     }
     RecorderStatus status;
@@ -47,6 +50,8 @@ RecorderStatus read_recorder_status(const std::filesystem::path& path) {
         else if (key == "updated_wall_ms") status.updated_wall_ms = std::stoull(value);
         else if (key == "records") status.records = std::stoull(value);
         else if (key == "segment") status.segment = value;
+        else if (key == "write_failed") status.write_failed = value == "1";
+        else if (key == "last_error") status.last_error = value;
     }
     return status;
 }

@@ -270,6 +270,9 @@ int main(int argc, char** argv) {
                           << " node_events=" << stats.node_events_observed
                           << " source_events=" << stats.source_events_observed
                           << " recorded=" << stats.snapshots_recorded
+                          << " recorder_state="
+                          << (recorder.healthy() ? "RECORDING" : "ERROR")
+                          << " recorder_records=" << recorder.records_written()
                           << " ddp_datagrams=" << transmitted.datagrams
                           << " ddp_bytes=" << transmitted.bytes
                           << " ddp_failures=" << stats.ddp_publish_failures << '\n';

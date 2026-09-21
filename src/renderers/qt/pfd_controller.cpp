@@ -1493,9 +1493,11 @@ void PfdController::updateSnapshot() {
             const auto status = efis::recording::read_recorder_status(
                 recorder_status_path_.toStdString());
             recorder_freshness_.observe(status.updated_wall_ms, now);
-            black_box_state_ = recorder_freshness_.fresh(now, 3000ms)
-                ? QString::fromStdString(status.state)
-                : QStringLiteral("STALE");
+            black_box_state_ = status.write_failed
+                ? QStringLiteral("ERROR")
+                : (recorder_freshness_.fresh(now, 3000ms)
+                       ? QString::fromStdString(status.state)
+                       : QStringLiteral("STALE"));
             black_box_records_ = status.records;
         } catch (...) {
             recorder_freshness_.reset();

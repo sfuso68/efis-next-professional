@@ -428,6 +428,10 @@ if(EFIS_BUILD_TESTS)
                 tests.test_mavlink_readonly_forwarder)
         set_tests_properties(efis_mavlink_readonly_forwarder_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_recorder_storage_failure_tests
+            COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_recorder_storage_failure.py
+                $<TARGET_FILE:efis-recorder>)
     endif()
 
     add_executable(efis_ingest_tests tests/ingest_tests.cpp)
