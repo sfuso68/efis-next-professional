@@ -410,7 +410,7 @@ if(EFIS_BUILD_TESTS)
                     --delay-ms 1200)
             set_tests_properties(efis_ems_golden_rerender_tests PROPERTIES
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                ENVIRONMENT "QT_SCALE_FACTOR=1;QSG_RHI_BACKEND=software;QT_QUICK_BACKEND=software;LIBGL_ALWAYS_SOFTWARE=1"
+                ENVIRONMENT "QT_SCALE_FACTOR=1;QSG_RHI_BACKEND=opengl;LIBGL_ALWAYS_SOFTWARE=1"
                 TIMEOUT 240)
             set(EFIS_EMS_GOLDEN_GATE_REGISTERED ON)
         elseif(TARGET efis-pfd-qt AND UNIX)

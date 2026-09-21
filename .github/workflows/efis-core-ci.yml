@@ -19,8 +19,7 @@ jobs:
     env:
       QT_QPA_PLATFORM: offscreen
       QT_SCALE_FACTOR: '1'
-      QSG_RHI_BACKEND: software
-      QT_QUICK_BACKEND: software
+      QSG_RHI_BACKEND: opengl
       LIBGL_ALWAYS_SOFTWARE: '1'
     steps:
       - name: Checkout
@@ -30,7 +29,7 @@ jobs:
         uses: jurplel/install-qt-action@48d3ad6db93f3627c8ee7a0454bc6f3744f7e730
         with:
           version: '6.8.2'
-          modules: 'qtquick3d'
+          modules: 'qtquick3d qtquicktimeline qtshadertools'
           # A module-blind cache can restore Qt base without Qt6Quick3D and
           # make CMake fail even though the requested module is declared.
           cache: false
