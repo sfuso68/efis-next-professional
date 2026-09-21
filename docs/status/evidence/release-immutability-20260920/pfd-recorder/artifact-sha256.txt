@@ -1,0 +1,2 @@
+2d153807ae4decd957441a039a18d978dc3289ebcc217933065d17af8329eca6  /home/efis/efis-next-releases/pfdrec-d52e377-primary-v1/bin/efis-pfd-qt
+98b1d50b10f0ecb31f5c1d7215a5a27968bf98e6bfecdefffa5043b4b05694b2  /home/efis/efis-next-releases/pfdrec-d52e377-primary-v1/bin/efis-recorder

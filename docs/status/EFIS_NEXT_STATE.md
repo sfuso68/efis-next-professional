@@ -1,8 +1,8 @@
 # EFIS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-20
+Aggiornamento: 2026-09-21
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline osservata per questo aggiornamento: `origin/main` `67aee2e`
+Baseline osservata per questo aggiornamento: `origin/main` `d52e377`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
@@ -24,7 +24,7 @@ Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
 | Nodo sensori ASSO5 | BLOCKED-HW | RPi4 `.89` identificato; Sequent 0/4, alimentatore, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
-| PFD/MFD | PARTIAL | PFD `60b3526` confermato; MFD su release immutabile `mfd-3432402-primary-v1` con rollback/reboot PASS; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
+| PFD/MFD | PARTIAL | PFD+recorder su `pfdrec-d52e377-primary-v1` e MFD su `mfd-3432402-primary-v1`, entrambi con rollback/reboot PASS; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
 | EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-62ba90b-hmi-cas-v1`; attivazione, rollback drill e reboot acceptance PASS, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
 | Blackbox/rete | PARTIAL | broker su release immutabile `blackbox-7655799-primary-v1`, rollback/reboot PASS; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
@@ -96,9 +96,11 @@ Il dettaglio è nel registro canonico
    fotografie non acquisiti (`PRJ-002`, `AVX-G1-02`).
 2. Alimentazione: storico undervoltage Blackbox, nessuna prova brownout/load
    controllata e nessuna PSU finale qualificata (`PWR-001`, `PROD-002`).
-3. Release: MFD, EMS e Blackbox sono conformi al contratto V1; PFD non ha
-   ancora il manifesto V1 e il recorder PFD resta fuori release, quindi
-   `PROD-005` resta `PARTIAL`.
+3. Release: PFD, recorder, MFD, EMS e Blackbox sono conformi al contratto V1.
+   Sul PFD la release dual-role `pfdrec-d52e377-primary-v1` ha superato
+   manifest, processo canonico, rollback reale e reboot acceptance; il recorder
+   scrive fuori dall'albero immutabile. `PROD-005` è `DONE` per il contratto
+   update/rollback, senza modificare lo stato DEVELOPMENT/NON-CERT.
 4. HMI: touch, leggibilità, sunlight/night, frame-rate, termica e fault su
    pannelli reali non accettati (`PRJ-004`, `AVX-G3-03`).
 5. Synthetic vision: terreno vicino stirato/sfocato e LOD/proiezione non
@@ -110,16 +112,13 @@ Il dettaglio è nel registro canonico
 
 ## 7. Prossima sequenza controllata
 
-1. Conservare l'evidenza MFD/EMS/Blackbox e completare separatamente PFD e
-   recorder con la stessa disciplina di manifest, rollback e reboot
-   (`PROD-005`).
-2. Acquisire le nove immagini e i metadati dell'inventario ASSO5 senza probing
+1. Acquisire le nove immagini e i metadati dell'inventario ASSO5 senza probing
    o modifica DIP (`PRJ-002`, `AVX-G1-02`).
-3. Qualificare alimentatore/cavo Blackbox e nodo sensori con piano brownout e
+2. Qualificare alimentatore/cavo Blackbox e nodo sensori con piano brownout e
    carico approvato (`PWR-001`, `PROD-002`).
-4. Integrare e sottoporre a CI i tre branch safety software prima di qualsiasi
+3. Integrare e sottoporre a CI i tre branch safety software prima di qualsiasi
    deployment (`PRJ-003`, `PRJ-004`, `EMS-002`).
-5. Solo dopo review/merge, eseguire HMI harness su PFD/MFD/EMS e verticale G2
+4. Solo dopo review/merge, eseguire HMI harness su PFD/MFD/EMS e verticale G2
    reale con nuova autorizzazione (`AVX-G2-02`, `AVX-G3-03`).
 
 ## 8. Criterio di verità
@@ -156,8 +155,9 @@ nominativa dei cinque processi e drop-in systemd candidati. I test software
 verificano hash, traversal, ruolo/piattaforma,
 `flight_approval=false`, assenza di `build/dev` e mantenimento esplicito della
 simulazione Blackbox. Gli asset sono installati su MFD, EMS e Blackbox con
-rollback e reboot verificati. `PROD-005` resta `PARTIAL` perché PFD/recorder non
-fanno parte del batch concluso e i gate hardware complessivi restano aperti.
+rollback e reboot verificati. Il batch PFD/recorder del 2026-09-21 completa lo
+stesso contratto sui processi rimanenti; `PROD-005` è ora `DONE`. I gate
+hardware di altre famiglie restano aperti.
 
 ## 11. Packaging e preflight release V1
 
@@ -174,7 +174,7 @@ Windows, coperto dalla CI Linux. Verifica hardware successiva: MFD, EMS e
 Blackbox hanno manifest PASS, eseguibile canonico, rollback drill e reboot
 acceptance PASS. Sull'EMS sono state inoltre corrette e verificate la separazione
 dei dati mutabili e la conservazione delle variabili EDP/kiosk del launcher.
-PFD e recorder restano aperti; `PROD-005` rimane `PARTIAL`.
+Il batch PFD/recorder è stato completato il 2026-09-21; `PROD-005` è `DONE`.
 
 ## 12. Correzione candidata HMI EMS — limiti e stato CAS
 
@@ -219,3 +219,39 @@ coerente con la cattura pre-reboot.
 Restano aperti e non sono dichiarati PASS: ispezione diretta sul pannello
 fisico/touch, prova con limiti motore approvati e sorgente CAN motore reale. Lo
 stato resta `PARTIAL`/`VERIFY-HW`.
+
+## 13. Release PFD + recorder — attivazione e reboot PASS
+
+L'audit read-only del 2026-09-20 sul nodo `efis-pfd-01` ha riconfermato:
+
+- `/home/efis/efis-next-current` → `efis-next-avionics-60b3526`;
+- `efis-pfd.service` attivo, PID valido, `NRestarts=0`;
+- `efis-recorder.service` attivo ma ancora eseguito dal checkout mutabile
+  `/home/efis/efis-next/build/dev/efis-recorder`;
+- 31 GiB liberi, `get_throttled=0x0`, temperatura 53,2 °C.
+
+Sono stati aggiunti tre asset fail-closed per staging dual-role, attivazione
+atomica con rollback e verifica post-reboot. I drop-in PFD/recorder portano
+working directory, output e stato mutabile fuori dalla release. Venticinque
+test Python mirati sono PASS; il caso symlink è SKIP su Windows e resta coperto
+dalla CI Linux. La build ARM64 completa ha superato 50/51 CTest: il solo test
+QGC aveva un fixture x86-64 fisso, poi corretto e verificato ARM64 21/21 PASS.
+
+Con autorizzazione esplicita sono state create e validate la primaria
+`pfdrec-d52e377-primary-v1` e la rollback `pfdrec-60b3526-rollback-v1`. Due
+tentativi preliminari sono falliti in modo sicuro prima della chiusura: il
+primo per ordine di verifica del symlink, il secondo per proprietà dello
+storage recorder. In entrambi i casi il recovery ha ripristinato link, drop-in
+e servizi precedenti. Dopo le correzioni, il drill candidato → rollback →
+candidato è PASS.
+
+Il reboot del 2026-09-21 ha cambiato boot ID da
+`0e51e200-330a-42f6-a539-6992a640aae9` a
+`be165369-0f3a-4477-a095-b45ccfab6f32`. Manifest dual-role, eseguibili,
+drop-in, DDP `LIVE`, avanzamento recorder, hash e `get_throttled=0x0` sono
+PASS. `NRestarts=1` è il retry documentato dell'`ExecStartPre` prima della
+creazione di `wayland-0`, seguito da avvio stabile a circa 35 fps. Le evidenze
+sono in `evidence/release-immutability-20260920/pfd-recorder/`.
+
+`PROD-005` è `DONE`; `PFD-001` resta `PARTIAL` per visuale/touch, terrain,
+sorgenti reali e fault injection. `flight_approval=false` resta invariato.

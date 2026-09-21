@@ -1,0 +1,17 @@
+Sep 21 05:20:28 efis-pfd-01 python3[549035]: {"artifacts_checked": 2, "artifacts_declared": 2, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "pfdrec-d52e377-primary-v1", "roles": ["PFD", "RECORDER"], "schema": "efis-next.release-validation.v1", "status": "PASS"}
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.061 virtual const QPalette* Qt6CTPlatformTheme::palette(QPlatformTheme::Palette) const QPlatformTheme::SystemPalette
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.061 virtual const QPalette* Qt6CTPlatformTheme::palette(QPlatformTheme::Palette) const QPlatformTheme::SystemPalette
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.062 event=ddp_receiver_start bind= 0.0.0.0 port= 49002 source_node= 47 receive_buffer_bytes= 8388608
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.062 event=simulation_role role= FALLBACK
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.062 event=aircraft_profile_loaded path= /home/efis/efis-next-releases/pfdrec-d52e377-primary-v1/config/active/aircraft-profile.json profile= Vidor • Asso V Jolly state= SIMULATION
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.093 event=catalog_index_loaded aircraft= 70 engines= 24 path= /home/efis/efis-next-releases/pfdrec-d52e377-primary-v1/data/catalog/efis-catalog-index.json
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.096 event=navigation_index_loaded airports= 65 version= 0.2.0-ourairports-development path= /home/efis/efis-next-releases/pfdrec-d52e377-primary-v1/data/navigation/navigation-index.json
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.096 event=radionavigation_index_loaded facilities= 0 version= 0.1.0-empty-development status= NO_DATA path= /home/efis/efis-next-releases/pfdrec-d52e377-primary-v1/data/navigation/radionavigation-index.json
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.096 event=imagery_package_unavailable
+Sep 21 05:20:29 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:29.320 event=startup product=efis-next component=pfd version=0.1.0 qt= 6.8.2 platform= wayland
+Sep 21 05:20:30 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:30.103 event=fuel_leak_monitor state= MONITORING excess_gph= -0.00321111
+Sep 21 05:20:34 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:34.235 event=render_health presentation_hz= 34.6 presentation_interval_ms= 28.91 snapshot_hz= 34.6 sequence= 171 ddp_state= LIVE ddp_hz= 20.8 ddp_accepted= 103 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Sep 21 05:20:39 efis-pfd-01 efis-pfd-qt[549039]: 2026-09-21T05:20:39.236 event=render_health presentation_hz= 35.4 presentation_interval_ms= 28.25 snapshot_hz= 35.2 sequence= 347 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 203 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Sep 21 05:20:28 efis-pfd-01 efis-recorder[548960]: event=recorder_start mode=SIM directory=/home/efis/.local/state/efis-next/records recovered=0
+Sep 21 05:20:28 efis-pfd-01 efis-recorder[548960]: event=recorder_stop records=620
+Sep 21 05:20:28 efis-pfd-01 python3[549029]: {"artifacts_checked": 2, "artifacts_declared": 2, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "pfdrec-d52e377-primary-v1", "roles": ["PFD", "RECORDER"], "schema": "efis-next.release-validation.v1", "status": "PASS"}

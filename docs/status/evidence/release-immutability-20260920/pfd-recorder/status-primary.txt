@@ -1,0 +1,13 @@
+MainPID=549039
+NRestarts=0
+Environment=EFIS_KIOSK=1 QT_QPA_PLATFORMTHEME=qt6ct EFIS_DDP_BIND_ADDRESS=0.0.0.0 EFIS_DDP_LISTEN_PORT=49002 EFIS_DDP_SOURCE_NODE=47 EFIS_SIMULATION_ROLE=FALLBACK
+ActiveState=active
+SubState=running
+DropInPaths=/home/efis/.config/systemd/user/efis-pfd.service.d/release-v1.conf
+
+MainPID=549031
+NRestarts=0
+Environment=
+ActiveState=active
+SubState=running
+DropInPaths=/home/efis/.config/systemd/user/efis-recorder.service.d/release-v1.conf

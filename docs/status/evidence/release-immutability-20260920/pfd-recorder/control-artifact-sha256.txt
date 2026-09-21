@@ -1,0 +1,4 @@
+63a0e6d216a2d36c39c8617ae731fc4df3805ac55ff74215c30cdb0f43cafbf3  /home/efis/.local/state/efis-next/release-pfd-recorder-20260920/primary-release-manifest.json
+ba693ad8b184bc10ffc6b3b6c0c1c2d4386f15083478c8ba768c973515290079  /home/efis/.local/state/efis-next/release-pfd-recorder-20260920/rollback-release-manifest.json
+e550a673506cc25f5ef0fb23fbae47b141fe57415ed5818979a8273855a41089  /home/efis/.local/state/efis-next/release-pfd-recorder-20260920/pfd-release-v1.conf
+6e7940625b074397c7491ffee3fc787ae7d0b6a0cfcff00e6596edd3126af0cb  /home/efis/.local/state/efis-next/release-pfd-recorder-20260920/recorder-release-v1.conf
