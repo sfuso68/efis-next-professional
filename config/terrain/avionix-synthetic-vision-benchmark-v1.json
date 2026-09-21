@@ -1,0 +1,53 @@
+{
+  "schema": "avionix.synthetic-vision-benchmark.v1",
+  "benchmark_id": "SV-TREVISO-BELLUNO-DOLOMITES-V1",
+  "status": "PREPARED_SW_NOT_RUN",
+  "flight_approval": false,
+  "scenario": "config/scenarios/treviso-belluno-route.json",
+  "platform": "RPI5_AARCH64",
+  "roles": ["PFD", "MFD"],
+  "required_tiles": ["N45E012", "N46E012"],
+  "checkpoints": [
+    {"id": "LIPH_DEPARTURE", "latitude_deg": 45.648399, "longitude_deg": 12.1944, "altitude_ft": 1200, "heading_deg": 4.2},
+    {"id": "VENETO_PLAIN", "latitude_deg": 45.82, "longitude_deg": 12.213, "altitude_ft": 3000, "heading_deg": 4.2},
+    {"id": "PREALPS_ENTRY", "latitude_deg": 46.0, "longitude_deg": 12.232, "altitude_ft": 5000, "heading_deg": 4.2},
+    {"id": "LIDB_APPROACH", "latitude_deg": 46.13, "longitude_deg": 12.246, "altitude_ft": 3500, "heading_deg": 4.2},
+    {"id": "LIDB_FINAL", "latitude_deg": 46.166549, "longitude_deg": 12.250389, "altitude_ft": 1800, "heading_deg": 4.2}
+  ],
+  "run_requirements": {
+    "duration_seconds": 3600,
+    "modes": ["DAY", "NIGHT"],
+    "cold_cache": true,
+    "warm_cache": true,
+    "tile_boundary_crossing": "N45E012_TO_N46E012",
+    "missing_tile_fault": true,
+    "operator_signoff": true
+  },
+  "acceptance": {
+    "minimum_fps": 40.0,
+    "maximum_p95_frame_ms": 25.0,
+    "maximum_frame_ms": 100.0,
+    "maximum_boundary_discontinuity_m": 1.0,
+    "maximum_missing_samples": 0,
+    "maximum_unlabelled_fallbacks": 0,
+    "required_throttled": "0x0",
+    "finite_projection_required": true,
+    "near_field_visual_pass_required": true,
+    "horizon_continuity_pass_required": true,
+    "explicit_fallback_required": true
+  },
+  "required_artifacts": [
+    "FRAME_TIMING",
+    "THERMAL",
+    "TILE_TRANSITION",
+    "MISSING_TILE_FAULT",
+    "CHECKPOINT_SCREENSHOTS",
+    "OPERATOR_SIGNOFF"
+  ],
+  "data_policy": {
+    "terrain_status": "DEVELOPMENT_NON_CERT",
+    "vertical_datum": "EGM2008",
+    "navigation_use": false,
+    "obstacle_clearance_use": false
+  }
+}

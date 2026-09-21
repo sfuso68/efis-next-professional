@@ -78,6 +78,11 @@ Il dettaglio è nel registro canonico
   confina i percorsi e finalizza soltanto tre run complete con conferma
   operatore. La pipeline sintetica e 11 test mirati sono PASS; nessun pannello
   è stato contattato e ciò non chiude `AVX-G3-03` (`PRJ-004`).
+- Il blocco C9 congela il benchmark synthetic vision Treviso–Belluno: cinque
+  checkpoint DAY/NIGHT, attraversamento `N45E012`→`N46E012`, soglie 40 FPS/
+  p95 25 ms, fault missing-tile ed evidence con digest. Contratto e test
+  fail-closed sono verificati solo software; renderer, rotta e pannelli non
+  sono stati eseguiti (`AVX-G3-01`, `SV-001`, `PFD-001`, `MFD-001`).
 - Inventario, readiness e proposta upstream ASSO5: formati fail-closed pronti,
   ma nessun modello, DIP, channel map o calibrazione reale verificata
   (`PRJ-002`, `AVX-G1-02`, `03`).
