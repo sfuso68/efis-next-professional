@@ -1,6 +1,7 @@
 #include "ems_controller.hpp"
 
 #include "efis/recording/recorder_status.hpp"
+#include "efis/display/ems_link_presentation.hpp"
 
 #include <QDebug>
 #include <QCoreApplication>
@@ -708,38 +709,19 @@ void EmsController::updateSnapshot() {
             ? static_cast<int>(qMin<std::int64_t>(link.age->count(),
                   std::numeric_limits<int>::max()))
             : -1;
-        switch (link.state) {
-            case efis::protocol::edp::LinkState::live:
-                engine_snapshot_ = network;
-                engine_data_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("LIVE • SIM") : QStringLiteral("LIVE");
-                data_source_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("SIM") : QStringLiteral("LIVE");
-                sensor_node_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("BLACKBOX 47 • SIM") : QStringLiteral("BLACKBOX 47");
-                use_simulation = false;
-                break;
-            case efis::protocol::edp::LinkState::stale:
-                engine_snapshot_ = network;
-                engine_data_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("STALE • SIM") : QStringLiteral("STALE");
-                data_source_state_ = QStringLiteral("STALE");
-                sensor_node_state_ = network.rpm.is_simulated()
-                    ? QStringLiteral("BLACKBOX STALE • SIM") : QStringLiteral("BLACKBOX STALE");
-                use_simulation = false;
-                break;
-            case efis::protocol::edp::LinkState::waiting:
-                engine_data_state_ = QStringLiteral("SIM FALLBACK • WAITING");
-                data_source_state_ = QStringLiteral("LOST");
-                data_age_ms_ = -1;
-                sensor_node_state_ = QStringLiteral("BLACKBOX WAITING");
-                break;
-            case efis::protocol::edp::LinkState::lost:
-                engine_data_state_ = QStringLiteral("SIM FALLBACK • LINK LOST");
-                data_source_state_ = QStringLiteral("LOST");
-                sensor_node_state_ = QStringLiteral("BLACKBOX LINK LOST");
-                break;
+        const auto presentation = efis::display::present_ems_link(
+            link.state, network.rpm.is_simulated());
+        const auto text = [](std::string_view value) {
+            return QString::fromUtf8(value.data(), static_cast<qsizetype>(value.size()));
+        };
+        engine_data_state_ = text(presentation.engine_state);
+        data_source_state_ = text(presentation.data_state);
+        sensor_node_state_ = text(presentation.sensor_state);
+        if (presentation.use_network) {
+            engine_snapshot_ = network;
+            use_simulation = false;
         }
+        if (presentation.clear_age) data_age_ms_ = -1;
     }
     if (use_simulation) {
         engine_snapshot_ = engine_provider_.sample(now, elapsed);
