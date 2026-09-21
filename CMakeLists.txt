@@ -334,6 +334,12 @@ if(EFIS_BUILD_TESTS)
     add_test(NAME efis_voice_assist_tests COMMAND efis_voice_assist_tests)
 
     find_package(Python3 QUIET COMPONENTS Interpreter)
+    if(NOT (Python3_Interpreter_FOUND AND TARGET efis-pfd-qt AND WIN32))
+        message(STATUS
+            "EFIS EMS golden rerender gate: NOT REGISTERED "
+            "(platform-bound Windows baseline; requires Python3, WIN32 and target efis-pfd-qt). "
+            "Linux/core-only CI does not execute a pixel rerender gate.")
+    endif()
     if(Python3_Interpreter_FOUND)
         add_test(NAME efis_emergency_event_transport_tests
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/blackbox/test_emergency_event_transport.py)
