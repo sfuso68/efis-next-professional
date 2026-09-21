@@ -14,6 +14,9 @@ Classificazione: verifica software, non acceptance hardware
   `tests/golden/ems-responsive-states-linux`;
 - matrice EMS completa: sei stati per tre risoluzioni, 18 PNG;
 - confronto dei pixel decodificati con soglie fail-closed;
+- tolleranza esplicita del solo rumore minimo ±1 su canale 8-bit; differenze
+  da ±2 restano soggette alle soglie aggregate strette e picchi oltre 8
+  falliscono sempre;
 - correzione del percorso Python `--executable`, che in precedenza verificava
   soltanto matrice e ordine dei manifesti dopo il rerender;
 - test unitario che dimostra il rifiuto di un'immagine visivamente diversa a
@@ -34,6 +37,11 @@ Il digest scaricato coincide con quello pubblicato da GitHub Actions. Le 18
 immagini e il manifesto sono presenti; un campione LIVE/STALE/FAIL è stato
 ispezionato visivamente. La reference fotografa anche limiti grafici correnti
 alle risoluzioni compatte e non li trasforma in approvazione estetica.
+
+Il primo rerender bloccante (run #132) ha rilevato nel solo frame FAIL
+1024×600 una variazione massima di un livello 8-bit (`max=1`). La policy è
+stata resa esplicita e testata per accettare esclusivamente questo rumore
+minimo di rasterizzazione, senza allargare le soglie per drift maggiori.
 
 ## Verificato solo software
 

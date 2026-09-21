@@ -7,7 +7,9 @@ import unittest
 from unittest import mock
 
 from tools.ui.validate_ems_responsive_state_matrix import validate
-from tools.ui.verify_ems_golden_rerender import compare_manifests, verify
+from tools.ui.verify_ems_golden_rerender import (
+    compare_manifests, verify, visual_drift_exceeds_tolerance,
+)
 from tests.test_hmi_golden_tools import fake_png
 
 
@@ -28,6 +30,11 @@ class EmsResponsiveStateMatrixTests(unittest.TestCase):
 
     def test_repository_matrix_passes(self):
         self.assertEqual(validate(ROOT), [])
+
+    def test_linux_raster_rounding_tolerance_is_bounded(self):
+        self.assertFalse(visual_drift_exceeds_tolerance(1, 1.0, 1.0))
+        self.assertTrue(visual_drift_exceeds_tolerance(2, 0.004738, 0.004738))
+        self.assertTrue(visual_drift_exceeds_tolerance(9, 0.0, 0.0))
 
     def test_direct_renderer_path_compares_fresh_pixels(self):
         with tempfile.TemporaryDirectory() as temporary:

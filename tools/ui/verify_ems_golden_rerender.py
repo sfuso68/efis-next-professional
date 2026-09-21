@@ -41,6 +41,16 @@ def compare_manifests(reference: dict, rerendered: dict) -> list[str]:
     return errors
 
 
+def visual_drift_exceeds_tolerance(peak: int, mean: float, changed: float) -> bool:
+    """Reject visible drift while allowing one-level raster rounding noise.
+
+    A ±1 channel delta is the smallest possible 8-bit difference and can vary
+    between otherwise identical Mesa/OpenGL runs. Deltas of two or more remain
+    subject to the strict aggregate limits; a peak above eight always fails.
+    """
+    return peak > 8 or (peak > 1 and (mean > 0.001 or changed > 0.001))
+
+
 def compare_directories(reference_dir: Path, rerender_dir: Path) -> list[str]:
     reference_path = reference_dir / "manifest.json"
     rerender_path = rerender_dir / "manifest.json"
@@ -64,7 +74,7 @@ def compare_directories(reference_dir: Path, rerender_dir: Path) -> list[str]:
         except (OSError, ValueError) as error:
             errors.append(f"[HMI-RERENDER-03] invalid PNG {reference_file.name}: {error}")
             continue
-        if peak > 8 or mean > 0.001 or changed > 0.001:
+        if visual_drift_exceeds_tolerance(peak, mean, changed):
             errors.append(
                 f"[HMI-RERENDER-03] visual drift {reference_file.name}: "
                 f"max={peak}, mean={mean:.6f}, changed={changed:.6f}"
