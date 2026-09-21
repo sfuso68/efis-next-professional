@@ -427,6 +427,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_assemble_hmi_hardware_evidence)
         set_tests_properties(efis_hmi_hardware_evidence_assembler_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_hmi_hardware_session_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_manage_hmi_hardware_session)
+        set_tests_properties(efis_hmi_hardware_session_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         add_test(NAME efis_g1_sensor_node_capture_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_capture_g1_sensor_node)
         set_tests_properties(efis_g1_sensor_node_capture_tests PROPERTIES

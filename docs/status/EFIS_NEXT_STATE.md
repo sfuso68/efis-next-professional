@@ -73,6 +73,11 @@ Il dettaglio è nel registro canonico
   rigenerati dal run #135 con artifact verificato.
   È verifica software x86-64/Mesa, non acceptance del pilota sui pannelli
   (`PRJ-004`, `AVX-G3-04`).
+- Il blocco C8 aggiunge il session manager operativo fra piano A20 e packager
+  P20: crea bundle `NOT_RUN` non sovrascrivibili, congela piano/source commit,
+  confina i percorsi e finalizza soltanto tre run complete con conferma
+  operatore. La pipeline sintetica e 11 test mirati sono PASS; nessun pannello
+  è stato contattato e ciò non chiude `AVX-G3-03` (`PRJ-004`).
 - Inventario, readiness e proposta upstream ASSO5: formati fail-closed pronti,
   ma nessun modello, DIP, channel map o calibrazione reale verificata
   (`PRJ-002`, `AVX-G1-02`, `03`).
