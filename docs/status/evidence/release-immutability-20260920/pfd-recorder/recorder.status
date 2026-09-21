@@ -1,0 +1,5 @@
+EFIS_RECORDER_STATUS_V1
+state=RECORDING
+updated_wall_ms=1789960840873
+records=600
+segment=flight-1789960828893-0.partial

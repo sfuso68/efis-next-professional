@@ -1,0 +1,13 @@
+MainPID=548653
+NRestarts=0
+ActiveState=active
+SubState=running
+FragmentPath=/home/efis/.config/systemd/user/efis-pfd.service
+DropInPaths=/home/efis/.config/systemd/user/efis-pfd.service.d/release.conf
+
+MainPID=548648
+NRestarts=0
+ActiveState=active
+SubState=running
+FragmentPath=/home/efis/.config/systemd/user/efis-recorder.service
+DropInPaths=

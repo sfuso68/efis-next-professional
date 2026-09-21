@@ -152,5 +152,47 @@ Questa sequenza richiede un ordine separato e una finestra di banco:
 Nessuno di questi gap viene chiuso dalla sola presenza del contratto V1.
 Il packager e il preflight riducono il rischio di staging ma non costituiscono
 evidenza hardware, reboot o rollback. L'evidenza del rollout eseguito è in
-`docs/status/evidence/release-immutability-20260920/`; PFD e recorder restano
-fuori da questo batch, quindi `PROD-005` non è globalmente chiuso.
+`docs/status/evidence/release-immutability-20260920/`. Il successivo batch
+PFD+recorder del 2026-09-21 ha completato manifest, rollback e reboot per tutti
+i processi avionici gestiti; `PROD-005` è chiuso per il solo contratto di
+update/rollback, senza implicare approvazione al volo.
+
+## Batch controllato PFD + recorder
+
+Il PFD e il recorder condividono intenzionalmente lo stesso puntatore
+`/home/efis/efis-next-current`, ma conservano due servizi e due
+`ExecCondition` indipendenti. Lo stesso manifesto deve dichiarare entrambi i
+ruoli e i due artefatti canonici:
+
+- `bin/efis-pfd-qt`;
+- `bin/efis-recorder`.
+
+Gli asset del batch sono:
+
+- `deploy/scripts/stage_pfd_recorder_immutable_releases.sh` — staging
+  fail-closed, senza switch o riavvio;
+- `deploy/scripts/activate_pfd_recorder_immutable_release.sh` — installazione
+  dei gate, switch atomico, prova candidato, rollback reale e ritorno al
+  candidato;
+- `deploy/scripts/verify_pfd_recorder_reboot_acceptance.sh` — verifica
+  read-only successiva al reboot.
+
+La release primaria è `pfdrec-d52e377-primary-v1`; il rollback indipendente è
+`pfdrec-60b3526-rollback-v1`. Entrambe devono essere compilate nativamente su
+ARM64. La seconda non riutilizza il recorder legacy da `build/dev`: compila
+PFD e recorder dallo stesso commit `60b3526`, così `source_commit` resta vero
+per entrambi gli artefatti.
+
+Il recorder scrive esclusivamente sotto
+`/home/efis/.local/state/efis-next/`; il PFD e i due servizi scrivono nel
+journal. Il precedente drop-in `release.conf`, che scriveva il log dentro la
+release, viene conservato nell'evidence bundle e rimosso dal set attivo. In
+caso di errore lo script ripristina puntatore e drop-in precedenti prima di
+riavviare i servizi legacy.
+
+Lo staging emette `EXECUTION_AUTHORIZED=false`: il suo completamento non
+autorizza lo switch. L'attivazione richiede una finestra di banco esplicita,
+`get_throttled=0x0`, bus systemd utente disponibile e i due servizi nominativi.
+`PROD-005` non può essere chiuso prima di manifest PFD/RECORDER PASS, prova di
+rollback, ritorno al candidato, reboot acceptance, stato recorder crescente e
+aggiornamento del registro canonico.

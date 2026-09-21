@@ -62,6 +62,58 @@ class ReleaseSupervisionAssetTests(unittest.TestCase):
         self.assertIn("StandardError=journal", content)
         self.assertNotIn("efis-next-current/logs", content)
 
+    def test_pfd_and_recorder_share_one_validated_release_without_runtime_writes(self):
+        pfd = (self.units / "efis-pfd-release-v1.override.conf").read_text(
+            encoding="utf-8"
+        )
+        recorder = (self.units / "efis-recorder-release-v1.override.conf").read_text(
+            encoding="utf-8"
+        )
+        for content, role, executable in (
+            (pfd, "PFD", "bin/efis-pfd-qt"),
+            (recorder, "RECORDER", "bin/efis-recorder"),
+        ):
+            self.assertIn("WorkingDirectory=/home/efis/efis-next-current", content)
+            self.assertIn(f"--expected-role {role}", content)
+            self.assertIn(f"/home/efis/efis-next-current/{executable}", content)
+            self.assertIn("StandardOutput=journal", content)
+            self.assertIn("StandardError=journal", content)
+            self.assertNotIn("efis-next-current/logs", content)
+        self.assertIn(
+            "/home/efis/.local/state/efis-next/records",
+            recorder,
+        )
+        self.assertIn(
+            "/home/efis/.local/state/efis-next/recorder.status",
+            recorder,
+        )
+
+    def test_pfd_recorder_rollout_assets_are_guarded_and_dual_role(self):
+        scripts = ROOT / "deploy" / "scripts"
+        stage = (scripts / "stage_pfd_recorder_immutable_releases.sh").read_text(
+            encoding="utf-8"
+        )
+        activate = (scripts / "activate_pfd_recorder_immutable_release.sh").read_text(
+            encoding="utf-8"
+        )
+        reboot = (scripts / "verify_pfd_recorder_reboot_acceptance.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("--role PFD", stage)
+        self.assertIn("--role RECORDER", stage)
+        self.assertIn("EXECUTION_AUTHORIZED=false", stage)
+        self.assertIn("pfdrec-d52e377-primary-v1", stage)
+        self.assertIn("pfdrec-60b3526-rollback-v1", stage)
+        self.assertIn("ROLLBACK_DRILL=PASS", activate)
+        self.assertIn("PFD_RECORDER_IMMUTABLE_ACTIVATION=PASS", activate)
+        self.assertIn("restore_dropin", activate)
+        self.assertIn("mv -Tf", activate)
+        self.assertIn("get_throttled", activate)
+        self.assertIn("PFD_RECORDER_REBOOT_ACCEPTANCE=PASS", reboot)
+        self.assertIn("RECORDER_STATUS_MTIME_AFTER", reboot)
+        self.assertIn("for role in PFD RECORDER", reboot)
+        self.assertIn("--expected-role \"$role\"", reboot)
+
     def test_ems_runtime_writes_are_outside_immutable_release(self):
         content = (ROOT / "deploy/systemd/release-v1/efis-ems-release-v1.override.conf").read_text(
             encoding="utf-8"

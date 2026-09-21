@@ -1,0 +1,1 @@
+NRestarts=1 is the expected single ExecStartPre Wayland-socket readiness retry; the subsequent start remained active and Result=success.

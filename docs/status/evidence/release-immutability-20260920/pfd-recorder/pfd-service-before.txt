@@ -1,0 +1,62 @@
+# /home/efis/.config/systemd/user/efis-pfd.service
+[Unit]
+Description=EFIS Next Primary Flight Display
+Documentation=file:///home/efis/efis-next/README.md
+# Raspberry Pi OS/Debian Wayland sessions do not consistently activate
+# graphical-session.target.  Start from the user manager's default target;
+# Restart=always below bridges the short interval before Wayland is ready.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/efis/efis-next
+# default.target can be reached before the compositor creates its socket.
+# Reject that early attempt before Qt can start a portal activation without a
+# display; Restart=always retries against the real Wayland session.
+ExecStartPre=/usr/bin/test -S %t/wayland-0
+Environment=EFIS_KIOSK=1
+# The kiosk does not use desktop dialogs. Selecting the installed local Qt
+# theme prevents synchronous xdg-desktop-portal fallback during session boot.
+Environment=QT_QPA_PLATFORMTHEME=qt6ct
+Environment=EFIS_DDP_BIND_ADDRESS=0.0.0.0
+Environment=EFIS_DDP_LISTEN_PORT=49002
+Environment=EFIS_DDP_SOURCE_NODE=47
+Environment=EFIS_SIMULATION_ROLE=FALLBACK
+ExecStart=/home/efis/efis-next/deploy/scripts/run-pfd.sh
+Restart=always
+RestartSec=2
+TimeoutStopSec=5
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+
+# /home/efis/.config/systemd/user/efis-pfd.service.d/release.conf
+# Install as:
+#   ~/.config/systemd/user/efis-pfd.service.d/release.conf
+#
+# /home/efis/efis-next-current is an operator-managed symlink to one immutable,
+# verified release directory. Switching the symlink is the rollback boundary;
+# the service never executes a partially rebuilt binary in build/dev.
+
+[Service]
+WorkingDirectory=/home/efis/efis-next-current
+Environment=QT_QPA_PLATFORM=wayland
+Environment=QT_QPA_PLATFORMTHEME=qt6ct
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=QSG_RENDER_LOOP=threaded
+Environment=EFIS_KIOSK=1
+Environment=EFIS_DDP_BIND_ADDRESS=0.0.0.0
+Environment=EFIS_DDP_LISTEN_PORT=49002
+Environment=EFIS_DDP_SOURCE_NODE=47
+Environment=EFIS_SIMULATION_ROLE=FALLBACK
+# I pacchetti imagery sono dati operativi persistenti, non parte della release
+# immutabile. Il manifesto selezionato conserva cache_root assoluto e permette
+# al nuovo binario di riusare il download verificato senza duplicarlo.
+Environment=EFIS_IMAGERY_ACTIVE_PACKAGE=/home/efis/efis-next/output/imagery/active-package.json
+ExecStart=
+ExecStart=/home/efis/efis-next-current/build-rpi5/efis-pfd-qt
+StandardOutput=append:/home/efis/efis-next-current/logs/pfd.log
+StandardError=append:/home/efis/efis-next-current/logs/pfd.log

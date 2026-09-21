@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import socket
 import sys
+import sysconfig
 import tempfile
 import unittest
 
@@ -149,8 +150,20 @@ class QgcMonitorPreflightTests(unittest.TestCase):
             "legacy_unit": MODULE.DEFAULT_LEGACY_UNIT,
         }
         if sys.platform != "win32":
+            multiarch = sysconfig.get_config_var("MULTIARCH")
+            candidates = [
+                Path("/lib") / str(multiarch) / "libglib-2.0.so.0",
+                Path("/usr/lib") / str(multiarch) / "libglib-2.0.so.0",
+                Path("/lib64/libglib-2.0.so.0"),
+                Path("/usr/lib64/libglib-2.0.so.0"),
+            ]
+            preload = next((path for path in candidates if path.is_file()), None)
+            self.assertIsNotNone(
+                preload,
+                f"glib runtime fixture not found for MULTIARCH={multiarch}",
+            )
             manifest["runtime_preload"] = {
-                "path": "/lib/x86_64-linux-gnu/libglib-2.0.so.0",
+                "path": str(preload),
                 "required_symbol": "g_string_free_and_steal",
             }
         else:

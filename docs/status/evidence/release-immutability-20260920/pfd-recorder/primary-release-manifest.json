@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    {
+      "executable": true,
+      "path": "bin/efis-pfd-qt",
+      "sha256": "2d153807ae4decd957441a039a18d978dc3289ebcc217933065d17af8329eca6"
+    },
+    {
+      "executable": true,
+      "path": "bin/efis-recorder",
+      "sha256": "98b1d50b10f0ecb31f5c1d7215a5a27968bf98e6bfecdefffa5043b4b05694b2"
+    }
+  ],
+  "built_utc": "2026-09-20T20:15:37Z",
+  "flight_approval": false,
+  "platform": "RPI5_AARCH64",
+  "release_id": "pfdrec-d52e377-primary-v1",
+  "repository": "sfuso68/efis-next-professional",
+  "roles": [
+    "PFD",
+    "RECORDER"
+  ],
+  "schema": "efis-next.release-manifest.v1",
+  "simulation_mode": true,
+  "source_commit": "d52e377d495dd8d33f1e7e40c3b67a663168a749"
+}

@@ -1,0 +1,8 @@
+2026-09-21T05:21:57+02:00 efis-pfd-01 systemd[1298]: Starting efis-pfd.service - EFIS Next Primary Flight Display...
+2026-09-21T05:21:57+02:00 efis-pfd-01 systemd[1298]: efis-pfd.service: Control process exited, code=exited, status=1/FAILURE
+2026-09-21T05:21:57+02:00 efis-pfd-01 systemd[1298]: efis-pfd.service: Failed with result 'exit-code'.
+2026-09-21T05:21:57+02:00 efis-pfd-01 systemd[1298]: Failed to start efis-pfd.service - EFIS Next Primary Flight Display.
+2026-09-21T05:21:59+02:00 efis-pfd-01 systemd[1298]: efis-pfd.service: Scheduled restart job, restart counter is at 1.
+2026-09-21T05:21:59+02:00 efis-pfd-01 systemd[1298]: Starting efis-pfd.service - EFIS Next Primary Flight Display...
+2026-09-21T05:21:59+02:00 efis-pfd-01 systemd[1298]: Started efis-pfd.service - EFIS Next Primary Flight Display.
+2026-09-21T05:22:49+02:00 efis-pfd-01 sudo[1975]:     efis : PWD=/home/efis ; USER=root ; COMMAND=/usr/bin/journalctl -b _SYSTEMD_USER_UNIT=efis-pfd.service --no-pager -o short-iso

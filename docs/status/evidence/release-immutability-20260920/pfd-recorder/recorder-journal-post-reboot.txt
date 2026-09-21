@@ -1,0 +1,1 @@
+2026-09-21T05:21:57+02:00 efis-pfd-01 python3[1383]: {"artifacts_checked": 2, "artifacts_declared": 2, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "pfdrec-d52e377-primary-v1", "roles": ["PFD", "RECORDER"], "schema": "efis-next.release-validation.v1", "status": "PASS"}
