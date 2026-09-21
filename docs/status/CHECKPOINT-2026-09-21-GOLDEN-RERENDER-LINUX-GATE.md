@@ -43,6 +43,20 @@ Il primo rerender bloccante (run #132) ha rilevato nel solo frame FAIL
 stata resa esplicita e testata per accettare esclusivamente questo rumore
 minimo di rasterizzazione, senza allargare le soglie per drift maggiori.
 
+I run #133 e #134 hanno poi isolato una deriva ripetibile esclusivamente nei
+frame `LOST` e `FAIL`. L'artifact diagnostico del run #134 ha SHA-256
+`b4ac5ed1e103b9a832dfb815580098dc7013d0c1addbf716844c61088e9e6ef4`;
+il digest locale coincide con quello pubblicato da GitHub Actions. Il confronto
+pixel ha confinato tutte le differenze al rettangolo CAS superiore
+(`x=688..1015`, `y=74..107` a 1024×600), mentre LIVE, STALE, DEGRADED e SIM
+sono risultati identici. La causa è il lampeggio asincrono del banner WARNING,
+non una deriva del renderer o degli strumenti.
+
+La fixture `HmiGoldenMain.qml` attiva ora `goldenMode`; in tale modalità viene
+congelata soltanto l'animazione del banner CAS. Il lampeggio operativo resta
+attivo nell'applicazione normale. La correzione è coperta dal test di contratto
+QML e non modifica la logica degli allarmi.
+
 ## Verificato solo software
 
 - compilazione e link del renderer Qt su runner Linux x86-64;
