@@ -67,6 +67,7 @@ comandi su uscite.
 | 2026-09-20 | AVX-G6-01 / PROD-005 | `release-immutability-20260920` e registro release | VERIFIED-HW su MFD/EMS/Blackbox: manifest, eseguibile canonico, rollback drill e reboot PASS; EMS EDP `LIVE • SIM` e runtime persistente; PFD/recorder restano aperti |
 | 2026-09-20 | Program control | `AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md` | DOCUMENTED; 44,7% ponderato su 71 requisiti, gate/workstream/nodi confrontati con il piano; nessuna promozione di evidenza software a hardware |
 | 2026-09-21 | AVX-G0-02/03 | ADR-018, GitHub/serverha/Blackbox/NAS e timer replica | ACCEPTED; quattro `main` coincidenti a `5891f754ee06948349f711c57c90e8700137d09f`, ruoli e retention espliciti; restore drill e ritiro copia Blackbox restano attività separate |
+| 2026-09-21 | AVX-G3-03 / PRJ-004 | `CHECKPOINT-2026-09-21-HMI-HARDWARE-SESSION.md`, session manager e 11 test mirati | VERIFIED-SW/NOT_RUN; pipeline fail-closed init→finalize→evidence completa, ma pannelli, touch, soak, replay, fault e firma operatore restano hardware aperto |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato
