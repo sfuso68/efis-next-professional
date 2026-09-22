@@ -85,3 +85,7 @@ La baseline programmatica e il backlog per gate sono mantenuti in
 Il brief definisce obiettivi e gate, ma non sostituisce la matrice, lo stato
 verificato o le ADR accettate. L'indice documentale stabilisce l'ordine di
 autorità e registra i conflitti aperti.
+
+Il quadro direzionale completo corrente, inclusi avanzamento, problemi,
+attività interattive e planning operativo, è in
+`docs/project/AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md`.

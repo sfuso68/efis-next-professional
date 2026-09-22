@@ -1,6 +1,6 @@
-# AVIONIX NEXT — decision register
+# FUSO AVIONICS NEXT — decision register
 
-Aggiornamento: 2026-09-21
+Aggiornamento: 2026-09-22
 Stato: registro decisioni; ogni approvazione resta esplicita e tracciata
 
 Questo registro separa le decisioni del proprietario dalle constatazioni
@@ -9,21 +9,20 @@ configurazioni e non diventa vincolante finché non viene approvata.
 
 | ID | Gate | Decisione | Raccomandazione | Stato | Effetto dopo approvazione |
 |---|---|---|---|---|---|
-| DEC-G0-001 | G0 | Nome prodotto e alias tecnico | `AVIONIX NEXT` come prodotto; `EFIS NEXT` resta alias tecnico/compatibilità fino a G6 | PENDING_USER | ADR di naming, nessun rename automatico |
+| DEC-G0-001 | G0 | Nome prodotto e alias tecnico | `FUSO AVIONICS NEXT` come prodotto; `EFIS NEXT` resta alias tecnico/compatibilità fino a migrazione controllata | APPROVED 2026-09-22 | naming documentale congelato; nessun rename automatico di runtime o repository |
 | DEC-G0-002 | G0 | Secondo bare repository NAS | applicare i ruoli GitHub/serverha/NAS/Blackbox congelati da ADR-018; conservare le copie legacy senza cancellarle | APPROVED 2026-09-21 | autorità e retention definite; nessuna cancellazione |
 | DEC-G0-003 | G0 | Cinque documenti mancanti | acquisire gli originali dal proprietario, calcolare hash e classificarli; vietata la ricostruzione presunta | BLOCKED_EXTERNAL | import controllato in `docs/reference/` o registro esterno |
 | DEC-G0-004 | G0/G1 | Nodo ASSO5 e quattro Sequent | inventario fisico/read-only con modello, revisione, DIP, I2C, alimentazione e foto | BLOCKED_HW | abilita G1 senza autorizzare uscite o scritture |
 | DEC-G2-001 | G2 | Freeze ICD DDP/EDP ed evidence bundle | approvare il solo freeze documentale definito nel readiness report | APPROVED 2026-09-17 | documento ICD, vector, validator; nessun deployment |
+| DEC-G3-001 | G3/WS6 | Famiglie motore Rotax supportate | profili distinti `912 UL` e `912 ULS`, ciascuno con fonti, limiti e applicabilità indipendenti | APPROVED 2026-09-22 | abilita schema e test dei due profili; non autorizza limiti non documentati |
 
 ## DEC-G0-001 — naming
 
-La raccomandazione evita un rename prematuro di binari, servizi, namespace,
-repository e directory già distribuiti. `AVIONIX NEXT` diventa il nome del
-prodotto e della documentazione nuova; `EFIS NEXT` resta l'alias tecnico
-esplicito fino alla baseline G6. Un'eventuale migrazione viene poi gestita con
-compatibilità e rollback, non con sostituzioni globali.
-
-Risposta sufficiente: `Approvo DEC-G0-001`.
+Il proprietario ha approvato il nome **FUSO AVIONICS NEXT** il 2026-09-22.
+`EFIS NEXT` resta l'alias tecnico e di compatibilità per servizi, namespace,
+repository, directory e artefatti già distribuiti. Il congelamento del nome
+non autorizza sostituzioni globali: ogni futura migrazione tecnica richiederà
+compatibilità, manifest e rollback.
 
 ## DEC-G0-002 — repository NAS duplicato
 
@@ -69,6 +68,14 @@ Decisione ricevuta dal proprietario il 2026-09-17 con la formula sopra. Lo
 scope approvato è stato applicato senza modifiche wire, runtime, deployment,
 rete o hardware. La baseline risultante è `FROZEN-SW`; la verifica ARM64 e le
 prove target restano aperte.
+
+## DEC-G3-001 — profili motore
+
+Il proprietario ha richiesto il supporto di entrambe le famiglie Rotax 912 UL
+e 912 ULS. Devono essere due profili separati: nessun limite, allarme,
+calibrazione o procedura può essere copiato automaticamente da una variante
+all'altra. L'attivazione per un esemplare resta bloccata fino a targhetta,
+seriale, manuale/revisione applicabile e approvazione del profilo.
 
 ## Regole di chiusura
 

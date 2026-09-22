@@ -1,9 +1,9 @@
-# EFIS NEXT — Stato corrente sintetico
+# FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-21
+Aggiornamento: 2026-09-22
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata precedente a questo aggiornamento: `origin/main` `fa91bee09a5fc62afb9a7fe778954f172e1a77f7`
-HEAD `main` verificato all'ingresso del blocco C7 Linux: `fa91bee09a5fc62afb9a7fe778954f172e1a77f7`
+Baseline integrata esaminata: `origin/main` `195e730cb9785002dc2e6c29057d4e315338a53b`
+Candidato separato non integrato: PR #29 / C12 `a907a87ed58cb6899ccc43937cdfed35be79517a`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
@@ -13,15 +13,16 @@ Il registro operativo riga-per-riga resta
 [`EFIS_NEXT_MASTER_MATRIX.md`](EFIS_NEXT_MASTER_MATRIX.md); la release dei nodi
 è governata esclusivamente da
 [`EFIS_NEXT_ACTIVE_RELEASES.md`](EFIS_NEXT_ACTIVE_RELEASES.md).
-Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
-è in
-[`AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md`](../project/AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md).
+Il quadro direzionale corrente con pianificazione R0, gate, workstream,
+problemi e attività interattive è in
+[`AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md`](../project/AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md).
+Il rapporto del 2026-09-20 resta uno snapshot storico.
 
 ## 1. Quadro immediato
 
 | Gate/area | Stato | Sintesi | ID autorevoli |
 |---|---|---|---|
-| Governance e fonti | PARTIAL | Brief, indice, backlog e controllo progetto presenti; topologia Git chiusa da ADR-018; naming e cinque fonti restano aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
+| Governance e fonti | PARTIAL | Nome prodotto `FUSO AVIONICS NEXT` approvato; alias tecnico `EFIS NEXT`; brief, indice, backlog e controllo progetto presenti; topologia Git chiusa da ADR-018; cinque fonti e restore restano aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
 | Nodo sensori ASSO5 | BLOCKED-HW | RPi4 `.89` identificato; Sequent 0/4, alimentatore, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |

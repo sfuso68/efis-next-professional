@@ -1,11 +1,11 @@
-# AVIONIX NEXT — indice documentale e regole di autorità
+# FUSO AVIONICS NEXT — indice documentale e regole di autorità
 
-Aggiornamento: 2026-09-21
+Aggiornamento: 2026-09-22
 Stato: baseline documentale WS0/G0, DEVELOPMENT / NON-CERT
 
 ## Repository autorevole
 
-Il software AVIONIX/EFIS Next è sviluppato in
+Il prodotto **FUSO AVIONICS NEXT**, con alias tecnico `EFIS NEXT`, è sviluppato in
 `sfuso68/efis-next-professional`. Il repository `sfuso68/efis-evolved` resta
 storico e non è una base di merge. Il Master Brief R0 è stato importato dal
 repository storico senza importarne la genealogia.
@@ -36,6 +36,7 @@ con una nuova ADR o con una revisione esplicita del brief.
 | Documento | Ruolo | Stato |
 |---|---|---|
 | `AVIONIX_NEXT_MASTER_PROJECT_BRIEF_CODEX_R0.md` | specifica e piano generale AVIONIX Next | importato integralmente |
+| `AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md` | quadro direzionale corrente: architettura, gate, workstream, rischi, attività interattive e planning | corrente alla baseline `main` `195e730`; PR #29 registrata come candidata non integrata |
 | `AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md` | quadro direzionale dettagliato di avanzamento, scostamenti e piano alla data indicata | snapshot storico; banner di rinvio allo stato generato corrente |
 | `AVIONIX_NEXT_PROJECT_AUDIT.md` | audit completo sezione 24 e proposta successiva | aggiornato all'HEAD del branch di lavoro |
 | `AVIONIX_G2_FREEZE_READINESS.md` | confronto read-only di contratti, codice e test DDP/EDP | storico; superato dal freeze approvato |
@@ -92,7 +93,7 @@ presunto.
 | C-005 | Blackbox RPi4 nel testo programmatico vs RPi5 reale | resta RPi5 `efisblackbox` finché una nuova ADR non dimostra il contrario | revisione architetturale formale |
 | C-006 | Waveshare 5P come rete complessiva | ammesso solo nel banco FLIGHT-DATA minimo; non sufficiente al prodotto finale | selezione switch finale e VIDEO |
 | C-007 | `sv3d-fondamenta` vs renderer Professional | il branch storico è sorgente di requisiti/algoritmi, non base di merge | audit selettivo WS4 |
-| C-008 | Nome AVIONIX NEXT vs EFIS NEXT | nessun rename automatico di servizi/repository | decisione prodotto dell'utente |
+| C-008 | Nome AVIONIX NEXT vs EFIS NEXT | chiuso il 2026-09-22: prodotto `FUSO AVIONICS NEXT`, alias tecnico `EFIS NEXT`; nessun rename automatico di servizi/repository | migrazione tecnica futura solo con compatibilità e rollback |
 | C-009 | Copie Git multiple tra serverha, Blackbox e NAS | chiuso da ADR-018: GitHub autorità condivisa, serverha mirror primario, bare Professional NAS archivio, Blackbox temporanea, `git-repos/efis.git` legacy | restore drill e futuro ritiro controllato della copia Blackbox |
 | C-010 | STATE indicava un ID release EMS stale, diverso dal registro canonico e dal bundle hardware | chiuso: prevalgono `EFIS_NEXT_ACTIVE_RELEASES.md`, `EMS-002` e bundle `release-immutability-20260920`; ID corretto `ems-7655799-primary-v1` | nessuna: riconciliazione documentale, stato `EMS-002` invariato `PARTIAL` |
 
@@ -142,3 +143,13 @@ GitHub, serverha, Blackbox e NAS coincidevano a
 l'ultimo servizio oneshot era concluso con successo e la chiave NAS dedicata
 ha rifiutato l'accesso shell. Il limite OpenSSH del DS214, il restore drill e
 il ritiro della copia Blackbox restano rischi/attività espliciti, non nascosti.
+
+## Quadro direzionale corrente 2026-09-22
+
+`AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md` consolida lo stato corrente
+senza sostituire Master Matrix, registro release o evidence. Il rapporto usa la
+baseline integrata `195e730`, registra C12/PR #29 come candidato separato e
+distingue esplicitamente attività software, verifiche hardware e prove che
+richiedono l'operatore. Il precedente rapporto del 2026-09-20 resta uno
+snapshot storico e non deve essere usato per dedurre release o percentuali
+correnti.
