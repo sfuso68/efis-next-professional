@@ -12,14 +12,21 @@ Node {
     required property real aircraftAltitudeFt
     property real tileX: 0
     property real tileZ: 0
-    property real tileWidth: 77150
-    property real tileDepth: 111320
+    property real tileWidth: terrainProjection.tileWidth
+    property real tileDepth: terrainProjection.tileDepth
     property real maximumElevation: 3200
-    property real lodRadius: 52000
-    property real preloadRadius: 105000
-    readonly property real cameraDistance: Math.hypot(cameraX-tileX,cameraZ-tileZ)
-    readonly property bool highDetail: cameraDistance < lodRadius
-    readonly property bool tileEnabled: cameraDistance < preloadRadius
+    readonly property real footprintDistance: terrainProjection.footprintDistance(
+        cameraX, cameraZ, tileX, tileZ)
+    property bool highDetail: true
+    property bool tileEnabled: true
+
+    function updateLodState() {
+        highDetail = terrainProjection.highDetailForDistance(
+            footprintDistance, highDetail)
+        tileEnabled = terrainProjection.tileEnabledForDistance(footprintDistance)
+    }
+    onFootprintDistanceChanged: updateLodState()
+    Component.onCompleted: updateLodState()
 
     position: Qt.vector3d(tileX, maximumElevation/2, tileZ)
 
