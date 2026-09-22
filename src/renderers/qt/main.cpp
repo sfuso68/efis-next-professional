@@ -1,6 +1,7 @@
 #include "pfd_controller.hpp"
 #include "gpu_map_item.hpp"
 #include "synthetic_vision_item.hpp"
+#include "terrain_projection_adapter.hpp"
 #include "circular_gauge_item.hpp"
 #include "connectivity_service.hpp"
 #include "weather_service.hpp"
@@ -34,6 +35,7 @@ int main(int argc, char* argv[]) {
     qmlRegisterType<CircularGaugeItem>("EfisNext.Native", 1, 0, "CircularGaugeItem");
 
     PfdController controller;
+    TerrainProjectionAdapter terrainProjection;
     ConnectivityService connectivity;
     WeatherService weather;
     weather.setSimulation(controller.aircraftProfileState() == QStringLiteral("SIMULATION"));
@@ -52,6 +54,7 @@ int main(int argc, char* argv[]) {
         return QUrl::fromLocalFile(path + QLatin1Char('/')).toString();
     };
     engine.rootContext()->setContextProperty("pfd", &controller);
+    engine.rootContext()->setContextProperty("terrainProjection", &terrainProjection);
     engine.rootContext()->setContextProperty("connectivity", &connectivity);
     engine.rootContext()->setContextProperty("weather", &weather);
     engine.rootContext()->setContextProperty("efisKiosk", kioskMode);

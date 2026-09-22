@@ -142,3 +142,10 @@ GitHub, serverha, Blackbox e NAS coincidevano a
 l'ultimo servizio oneshot era concluso con successo e la chiave NAS dedicata
 ha rifiutato l'accesso shell. Il limite OpenSSH del DS214, il restore drill e
 il ritiro della copia Blackbox restano rischi/attività espliciti, non nascosti.
+
+## Synthetic Vision C12 — 2026-09-22
+
+`docs/verification/SYNTHETIC_VISION_LOD_PROJECTION_V1.md` e
+`docs/status/CHECKPOINT-2026-09-22-SYNTHETIC-VISION-LOD-PROJECTION.md`
+documentano la correzione software del LOD al confine N45/N46. L'evidenza è
+`VERIFIED_SW / VERIFY_HW`: non sostituisce il benchmark C9 su PFD e MFD reali.

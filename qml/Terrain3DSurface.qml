@@ -12,13 +12,20 @@ Item {
     required property real altitude
     property bool goldenMode: false
 
-    readonly property real tileWidth: 77150
-    readonly property real tileDepth: 111320
-    readonly property real cameraX: (longitude - 12.5) * tileWidth
-    readonly property real cameraZ: -(latitude - 46.5) * tileDepth
+    readonly property real tileWidth: terrainProjection.tileWidth
+    readonly property real tileDepth: terrainProjection.tileDepth
+    readonly property real cameraX: terrainProjection.worldX(latitude, longitude)
+    readonly property real cameraZ: terrainProjection.worldZ(latitude, longitude)
     readonly property string gpuRoot: efisTerrainGpuRoot
     readonly property string imageryRoot: efisImageryTextureRoot
     function asset(root, name) { return root + name }
+
+    Component.onCompleted: console.info(
+        "event=terrain_projection_contract contract=ENU_LOCAL_V1"
+        + " lod_basis=tile_footprint"
+        + " high_enter_m=" + terrainProjection.highDetailEnter
+        + " high_exit_m=" + terrainProjection.highDetailExit
+        + " preload_m=" + terrainProjection.preloadMargin)
 
     Rectangle {
         anchors.fill: parent
@@ -116,9 +123,10 @@ Item {
             castsShadow: false
         }
 
-        // Six seamless DEM tiles. Each tile switches between 257 and 513
-        // samples based on camera distance; the active N46E012 tile retains a
-        // 1025-sample near mesh and the Sentinel-2 texture.
+        // Six seamless DEM tiles. LOD is selected from the distance to the
+        // tile footprint, not its centre: this keeps both sides of the
+        // N45E012/N46E012 crossing at high detail and removes the former
+        // low-resolution band at the seam. Hysteresis prevents shimmer.
         TerrainTile3D { cameraX: terrain.cameraX; cameraZ: terrain.cameraZ; aircraftAltitudeFt: terrain.altitude; tileX: -terrain.tileWidth; tileZ: 0
             lowGeometry: terrain.asset(terrain.gpuRoot,"N46E011-257.pgm"); highGeometry: terrain.asset(terrain.gpuRoot,"N46E011-513.pgm"); textureSource: terrain.asset(terrain.gpuRoot,"N46E011-sentinel2.png") }
         TerrainTile3D { cameraX: terrain.cameraX; cameraZ: terrain.cameraZ; aircraftAltitudeFt: terrain.altitude; tileX: 0; tileZ: 0

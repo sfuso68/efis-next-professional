@@ -1,6 +1,6 @@
 # EFIS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-21
+Aggiornamento: 2026-09-22
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline integrata precedente a questo aggiornamento: `origin/main` `fa91bee09a5fc62afb9a7fe778954f172e1a77f7`
 HEAD `main` verificato all'ingresso del blocco C7 Linux: `fa91bee09a5fc62afb9a7fe778954f172e1a77f7`
@@ -94,6 +94,13 @@ Il dettaglio è nel registro canonico
   risultato C9 non sovrascrivibile. Le 17 prove C9+C10+C11 sono PASS solo
   software; nessun nodo o renderer è stato eseguito (`AVX-G3-01`, `SV-001`,
   `PFD-001`, `MFD-001`).
+- Il blocco C12 corregge nel renderer Quick 3D la causa software della fascia
+  a bassa definizione sul confine N45/N46: il LOD usa ora la distanza
+  dall'impronta tile, con isteresi 18/24 km e preload a 45 km. Modello C++20,
+  adapter Qt, build completa, QML AOT e le quattro suite C9–C12 sono PASS.
+  Nessun RPi5 è stato contattato: qualità visiva, ≥40 FPS, p95 ≤25 ms, termica,
+  fault e firma operatore restano `VERIFY-HW` (`AVX-G3-01`, `SV-001`,
+  `PFD-001`, `MFD-001`).
 - Inventario, readiness e proposta upstream ASSO5: formati fail-closed pronti,
   ma nessun modello, DIP, channel map o calibrazione reale verificata
   (`PRJ-002`, `AVX-G1-02`, `03`).
@@ -131,8 +138,9 @@ Il dettaglio è nel registro canonico
    update/rollback, senza modificare lo stato DEVELOPMENT/NON-CERT.
 4. HMI: touch, leggibilità, sunlight/night, frame-rate, termica e fault su
    pannelli reali non accettati (`PRJ-004`, `AVX-G3-03`).
-5. Synthetic vision: terreno vicino stirato/sfocato e LOD/proiezione non
-   accettati (`NAV-003`, `AVX-G3-01`).
+5. Synthetic vision: la causa LOD al confine è corretta e verificata software
+   da C12, ma terreno vicino, proiezione e prestazioni non sono ancora accettati
+   sui due RPi5 (`NAV-003`, `AVX-G3-01`).
 6. Motore reale: CAN, MGL, limiti Rotax e calibrazioni privi di fonte completa
    e di prova end-to-end (`EMS-003`, `EMS-004`, `AVX-G3-02`).
 7. Safety: Emergency Assist resta consultivo; checklist e servi sono bloccati
@@ -148,6 +156,9 @@ Il dettaglio è nel registro canonico
    deployment (`PRJ-003`, `PRJ-004`, `EMS-002`).
 4. Solo dopo review/merge, eseguire HMI harness su PFD/MFD/EMS e verticale G2
    reale con nuova autorizzazione (`AVX-G2-02`, `AVX-G3-03`).
+5. Dopo integrazione C12, creare sessioni C10 dal commit installato e completare
+   C11/C9 su PFD e MFD con confronto visuale della transizione N45/N46
+   (`AVX-G3-01`, `SV-001`).
 
 ## 8. Criterio di verità
 
@@ -321,3 +332,19 @@ dedicata ha rifiutato una richiesta shell. Restano aperti il restore drill, la
 protezione fuori sito, il limite crittografico del DS214 e l'eventuale ritiro
 controllato della copia Blackbox. Nessun runtime avionico dipende da questa
 catena e nessuna verifica di volo è implicata.
+
+## 16. Synthetic Vision C12 — correzione LOD/proiezione
+
+Il branch `fix/synthetic-vision-lod-projection-v1`, costruito da `origin/main`
+`195e730`, sostituisce il criterio LOD basato sul centro della tile con la
+distanza minima dalla sua impronta geografica. Sul confine `N45E012`/
+`N46E012` entrambe le tile restano ora high-detail; una isteresi 18/24 km evita
+oscillazioni e il preload a 45 km riduce le mesh mantenute inutilmente attive.
+Costanti e logica risiedono in un modello C++20 unico consumato dal QML tramite
+adapter, con fail-closed per coordinate non finite.
+
+Build completa MSVC/Qt, `efis-pfd-qt`, QML AOT e le quattro suite mirate
+C9–C12 sono PASS. Il CTest Windows complessivo ha 54/64 PASS e dieci blocchi
+noti Smart App Control/DLL, dichiarati senza mascherarli. PFD e MFD reali non
+sono stati contattati; C12 è `VERIFIED_SW / VERIFY_HW`, non modifica le soglie
+C9 e non chiude `AVX-G3-01` o `SV-001`.
