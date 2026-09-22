@@ -36,6 +36,7 @@ add_library(efis_core
     src/recording/segmented_recorder.cpp
     src/recording/recorder_status.cpp
     src/display/display_model.cpp
+    src/display/terrain_projection.cpp
     src/providers/simulation_provider.cpp
     src/providers/simulation_source.cpp
     src/providers/ddp_udp_source.cpp
@@ -124,6 +125,8 @@ if(EFIS_BUILD_QT_RENDERER)
             src/renderers/qt/gpu_map_item.hpp
             src/renderers/qt/synthetic_vision_item.cpp
             src/renderers/qt/synthetic_vision_item.hpp
+            src/renderers/qt/terrain_projection_adapter.cpp
+            src/renderers/qt/terrain_projection_adapter.hpp
             src/renderers/qt/circular_gauge_item.cpp
             src/renderers/qt/circular_gauge_item.hpp
             src/renderers/qt/connectivity_service.cpp
@@ -316,6 +319,10 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_instrument_tests tests/instrument_tests.cpp)
     target_link_libraries(efis_instrument_tests PRIVATE efis_core)
     add_test(NAME efis_instrument_tests COMMAND efis_instrument_tests)
+
+    add_executable(efis_terrain_projection_tests tests/terrain_projection_tests.cpp)
+    target_link_libraries(efis_terrain_projection_tests PRIVATE efis_core)
+    add_test(NAME efis_terrain_projection_tests COMMAND efis_terrain_projection_tests)
 
     add_executable(efis_safety_tests tests/safety_tests.cpp)
     target_link_libraries(efis_safety_tests PRIVATE efis_core)

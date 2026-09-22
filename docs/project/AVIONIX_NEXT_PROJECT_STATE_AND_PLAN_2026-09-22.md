@@ -4,11 +4,11 @@ Data di congelamento: 2026-09-22
 
 Repository autorevole: `sfuso68/efis-next-professional`
 
-Baseline integrata esaminata: `main` `195e730cb9785002dc2e6c29057d4e315338a53b`
+Baseline integrata esaminata: `main` `61070b8d990c01ca58943a6370402623f4320ce7`
 
-Candidato non ancora parte della baseline: PR #29, branch
-`fix/synthetic-vision-lod-projection-v1`, commit
-`a907a87ed58cb6899ccc43937cdfed35be79517a`
+C12 integrato tramite PR #29: source
+`a907a87ed58cb6899ccc43937cdfed35be79517a`, merge
+`61070b8d990c01ca58943a6370402623f4320ce7`
 
 Classificazione: **DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO**
 
@@ -160,7 +160,7 @@ hardware; G6 non può essere dichiarato raggiunto sommando test software.
 | WS1 | contratti dati | VERIFY-HW | DDP V2, EDP V1, ICD, CRC/SHA, replay ARM64 | verticale fisico e failure modes reali |
 | WS2 | ASSO5 sensor node | BLOCKED-HW | identità RPi4 e framework REAL/SIM/health | inventario, adapter reali, mapping, calibrazione, soak |
 | WS3 | HMI PFD/MFD/EMS | VERIFY-HW | design system, golden, responsive e stati degradati | pannelli/touch, sunlight/night, FPS, termica, fault |
-| WS4 | SV, mappe e NAV | PARTIAL | DEM/imagery/navdata, renderer e benchmark C9-C12 | merge C12, deployment gemello, C9 su due RPi5, TAWS e NAV completa |
+| WS4 | SV, mappe e NAV | PARTIAL | DEM/imagery/navdata, renderer e C12 integrato | deployment gemello autorizzato, C9/C10/C11 su due RPi5, TAWS e NAV completa |
 | WS5 | air data/AHRS | PARTIAL-HW | Pixhawk e dispositivi rilevati, modelli core | M10 outdoor, compass, DLVR zero/linearità, failover |
 | WS6 | EMS Rotax/MGL | PARTIAL | HMI, simulatore, EDP, ore/log e release EMS | sorgenti CAN/MGL reali, limiti controllati e calibrazioni |
 | WS7 | Pixhawk/autopilota | PARTIAL-HW | osservazione MAVLink e fan-out read-only | backup verificato, fault/endurance; nessuna autorità comando V1 |
@@ -200,8 +200,8 @@ LOD usando la distanza dall'impronta della tile con isteresi 18/24 km e preload
 
 **Problema noto:** le catture precedenti mostravano primo piano stirato o
 sfocato, gap di copertura e circa 34-35 presentazioni/s, sotto la soglia C9 di
-40 FPS. C12 è verificato solo su workstation e non è ancora baseline finché la
-PR #29 non è integrata.
+40 FPS. C12 è ora parte della baseline, ma resta verificato solo su workstation:
+non è stato distribuito né accettato sui due RPi5.
 
 **Criterio:** stesso commit sui due RPi5, rotta Treviso-Belluno, cinque
 checkpoint DAY/NIGHT, `>=40 FPS`, p95 `<=25 ms`, termica accettabile, fault
@@ -298,7 +298,7 @@ brownout/load test, termica, EMI, vibrazioni ed enclosure.
 | P0 | alimentazione non qualificata | reset, corruzione o perdita dati/display | inventario elettrico e brownout/load test controllati |
 | P0 | acceptance pannelli assente | difetti touch/leggibilità/termica non rilevati | sessione HMI C8/A20 su PFD/MFD/EMS |
 | P0 | fonti motore/POH insufficienti | limiti o checklist potenzialmente errati | targhette, seriali e manuali/revisioni applicabili |
-| P1 | C12 non ancora provato sui RPi5 | qualità SV e prestazioni ignote | integrare PR, release gemella, C9/C10/C11 su entrambi |
+| P1 | C12 non ancora provato sui RPi5 | qualità SV e prestazioni ignote | preparare release gemella, poi C9/C10/C11 su entrambi dopo autorizzazione |
 | P1 | M10/DLVR non calibrati | IAS/heading/position non affidabili | test cielo aperto e banco pitot/statico |
 | P1 | Blackbox single point incompleto | perdita distribuzione/log | fault storage/rete, watchdog, endurance e recovery |
 | P1 | restore NAS non provato | replica esistente ma recuperabilità ignota | restore drill in directory isolata con hash |
@@ -311,11 +311,12 @@ brownout/load test, termica, EMI, vibrazioni ed enclosure.
 Queste attività non devono essere marcate `DONE` finché l'evidenza non è
 acquisita e archiviata.
 
-### I-01 — Verificare e integrare C12
+### I-01 — C12 integrato; resta la verifica hardware
 
-- operatore: review della PR #29 e conferma merge dopo CI verde;
-- evidenza: URL PR, commit di merge, check CI, `main` remoto;
-- limite: nessun deployment implicito.
+- completato: PR #29 unita dopo 4/4 check CI verdi al merge `61070b8`;
+- operatore: autorizzare separatamente il deployment gemello su PFD e MFD;
+- evidenza ancora richiesta: commit installato, C10/C11, benchmark C9 e firma operatore;
+- limite: il merge non implica deployment né approvazione al volo.
 
 ### I-02 — Inventario ASSO5/Sequent
 
@@ -394,8 +395,8 @@ acquisita e archiviata.
 
 ## 9. Attività eseguibili senza interazione hardware
 
-1. Revisionare e integrare C12 dopo CI.
-2. Preparare il piano di release PFD/MFD per il benchmark senza distribuirlo.
+1. Preparare il piano di release PFD/MFD C12 per il benchmark senza distribuirlo.
+2. Preparare il runbook C9/C10/C11 e i controlli di rollback.
 3. Consolidare modello NAV unico, annunci di validità e test GPS/VOR/NDB.
 4. Estendere test del core ai SignalId ancora non coperti.
 5. Preparare decoder CAN/MGL con fixture sintetiche solo dopo documentazione.
@@ -416,8 +417,8 @@ La sequenza è guidata dalle dipendenze, non dal numero di funzioni richieste.
 
 **Obiettivo:** evitare che nuove attività partano da baseline diverse.
 
-- chiudere review/CI della PR #29;
-- integrare o respingere C12 esplicitamente;
+- registrare la PR #29 integrata e la baseline `61070b8`;
+- preparare il configuration index C12 senza distribuire sui nodi;
 - aggiornare `main`, registro release e configuration index;
 - confermare replica serverha->NAS;
 - eseguire restore drill NAS.
@@ -521,9 +522,9 @@ piattaforma industriale scelta.
 
 | Ordine | Incremento | Motivo | Dipendenza |
 |---:|---|---|---|
-| 1 | chiusura PR #29 C12 | rimuove un difetto SV già diagnosticato | CI/review |
-| 2 | configuration/restore pack | riduce rischio di perdita o baseline ambigua | NAS/serverha |
-| 3 | runbook HMI + SV per nodi | prepara prove senza improvvisazione | merge C12 |
+| 1 | configuration/restore pack | riduce rischio di perdita o baseline ambigua | NAS/serverha |
+| 2 | runbook HMI + SV per nodi | prepara prove C12 senza improvvisazione | baseline `61070b8` |
+| 3 | piano release gemella PFD/MFD | rende ripetibile il benchmark senza deployment implicito | runbook e rollback |
 | 4 | mapping/calibration schema ASSO5 | abilita l'integrazione reale | inventario fisico |
 | 5 | verticale G2 e replay | massimo valore tecnico immediato | G1 |
 | 6 | air-data qualification tooling | evita dati apparentemente plausibili ma errati | banco M10/DLVR |
@@ -615,7 +616,7 @@ funzionale non accompagnata da prove.
 - `docs/status/CHECKPOINT-2026-09-21-SYNTHETIC-VISION-BENCHMARK.md`
 - `docs/status/CHECKPOINT-2026-09-21-SYNTHETIC-VISION-SESSION.md`
 - `docs/status/CHECKPOINT-2026-09-21-SYNTHETIC-VISION-CAPTURE-ASSEMBLER.md`
-- PR #29 / C12, candidata ma non integrata al momento del congelamento.
+- PR #29 / C12, integrata in `main` al merge `61070b8d990c01ca58943a6370402623f4320ce7`.
 
 ---
 

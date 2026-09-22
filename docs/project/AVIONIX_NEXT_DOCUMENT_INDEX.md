@@ -36,7 +36,7 @@ con una nuova ADR o con una revisione esplicita del brief.
 | Documento | Ruolo | Stato |
 |---|---|---|
 | `AVIONIX_NEXT_MASTER_PROJECT_BRIEF_CODEX_R0.md` | specifica e piano generale AVIONIX Next | importato integralmente |
-| `AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md` | quadro direzionale corrente: architettura, gate, workstream, rischi, attività interattive e planning | corrente alla baseline `main` `195e730`; PR #29 registrata come candidata non integrata |
+| `AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md` | quadro direzionale corrente: architettura, gate, workstream, rischi, attività interattive e planning | corrente alla baseline `main` `61070b8`; PR #29/C12 registrata come integrata, verifica hardware aperta |
 | `AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md` | quadro direzionale dettagliato di avanzamento, scostamenti e piano alla data indicata | snapshot storico; banner di rinvio allo stato generato corrente |
 | `AVIONIX_NEXT_PROJECT_AUDIT.md` | audit completo sezione 24 e proposta successiva | aggiornato all'HEAD del branch di lavoro |
 | `AVIONIX_G2_FREEZE_READINESS.md` | confronto read-only di contratti, codice e test DDP/EDP | storico; superato dal freeze approvato |
@@ -148,8 +148,15 @@ il ritiro della copia Blackbox restano rischi/attività espliciti, non nascosti.
 
 `AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md` consolida lo stato corrente
 senza sostituire Master Matrix, registro release o evidence. Il rapporto usa la
-baseline integrata `195e730`, registra C12/PR #29 come candidato separato e
+baseline integrata `61070b8`, registra C12/PR #29 come integrata e
 distingue esplicitamente attività software, verifiche hardware e prove che
 richiedono l'operatore. Il precedente rapporto del 2026-09-20 resta uno
 snapshot storico e non deve essere usato per dedurre release o percentuali
 correnti.
+
+## Synthetic Vision C12 — 2026-09-22
+
+`docs/verification/SYNTHETIC_VISION_LOD_PROJECTION_V1.md` e
+`docs/status/CHECKPOINT-2026-09-22-SYNTHETIC-VISION-LOD-PROJECTION.md`
+documentano la correzione software del LOD al confine N45/N46. L'evidenza è
+`VERIFIED_SW / VERIFY_HW`: non sostituisce il benchmark C9 su PFD e MFD reali.

@@ -19,7 +19,7 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | AVX-G1-04 | G1 | Soak nodo sensori | servizio completo | report 60 minuti | AVX-G1-03 | alto | zero errori non gestiti e log locale continuo | evidence | soak/fault rete | M | PROPOSED |
 | AVX-G2-01 | G2 | Congelare ICD AVIONIX sopra DDP/EDP | contratti esistenti | schema, freshness, naming | G0 | medio | compatibilità ARM64/x86-64 | docs/protocol, test vectors | schema/replay | M | ACCEPTED |
 | AVX-G2-02 | G2 | Verticale sensore→RPi4→Blackbox→RPi5→replay | G1 e ICD | catena completa riproducibile | AVX-G1-03, AVX-G2-01 | alto | stesso dataset e stessi esiti | adapter/broker/replay | integration/HIL | L | IN_PROGRESS |
-| AVX-G3-01 | G3 | Correggere LOD/proiezione SV | renderer e dataset | qualità primo piano accettabile | benchmark/dataset | medio | acceptance visuale e frame-rate | renderer/terrain | C9 contract; C10 session; C11 capture assembler VERIFIED-SW/NOT_RUN; screenshot/replay/HW | L | OPEN |
+| AVX-G3-01 | G3 | Correggere LOD/proiezione SV | renderer e dataset | qualità primo piano accettabile | benchmark/dataset | medio | acceptance visuale e frame-rate | renderer/terrain | C9 contract; C10 session; C11 capture assembler; C12 footprint LOD VERIFIED-SW/VERIFY-HW; screenshot/replay/HW | L | OPEN |
 | AVX-G3-02 | G3 | Integrare MGL RS-232 passivo | MGL, pinout, protocollo | parser e confronto EMS | documenti mancanti | alto | MGL indipendente, timeout corretti | adapter/test | parser/HW | L | BLOCKED |
 | AVX-G3-03 | G3 | Acceptance touch PFD/MFD/EMS | display reali | checklist operatore | touch disponibile | medio | nessuna sovrapposizione e fail-state leggibili | evidence/status | touch/scenari | M | OPEN |
 | AVX-G3-04 | G3 | Congelare contratto HMI SkyView/EMS | concept approvato e design esistente | manifesto macchina, 10 gate, 20 controlli fail-closed e test | G0 | medio | stessa semantica a tutte le risoluzioni | config/ui, docs/design, tools/ui | validator/golden/CI/HW | M | IN_PROGRESS |
@@ -71,6 +71,7 @@ comandi su uscite.
 | 2026-09-21 | AVX-G3-01 / SV-001 | `CHECKPOINT-2026-09-21-SYNTHETIC-VISION-BENCHMARK.md`, contratto e validatore C9 | PREPARED-SW/NOT_RUN; rotta, checkpoint, soglie, fault e evidence congelati, ma renderer e pannelli non eseguiti |
 | 2026-09-21 | AVX-G3-01 / SV-001 | `CHECKPOINT-2026-09-21-SYNTHETIC-VISION-SESSION.md`, session manager C10 | VERIFIED-SW/NOT_RUN; bundle PFD+MFD legato a commit/contratto e finalizzazione fail-closed pronti, ma nessun renderer o pannello eseguito |
 | 2026-09-21 | AVX-G3-01 / SV-001 | `CHECKPOINT-2026-09-21-SYNTHETIC-VISION-CAPTURE-ASSEMBLER.md`, assembler C11 | VERIFIED-SW/NOT_RUN; log continui, tile/fault, screenshot e firma producono risultati C9 atomici; 17 test C9+C10+C11 PASS, nessuna acquisizione RPi5 |
+| 2026-09-22 | AVX-G3-01 / SV-001 | `CHECKPOINT-2026-09-22-SYNTHETIC-VISION-LOD-PROJECTION.md`, correzione C12 | VERIFIED-SW/VERIFY-HW; distanza dall'impronta, isteresi e preload centralizzati; build Qt/QML AOT e 4/4 suite C9–C12 PASS; nessun deployment o acceptance RPi5 |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato
