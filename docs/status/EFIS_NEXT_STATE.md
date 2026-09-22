@@ -88,6 +88,12 @@ Il dettaglio è nel registro canonico
   contratto, separa gli artefatti e finalizza soltanto due run validi con
   conferma operatore. I test sintetici sono PASS, ma nessun nodo o renderer è
   stato eseguito (`AVX-G3-01`, `SV-001`, `PFD-001`, `MFD-001`).
+- Il blocco C11 assembla ogni run PFD/MFD dai sei artefatti reali previsti:
+  ricava FPS/frame-time e termica da timeline continue, verifica tile/fault,
+  dieci screenshot DAY/NIGHT e firma operatore, quindi genera atomicamente un
+  risultato C9 non sovrascrivibile. Le 17 prove C9+C10+C11 sono PASS solo
+  software; nessun nodo o renderer è stato eseguito (`AVX-G3-01`, `SV-001`,
+  `PFD-001`, `MFD-001`).
 - Inventario, readiness e proposta upstream ASSO5: formati fail-closed pronti,
   ma nessun modello, DIP, channel map o calibrazione reale verificata
   (`PRJ-002`, `AVX-G1-02`, `03`).
