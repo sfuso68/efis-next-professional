@@ -1,9 +1,9 @@
-# EFIS NEXT — Stato corrente sintetico
+# FUSO AVIONICS NEXT — Stato corrente sintetico
 
 Aggiornamento: 2026-09-22
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata precedente a questo aggiornamento: `origin/main` `fa91bee09a5fc62afb9a7fe778954f172e1a77f7`
-HEAD `main` verificato all'ingresso del blocco C7 Linux: `fa91bee09a5fc62afb9a7fe778954f172e1a77f7`
+Baseline integrata esaminata: `origin/main` `61070b8d990c01ca58943a6370402623f4320ce7`
+C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
@@ -13,15 +13,16 @@ Il registro operativo riga-per-riga resta
 [`EFIS_NEXT_MASTER_MATRIX.md`](EFIS_NEXT_MASTER_MATRIX.md); la release dei nodi
 è governata esclusivamente da
 [`EFIS_NEXT_ACTIVE_RELEASES.md`](EFIS_NEXT_ACTIVE_RELEASES.md).
-Il confronto dettagliato fra pianificazione R0, gate, workstream e stato reale
-è in
-[`AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md`](../project/AVIONIX_NEXT_PROGRESS_VS_PLAN_2026-09-20.md).
+Il quadro direzionale corrente con pianificazione R0, gate, workstream,
+problemi e attività interattive è in
+[`AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md`](../project/AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md).
+Il rapporto del 2026-09-20 resta uno snapshot storico.
 
 ## 1. Quadro immediato
 
 | Gate/area | Stato | Sintesi | ID autorevoli |
 |---|---|---|---|
-| Governance e fonti | PARTIAL | Brief, indice, backlog e controllo progetto presenti; topologia Git chiusa da ADR-018; naming e cinque fonti restano aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
+| Governance e fonti | PARTIAL | Nome prodotto `FUSO AVIONICS NEXT` approvato; alias tecnico `EFIS NEXT`; brief, indice, backlog e controllo progetto presenti; topologia Git chiusa da ADR-018; cinque fonti e restore restano aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
 | Nodo sensori ASSO5 | BLOCKED-HW | RPi4 `.89` identificato; Sequent 0/4, alimentatore, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
@@ -156,7 +157,7 @@ Il dettaglio è nel registro canonico
    deployment (`PRJ-003`, `PRJ-004`, `EMS-002`).
 4. Solo dopo review/merge, eseguire HMI harness su PFD/MFD/EMS e verticale G2
    reale con nuova autorizzazione (`AVX-G2-02`, `AVX-G3-03`).
-5. Dopo integrazione C12, creare sessioni C10 dal commit installato e completare
+5. Dopo un deployment C12 autorizzato, creare sessioni C10 dal commit installato e completare
    C11/C9 su PFD e MFD con confronto visuale della transizione N45/N46
    (`AVX-G3-01`, `SV-001`).
 
@@ -335,8 +336,8 @@ catena e nessuna verifica di volo è implicata.
 
 ## 16. Synthetic Vision C12 — correzione LOD/proiezione
 
-Il branch `fix/synthetic-vision-lod-projection-v1`, costruito da `origin/main`
-`195e730`, sostituisce il criterio LOD basato sul centro della tile con la
+La PR #29, integrata in `main` al commit `61070b8`, sostituisce il criterio LOD
+basato sul centro della tile con la
 distanza minima dalla sua impronta geografica. Sul confine `N45E012`/
 `N46E012` entrambe le tile restano ora high-detail; una isteresi 18/24 km evita
 oscillazioni e il preload a 45 km riduce le mesh mantenute inutilmente attive.
@@ -346,5 +347,5 @@ adapter, con fail-closed per coordinate non finite.
 Build completa MSVC/Qt, `efis-pfd-qt`, QML AOT e le quattro suite mirate
 C9–C12 sono PASS. Il CTest Windows complessivo ha 54/64 PASS e dieci blocchi
 noti Smart App Control/DLL, dichiarati senza mascherarli. PFD e MFD reali non
-sono stati contattati; C12 è `VERIFIED_SW / VERIFY_HW`, non modifica le soglie
+sono stati contattati né aggiornati; C12 è `VERIFIED_SW / VERIFY_HW`, non modifica le soglie
 C9 e non chiude `AVX-G3-01` o `SV-001`.
