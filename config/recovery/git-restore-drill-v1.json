@@ -1,0 +1,24 @@
+{
+  "schema": "efis-next.git-restore-drill-config.v1",
+  "authority": "https://github.com/sfuso68/efis-next-professional",
+  "default_source": "sfuso@192.168.1.22:/volume1/homes/sfuso/git/efis-next-professional.git",
+  "source_role": "NAS_ARCHIVE_REPLICA_NON_AUTHORITATIVE",
+  "restore_host_role": "SERVERHA_ISOLATED_DRILL",
+  "flight_approval": false,
+  "required_paths": [
+    "README.md",
+    "CMakeLists.txt",
+    "docs/status/EFIS_NEXT_STATE.md",
+    "docs/status/EFIS_NEXT_MASTER_MATRIX.md",
+    "config/recovery/git-restore-drill-report-v1.schema.json",
+    "tools/project_status/generate_status.py"
+  ],
+  "safety_rules": [
+    "destination_must_not_exist",
+    "never_replace_runtime_or_working_copy",
+    "never_delete_source_or_restored_tree",
+    "expected_main_must_be_supplied_from_authoritative_GitHub",
+    "no_credentials_in_source_url",
+    "flight_approval_is_always_false"
+  ]
+}
