@@ -523,7 +523,7 @@ piattaforma industriale scelta.
 | Ordine | Incremento | Motivo | Dipendenza |
 |---:|---|---|---|
 | 1 | configuration/restore pack | riduce rischio di perdita o baseline ambigua | NAS/serverha |
-| 2 | runbook HMI + SV per nodi | prepara prove C12 senza improvvisazione | baseline `61070b8` |
+| 2 | runbook HMI + SV per nodi — `PREPARED-SW / NOT-RUN` in `docs/deployment/HMI_SYNTHETIC_VISION_NODE_RUNBOOK.md` | prepara prove C12 senza improvvisazione | baseline `61070b8`; deployment e prove reali ancora da autorizzare |
 | 3 | piano release gemella PFD/MFD | rende ripetibile il benchmark senza deployment implicito | runbook e rollback |
 | 4 | mapping/calibration schema ASSO5 | abilita l'integrazione reale | inventario fisico |
 | 5 | verticale G2 e replay | massimo valore tecnico immediato | G1 |
