@@ -379,6 +379,10 @@ acquisita e archiviata.
 - usare una directory isolata su serverha;
 - clonare dal bare NAS, verificare `main`, tag, oggetti e build minima;
 - non sostituire working copy o runtime durante il drill.
+- pack software e runbook implementati il 2026-09-25 in
+  `tools/recovery/git_restore_drill.py` e
+  `docs/deployment/GIT_NAS_RESTORE_DRILL.md`; sei test sintetici PASS;
+  esecuzione reale NAS/serverha ancora `NOT-RUN`.
 
 ### I-11 — Banco audio/voce
 
