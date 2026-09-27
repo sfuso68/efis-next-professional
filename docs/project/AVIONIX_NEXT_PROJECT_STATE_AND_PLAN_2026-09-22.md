@@ -536,6 +536,11 @@ piattaforma industriale scelta.
 | 8 | NAV/TAWS fail-closed — `PREPARED-SW / NOT-RUN` (`QB-G4-NAV-TAWS`) | missing/stale/corrupt diventano unavailable/invalid, mai safe | dataset versionati e scenari approvati |
 | 9 | EMS reale e fonti controllate | porta il sistema oltre la simulazione | manuali/hardware |
 | 10 | FPV e voce | valore elevato ma non devono ritardare G1-G5 | reti/hardware dedicati |
+| 11 | autorità limiti EMS — `PREPARED-SW / NOT-RUN` (`PB-EMS-AUTHORITY`) | impedisce che valori indicativi siano trattati come limiti operativi | seriali, manuali/revisioni e pagine applicabili 912 UL/ULS |
+| 12 | profili Standard/Professional — `PREPARED-SW / NOT-RUN` (`PB-PRODUCT-SKU`) | congela una codebase e semantica safety comune | matrice capability e manifesti approvati |
+| 13 | FPV quattro feed — `PREPARED-SW / NOT-RUN` (`PB-FPV-FOUR`) | congela isolamento, host RPi4 e sidecar telemetrico | nodo VIDEO, switch e quattro camere verificati |
+| 14 | voce/fraseologia offline — `PREPARED-SW / NOT-RUN` (`PB-VOICE-OFFLINE`) | mantiene voce naturale fuori dal percorso di comando | interfaccia audio, PTT, asset e fonti approvate |
+| 15 | HIL deterministico — `PREPARED-SW / NOT-RUN` (`PB-HIL-FAULTS`) | prepara fault injection ripetibile senza toccare produzione | fixture isolata, catalogo e soglie approvati |
 
 ## 12. Decisioni ricevute e dati ancora richiesti
 
