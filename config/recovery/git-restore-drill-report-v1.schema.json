@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fuso-avionics.invalid/schemas/git-restore-drill-report-v1.schema.json",
+  "title": "EFIS NEXT Git restore drill report V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "config_sha256",
+    "status",
+    "flight_approval",
+    "started_utc",
+    "finished_utc",
+    "source",
+    "destination",
+    "expected_main",
+    "checks",
+    "details",
+    "error",
+    "restored_tree_retained"
+  ],
+  "properties": {
+    "schema": {"const": "efis-next.git-restore-drill-report.v1"},
+    "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "flight_approval": {"const": false},
+    "started_utc": {"type": "string", "format": "date-time"},
+    "finished_utc": {"type": "string", "format": "date-time"},
+    "source": {"type": "string", "minLength": 1},
+    "destination": {"type": "string", "minLength": 1},
+    "expected_main": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "checks": {"type": "object", "additionalProperties": {"type": "boolean"}},
+    "details": {"type": "object"},
+    "error": {"type": "string"},
+    "restored_tree_retained": {"type": "boolean"}
+  }
+}

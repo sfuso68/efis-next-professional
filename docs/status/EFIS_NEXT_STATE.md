@@ -1,8 +1,8 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-22
+Aggiornamento: 2026-09-25
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `origin/main` `61070b8d990c01ca58943a6370402623f4320ce7`
+Baseline integrata esaminata: `origin/main` `3066f4284b219d98f19f68c2011e97f81fb891c1`
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -350,7 +350,34 @@ noti Smart App Control/DLL, dichiarati senza mascherarli. PFD e MFD reali non
 sono stati contattati né aggiornati; C12 è `VERIFIED_SW / VERIFY_HW`, non modifica le soglie
 C9 e non chiude `AVX-G3-01` o `SV-001`.
 
-## 17. Runbook unificato HMI + Synthetic Vision — 2026-09-25
+## 17. Configuration/restore pack Git — 2026-09-25
+
+Sul branch `work/git-restore-pack-v1`, derivato da `origin/main` `3066f42`, è
+stato implementato il primo incremento software successivo al consolidamento
+del piano: un restore drill Git isolato e fail-closed per la replica NAS.
+
+Sono presenti la configurazione controllata
+`config/recovery/git-restore-drill-v1.json`, il tool
+`tools/recovery/git_restore_drill.py`, il runbook
+`docs/deployment/GIT_NAS_RESTORE_DRILL.md` e sei test sintetici. Il tool rifiuta
+destinazioni già esistenti e URL contenenti credenziali; clona senza hardlink,
+esegue `git fsck --full --strict`, confronta `main` con uno SHA GitHub completo
+fornito dall'operatore, inventaria tag e oggetti, verifica i file minimi e può
+eseguire il controllo Project Control. Il report JSON viene scritto
+atomicamente e non può essere sovrascritto.
+
+**Verificato solo software:** i sei test locali PASS coprono restore riuscito,
+SHA errato, tag mancante, destinazione esistente, credenziali nell'URL e SHA
+corto. **Verificato su hardware reale:** nulla in questo incremento; NAS e
+serverha non sono stati contattati e nessun servizio o runtime è stato
+modificato. **Resta aperto:** esecuzione interattiva I-10 su serverha contro il
+bare NAS, conservazione dell'evidence reale, protezione fuori sito e decisione
+se ritirare in seguito la copia temporanea Blackbox. La chiave di replica
+write-only (`git-receive-pack`) non è sufficiente: serve una credenziale di
+restore separata e limitata a `git-upload-pack`. `PRJ-001` resta `PARTIAL`
+e nessuna approvazione al volo è implicata.
+
+## 18. Runbook unificato HMI + Synthetic Vision — 2026-09-25
 
 È stato preparato il runbook documentale
 `docs/deployment/HMI_SYNTHETIC_VISION_NODE_RUNBOOK.md` per gli incrementi
