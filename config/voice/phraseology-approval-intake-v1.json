@@ -1,0 +1,17 @@
+{
+  "schema": "avionix-next.phraseology-approval-intake.v1",
+  "status": "NOT_RUN",
+  "registry_path": "config/voice/phraseology-pack-registry-v1.json",
+  "registry_sha256": "0d596d55c77d95d5733de37b9695362f1c0aa4cd598c063897cd4b3c989768ac",
+  "locales": [
+    {"id": "it-IT", "required_artifacts": ["authoritative-source", "phrase-review", "fixed-critical-clips", "offline-tts-assets", "intelligibility-report"], "artifacts": []},
+    {"id": "en-GB", "required_artifacts": ["authoritative-source", "phrase-review", "fixed-critical-clips", "offline-tts-assets", "intelligibility-report"], "artifacts": []}
+  ],
+  "offline_only": true,
+  "automatic_transmission_allowed": false,
+  "ptt_interface_verified": false,
+  "pilot_review_complete": false,
+  "approved": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_SOURCE_AUDIO_AND_CABIN_REVIEW"
+}

@@ -1,0 +1,16 @@
+{
+  "schema": "avionix-next.sku-approval-intake.v1",
+  "status": "NOT_RUN",
+  "registry_path": "config/product/sku-capability-manifest-v1.json",
+  "registry_sha256": "13ede45da72b43a255e97dc1128e8c256e4b08f98e70b83b999df5f8d17f7caf",
+  "profiles": [
+    {"id": "STANDARD", "required_artifacts": ["capability-review", "node-allocation-review", "release-manifest", "operator-signoff"], "artifacts": []},
+    {"id": "PROFESSIONAL", "required_artifacts": ["capability-review", "node-allocation-review", "release-manifest", "operator-signoff"], "artifacts": []}
+  ],
+  "single_codebase_confirmed": false,
+  "inflight_switch_tested_disabled": false,
+  "unknown_capability_rejection_verified": false,
+  "approved": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_PROFILE_AND_RELEASE_REVIEW"
+}
