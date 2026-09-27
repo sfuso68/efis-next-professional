@@ -1,0 +1,16 @@
+{
+  "schema": "avionix-next.sku-release-review-gate.v1",
+  "status": "PREPARED_SW_NOT_RUN",
+  "intake_path": "config/product/sku-approval-intake-v1.json",
+  "intake_sha256": "dc1cd3589c8665108fe53422c93e7a7e608de5969e715bc7b05fc011b06fd4c1",
+  "subjects": ["STANDARD", "PROFESSIONAL"],
+  "required_review_roles": ["product-owner", "safety-reviewer", "release-manager"],
+  "required_findings": ["capability-allowlist", "node-allocation", "single-codebase", "unknown-feature-rejection", "inflight-profile-lock"],
+  "evidence_bundle_sha256": "UNRESOLVED",
+  "reviewed_by": [],
+  "product_review_complete": false,
+  "deployment_allowed": false,
+  "hardware_verified": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_SKU_RELEASE_REVIEW"
+}

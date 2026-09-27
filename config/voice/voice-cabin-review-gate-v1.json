@@ -1,0 +1,17 @@
+{
+  "schema": "avionix-next.voice-cabin-review-gate.v1",
+  "status": "PREPARED_SW_NOT_RUN",
+  "intake_path": "config/voice/phraseology-approval-intake-v1.json",
+  "intake_sha256": "a164351592b7d5fb3dab30f84f2f35852922a8091809a0ef958fa89408f97e06",
+  "subjects": ["it-IT", "en-GB"],
+  "required_review_roles": ["phraseology-reviewer", "audio-reviewer", "pilot-reviewer"],
+  "required_findings": ["source-authority", "critical-clip-integrity", "offline-tts-provenance", "cabin-intelligibility", "ptt-isolation", "cas-priority"],
+  "evidence_bundle_sha256": "UNRESOLVED",
+  "reviewed_by": [],
+  "cabin_review_complete": false,
+  "operational_enable_allowed": false,
+  "automatic_transmission_allowed": false,
+  "hardware_verified": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_VOICE_CABIN_REVIEW"
+}

@@ -78,6 +78,7 @@ comandi su uscite.
 | 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_CONTRACTS_BATCH_V1.md`, contratto, validatore e test fail-closed | PREPARED-SW/NOT-RUN/NO-GO; cinque pacchetti e 50 controlli congelano autorità limiti EMS, SKU, FPV, voce e HIL; nessuna fonte motore, capability, periferica o fixture viene dichiarata verificata |
 | 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_TOOLS_BATCH_V1.md`, cinque registri, validatore e test mutazione | IMPLEMENTED-SW/NOT-RUN/NO-GO; fonti motore, SKU, capacità FPV, pacchetti voce e scenari HIL sono ora acquisibili senza poter dichiarare valori o misure non revisionati |
 | 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_EVIDENCE_BATCH_V1.md`, cinque intake legati ai registri e otto test | PREPARED-SW/NOT-RUN/NO-GO; artefatti e firme possono essere raccolti con provenienza congelata, ma nessuna evidenza o approvazione è stata acquisita |
+| 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_REVIEW_GATES_V1.md`, cinque gate legati agli intake e nove test | PREPARED-SW/NOT-RUN/NO-GO; ruoli e finding obbligatori sono congelati, ma bundle, reviewer, hardware, deployment e volo restano non approvati |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato

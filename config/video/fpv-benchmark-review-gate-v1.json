@@ -1,0 +1,17 @@
+{
+  "schema": "avionix-next.fpv-benchmark-review-gate.v1",
+  "status": "PREPARED_SW_NOT_RUN",
+  "intake_path": "config/video/fpv-benchmark-intake-v1.json",
+  "intake_sha256": "2e0b774d8ebc3cd773955c56dec84903b79117175d1b61cc4cfe435a24a6c68c",
+  "subjects": ["CAM-01", "CAM-02", "CAM-03", "CAM-04"],
+  "required_review_roles": ["video-owner", "network-reviewer", "thermal-reviewer"],
+  "required_findings": ["four-feed-capacity", "latency-and-drops", "decode-thermal-margin", "feed-loss-recovery", "domain-isolation", "telemetry-sidecar-sync"],
+  "evidence_bundle_sha256": "UNRESOLVED",
+  "reviewed_by": [],
+  "benchmark_review_complete": false,
+  "video_domain_release_allowed": false,
+  "network_bridge_allowed": false,
+  "hardware_verified": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_FPV_BENCHMARK_REVIEW"
+}

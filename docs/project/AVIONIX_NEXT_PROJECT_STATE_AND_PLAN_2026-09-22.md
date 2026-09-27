@@ -551,6 +551,11 @@ piattaforma industriale scelta.
 | 23 | intake benchmark FPV — `PREPARED-SW / NOT-RUN` | congela otto misure e quattro feed su banco VIDEO isolato | nodo, switch e camere identificati |
 | 24 | intake fraseologia/voce — `PREPARED-SW / NOT-RUN` | congela fonti, asset naturali offline e intelligibilità | interfono/PTT e fonti approvati |
 | 25 | intake run HIL — `PREPARED-SW / NOT-RUN` | lega fixture, input e artefatti ai sei scenari deterministici | fixture isolata e autorizzazione separata |
+| 26 | review fonti motore — `PREPARED-SW / NOT-RUN` | separa acquisizione e approvazione, imponendo seriale/manuale/pagine e reviewer distinti | intake completo e bundle immutabile |
+| 27 | review SKU/release — `PREPARED-SW / NOT-RUN` | impedisce deployment o cambio profilo prima della review capability/nodi/release | manifesti candidati e firme prodotto/safety/release |
+| 28 | review benchmark FPV — `PREPARED-SW / NOT-RUN` | mantiene separati VIDEO e FLIGHT-DATA e richiede capacità/latency/thermal/recovery | benchmark isolato completo |
+| 29 | review voce/cabina — `PREPARED-SW / NOT-RUN` | blocca enable e trasmissione automatica finché fonte, audio, PTT e intelligibilità non sono revisionati | evidence audio/cabina e firme |
+| 30 | review esecuzione HIL — `PREPARED-SW / NOT-RUN` | vieta produzione e attuatori e richiede digest, contenimento e artifact completeness | run isolati autorizzati separatamente |
 
 ## 12. Decisioni ricevute e dati ancora richiesti
 

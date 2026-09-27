@@ -495,3 +495,21 @@ intake da parte dell'operatore, acquisizione degli artefatti, review tecnica e
 sessioni hardware autorizzate separatamente. `EMS-004`, `PROD-001`, `FPV-002`,
 `VOI-003` e `VER-002` restano `TODO`; `execution_authorized=false`,
 `hardware_verified=false` e `flight_approval=false`.
+
+## 24. Product review gates batch — 2026-09-27
+
+I cinque intake prodotto sono ora seguiti da gate di revisione indipendenti per
+fonti motore, SKU/release, benchmark FPV, voce/cabina ed esecuzione HIL. Ogni
+gate è legato tramite SHA-256 al proprio intake e congela ruoli, finding e
+divieti prima di qualunque decisione operativa.
+
+**Implementato:** cinque manifesti review gate, validatore incrociato, nove
+test di mutazione, documento di verifica e gate CI. **Verificato solo
+software:** digest drift, path traversal, evidence/reviewer prematuri,
+attivazione limiti, deployment SKU, bridge VIDEO, trasmissione automatica e
+HIL su produzione/attuatori sono rifiutati. **Verificato su hardware reale:**
+nulla; nessun nodo o dispositivo è stato contattato. **Aperto:** compilare gli
+intake, creare bundle immutabili, acquisire firme indipendenti ed eseguire le
+sessioni autorizzate. Gli stessi cinque requisiti restano `TODO`; tutti i gate
+sono `PREPARED_SW_NOT_RUN`, `hardware_verified=false`,
+`deployment_allowed=false` e `flight_approval=false`.
