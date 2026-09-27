@@ -1,0 +1,22 @@
+{
+  "schema": "avionix-next.product-review-results.v1",
+  "domain": "sku",
+  "status": "NOT_RUN",
+  "operator_confirmed": false,
+  "operator": null,
+  "captured_utc": null,
+  "intake_path": "config/product/sku-approval-intake-v1.json",
+  "intake_sha256": "dc1cd3589c8665108fe53422c93e7a7e608de5969e715bc7b05fc011b06fd4c1",
+  "review_gate_path": "config/product/sku-release-review-gate-v1.json",
+  "review_gate_sha256": "9d7a9fa778f53da8434ab61cebc49c6a43127eba9927b0eca73153fdb024f6e2",
+  "subjects": [
+    {"id": "STANDARD", "required_artifacts": ["capability-review", "node-allocation-review", "release-manifest", "operator-signoff"], "artifacts": {}},
+    {"id": "PROFESSIONAL", "required_artifacts": ["capability-review", "node-allocation-review", "release-manifest", "operator-signoff"], "artifacts": {}}
+  ],
+  "global_required_artifacts": [],
+  "global_artifacts": {},
+  "limitations": [],
+  "hardware_evidence_claimed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_NOT_RUN"
+}

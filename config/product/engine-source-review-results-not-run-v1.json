@@ -1,0 +1,22 @@
+{
+  "schema": "avionix-next.product-review-results.v1",
+  "domain": "engine",
+  "status": "NOT_RUN",
+  "operator_confirmed": false,
+  "operator": null,
+  "captured_utc": null,
+  "intake_path": "config/product/engine-source-intake-v1.json",
+  "intake_sha256": "3c425cab873bc92ae816c362f5ffdc1b5f0644943ec49d40d403ab9bd96a62a2",
+  "review_gate_path": "config/product/engine-source-review-gate-v1.json",
+  "review_gate_sha256": "f43cea53005f9a5e29cbe56e5dddfac7b9fb6d032b19138365ec995a0f47f13c",
+  "subjects": [
+    {"id": "ROTAX_912_UL", "required_artifacts": ["data-plate-photo", "applicable-manual", "revision-page", "limit-pages", "review-signoff"], "artifacts": {}},
+    {"id": "ROTAX_912_ULS", "required_artifacts": ["data-plate-photo", "applicable-manual", "revision-page", "limit-pages", "review-signoff"], "artifacts": {}}
+  ],
+  "global_required_artifacts": [],
+  "global_artifacts": {},
+  "limitations": [],
+  "hardware_evidence_claimed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_NOT_RUN"
+}

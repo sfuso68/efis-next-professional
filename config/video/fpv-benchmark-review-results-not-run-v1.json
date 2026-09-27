@@ -1,0 +1,24 @@
+{
+  "schema": "avionix-next.product-review-results.v1",
+  "domain": "fpv",
+  "status": "NOT_RUN",
+  "operator_confirmed": false,
+  "operator": null,
+  "captured_utc": null,
+  "intake_path": "config/video/fpv-benchmark-intake-v1.json",
+  "intake_sha256": "2e0b774d8ebc3cd773955c56dec84903b79117175d1b61cc4cfe435a24a6c68c",
+  "review_gate_path": "config/video/fpv-benchmark-review-gate-v1.json",
+  "review_gate_sha256": "b89ed01f567a122717e15bf7f690c99149cd426e43a887fd2315c230d811e209",
+  "subjects": [
+    {"id": "CAM-01", "required_artifacts": ["feed-capture", "feed-metadata"], "artifacts": {}},
+    {"id": "CAM-02", "required_artifacts": ["feed-capture", "feed-metadata"], "artifacts": {}},
+    {"id": "CAM-03", "required_artifacts": ["feed-capture", "feed-metadata"], "artifacts": {}},
+    {"id": "CAM-04", "required_artifacts": ["feed-capture", "feed-metadata"], "artifacts": {}}
+  ],
+  "global_required_artifacts": ["aggregate-bitrate", "decode-cpu", "decode-temperature", "end-to-end-latency", "dropped-frames", "four-feed-mosaic", "feed-loss-recovery", "telemetry-sidecar"],
+  "global_artifacts": {},
+  "limitations": [],
+  "hardware_evidence_claimed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_NOT_RUN"
+}

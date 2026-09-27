@@ -1,0 +1,26 @@
+{
+  "schema": "avionix-next.product-review-results.v1",
+  "domain": "hil",
+  "status": "NOT_RUN",
+  "operator_confirmed": false,
+  "operator": null,
+  "captured_utc": null,
+  "intake_path": "config/hil/hil-run-intake-v1.json",
+  "intake_sha256": "9436bbb8b35b960401bf7d2f524a35de0a8974fd7f128cd087b3a522a2d279d9",
+  "review_gate_path": "config/hil/hil-execution-review-gate-v1.json",
+  "review_gate_sha256": "d308e0f5574379039dcccc541abeaf34ce5e0151306fa54f0c5906e1bd128f02",
+  "subjects": [
+    {"id": "HIL-SENSOR-STALE", "required_artifacts": ["input-recording", "execution-log", "expected-actual-report", "replay-report"], "artifacts": {}},
+    {"id": "HIL-SENSOR-LOST", "required_artifacts": ["input-recording", "execution-log", "expected-actual-report", "replay-report"], "artifacts": {}},
+    {"id": "HIL-NETWORK-GAP", "required_artifacts": ["input-recording", "execution-log", "expected-actual-report", "replay-report"], "artifacts": {}},
+    {"id": "HIL-STORAGE-FULL", "required_artifacts": ["input-recording", "execution-log", "expected-actual-report", "replay-report"], "artifacts": {}},
+    {"id": "HIL-DISPLAY-LINK", "required_artifacts": ["input-recording", "execution-log", "expected-actual-report", "replay-report"], "artifacts": {}},
+    {"id": "HIL-TERRAIN-MISSING", "required_artifacts": ["input-recording", "execution-log", "expected-actual-report", "replay-report"], "artifacts": {}}
+  ],
+  "global_required_artifacts": [],
+  "global_artifacts": {},
+  "limitations": [],
+  "hardware_evidence_claimed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_NOT_RUN"
+}

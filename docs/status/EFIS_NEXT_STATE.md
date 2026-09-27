@@ -513,3 +513,21 @@ intake, creare bundle immutabili, acquisire firme indipendenti ed eseguire le
 sessioni autorizzate. Gli stessi cinque requisiti restano `TODO`; tutti i gate
 sono `PREPARED_SW_NOT_RUN`, `hardware_verified=false`,
 `deployment_allowed=false` e `flight_approval=false`.
+
+## 25. Product evidence packagers batch — 2026-09-27
+
+I cinque gate prodotto dispongono ora di template risultati `NOT_RUN` e di un
+confezionatore comune che accetta soltanto acquisizioni esplicitamente
+confermate dall'operatore. Il bundle risultante è immutabile per nome, registra
+dimensione e SHA-256 di ogni artefatto e resta `PACKAGED_PENDING_REVIEW`.
+
+**Implementato:** template motori, SKU/release, FPV, voce/cabina e HIL;
+validazione fail-closed di path, digest, identità, timestamp, set artefatti e
+decisione; packaging atomico; test e CI. **Verificato solo software:** tutti i
+cinque domini producono bundle sintetici pending review; overwrite, path
+escape, file mancanti/vuoti, digest drift e claim safety vengono rifiutati.
+**Verificato su hardware reale:** nulla; nessun nodo o dispositivo è stato
+contattato. **Aperto:** compilazione sul banco, raccolta delle evidenze reali e
+review indipendente. `EMS-004`, `PROD-001`, `FPV-002`, `VOI-003` e `VER-002`
+restano `TODO`; `hardware_verified=false`, `deployment_allowed=false` e
+`flight_approval=false`.

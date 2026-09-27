@@ -646,3 +646,19 @@ funzionale non accompagnata da prove.
 
 Questo documento fotografa lo stato noto alla data indicata. Non autorizza
 modifiche hardware, deployment, merge, prove dinamiche o uso in volo.
+
+## 16. Avanzamento operativo 31–35 — evidence packaging
+
+31. **Fonti motore:** template e packager pronti; acquisizione targhette,
+    manuali, revisioni, pagine limiti e firma resta interattiva.
+32. **SKU/release:** capability, allocazione nodi, manifest e firma possono
+    essere congelati; approvazione prodotto e deployment restano separati.
+33. **FPV:** quattro feed e otto misure globali hanno un bundle definito;
+    telecamere, rete VIDEO e benchmark termico/latency non sono stati provati.
+34. **Voce/cabina:** fonti, clip, TTS offline e intelligibilità possono essere
+    acquisiti per due lingue; interfono/PTT e ascolto in cabina restano aperti.
+35. **HIL:** ogni scenario richiede input, log, confronto atteso/reale e replay;
+    fixture isolata ed esecuzione restano da autorizzare.
+
+Tutti i bundle terminano `PACKAGED_PENDING_REVIEW` e `NO-GO`: il packaging
+non sostituisce la revisione indipendente e non promuove lo stato hardware.
