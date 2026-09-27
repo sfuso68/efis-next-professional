@@ -97,6 +97,8 @@ jobs:
           python -m unittest tests.test_product_tools_batch -v
           python tools/product/validate_product_evidence_batch.py
           python -m unittest tests.test_product_evidence_batch -v
+          python tools/product/validate_product_review_gates.py
+          python -m unittest tests.test_product_review_gates -v
 
       - name: Determine changed files
         id: changes

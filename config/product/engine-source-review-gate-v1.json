@@ -1,0 +1,16 @@
+{
+  "schema": "avionix-next.engine-source-review-gate.v1",
+  "status": "PREPARED_SW_NOT_RUN",
+  "intake_path": "config/product/engine-source-intake-v1.json",
+  "intake_sha256": "3c425cab873bc92ae816c362f5ffdc1b5f0644943ec49d40d403ab9bd96a62a2",
+  "subjects": ["ROTAX_912_UL", "ROTAX_912_ULS"],
+  "required_review_roles": ["engine-owner", "engineering-reviewer", "configuration-controller"],
+  "required_findings": ["serial-applicability", "manual-revision", "limit-page-traceability", "ul-uls-separation", "legacy-limit-disposition"],
+  "evidence_bundle_sha256": "UNRESOLVED",
+  "reviewed_by": [],
+  "engineering_review_complete": false,
+  "activation_allowed": false,
+  "hardware_verified": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_ENGINE_SOURCE_REVIEW"
+}

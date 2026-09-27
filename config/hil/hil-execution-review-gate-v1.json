@@ -1,0 +1,20 @@
+{
+  "schema": "avionix-next.hil-execution-review-gate.v1",
+  "status": "PREPARED_SW_NOT_RUN",
+  "intake_path": "config/hil/hil-run-intake-v1.json",
+  "intake_sha256": "9436bbb8b35b960401bf7d2f524a35de0a8974fd7f128cd087b3a522a2d279d9",
+  "subjects": ["HIL-SENSOR-STALE", "HIL-SENSOR-LOST", "HIL-NETWORK-GAP", "HIL-STORAGE-FULL", "HIL-DISPLAY-LINK", "HIL-TERRAIN-MISSING"],
+  "required_review_roles": ["hil-operator", "safety-reviewer", "evidence-reviewer"],
+  "required_findings": ["fixture-isolation", "input-digest-resolution", "deterministic-replay", "fault-containment", "expected-outcome", "artifact-completeness"],
+  "evidence_bundle_sha256": "UNRESOLVED",
+  "reviewed_by": [],
+  "execution_review_complete": false,
+  "execution_allowed": false,
+  "production_network_allowed": false,
+  "production_storage_allowed": false,
+  "actuator_output_allowed": false,
+  "flight_control_commands_allowed": false,
+  "hardware_verified": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_HIL_EXECUTION_REVIEW"
+}
