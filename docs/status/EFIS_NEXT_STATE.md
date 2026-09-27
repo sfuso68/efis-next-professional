@@ -413,3 +413,25 @@ contattati e nessuna release, cache, tile, rete o servizio è stata modificata.
 finestra, attivare MFD poi PFD, eseguire reboot/rollback e completare C10/C11/C9
 con firma operatore. `AVX-G3-01` resta `OPEN`; `PFD-001`, `MFD-001` e `SV-001`
 non sono promossi. `flight_approval=false` e `execution_authorized=false`.
+
+## 20. Qualification batch G1–G4 — 2026-09-27
+
+I cinque punti successivi del piano sono stati trasformati in un contratto
+unico non eseguibile: mapping/calibrazione ASSO5, verticale G2/replay,
+qualifica air-data Matek ASPD-DLVR, endurance/recovery Blackbox e NAV/TAWS
+fail-closed. Il contratto contiene cinque pacchetti e 50 controlli; conserva
+esplicitamente `execution_authorized=false`, `flight_approval=false` e una
+decisione complessiva `NO_GO_PENDING_INTERACTIVE_HARDWARE_EVIDENCE`.
+
+**Implementato:** autorità JSON, validatore fail-closed, dieci test di
+regressione, runbook di verifica e gate CI. Il pacchetto rifiuta canali o
+coefficienti ASSO5 inventati, un trasporto G2 anticipato, scritture air-data,
+GS usata come IAS, fault distruttivi sulla Blackbox di produzione e qualunque
+stato TAWS safe quando terrain manca o è scaduto.
+
+**Verificato solo software:** validatore PASS con 5 pacchetti/50 controlli;
+dieci test mirati PASS. **Verificato su hardware reale:** nulla in questo
+incremento; nessun nodo è stato contattato e nessun servizio, cablaggio,
+parametro o dataset è stato modificato. **Aperto:** tutte le dipendenze e le
+prove interattive elencate nel runbook. Gli stati `PRJ-002`, `PRJ-003`,
+`AIR-001`, `BBX-001`, `NAV-003` e `SV-003` non sono promossi.

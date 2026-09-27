@@ -1,0 +1,155 @@
+{
+  "schema": "avionix-next.qualification-batch.v1",
+  "revision": "1.0.0",
+  "status": "PREPARED_SW_NOT_RUN",
+  "execution_authorized": false,
+  "flight_approval": false,
+  "authority": {
+    "project_plan": "docs/project/AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md",
+    "master_matrix": "docs/status/EFIS_NEXT_MASTER_MATRIX.md",
+    "g1_g2_readiness": "config/hardware/avionix-g1-g2-readiness-v1.json",
+    "g2_vertical": "config/network/avionix-g2-vertical-acceptance-v1.json"
+  },
+  "packages": [
+    {
+      "id": "QB-G1-ASSO5",
+      "title": "ASSO5 physical mapping and calibration",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["verified_board_inventory_4_of_4", "approved_reference_equipment", "approved_bench_run"],
+      "invariants": {
+        "expected_boards": ["SM-I-018:1", "SM-I-011:2", "SM-I-019:1"],
+        "engine_signal_count": 18,
+        "physical_channels": "UNRESOLVED",
+        "calibration_coefficients": "UNRESOLVED",
+        "threshold_invention_allowed": false,
+        "register_write_allowed": false,
+        "wiring_or_dip_change_allowed": false
+      },
+      "evidence_required": ["visual-inventory", "channel-map", "raw-reference-pairs", "calibration-model", "operator-utc-sha256", "rollback-report"],
+      "controls": [
+        {"id": "QB-G1-01", "key": "board_inventory", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G1-02", "key": "address_inventory", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G1-03", "key": "channel_map", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G1-04", "key": "signal_units", "state": "DEFINED"},
+        {"id": "QB-G1-05", "key": "reference_equipment", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G1-06", "key": "raw_reference_pairs", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G1-07", "key": "calibration_revision", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G1-08", "key": "environment_record", "state": "DEFINED"},
+        {"id": "QB-G1-09", "key": "rollback", "state": "DEFINED"},
+        {"id": "QB-G1-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    },
+    {
+      "id": "QB-G2-VERTICAL",
+      "title": "G2 vertical path and deterministic replay",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["approved_source_to_blackbox_transport", "approved_live_run", "same_recording_all_consumers"],
+      "invariants": {
+        "source_to_blackbox": "UNRESOLVED",
+        "publisher_authority": "BLACKBOX_BROKER",
+        "display_authority": "RECEIVE_ONLY",
+        "command_or_actuation_path": "ABSENT",
+        "recording_sha256_required": true,
+        "cross_consumer_outcome_match_required": true,
+        "mandatory_fault_count": 12
+      },
+      "evidence_required": ["preflight", "passive-capture", "recorder-digest", "replay-report", "fault-report", "rollback-report"],
+      "controls": [
+        {"id": "QB-G2-01", "key": "transport_decision", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G2-02", "key": "publisher_authority", "state": "DEFINED"},
+        {"id": "QB-G2-03", "key": "receive_only_consumers", "state": "DEFINED"},
+        {"id": "QB-G2-04", "key": "source_identity", "state": "DEFINED"},
+        {"id": "QB-G2-05", "key": "sequence_integrity", "state": "DEFINED"},
+        {"id": "QB-G2-06", "key": "freshness", "state": "DEFINED"},
+        {"id": "QB-G2-07", "key": "same_recording", "state": "DEFINED"},
+        {"id": "QB-G2-08", "key": "cross_consumer_parity", "state": "DEFINED"},
+        {"id": "QB-G2-09", "key": "fault_matrix", "state": "DEFINED"},
+        {"id": "QB-G2-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    },
+    {
+      "id": "QB-G3-AIRDATA",
+      "title": "Matek ASPD-DLVR air-data qualification",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["approved_pitot_static_fixture", "traceable_pressure_reference", "pixhawk_read_only_stream"],
+      "invariants": {
+        "sensor": "MATEK_ASPD_DLVR",
+        "qualification_mode": "PASSIVE_OR_OFFLINE_ONLY",
+        "parameter_write_allowed": false,
+        "output_activation_allowed": false,
+        "ground_speed_as_ias_allowed": false,
+        "coefficients": "UNRESOLVED",
+        "temperature_compensation": "UNRESOLVED"
+      },
+      "evidence_required": ["zero-offset", "pressure-sign", "linearity", "repeatability", "temperature", "stale-lost-recovery", "provenance", "operator-utc-sha256"],
+      "controls": [
+        {"id": "QB-G3-01", "key": "sensor_identity", "state": "VERIFY_HW"},
+        {"id": "QB-G3-02", "key": "zero_offset", "state": "VERIFY_HW"},
+        {"id": "QB-G3-03", "key": "pressure_sign", "state": "VERIFY_HW"},
+        {"id": "QB-G3-04", "key": "linearity", "state": "VERIFY_HW"},
+        {"id": "QB-G3-05", "key": "repeatability", "state": "VERIFY_HW"},
+        {"id": "QB-G3-06", "key": "temperature_compensation", "state": "VERIFY_HW"},
+        {"id": "QB-G3-07", "key": "freshness_and_loss", "state": "DEFINED"},
+        {"id": "QB-G3-08", "key": "source_provenance", "state": "DEFINED"},
+        {"id": "QB-G3-09", "key": "no_ground_speed_substitution", "state": "DEFINED"},
+        {"id": "QB-G3-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    },
+    {
+      "id": "QB-G4-BLACKBOX",
+      "title": "Blackbox endurance and recovery",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["approved_test_window", "isolated_storage_fixture", "release_identity_confirmed"],
+      "invariants": {
+        "minimum_endurance_seconds": 3600,
+        "production_destructive_fault_allowed": false,
+        "power_cut_allowed": false,
+        "recorder_continuity_required": true,
+        "retained_artifact_sha256_required": true,
+        "replay_parity_required": true
+      },
+      "evidence_required": ["release-preflight", "resource-series", "recorder-continuity", "isolated-storage-fault", "restart-recovery", "retained-digests", "replay-report", "operator-utc"],
+      "controls": [
+        {"id": "QB-G4-01", "key": "release_identity", "state": "VERIFY_HW"},
+        {"id": "QB-G4-02", "key": "endurance_3600s", "state": "VERIFY_HW"},
+        {"id": "QB-G4-03", "key": "cpu_memory_temperature", "state": "VERIFY_HW"},
+        {"id": "QB-G4-04", "key": "storage_health", "state": "VERIFY_HW"},
+        {"id": "QB-G4-05", "key": "recorder_continuity", "state": "VERIFY_HW"},
+        {"id": "QB-G4-06", "key": "isolated_storage_full", "state": "DEFINED"},
+        {"id": "QB-G4-07", "key": "restart_recovery", "state": "VERIFY_HW"},
+        {"id": "QB-G4-08", "key": "retained_digests", "state": "DEFINED"},
+        {"id": "QB-G4-09", "key": "replay_parity", "state": "VERIFY_HW"},
+        {"id": "QB-G4-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    },
+    {
+      "id": "QB-G4-NAV-TAWS",
+      "title": "NAV and TAWS fail-closed behavior",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["versioned_nav_dataset", "versioned_terrain_dataset", "approved_scenario_set"],
+      "invariants": {
+        "missing_terrain_policy": "TAWS_UNAVAILABLE_NEVER_SAFE",
+        "expired_terrain_policy": "TAWS_UNAVAILABLE_NEVER_SAFE",
+        "missing_nav_policy": "NAV_FIELDS_INVALID",
+        "stale_weather_safety_use_allowed": false,
+        "simulation_must_be_visible": true,
+        "command_or_actuation_authority": false,
+        "provenance_and_freshness_required": true
+      },
+      "evidence_required": ["dataset-manifest", "nominal-scenario", "missing-data-scenario", "stale-data-scenario", "corrupt-data-scenario", "annunciation-capture", "operator-utc-sha256"],
+      "controls": [
+        {"id": "QB-G5-01", "key": "terrain_manifest", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G5-02", "key": "nav_manifest", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "QB-G5-03", "key": "terrain_missing", "state": "DEFINED"},
+        {"id": "QB-G5-04", "key": "terrain_expired", "state": "DEFINED"},
+        {"id": "QB-G5-05", "key": "nav_missing", "state": "DEFINED"},
+        {"id": "QB-G5-06", "key": "weather_stale", "state": "DEFINED"},
+        {"id": "QB-G5-07", "key": "provenance_freshness", "state": "DEFINED"},
+        {"id": "QB-G5-08", "key": "annunciation", "state": "VERIFY_HW"},
+        {"id": "QB-G5-09", "key": "no_control_authority", "state": "DEFINED"},
+        {"id": "QB-G5-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    }
+  ],
+  "decision": "NO_GO_PENDING_INTERACTIVE_HARDWARE_EVIDENCE"
+}

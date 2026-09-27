@@ -55,6 +55,11 @@ jobs:
           python tools/network/validate_g2_vertical_acceptance.py
           python -m unittest tests.test_g2_vertical_acceptance -v
 
+      - name: Validate qualification batch G1-G4
+        run: |
+          python tools/qualification/validate_qualification_batch.py
+          python -m unittest tests.test_qualification_batch -v
+
       - name: Validate SkyView and EMS HMI contract
         run: |
           python tools/ui/validate_hmi_contract.py

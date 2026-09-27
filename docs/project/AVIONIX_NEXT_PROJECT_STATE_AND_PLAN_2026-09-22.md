@@ -529,11 +529,11 @@ piattaforma industriale scelta.
 | 1 | configuration/restore pack | riduce rischio di perdita o baseline ambigua | NAS/serverha |
 | 2 | runbook HMI + SV per nodi — `PREPARED-SW / NOT-RUN` in `docs/deployment/HMI_SYNTHETIC_VISION_NODE_RUNBOOK.md` | prepara prove C12 senza improvvisazione | baseline `61070b8`; deployment e prove reali ancora da autorizzare |
 | 3 | piano release gemella PFD/MFD — `PREPARED-SW / NOT-RUN` | generatore fail-closed, schema, digest dei due piani e ordine MFD→PFD pronti; nessun deployment implicito | runbook e rollback; esecuzione hardware da autorizzare |
-| 4 | mapping/calibration schema ASSO5 | abilita l'integrazione reale | inventario fisico |
-| 5 | verticale G2 e replay | massimo valore tecnico immediato | G1 |
-| 6 | air-data qualification tooling | evita dati apparentemente plausibili ma errati | banco M10/DLVR |
-| 7 | blackbox endurance/recovery | riduce rischio single point | PSU/storage |
-| 8 | NAV/TAWS fail-closed | completa il valore operativo del PFD/MFD | SV e dati reali |
+| 4 | mapping/calibration schema ASSO5 — `PREPARED-SW / NOT-RUN` (`QB-G1-ASSO5`) | 18 segnali e 4 schede congelati senza inventare canali o coefficienti | inventario fisico 4/4 e banco campione |
+| 5 | verticale G2 e replay — `PREPARED-SW / NOT-RUN` (`QB-G2-VERTICAL`) | stessa registrazione, digest, parità consumer e 12 fault congelati | decisione trasporto G1 e autorizzazione live |
+| 6 | air-data qualification tooling — `PREPARED-SW / NOT-RUN` (`QB-G3-AIRDATA`) | contratto passivo/offline, no GS-as-IAS e otto evidenze definite | banco pitot/statico M10/DLVR tracciabile |
+| 7 | blackbox endurance/recovery — `PREPARED-SW / NOT-RUN` (`QB-G4-BLACKBOX`) | soak ≥3600 s e recovery confinati, nessun fault distruttivo production | finestra, fixture storage e identità release |
+| 8 | NAV/TAWS fail-closed — `PREPARED-SW / NOT-RUN` (`QB-G4-NAV-TAWS`) | missing/stale/corrupt diventano unavailable/invalid, mai safe | dataset versionati e scenari approvati |
 | 9 | EMS reale e fonti controllate | porta il sistema oltre la simulazione | manuali/hardware |
 | 10 | FPV e voce | valore elevato ma non devono ritardare G1-G5 | reti/hardware dedicati |
 
