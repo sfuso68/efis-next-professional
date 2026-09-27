@@ -130,6 +130,17 @@ def validate_review(data: dict, root: Path, review_dir: Path, allow_not_run: boo
         require(data.get("evidence_integrity_verified") is False and data.get("review_complete") is False and data.get("decision") == "NO_GO_NOT_RUN", "PIR-14", "NOT_RUN review decision is not fail-closed")
         return {"schema": "avionix-next.product-independent-review-validation.v1", "status": "PASS", "domain": domain, "execution_status": "NOT_RUN", "decision": "NO_GO_NOT_RUN", "hardware_verified": False, "deployment_allowed": False, "flight_approval": False}
 
+    if data.get("status") == "PREPARED_NOT_RUN" and allow_not_run:
+        require(data.get("coordinator") is None and data.get("captured_utc") is None, "PIR-11", "prepared review must remain unattributed")
+        bundle = _local_file(review_dir, data.get("evidence_bundle_path"))
+        require(bundle is not None, "PIR-12", "prepared review evidence bundle is missing, empty or unsafe")
+        require(DIGEST.fullmatch(str(data.get("evidence_bundle_sha256", ""))) is not None and data["evidence_bundle_sha256"] == hashlib.sha256(bundle.read_bytes()).hexdigest(), "PIR-13", "prepared review bundle digest is malformed or stale")
+        bundle_report = validate_bundle_file(root, bundle)
+        require(bundle_report.get("domain") == domain, "PIR-14", "prepared review bundle belongs to another domain")
+        require(data.get("reviewers") == [] and data.get("findings") == {}, "PIR-15", "prepared review must not contain reviewers or findings")
+        require(data.get("evidence_integrity_verified") is False and data.get("review_complete") is False and data.get("decision") == "NO_GO_PENDING_INDEPENDENT_REVIEW", "PIR-16", "prepared review decision is not fail-closed")
+        return {"schema": "avionix-next.product-independent-review-validation.v1", "status": "PASS", "domain": domain, "execution_status": "PREPARED_NOT_RUN", "decision": "NO_GO_PENDING_INDEPENDENT_REVIEW", "hardware_verified": False, "deployment_allowed": False, "flight_approval": False}
+
     require(data.get("status") == "READY_FOR_REVIEW_VALIDATION", "PIR-11", "review is not explicitly ready for validation")
     require(isinstance(data.get("coordinator"), str) and data["coordinator"].strip() and _utc(data.get("captured_utc")), "PIR-12", "coordinator or UTC timestamp is invalid")
     bundle = _local_file(review_dir, data.get("evidence_bundle_path"))

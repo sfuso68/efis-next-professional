@@ -547,3 +547,18 @@ rifiutati. **Verificato su hardware reale:** nulla. **Aperto:** generare i
 bundle reali e farli revisionare dalle autorità definite. Anche una review
 positiva termina `EVIDENCE_ACCEPTED_FOR_NEXT_GATE`; gli stessi requisiti
 restano `TODO`, senza deployment o approvazione al volo.
+
+## 27. Product evidence session manager — 2026-09-27
+
+La catena prodotto dispone ora di un comando unico per inizializzare una
+sessione, misurarne la completezza, finalizzare il bundle, aprire la review e
+congelarne l'esito. Ogni output finale rifiuta overwrite e conserva il legame
+SHA-256 con il livello precedente.
+
+**Implementato:** cinque comandi operativi e verifica outcome; stato intermedio
+`PREPARED_NOT_RUN`; report di artefatti mancanti/non sicuri; test end-to-end sui
+cinque domini e gate CI. **Verificato solo software:** pipeline sintetica
+completa, review positive e negative, immutabilità e tamper detection.
+**Verificato su hardware reale:** nulla. **Aperto:** eseguire le sessioni con
+artefatti e reviewer reali. L'esito massimo resta
+`NO_GO_PENDING_GATE_DISPOSITION`; nessun requisito cambia stato.

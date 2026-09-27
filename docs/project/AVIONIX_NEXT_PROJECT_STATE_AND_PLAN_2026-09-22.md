@@ -674,3 +674,15 @@ non sostituisce la revisione indipendente e non promuove lo stato hardware.
 
 Questo livello è completo soltanto software. La compilazione dei record resta
 interattiva; l'esito positivo autorizza esclusivamente il gate successivo.
+
+## 18. Avanzamento operativo 40–44 — session workflow
+
+40. **Init:** directory e risultati `NOT_RUN` creati senza overwrite.
+41. **Status:** missing/unsafe e readiness resi leggibili all'operatore.
+42. **Evidence:** bundle atomico e validato dopo conferma esplicita.
+43. **Review:** record preparato e legato al bundle senza anticipare firme.
+44. **Outcome:** esito immutabile e verificabile, ancora subordinato alla
+    disposizione formale del gate.
+
+La pipeline è pronta per le future sessioni interattive ma non contiene ancora
+evidenza reale.
