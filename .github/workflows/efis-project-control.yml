@@ -89,6 +89,11 @@ jobs:
           python tools/network/validate_avionics_network.py config/network/avionics-network-v1.json
           python -m unittest tests.test_avionix_data_contract -v
 
+      - name: Validate product safety contracts
+        run: |
+          python tools/product/validate_product_contracts_batch.py
+          python -m unittest tests.test_product_contracts_batch -v
+
       - name: Determine changed files
         id: changes
         shell: bash

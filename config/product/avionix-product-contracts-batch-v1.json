@@ -1,0 +1,159 @@
+{
+  "schema": "avionix-next.product-contracts-batch.v1",
+  "revision": "1.0.0",
+  "status": "PREPARED_SW_NOT_RUN",
+  "execution_authorized": false,
+  "flight_approval": false,
+  "authority": {
+    "master_matrix": "docs/status/EFIS_NEXT_MASTER_MATRIX.md",
+    "active_aircraft_profile": "config/active/aircraft-profile.json",
+    "voice_boundary": "docs/adr/ADR-014-voice-radio-assist-boundary.md",
+    "platform_allocation": "docs/adr/ADR-013-compute-platform-allocation.md",
+    "voice_config": "config/voice/voice-assist-v1.json",
+    "video_config": "config/video/efis-cam-lab.json"
+  },
+  "packages": [
+    {
+      "id": "PB-EMS-AUTHORITY",
+      "title": "EMS limits and source authority",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["engine_serials", "applicable_manual_revisions", "owner_approved_limits"],
+      "invariants": {
+        "supported_engine_models": ["ROTAX_912_UL", "ROTAX_912_ULS"],
+        "active_profile_state": "SIMULATION",
+        "active_limits_status": "INDICATIVE_UNVERIFIED",
+        "unverified_limits_may_drive_normal_cas": false,
+        "manual_page_reference_required": true,
+        "engine_serial_required": true,
+        "independent_profile_per_engine_model": true
+      },
+      "controls": [
+        {"id": "PB-EMS-01", "key": "engine_model_registry", "state": "DEFINED"},
+        {"id": "PB-EMS-02", "key": "serial_identity", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-EMS-03", "key": "manual_revision", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-EMS-04", "key": "manual_page_reference", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-EMS-05", "key": "units_and_conversion", "state": "DEFINED"},
+        {"id": "PB-EMS-06", "key": "limit_provenance", "state": "DEFINED"},
+        {"id": "PB-EMS-07", "key": "simulation_annunciation", "state": "DEFINED"},
+        {"id": "PB-EMS-08", "key": "profile_separation", "state": "DEFINED"},
+        {"id": "PB-EMS-09", "key": "activation_review", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-EMS-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    },
+    {
+      "id": "PB-PRODUCT-SKU",
+      "title": "Standard and Professional capability matrix",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["approved_feature_matrix", "approved_node_manifest", "approved_release_policy"],
+      "invariants": {
+        "single_codebase": true,
+        "profiles": ["STANDARD", "PROFESSIONAL"],
+        "safety_state_semantics_identical": true,
+        "profile_switch_in_flight_allowed": false,
+        "feature_enable_requires_manifest": true,
+        "unknown_feature_policy": "REJECT",
+        "missing_profile_policy": "NO_START"
+      },
+      "controls": [
+        {"id": "PB-SKU-01", "key": "profile_registry", "state": "DEFINED"},
+        {"id": "PB-SKU-02", "key": "single_codebase", "state": "DEFINED"},
+        {"id": "PB-SKU-03", "key": "node_allocation", "state": "DEFINED"},
+        {"id": "PB-SKU-04", "key": "feature_allowlist", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-SKU-05", "key": "safety_semantics", "state": "DEFINED"},
+        {"id": "PB-SKU-06", "key": "unknown_feature", "state": "DEFINED"},
+        {"id": "PB-SKU-07", "key": "profile_switch", "state": "DEFINED"},
+        {"id": "PB-SKU-08", "key": "release_manifest", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-SKU-09", "key": "hardware_acceptance", "state": "VERIFY_HW"},
+        {"id": "PB-SKU-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    },
+    {
+      "id": "PB-FPV-FOUR",
+      "title": "Four-feed FPV isolation and health",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["dedicated_rpi4_video_core", "dedicated_video_switch", "four_verified_camera_feeds"],
+      "invariants": {
+        "camera_count": 4,
+        "decoder_platform": "RPI4",
+        "ems_and_fpv_same_host_allowed": false,
+        "video_and_flight_data_bridge_allowed": false,
+        "operational_wifi_allowed": false,
+        "rpi5_primary_decode_allowed": false,
+        "stale_frame_age_visible": true,
+        "recording_requires_telemetry_sidecar": true
+      },
+      "controls": [
+        {"id": "PB-FPV-01", "key": "camera_inventory", "state": "VERIFY_HW"},
+        {"id": "PB-FPV-02", "key": "four_feed_registry", "state": "DEFINED"},
+        {"id": "PB-FPV-03", "key": "dedicated_rpi4", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-FPV-04", "key": "network_isolation", "state": "DEFINED"},
+        {"id": "PB-FPV-05", "key": "aggregate_bandwidth", "state": "VERIFY_HW"},
+        {"id": "PB-FPV-06", "key": "decoder_capacity", "state": "VERIFY_HW"},
+        {"id": "PB-FPV-07", "key": "frame_freshness", "state": "DEFINED"},
+        {"id": "PB-FPV-08", "key": "feed_loss_reversion", "state": "VERIFY_HW"},
+        {"id": "PB-FPV-09", "key": "telemetry_sidecar", "state": "DEFINED"},
+        {"id": "PB-FPV-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    },
+    {
+      "id": "PB-VOICE-OFFLINE",
+      "title": "Offline natural voice and phraseology boundary",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["isolated_audio_interface", "physical_ptt", "approved_phraseology_sources"],
+      "invariants": {
+        "offline_only": true,
+        "push_to_talk_only": true,
+        "closed_grammar_only": true,
+        "free_form_command_execution": false,
+        "radio_transmission_allowed": false,
+        "pixhawk_command_allowed": false,
+        "actuation_allowed": false,
+        "phraseology_pilot_review_required": true,
+        "critical_audio_policy": "FIXED_VERSIONED_CLIPS",
+        "dynamic_noncritical_audio_policy": "OFFLINE_TTS_WITH_VISUAL_FALLBACK"
+      },
+      "controls": [
+        {"id": "PB-VOI-01", "key": "ptt_gate", "state": "DEFINED"},
+        {"id": "PB-VOI-02", "key": "closed_grammar", "state": "DEFINED"},
+        {"id": "PB-VOI-03", "key": "offline_runtime", "state": "DEFINED"},
+        {"id": "PB-VOI-04", "key": "no_command_path", "state": "DEFINED"},
+        {"id": "PB-VOI-05", "key": "phraseology_sources", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-VOI-06", "key": "pilot_review", "state": "DEFINED"},
+        {"id": "PB-VOI-07", "key": "natural_voice_assets", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-VOI-08", "key": "audio_device_loss", "state": "VERIFY_HW"},
+        {"id": "PB-VOI-09", "key": "stall_taws_priority", "state": "VERIFY_HW"},
+        {"id": "PB-VOI-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    },
+    {
+      "id": "PB-HIL-FAULTS",
+      "title": "Deterministic HIL and fault-injection boundary",
+      "state": "PREPARED_SW_NOT_RUN",
+      "dependencies": ["isolated_hil_fixture", "approved_fault_catalog", "approved_acceptance_thresholds"],
+      "invariants": {
+        "simulation_visible": true,
+        "deterministic_seed_required": true,
+        "scenario_sha256_required": true,
+        "production_network_injection_allowed": false,
+        "production_storage_fault_allowed": false,
+        "actuator_output_allowed": false,
+        "flight_control_command_allowed": false,
+        "same_replay_all_consumers": true,
+        "operator_and_utc_required": true
+      },
+      "controls": [
+        {"id": "PB-HIL-01", "key": "fixture_isolation", "state": "BLOCKED_DEPENDENCY"},
+        {"id": "PB-HIL-02", "key": "deterministic_seed", "state": "DEFINED"},
+        {"id": "PB-HIL-03", "key": "scenario_digest", "state": "DEFINED"},
+        {"id": "PB-HIL-04", "key": "sensor_faults", "state": "DEFINED"},
+        {"id": "PB-HIL-05", "key": "network_faults", "state": "DEFINED"},
+        {"id": "PB-HIL-06", "key": "storage_faults_isolated", "state": "DEFINED"},
+        {"id": "PB-HIL-07", "key": "display_faults", "state": "DEFINED"},
+        {"id": "PB-HIL-08", "key": "replay_parity", "state": "DEFINED"},
+        {"id": "PB-HIL-09", "key": "hardware_acceptance", "state": "VERIFY_HW"},
+        {"id": "PB-HIL-10", "key": "go_no_go", "state": "NO_GO"}
+      ]
+    }
+  ],
+  "decision": "NO_GO_PENDING_SOURCES_AND_INTERACTIVE_HARDWARE_EVIDENCE"
+}

@@ -435,3 +435,25 @@ incremento; nessun nodo è stato contattato e nessun servizio, cablaggio,
 parametro o dataset è stato modificato. **Aperto:** tutte le dipendenze e le
 prove interattive elencate nel runbook. Gli stati `PRJ-002`, `PRJ-003`,
 `AIR-001`, `BBX-001`, `NAV-003` e `SV-003` non sono promossi.
+
+## 21. Product contracts batch — 2026-09-27
+
+Sono stati preparati cinque contratti software fail-closed, per complessivi 50
+controlli, relativi a `EMS-004`, `PROD-001`, `FPV-002`, `VOI-003` e `VER-002`:
+
+- limiti EMS separati per Rotax 912 UL/ULS con seriale, manuale, revisione e
+  pagina obbligatori; il profilo corrente resta `SIMULATION` e
+  `INDICATIVE_UNVERIFIED`;
+- Standard/Professional su una sola codebase, senza cambio profilo in volo e
+  con rifiuto delle feature ignote;
+- quattro feed FPV su RPi4 dedicato, separato dall'EMS e senza bridge fra VIDEO
+  e FLIGHT-DATA;
+- voce naturale offline solo PTT e consultiva, senza trasmissione, comando o
+  attuazione;
+- HIL deterministico confinato, senza fault su reti/storage production e senza
+  uscite attuatore.
+
+Il contratto, il validatore e i test verificano soltanto i confini software.
+Fonti motore, manifesti di prodotto, nodo/camere VIDEO, catena audio e fixture
+HIL non sono stati verificati. `execution_authorized=false`,
+`flight_approval=false` e tutti i pacchetti terminano `NO_GO`.
