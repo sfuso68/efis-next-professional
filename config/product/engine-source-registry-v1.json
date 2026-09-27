@@ -1,0 +1,31 @@
+{
+  "schema": "avionix-next.engine-source-registry.v1",
+  "revision": "1.0.0",
+  "status": "SOURCE_DATA_REQUIRED",
+  "activation_allowed": false,
+  "engines": [
+    {
+      "id": "ROTAX_912_UL",
+      "display_name": "Rotax 912 UL",
+      "serial_number": "UNRESOLVED",
+      "manual_document_id": "UNRESOLVED",
+      "manual_revision": "UNRESOLVED",
+      "limit_page_references": [],
+      "limits": [],
+      "review_state": "NOT_REVIEWED",
+      "operational_use_allowed": false
+    },
+    {
+      "id": "ROTAX_912_ULS",
+      "display_name": "Rotax 912 ULS",
+      "serial_number": "UNRESOLVED",
+      "manual_document_id": "UNRESOLVED",
+      "manual_revision": "UNRESOLVED",
+      "limit_page_references": [],
+      "limits": [],
+      "review_state": "NOT_REVIEWED",
+      "operational_use_allowed": false
+    }
+  ],
+  "decision": "NO_GO_UNTIL_APPLICABLE_SOURCES_REVIEWED"
+}

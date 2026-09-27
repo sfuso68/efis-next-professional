@@ -457,3 +457,20 @@ Il contratto, il validatore e i test verificano soltanto i confini software.
 Fonti motore, manifesti di prodotto, nodo/camere VIDEO, catena audio e fixture
 HIL non sono stati verificati. `execution_authorized=false`,
 `flight_approval=false` e tutti i pacchetti terminano `NO_GO`.
+
+## 22. Product readiness tools batch — 2026-09-27
+
+I cinque contratti prodotto dispongono ora di registri macchina separati e di
+un validatore incrociato: fonti motore 912 UL/ULS, capability Standard e
+Professional, capacità FPV a quattro feed, pacchetti fraseologia/asset voce e
+sei scenari HIL deterministici.
+
+**Implementato:** cinque configurazioni JSON, validatore fail-closed, test di
+mutazione, documento di verifica e gate CI. **Verificato solo software:** il
+validator richiede due motori non attivabili, due profili non approvati,
+quattro feed con misure `NOT_RUN`, zero pacchetti voce approvati e sei scenari
+HIL con digest ancora `UNRESOLVED`. **Verificato su hardware reale:** nulla;
+nessun nodo è stato contattato. **Aperto:** acquisizione e review di tutte le
+fonti, manifesti, misure, periferiche e fixture. Gli stati `EMS-004`,
+`PROD-001`, `FPV-002`, `VOI-003` e `VER-002` restano `TODO` e nessun registro
+autorizza deployment o volo.
