@@ -546,6 +546,11 @@ piattaforma industriale scelta.
 | 18 | capacity plan FPV — `IMPLEMENTED-SW / NOT-RUN` | impedisce di confondere target e misure video | RPi4, switch, camere e benchmark reali |
 | 19 | registry fraseologia/voce — `IMPLEMENTED-SW / NOT-RUN` | blocca pacchetti senza fonte e asset senza revisione | fonti e audio naturali approvati |
 | 20 | catalogo HIL — `IMPLEMENTED-SW / NOT-RUN` | congela sei fault con seed prima della fixture | input digest e fixture isolata |
+| 21 | intake fonti motore — `PREPARED-SW / NOT-RUN` | raccoglie targhetta, manuale, revisione, pagine e review senza attivare limiti | evidenze applicabili 912 UL/ULS |
+| 22 | intake approvazione SKU — `PREPARED-SW / NOT-RUN` | collega capability, nodi e release manifest ai due profili | decisione proprietario e manifesti candidati |
+| 23 | intake benchmark FPV — `PREPARED-SW / NOT-RUN` | congela otto misure e quattro feed su banco VIDEO isolato | nodo, switch e camere identificati |
+| 24 | intake fraseologia/voce — `PREPARED-SW / NOT-RUN` | congela fonti, asset naturali offline e intelligibilità | interfono/PTT e fonti approvati |
+| 25 | intake run HIL — `PREPARED-SW / NOT-RUN` | lega fixture, input e artefatti ai sei scenari deterministici | fixture isolata e autorizzazione separata |
 
 ## 12. Decisioni ricevute e dati ancora richiesti
 

@@ -1,0 +1,16 @@
+{
+  "schema": "avionix-next.engine-source-intake.v1",
+  "status": "NOT_RUN",
+  "registry_path": "config/product/engine-source-registry-v1.json",
+  "registry_sha256": "efaac8435a6f421aa66198c1c2583b05d1bcd42368a47f43966c0890d916c2e3",
+  "engines": [
+    {"id": "ROTAX_912_UL", "required_artifacts": ["data-plate-photo", "applicable-manual", "revision-page", "limit-pages", "review-signoff"], "artifacts": []},
+    {"id": "ROTAX_912_ULS", "required_artifacts": ["data-plate-photo", "applicable-manual", "revision-page", "limit-pages", "review-signoff"], "artifacts": []}
+  ],
+  "operator": null,
+  "captured_utc": null,
+  "engineering_reviewed": false,
+  "activation_allowed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_APPLICABLE_ENGINE_SOURCES"
+}

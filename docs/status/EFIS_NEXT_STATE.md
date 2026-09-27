@@ -474,3 +474,24 @@ nessun nodo è stato contattato. **Aperto:** acquisizione e review di tutte le
 fonti, manifesti, misure, periferiche e fixture. Gli stati `EMS-004`,
 `PROD-001`, `FPV-002`, `VOI-003` e `VER-002` restano `TODO` e nessun registro
 autorizza deployment o volo.
+
+## 23. Product evidence intake batch — 2026-09-27
+
+I cinque registri prodotto dispongono ora anche del livello di intake che
+precede ogni acquisizione interattiva. Ogni template è legato al registro
+autorevole tramite SHA-256 e parte obbligatoriamente da `NOT_RUN`.
+
+**Implementato:** intake fonti motore per 912 UL/ULS; intake approvazione SKU
+Standard/Professional; intake benchmark FPV a quattro feed; intake
+fraseologia/voce per `it-IT` e `en-GB`; intake per i sei run HIL. Il validatore
+blocca drift, evidenze anticipate, approvazioni premature, bridge/Wi-Fi VIDEO,
+trasmissione automatica, reti o storage production e uscite attuatore.
+
+**Verificato solo software:** validatore PASS su cinque intake; otto test di
+mutazione PASS, oltre ai 23 test di regressione dei contratti, registri e
+Project Control. **Verificato su hardware reale:** nulla; nessun nodo, camera,
+interfono, motore o fixture è stato contattato. **Aperto:** compilazione degli
+intake da parte dell'operatore, acquisizione degli artefatti, review tecnica e
+sessioni hardware autorizzate separatamente. `EMS-004`, `PROD-001`, `FPV-002`,
+`VOI-003` e `VER-002` restano `TODO`; `execution_authorized=false`,
+`hardware_verified=false` e `flight_approval=false`.

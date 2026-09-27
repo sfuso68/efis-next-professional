@@ -1,0 +1,22 @@
+{
+  "schema": "avionix-next.hil-run-intake.v1",
+  "status": "NOT_RUN",
+  "registry_path": "config/hil/avionix-hil-scenarios-v1.json",
+  "registry_sha256": "479e0104cdb6dd341fd57ba9c64cf18203e26cdd3a6a78a9b9083a29fecba523",
+  "isolated_fixture": null,
+  "scenarios": [
+    {"id": "HIL-SENSOR-STALE", "input_sha256": "UNRESOLVED", "artifacts": []},
+    {"id": "HIL-SENSOR-LOST", "input_sha256": "UNRESOLVED", "artifacts": []},
+    {"id": "HIL-NETWORK-GAP", "input_sha256": "UNRESOLVED", "artifacts": []},
+    {"id": "HIL-STORAGE-FULL", "input_sha256": "UNRESOLVED", "artifacts": []},
+    {"id": "HIL-DISPLAY-LINK", "input_sha256": "UNRESOLVED", "artifacts": []},
+    {"id": "HIL-TERRAIN-MISSING", "input_sha256": "UNRESOLVED", "artifacts": []}
+  ],
+  "production_network_used": false,
+  "production_storage_used": false,
+  "actuator_output_enabled": false,
+  "flight_control_commands_enabled": false,
+  "execution_authorized": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_FIXTURE_INPUTS_AND_EXECUTION_APPROVAL"
+}

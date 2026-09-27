@@ -1,0 +1,20 @@
+{
+  "schema": "avionix-next.fpv-benchmark-intake.v1",
+  "status": "NOT_RUN",
+  "registry_path": "config/video/fpv-capacity-plan-v1.json",
+  "registry_sha256": "59d128c0d6839c3da24a8994965905d90913f9ce8a46aa27c91f8ca3a73c1a46",
+  "isolated_fixture": null,
+  "feeds": [
+    {"id": "CAM-01", "artifacts": []},
+    {"id": "CAM-02", "artifacts": []},
+    {"id": "CAM-03", "artifacts": []},
+    {"id": "CAM-04", "artifacts": []}
+  ],
+  "required_measurements": ["aggregate-bitrate", "decode-cpu", "decode-temperature", "end-to-end-latency", "dropped-frames", "four-feed-mosaic", "feed-loss-recovery", "telemetry-sidecar"],
+  "measurements": [],
+  "network_bridge_enabled": false,
+  "operational_wifi_enabled": false,
+  "execution_authorized": false,
+  "flight_approval": false,
+  "decision": "NO_GO_PENDING_ISOLATED_VIDEO_BENCH"
+}
