@@ -1,0 +1,15 @@
+{
+  "schema": "avionix-next.phraseology-pack-registry.v1",
+  "revision": "1.0.0",
+  "status": "EMPTY_AWAITING_APPROVED_SOURCES",
+  "offline_only": true,
+  "pilot_review_required": true,
+  "automatic_transmission_allowed": false,
+  "supported_locales": ["it-IT", "en-GB"],
+  "approved_packs": [],
+  "natural_voice_assets": [],
+  "critical_audio_policy": "FIXED_VERSIONED_CLIPS",
+  "dynamic_noncritical_audio_policy": "OFFLINE_TTS_WITH_VISUAL_FALLBACK",
+  "required_pack_fields": ["pack_id", "locale", "jurisdiction", "revision", "source", "source_sha256", "applicability", "approval_state"],
+  "decision": "NO_GO_PENDING_SOURCE_AND_AUDIO_REVIEW"
+}

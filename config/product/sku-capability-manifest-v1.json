@@ -1,0 +1,25 @@
+{
+  "schema": "avionix-next.sku-capability-manifest.v1",
+  "revision": "1.0.0",
+  "status": "PROPOSED_NOT_APPROVED",
+  "single_codebase": true,
+  "inflight_profile_switch_allowed": false,
+  "unknown_capability_policy": "REJECT",
+  "profiles": [
+    {
+      "id": "STANDARD",
+      "capabilities": ["HEALTH_CAS", "LOGGING", "SETUP", "PFD_BASIC", "EMS_BASIC", "NAV_BASIC"],
+      "required_nodes": ["PFD_RPI5", "EMS_RPI4", "BLACKBOX_RPI5"],
+      "release_manifest": "UNRESOLVED",
+      "approved": false
+    },
+    {
+      "id": "PROFESSIONAL",
+      "capabilities": ["HEALTH_CAS", "LOGGING", "SETUP", "PFD_SYNTHETIC_VISION", "MFD", "EMS_ADVANCED", "NAV_ADVANCED", "FPV_VIEWER", "VOICE_ASSIST"],
+      "required_nodes": ["PFD_RPI5", "MFD_RPI5", "EMS_RPI4", "FPV_RPI4", "BLACKBOX_RPI5"],
+      "release_manifest": "UNRESOLVED",
+      "approved": false
+    }
+  ],
+  "decision": "NO_GO_PENDING_CAPABILITY_AND_NODE_REVIEW"
+}

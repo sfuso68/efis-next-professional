@@ -1,0 +1,25 @@
+{
+  "schema": "avionix-next.fpv-capacity-plan.v1",
+  "revision": "1.0.0",
+  "status": "PLANNED_NOT_MEASURED",
+  "execution_authorized": false,
+  "decoder_platform": "RPI4",
+  "dedicated_physical_host": "UNRESOLVED",
+  "dedicated_video_switch": "UNRESOLVED",
+  "network_bridge_allowed": false,
+  "operational_wifi_allowed": false,
+  "feeds": [
+    {"id": "CAM-01", "role": "forward", "required": true, "codec": "UNRESOLVED", "resolution": "UNRESOLVED", "fps": "UNRESOLVED", "measured_bitrate_mbps": "NOT_RUN"},
+    {"id": "CAM-02", "role": "left", "required": false, "codec": "UNRESOLVED", "resolution": "UNRESOLVED", "fps": "UNRESOLVED", "measured_bitrate_mbps": "NOT_RUN"},
+    {"id": "CAM-03", "role": "right", "required": false, "codec": "UNRESOLVED", "resolution": "UNRESOLVED", "fps": "UNRESOLVED", "measured_bitrate_mbps": "NOT_RUN"},
+    {"id": "CAM-04", "role": "rear", "required": false, "codec": "UNRESOLVED", "resolution": "UNRESOLVED", "fps": "UNRESOLVED", "measured_bitrate_mbps": "NOT_RUN"}
+  ],
+  "measurements": {
+    "aggregate_bitrate_mbps": "NOT_RUN",
+    "decode_cpu_percent": "NOT_RUN",
+    "decode_temperature_c": "NOT_RUN",
+    "end_to_end_latency_ms": "NOT_RUN",
+    "dropped_frame_percent": "NOT_RUN"
+  },
+  "decision": "NO_GO_PENDING_VIDEO_HARDWARE_AND_MEASUREMENTS"
+}

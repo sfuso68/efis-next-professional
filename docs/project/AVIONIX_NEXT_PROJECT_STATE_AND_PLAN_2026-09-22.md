@@ -541,6 +541,11 @@ piattaforma industriale scelta.
 | 13 | FPV quattro feed — `PREPARED-SW / NOT-RUN` (`PB-FPV-FOUR`) | congela isolamento, host RPi4 e sidecar telemetrico | nodo VIDEO, switch e quattro camere verificati |
 | 14 | voce/fraseologia offline — `PREPARED-SW / NOT-RUN` (`PB-VOICE-OFFLINE`) | mantiene voce naturale fuori dal percorso di comando | interfaccia audio, PTT, asset e fonti approvate |
 | 15 | HIL deterministico — `PREPARED-SW / NOT-RUN` (`PB-HIL-FAULTS`) | prepara fault injection ripetibile senza toccare produzione | fixture isolata, catalogo e soglie approvati |
+| 16 | registry fonti motore — `IMPLEMENTED-SW / NOT-RUN` | acquisisce seriale/manuale/revisione/pagine senza attivare limiti | documenti applicabili revisionati |
+| 17 | manifest capability SKU — `IMPLEMENTED-SW / NOT-RUN` | rende verificabile la separazione Standard/Professional | approvazione feature e release manifest |
+| 18 | capacity plan FPV — `IMPLEMENTED-SW / NOT-RUN` | impedisce di confondere target e misure video | RPi4, switch, camere e benchmark reali |
+| 19 | registry fraseologia/voce — `IMPLEMENTED-SW / NOT-RUN` | blocca pacchetti senza fonte e asset senza revisione | fonti e audio naturali approvati |
+| 20 | catalogo HIL — `IMPLEMENTED-SW / NOT-RUN` | congela sei fault con seed prima della fixture | input digest e fixture isolata |
 
 ## 12. Decisioni ricevute e dati ancora richiesti
 

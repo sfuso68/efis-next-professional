@@ -76,6 +76,7 @@ comandi su uscite.
 | 2026-09-27 | AVX-G3-01 / AVX-G3-03 / SV-001 | piano release gemella PFD/MFD C12, schema, coordinatore e otto test | PREPARED-SW/NOT-RUN/NO-GO; stesso commit e policy obbligatori, MFD prima del PFD, rollback inverso e digest input; nessun nodo contattato e deployment ancora soggetto ad autorizzazione separata |
 | 2026-09-27 | AVX-G1-02/03, AVX-G2-02, AIR-001, BBX-001, NAV-003, SV-003 | `AVIONIX_QUALIFICATION_BATCH_G1_G4_V1.md`, contratto, validatore e dieci test | PREPARED-SW/NOT-RUN/NO-GO; cinque pacchetti e 50 controlli fail-closed definiscono dipendenze/evidenze senza inventare mapping o calibrazioni e senza autorizzare hardware, fault distruttivi o uso in volo |
 | 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_CONTRACTS_BATCH_V1.md`, contratto, validatore e test fail-closed | PREPARED-SW/NOT-RUN/NO-GO; cinque pacchetti e 50 controlli congelano autorità limiti EMS, SKU, FPV, voce e HIL; nessuna fonte motore, capability, periferica o fixture viene dichiarata verificata |
+| 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_TOOLS_BATCH_V1.md`, cinque registri, validatore e test mutazione | IMPLEMENTED-SW/NOT-RUN/NO-GO; fonti motore, SKU, capacità FPV, pacchetti voce e scenari HIL sono ora acquisibili senza poter dichiarare valori o misure non revisionati |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato

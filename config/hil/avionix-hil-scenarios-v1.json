@@ -1,0 +1,22 @@
+{
+  "schema": "avionix-next.hil-scenarios.v1",
+  "revision": "1.0.0",
+  "status": "TEMPLATES_NOT_RUN",
+  "execution_authorized": false,
+  "fixture": "UNRESOLVED",
+  "production_network_allowed": false,
+  "production_storage_allowed": false,
+  "actuator_output_allowed": false,
+  "flight_control_command_allowed": false,
+  "scenarios": [
+    {"id": "HIL-SENSOR-STALE", "seed": 1001, "fault": "SENSOR_STALE", "input_sha256": "UNRESOLVED", "expected_state": "STALE"},
+    {"id": "HIL-SENSOR-LOST", "seed": 1002, "fault": "SENSOR_LOST", "input_sha256": "UNRESOLVED", "expected_state": "LOST"},
+    {"id": "HIL-NETWORK-GAP", "seed": 1003, "fault": "NETWORK_SEQUENCE_GAP", "input_sha256": "UNRESOLVED", "expected_state": "DEGRADED"},
+    {"id": "HIL-STORAGE-FULL", "seed": 1004, "fault": "ISOLATED_STORAGE_FULL", "input_sha256": "UNRESOLVED", "expected_state": "FAIL"},
+    {"id": "HIL-DISPLAY-LINK", "seed": 1005, "fault": "DISPLAY_DATA_LOSS", "input_sha256": "UNRESOLVED", "expected_state": "LOST"},
+    {"id": "HIL-TERRAIN-MISSING", "seed": 1006, "fault": "TERRAIN_MISSING", "input_sha256": "UNRESOLVED", "expected_state": "UNAVAILABLE"}
+  ],
+  "same_replay_all_consumers": true,
+  "operator_and_utc_required": true,
+  "decision": "NO_GO_PENDING_ISOLATED_FIXTURE_AND_INPUT_DIGESTS"
+}
