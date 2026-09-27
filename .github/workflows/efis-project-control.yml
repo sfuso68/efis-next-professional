@@ -100,6 +100,8 @@ jobs:
           python tools/product/validate_product_review_gates.py
           python -m unittest tests.test_product_review_gates -v
           python -m unittest tests.test_package_product_evidence -v
+          python tools/product/validate_product_independent_review.py
+          python -m unittest tests.test_product_evidence_review -v
 
       - name: Determine changed files
         id: changes

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fuso-avionics.local/schemas/product-evidence-bundle-v1.schema.json",
+  "title": "AVIONIX NEXT product evidence bundle V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "domain", "status", "operator", "captured_utc", "source", "subjects", "global_artifacts", "limitations", "review_status", "reviewers", "hardware_verified", "deployment_allowed", "flight_approval", "decision"],
+  "properties": {
+    "schema": {"const": "avionix-next.product-evidence-bundle.v1"},
+    "domain": {"enum": ["engine", "sku", "fpv", "voice", "hil"]},
+    "status": {"const": "PACKAGED_PENDING_REVIEW"},
+    "operator": {"type": "string", "minLength": 1},
+    "captured_utc": {"type": "string", "format": "date-time"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intake_path", "intake_sha256", "review_gate_path", "review_gate_sha256"],
+      "properties": {
+        "intake_path": {"type": "string", "minLength": 1},
+        "intake_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "review_gate_path": {"type": "string", "minLength": 1},
+        "review_gate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "subjects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "artifacts"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "artifacts": {"$ref": "#/$defs/artifacts"}
+        }
+      }
+    },
+    "global_artifacts": {"$ref": "#/$defs/artifacts"},
+    "limitations": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "review_status": {"const": "PENDING"},
+    "reviewers": {"type": "array", "maxItems": 0},
+    "hardware_verified": {"const": false},
+    "deployment_allowed": {"const": false},
+    "flight_approval": {"const": false},
+    "decision": {"const": "NO_GO_PENDING_INDEPENDENT_REVIEW"}
+  },
+  "$defs": {
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "file", "bytes", "sha256"],
+        "properties": {
+          "kind": {"type": "string", "minLength": 1},
+          "file": {"type": "string", "minLength": 1},
+          "bytes": {"type": "integer", "minimum": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "avionix-next.product-independent-review.v1",
+  "domain": "sku",
+  "status": "NOT_RUN",
+  "coordinator": null,
+  "captured_utc": null,
+  "evidence_bundle_path": null,
+  "evidence_bundle_sha256": "UNRESOLVED",
+  "review_gate_path": "config/product/sku-release-review-gate-v1.json",
+  "review_gate_sha256": "9d7a9fa778f53da8434ab61cebc49c6a43127eba9927b0eca73153fdb024f6e2",
+  "required_review_roles": ["product-owner", "safety-reviewer", "release-manager"],
+  "required_findings": ["capability-allowlist", "node-allocation", "single-codebase", "unknown-feature-rejection", "inflight-profile-lock"],
+  "reviewers": [],
+  "findings": {},
+  "limitations": [],
+  "evidence_integrity_verified": false,
+  "review_complete": false,
+  "hardware_verified": false,
+  "deployment_allowed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_NOT_RUN"
+}

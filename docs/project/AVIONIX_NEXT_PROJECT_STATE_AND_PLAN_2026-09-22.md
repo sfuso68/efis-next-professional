@@ -662,3 +662,15 @@ modifiche hardware, deployment, merge, prove dinamiche o uso in volo.
 
 Tutti i bundle terminano `PACKAGED_PENDING_REVIEW` e `NO-GO`: il packaging
 non sostituisce la revisione indipendente e non promuove lo stato hardware.
+
+## 17. Avanzamento operativo 36–39 — independent review
+
+36. **Schema bundle:** contratto JSON chiuso e fail-closed per tutti i domini.
+37. **Integrità:** validazione autonoma di provenienza, path, byte e SHA-256.
+38. **Review:** cinque template legati ai gate, con tre ruoli indipendenti,
+    firme e finding motivati.
+39. **Automazione:** validator, test di tamper e CI integrati nel Project
+    Control.
+
+Questo livello è completo soltanto software. La compilazione dei record resta
+interattiva; l'esito positivo autorizza esclusivamente il gate successivo.

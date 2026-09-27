@@ -232,7 +232,16 @@ def assemble(root: Path, results_path: Path, output: Path) -> list[str]:
         json.dump(manifest, handle, indent=2)
         handle.write("\n")
     temporary.replace(output)
-    return []
+    try:
+        try:
+            from .validate_product_evidence_bundle import validate_file
+        except ImportError:
+            from validate_product_evidence_bundle import validate_file
+        validate_file(root, output)
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        output.unlink(missing_ok=True)
+        _error(errors, 20, f"downstream bundle validation failed: {exc}")
+    return errors
 
 
 def main() -> int:

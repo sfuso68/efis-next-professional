@@ -531,3 +531,19 @@ contattato. **Aperto:** compilazione sul banco, raccolta delle evidenze reali e
 review indipendente. `EMS-004`, `PROD-001`, `FPV-002`, `VOI-003` e `VER-002`
 restano `TODO`; `hardware_verified=false`, `deployment_allowed=false` e
 `flight_approval=false`.
+
+## 26. Independent product evidence review — 2026-09-27
+
+Il bundle prodotto dispone ora di schema chiuso e validazione autonoma di
+sorgenti, path, dimensioni e SHA-256. Cinque template di revisione indipendente
+congelano ruoli e finding già definiti nei review gate.
+
+**Implementato:** schema bundle; validatore byte-per-byte; template review per
+motori, SKU, FPV, voce e HIL; validatore con tre reviewer distinti, firme,
+timestamp e decisione coerente con i finding; test e CI. **Verificato solo
+software:** bundle e review sintetici dei cinque domini PASS; tamper, drift,
+firme errate, reviewer duplicati, finding incoerenti e claim operativi sono
+rifiutati. **Verificato su hardware reale:** nulla. **Aperto:** generare i
+bundle reali e farli revisionare dalle autorità definite. Anche una review
+positiva termina `EVIDENCE_ACCEPTED_FOR_NEXT_GATE`; gli stessi requisiti
+restano `TODO`, senza deployment o approvazione al volo.
