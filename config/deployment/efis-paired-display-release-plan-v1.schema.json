@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://efis-next.local/schemas/efis-paired-display-release-plan-v1.schema.json",
+  "title": "FUSO AVIONICS NEXT paired PFD/MFD non-executable release plan V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "status", "decision", "flight_approval", "execution_authorized",
+    "source_commit", "policy_sha256", "activation_order", "rollback_order",
+    "nodes", "required_gates", "required_evidence", "mutating_commands"
+  ],
+  "properties": {
+    "schema": { "const": "efis-next.paired-display-release-plan.v1" },
+    "status": { "const": "PREPARED_NOT_EXECUTED" },
+    "decision": { "const": "NO_GO_UNTIL_SEPARATE_HARDWARE_AUTHORIZATION" },
+    "flight_approval": { "const": false },
+    "execution_authorized": { "const": false },
+    "source_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "policy_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "activation_order": { "const": ["MFD", "PFD"] },
+    "rollback_order": { "const": ["PFD", "MFD"] },
+    "nodes": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        { "$ref": "#/$defs/mfd" },
+        { "$ref": "#/$defs/pfd" }
+      ],
+      "items": false
+    },
+    "required_gates": {
+      "type": "array", "minItems": 12, "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "required_evidence": {
+      "type": "array", "minItems": 8, "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "mutating_commands": { "type": "array", "maxItems": 0 }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role", "node", "platform", "service", "service_scope", "current_link",
+        "candidate_target", "rollback_target", "release_id", "manifest_sha256",
+        "transition_plan_sha256", "artifacts_checked"
+      ],
+      "properties": {
+        "role": { "enum": ["PFD", "MFD"] },
+        "node": { "type": "string", "minLength": 1 },
+        "platform": { "const": "RPI5_AARCH64" },
+        "service": { "type": "string", "pattern": "^[a-z0-9@_.-]+\\.service$" },
+        "service_scope": { "enum": ["system", "user"] },
+        "current_link": { "type": "string", "pattern": "^/" },
+        "candidate_target": { "type": "string", "pattern": "^/" },
+        "rollback_target": { "type": "string", "pattern": "^/" },
+        "release_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{6,63}$" },
+        "manifest_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "transition_plan_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "artifacts_checked": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "mfd": {
+      "allOf": [
+        { "$ref": "#/$defs/node" },
+        { "properties": { "role": { "const": "MFD" }, "node": { "const": "pi5" } } }
+      ]
+    },
+    "pfd": {
+      "allOf": [
+        { "$ref": "#/$defs/node" },
+        { "properties": { "role": { "const": "PFD" }, "node": { "const": "efis-pfd-01" } } }
+      ]
+    }
+  }
+}

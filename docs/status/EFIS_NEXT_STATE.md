@@ -392,3 +392,24 @@ release è stata installata, nessun servizio o runtime è stato modificato e non
 sono stati eseguiti reboot, fault Ethernet, cache manipulation o benchmark.
 Non esiste nuova evidenza hardware: I-04/I-05 restano `NOT-RUN`, `PRJ-004`
 resta `VERIFY-HW`, `SV-001` resta `PARTIAL` e `flight_approval=false`.
+
+## 19. Piano release gemella PFD/MFD C12 — 2026-09-27
+
+È stato preparato il piano software non eseguibile che coordina i due piani di
+transizione immutabile PFD e MFD prima delle sessioni HMI/Synthetic Vision. Il
+tool `prepare_paired_display_release.py` accetta solo piani V1 già validati,
+richiede lo stesso SHA sorgente completo e lo stesso digest della policy,
+verifica identità, piattaforma, servizio e link attivo dei due ruoli, lega gli
+input con digest SHA-256 e produce l'ordine MFD→PFD con rollback PFD→MFD.
+
+**Implementato:** schema JSON fail-closed, coordinatore atomico senza
+overwrite, dodici gate, otto evidenze minime, runbook e integrazione CI.
+**Verificato solo software:** otto test mirati PASS e controllo sintattico
+Python; sono coperti mismatch commit/policy, identità o piattaforma errate,
+tentativi di autorizzazione, comandi mutanti, release ID duplicati e mutazioni
+degli input. **Verificato su hardware reale:** nulla; PFD e MFD non sono stati
+contattati e nessuna release, cache, tile, rete o servizio è stata modificata.
+**Aperto:** generare i piani dai manifesti realmente candidati, autorizzare la
+finestra, attivare MFD poi PFD, eseguire reboot/rollback e completare C10/C11/C9
+con firma operatore. `AVX-G3-01` resta `OPEN`; `PFD-001`, `MFD-001` e `SV-001`
+non sono promossi. `flight_approval=false` e `execution_authorized=false`.
