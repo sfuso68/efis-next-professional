@@ -73,6 +73,7 @@ comandi su uscite.
 | 2026-09-21 | AVX-G3-01 / SV-001 | `CHECKPOINT-2026-09-21-SYNTHETIC-VISION-CAPTURE-ASSEMBLER.md`, assembler C11 | VERIFIED-SW/NOT_RUN; log continui, tile/fault, screenshot e firma producono risultati C9 atomici; 17 test C9+C10+C11 PASS, nessuna acquisizione RPi5 |
 | 2026-09-22 | AVX-G3-01 / SV-001 | `CHECKPOINT-2026-09-22-SYNTHETIC-VISION-LOD-PROJECTION.md`, correzione C12 | VERIFIED-SW/VERIFY-HW; distanza dall'impronta, isteresi e preload centralizzati; build Qt/QML AOT e 4/4 suite C9–C12 PASS; nessun deployment o acceptance RPi5 |
 | 2026-09-25 | AVX-G0-02 / AVX-G6-01 / PRJ-001 | configuration/restore pack I-10, tool fail-closed, runbook e sei test | PREPARED-SW/NOT-RUN; clone isolato, fsck, confronto SHA, tag/oggetti, file minimi e Project Control automatizzati; NAS/serverha non contattati e restore reale ancora aperto |
+| 2026-09-27 | AVX-G3-01 / AVX-G3-03 / SV-001 | piano release gemella PFD/MFD C12, schema, coordinatore e otto test | PREPARED-SW/NOT-RUN/NO-GO; stesso commit e policy obbligatori, MFD prima del PFD, rollback inverso e digest input; nessun nodo contattato e deployment ancora soggetto ad autorizzazione separata |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato
