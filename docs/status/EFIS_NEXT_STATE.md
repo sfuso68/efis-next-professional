@@ -376,3 +376,19 @@ se ritirare in seguito la copia temporanea Blackbox. La chiave di replica
 write-only (`git-receive-pack`) non è sufficiente: serve una credenziale di
 restore separata e limitata a `git-upload-pack`. `PRJ-001` resta `PARTIAL`
 e nessuna approvazione al volo è implicata.
+
+## 18. Runbook unificato HMI + Synthetic Vision — 2026-09-25
+
+È stato preparato il runbook documentale
+`docs/deployment/HMI_SYNTHETIC_VISION_NODE_RUNBOOK.md` per gli incrementi
+I-04/I-05. Il documento lega senza sovrapporli C8/A20/P20 e C9/C10/C11/C12,
+assegna HMI a PFD/MFD/EMS e Synthetic Vision ai soli PFD/MFD RPi5, congela
+ordine, gate, artefatti, soglie, stop condition e rollback. I riferimenti di
+banco registrati sono PFD `.45`, MFD `.49` ed EMS `.36`, da riconfermare al
+preflight e non usati come identità autorevoli.
+
+Questa modifica è soltanto documentale. Nessun nodo è stato contattato, nessuna
+release è stata installata, nessun servizio o runtime è stato modificato e non
+sono stati eseguiti reboot, fault Ethernet, cache manipulation o benchmark.
+Non esiste nuova evidenza hardware: I-04/I-05 restano `NOT-RUN`, `PRJ-004`
+resta `VERIFY-HW`, `SV-001` resta `PARTIAL` e `flight_approval=false`.
