@@ -103,6 +103,8 @@ jobs:
           python tools/product/validate_product_independent_review.py
           python -m unittest tests.test_product_evidence_review -v
           python -m unittest tests.test_manage_product_evidence_session -v
+          python tools/product/manage_product_gate_disposition.py validate-templates
+          python -m unittest tests.test_product_gate_disposition -v
 
       - name: Determine changed files
         id: changes

@@ -686,3 +686,14 @@ interattiva; l'esito positivo autorizza esclusivamente il gate successivo.
 
 La pipeline è pronta per le future sessioni interattive ma non contiene ancora
 evidenza reale.
+
+## 19. Avanzamento operativo 45–49 — gate disposition
+
+45. **Template:** cinque disposizioni `NOT_RUN` legate ai review gate.
+46. **Outcome:** digest e dominio della review verificati prima della decisione.
+47. **Autorità:** quorum di tre persone distinto dai reviewer dell'evidenza.
+48. **Record:** disposizione atomica, immutabile e rilevabile in caso di tamper.
+49. **Confine:** l'accettazione rende soltanto eleggibile una richiesta di
+    change control separata; non assegna ID e non abilita deployment.
+
+Questo livello è completo software ma resta `NOT_RUN` sui dati reali.

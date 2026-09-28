@@ -562,3 +562,18 @@ completa, review positive e negative, immutabilità e tamper detection.
 **Verificato su hardware reale:** nulla. **Aperto:** eseguire le sessioni con
 artefatti e reviewer reali. L'esito massimo resta
 `NO_GO_PENDING_GATE_DISPOSITION`; nessun requisito cambia stato.
+
+## 28. Product gate disposition — 2026-09-28
+
+La review indipendente può ora essere sottoposta a una disposizione formale
+separata. Cinque template congelano autorità, review gate e confine con il
+change control; il record finale è immutabile e verificabile tramite digest.
+
+**Implementato:** template per cinque domini; collegamento all'outcome;
+separazione fra reviewer e tre autorità decisionali; firme e timestamp;
+accettazione/rifiuto; record immutabile; test e CI. **Verificato solo
+software:** pipeline sintetica positiva e negativa, tamper, overlap di ruoli e
+tentativi di acquisire autorità operativa. **Verificato su hardware reale:**
+nulla. **Aperto:** outcome reali, autorità reali e successiva richiesta formale
+di change control. Anche l'accettazione termina
+`NO_GO_CHANGE_CONTROL_NOT_CREATED`; nessun requisito cambia stato.

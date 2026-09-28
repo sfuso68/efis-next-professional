@@ -82,6 +82,7 @@ comandi su uscite.
 | 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_EVIDENCE_PACKAGERS_V1.md`, cinque template e packager comune | IMPLEMENTED-SW/NOT-RUN/NO-GO; artefatti operator-confirmed possono essere verificati e congelati con SHA-256, ma i bundle restano pending review e non autorizzano hardware, deployment o volo |
 | 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_INDEPENDENT_REVIEW_V1.md`, schema bundle, validatori e cinque template review | IMPLEMENTED-SW/NOT-RUN/NO-GO; integrità byte-per-byte, tre ruoli distinti, firme e finding sono verificabili, ma anche un esito positivo passa soltanto al gate successivo |
 | 2026-09-27 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_EVIDENCE_SESSION_V1.md`, session manager e test end-to-end | IMPLEMENTED-SW/NOT-RUN/NO-GO; init, status, packaging, apertura review e outcome immutabile sono guidati, ma acquisizione e decisione del gate restano interattive |
+| 2026-09-28 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_GATE_DISPOSITION_V1.md`, cinque template, autorità separate e record immutabile | IMPLEMENTED-SW/NOT-RUN/NO-GO; review e gate sono collegati con digest, ma l'accettazione consente soltanto una futura richiesta change-control separata |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato
