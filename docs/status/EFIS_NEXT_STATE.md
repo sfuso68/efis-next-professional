@@ -591,3 +591,17 @@ analisi mancanti, path, digest, firma, overlap di ruoli e tamper.
 **Verificato su hardware reale:** nulla. **Aperto:** richieste e firme reali,
 decisione CCB e piano di implementazione separato. Il massimo esito resta
 `NO_GO_IMPLEMENTATION_NOT_AUTHORIZED`; nessun requisito cambia stato.
+
+## 30. Product CCB decision — 2026-09-28
+
+Una richiesta change-control completa può ora essere sottoposta a decisione
+CCB formale. Cinque template impongono quattro ruoli unanimi, indipendenza da
+tutte le persone delle fasi precedenti, firme e record immutabile.
+
+**Implementato:** template per cinque domini; collegamento alla richiesta;
+approve/reject/defer; quorum e segregazione; record, test e CI. **Verificato
+solo software:** pipeline sintetica completa, voto non unanime, overlap di
+ruoli, digest/firme, claim operativi e tamper. **Verificato su hardware
+reale:** nulla. **Aperto:** richieste e board reali, piano di implementazione
+separato ed eventuale successiva autorizzazione. Anche l'approvazione termina
+`NO_GO_IMPLEMENTATION_PLAN_NOT_CREATED`; nessun requisito cambia stato.

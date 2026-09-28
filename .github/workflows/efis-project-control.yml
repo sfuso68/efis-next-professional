@@ -107,6 +107,8 @@ jobs:
           python -m unittest tests.test_product_gate_disposition -v
           python tools/product/manage_product_change_control.py validate-templates
           python -m unittest tests.test_product_change_control -v
+          python tools/product/manage_product_ccb_decision.py validate-templates
+          python -m unittest tests.test_product_ccb_decision -v
 
       - name: Determine changed files
         id: changes

@@ -714,3 +714,19 @@ Questo livello è completo software ma resta `NOT_RUN` sui dati reali.
 
 Questo livello è completo software ma resta `NOT_RUN` sui dati reali; nessuna
 richiesta reale, decisione CCB o modifica operativa è stata eseguita.
+
+## 21. Avanzamento operativo 55–59 — CCB decision
+
+55. **Template:** cinque decisioni CCB `NOT_RUN` vincolate al change-control
+    del rispettivo dominio.
+56. **Prerequisiti:** richiesta e digest sono verificati prima di aprire la
+    decisione; record mancanti, alterati o non eleggibili sono rifiutati.
+57. **Quorum:** quattro membri unanimi, distinti fra loro e indipendenti da
+    reviewer e autorità delle fasi precedenti.
+58. **Record:** meeting, voto, firme, condizioni e rischi sono congelati in un
+    record immutabile e rilevabile in caso di tamper.
+59. **Confine:** l'approvazione rende soltanto eleggibile un piano di
+    implementazione separato; non assegna ID e non autorizza implementazione.
+
+Questo livello è completo software ma resta `NOT_RUN` sui dati reali. Il
+massimo esito è `NO_GO_IMPLEMENTATION_PLAN_NOT_CREATED`.
