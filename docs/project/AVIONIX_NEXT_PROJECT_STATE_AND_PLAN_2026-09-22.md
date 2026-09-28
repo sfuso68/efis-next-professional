@@ -697,3 +697,20 @@ evidenza reale.
     change control separata; non assegna ID e non abilita deployment.
 
 Questo livello è completo software ma resta `NOT_RUN` sui dati reali.
+
+## 20. Avanzamento operativo 50–54 — change-control request
+
+50. **Template:** cinque richieste `NOT_RUN` vincolate alla disposizione del
+    rispettivo dominio.
+51. **Impatto:** scope, requisiti, artefatti, nodi, esclusioni, sette domini
+    d'impatto, rollback e piano di verifica sono obbligatori.
+52. **Autorità:** tre ruoli di intake distinti fra loro e indipendenti da
+    reviewer e autorità della disposizione.
+53. **Record:** richiesta e record conclusivo sono immutabili, collegati con
+    SHA-256 e verificabili contro path o contenuti alterati.
+54. **Confine:** l'intake termina in
+    `NO_GO_IMPLEMENTATION_NOT_AUTHORIZED`; una decisione CCB separata resta
+    obbligatoria prima di qualsiasi implementazione o deployment.
+
+Questo livello è completo software ma resta `NOT_RUN` sui dati reali; nessuna
+richiesta reale, decisione CCB o modifica operativa è stata eseguita.

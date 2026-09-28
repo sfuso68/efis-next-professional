@@ -105,6 +105,8 @@ jobs:
           python -m unittest tests.test_manage_product_evidence_session -v
           python tools/product/manage_product_gate_disposition.py validate-templates
           python -m unittest tests.test_product_gate_disposition -v
+          python tools/product/manage_product_change_control.py validate-templates
+          python -m unittest tests.test_product_change_control -v
 
       - name: Determine changed files
         id: changes

@@ -577,3 +577,17 @@ tentativi di acquisire autorità operativa. **Verificato su hardware reale:**
 nulla. **Aperto:** outcome reali, autorità reali e successiva richiesta formale
 di change control. Anche l'accettazione termina
 `NO_GO_CHANGE_CONTROL_NOT_CREATED`; nessun requisito cambia stato.
+
+## 29. Product change-control request — 2026-09-28
+
+La disposizione positiva può ora alimentare una richiesta formale separata.
+Cinque template congelano scope, analisi d'impatto, rollback, verifica e ruoli
+di intake; il record conclusivo è immutabile e verificabile tramite digest.
+
+**Implementato:** template per cinque domini; collegamento alla disposizione;
+sette aree d'impatto obbligatorie; separazione delle autorità; firme, record,
+test e CI. **Verificato solo software:** pipeline sintetica completa, scope e
+analisi mancanti, path, digest, firma, overlap di ruoli e tamper.
+**Verificato su hardware reale:** nulla. **Aperto:** richieste e firme reali,
+decisione CCB e piano di implementazione separato. Il massimo esito resta
+`NO_GO_IMPLEMENTATION_NOT_AUTHORIZED`; nessun requisito cambia stato.
