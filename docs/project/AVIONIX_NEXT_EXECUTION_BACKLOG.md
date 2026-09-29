@@ -85,6 +85,7 @@ comandi su uscite.
 | 2026-09-28 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_GATE_DISPOSITION_V1.md`, cinque template, autorità separate e record immutabile | IMPLEMENTED-SW/NOT-RUN/NO-GO; review e gate sono collegati con digest, ma l'accettazione consente soltanto una futura richiesta change-control separata |
 | 2026-09-28 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_CHANGE_CONTROL_REQUEST_V1.md`, cinque template, impact analysis e record immutabile | IMPLEMENTED-SW/NOT-RUN/NO-GO; una disposizione positiva può alimentare l'intake, ma il record termina prima della decisione CCB e non autorizza implementazione, deployment o volo |
 | 2026-09-28 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_CCB_DECISION_V1.md`, cinque template, quorum unanime e record immutabile | IMPLEMENTED-SW/NOT-RUN/NO-GO; approve/reject/defer sono verificabili, ma anche l'approvazione consente soltanto un futuro piano di implementazione separato |
+| 2026-09-29 | EMS-004, PROD-001, FPV-002, VOI-003, VER-002 | `AVIONIX_PRODUCT_IMPLEMENTATION_PLAN_V1.md`, cinque template, baseline/work package e record immutabile | IMPLEMENTED-SW/NOT-RUN/NO-GO; il piano è verificabile ma termina prima dell'autorizzazione a implementare e non consente deployment o volo |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato

@@ -730,3 +730,20 @@ richiesta reale, decisione CCB o modifica operativa è stata eseguita.
 
 Questo livello è completo software ma resta `NOT_RUN` sui dati reali. Il
 massimo esito è `NO_GO_IMPLEMENTATION_PLAN_NOT_CREATED`.
+
+## 22. Avanzamento operativo 60–64 — implementation plan
+
+60. **Template:** cinque piani `NOT_RUN` vincolati alla decisione CCB del
+    rispettivo dominio.
+61. **Baseline:** branch, commit, requisiti, artefatti, nodi e fuori-scope sono
+    obbligatori e verificati fail-closed.
+62. **Work package:** ogni attività dichiara verifica, evidenza ed exit
+    criteria; hazard control, rollback e deployment sono espliciti.
+63. **Review:** tre reviewer indipendenti da tutte le autorità precedenti e
+    record immutabile collegato con SHA-256.
+64. **Confine:** il piano termina
+    `NO_GO_IMPLEMENTATION_AUTHORIZATION_NOT_CREATED`; nessuna modifica o
+    distribuzione è autorizzata.
+
+Questo è l'ultimo blocco preparabile senza evidenze e decisioni reali. Le
+attività successive richiedono sessioni interattive, fonti o hardware.

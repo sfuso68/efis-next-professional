@@ -605,3 +605,19 @@ ruoli, digest/firme, claim operativi e tamper. **Verificato su hardware
 reale:** nulla. **Aperto:** richieste e board reali, piano di implementazione
 separato ed eventuale successiva autorizzazione. Anche l'approvazione termina
 `NO_GO_IMPLEMENTATION_PLAN_NOT_CREATED`; nessun requisito cambia stato.
+
+## 31. Product implementation plan — 2026-09-29
+
+Una decisione CCB positiva può ora alimentare un piano d'implementazione
+separato. Cinque template impongono baseline, scope, work package, controlli
+rischio, verifica, rollback, deployment e review indipendente.
+
+**Implementato:** template per cinque domini; collegamento CCB; validazione
+completa e record immutabile; test e CI. **Verificato solo software:** pipeline
+sintetica, baseline/scope invalidi, path traversal, pacchetti incompleti,
+firme, overlap, claim operativi e tamper. **Verificato su hardware reale:**
+nulla. **Aperto:** compilazione con dati reali e review di autorizzazione
+separata. Il massimo esito resta
+`NO_GO_IMPLEMENTATION_AUTHORIZATION_NOT_CREATED`; nessun requisito cambia
+stato. Stato dell'arte complessivo:
+`docs/project/AVIONIX_NEXT_STATE_OF_ART_2026-09-29.md`.

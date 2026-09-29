@@ -1,0 +1,13 @@
+{
+  "schema": "avionix-next.product-implementation-plan.v1", "domain": "engine", "status": "NOT_RUN",
+  "plan_id": null, "owner": null, "prepared_utc": null,
+  "ccb_template_path": "config/product/engine-source-ccb-decision-not-run-v1.json",
+  "ccb_template_sha256": "21b204b93f5ca134885b31cf53f9560fdc41fb5bbc0b95b006176247ee1763c0",
+  "ccb_record_path": null, "ccb_record_sha256": "UNRESOLVED",
+  "baseline_branch": null, "baseline_commit": null, "objective": null,
+  "in_scope_requirements": [], "in_scope_artifacts": [], "in_scope_nodes": [], "out_of_scope": [],
+  "work_packages": [], "hazard_controls": [], "verification_plan": null, "rollback_plan": null, "deployment_plan": null,
+  "required_plan_roles": ["implementation-lead", "safety-plan-reviewer", "verification-plan-reviewer"],
+  "plan_reviewers": [], "plan_complete": false, "implementation_authorized": false,
+  "deployment_allowed": false, "flight_approval": false, "decision": "NO_GO_NOT_RUN"
+}

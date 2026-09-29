@@ -1,0 +1,13 @@
+{
+  "schema": "avionix-next.product-implementation-plan.v1", "domain": "hil", "status": "NOT_RUN",
+  "plan_id": null, "owner": null, "prepared_utc": null,
+  "ccb_template_path": "config/hil/hil-execution-ccb-decision-not-run-v1.json",
+  "ccb_template_sha256": "40fca54ac258de966ba6d010fea857c5e5974f453453f92eef4881cf3417ddc6",
+  "ccb_record_path": null, "ccb_record_sha256": "UNRESOLVED",
+  "baseline_branch": null, "baseline_commit": null, "objective": null,
+  "in_scope_requirements": [], "in_scope_artifacts": [], "in_scope_nodes": [], "out_of_scope": [],
+  "work_packages": [], "hazard_controls": [], "verification_plan": null, "rollback_plan": null, "deployment_plan": null,
+  "required_plan_roles": ["implementation-lead", "safety-plan-reviewer", "test-plan-reviewer"],
+  "plan_reviewers": [], "plan_complete": false, "implementation_authorized": false,
+  "deployment_allowed": false, "flight_approval": false, "decision": "NO_GO_NOT_RUN"
+}
