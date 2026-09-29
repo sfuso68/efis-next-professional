@@ -22,16 +22,16 @@ Il rapporto del 2026-09-20 resta uno snapshot storico.
 
 | Gate/area | Stato | Sintesi | ID autorevoli |
 |---|---|---|---|
-| Governance e fonti | PARTIAL | Nome prodotto `FUSO AVIONICS NEXT` approvato; alias tecnico `EFIS NEXT`; brief, indice, backlog e controllo progetto presenti; topologia Git chiusa da ADR-018; cinque fonti e restore restano aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
+| Governance e fonti | PARTIAL | Nome prodotto `FUSO AVIONICS NEXT` approvato; alias tecnico `EFIS NEXT`; brief, indice, backlog e controllo progetto presenti; topologia Git chiusa da ADR-018; restore NAS→serverha PASS, cinque fonti e protezione off-site restano aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
 | Nodo sensori ASSO5 | HW-PARTIAL / BLOCKED-HW | RPi4 `.89` riconfermato read-only il 2026-09-29 con G1-C10 10/10 PASS; quattro frontali coerenti con 1×SM-I-018, 2×SM-I-011 e 1×8 Thermocouple DAQ, ma retro e label alimentatore mancanti: manifest ancora 0/4, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
-| PFD/MFD | PARTIAL | PFD+recorder su `pfdrec-d52e377-primary-v1` e MFD su `mfd-3432402-primary-v1`, entrambi con rollback/reboot PASS; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
-| EMS | PARTIAL / DEPLOY CONFORME | RPi4 su `ems-7655799-primary-v1`; attivazione, rollback drill e reboot acceptance PASS, EDP `LIVE • SIM`; input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
+| PFD/MFD | DEGRADED / ACTION REQUIRED | PFD grafico sulla release `pfdrec-d52e377-primary-v1`, ma root al 100%, recorder in auto-restart e imagery ENOSPC; MFD `mfd-3432402-primary-v1` attivo ma con storico undervoltage `0x50000`; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `PWR-001`, `VER-003` |
+| EMS | PARTIAL / DEPLOY CONFORME | RPi4 riconfermato sulla release HMI/CAS `ems-62ba90b-hmi-cas-v1`, processo canonico e `NRestarts=0`; sorgente ancora SIM, input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
-| Blackbox/rete | PARTIAL | broker su release immutabile `blackbox-7655799-primary-v1`, rollback/reboot PASS; engine SIM, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PROD-005` |
-| Server/NAS/Ground station | PARTIAL | GitHub/serverha/Blackbox/NAS allineati e replica NAS ristretta attiva; restore drill, CA/lifecycle e ritiro copia temporanea aperti | `SRV-001`…`003`, `GS-001`…`003`, ADR-018 |
-| Alimentazione | VERIFY-HW | Storico Blackbox `get_throttled=0x50000`; PSU/cavo e prove brownout non qualificati | `PWR-001`, `PROD-002`, `VER-003` |
+| Blackbox/rete | PARTIAL / POWER VERIFY-HW | broker `blackbox-7655799-primary-v1` attivo, engine SIM e `NRestarts=0`; cinque undervoltage recenti il 28–29 settembre, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PWR-001`, `PROD-005` |
+| Server/NAS/Ground station | PARTIAL | GitHub/serverha/NAS allineati a `7aa45b66...`, replica ristretta e restore PASS; CA/lifecycle, off-site e ritiro copia temporanea aperti | `SRV-001`…`003`, `GS-001`…`003`, ADR-018 |
+| Alimentazione | VERIFY-HW / URGENT | MFD con due e Blackbox con cinque undervoltage kernel recenti; entrambi `get_throttled=0x50000`; PSU/cavi e prove brownout non qualificati | `PWR-001`, `PROD-002`, `VER-003` |
 
 ## 2. Architettura vincolante
 
@@ -112,31 +112,31 @@ Il dettaglio è nel registro canonico
 
 ## 5. Ultime verifiche hardware che restano valide
 
-- PFD `.45`, MFD `.49`, EMS `.36` e Blackbox `.47` sono stati raggiunti e
-  inventariati read-only il 2026-09-20 con 20 controlli complessivi. Server
-  `.6`, portatile `.39`, NAS `.22` e sensor node `.89` non sono stati
-  riconfermati in questo blocco (`PFD-001`, `MFD-001`, `EMS-002`, `BBX-003`,
-  `GS-001`, `SRV-001`).
+- PFD `.45`, MFD `.49`, EMS `.36`, Blackbox `.47` e serverha `.6` sono stati
+  riconfermati read-only il 2026-09-29; il sensor node `.89` è stato acquisito
+  lo stesso giorno con G1-C10. NAS `.22` è stato letto e ripristinato tramite
+  serverha. Il portatile `.39` non è stato ricontrollato in questo blocco
+  (`PFD-001`, `MFD-001`, `EMS-002`, `BBX-003`, `SRV-001`, `PRJ-002`).
 - G2 ARM64 ha prodotto validator e 11/11 test PASS su PFD, MFD ed EMS con
   digest coincidenti (`PRJ-003`, `AVX-G2-01`).
 - La catena EDP SIM Blackbox→EMS ha mostrato LIVE, STALE, LOST, fallback e
   recovery; non prova la sorgente CAN motore reale (`EMS-002`, `BBX-003`).
 - Pixhawk/MAVLink read-only e fan-out monitor-only sono stati osservati; la
   prova Wi-Fi Ground Station resta degradata per timing (`PIX-002`, `NET-001`).
-- Blackbox ha mostrato storicamente `get_throttled=0x50000`; campioni successivi
-  `0x0` non cancellano i bit storici né qualificano PSU/cavo (`PWR-001`).
+- Il 2026-09-29 MFD e Blackbox hanno mostrato `get_throttled=0x50000`; i log
+  kernel confermano rispettivamente due e cinque undervoltage recenti. PFD ed
+  EMS erano `0x0`, senza qualificare PSU/cavo (`PWR-001`).
 
 ## 6. Blocchi e rischi prioritari
 
-1. Inventario fisico ASSO5: quattro Sequent, DIP, alimentatore, cablaggi e
-   fotografie non acquisiti (`PRJ-002`, `AVX-G1-02`).
-2. Alimentazione: storico undervoltage Blackbox, nessuna prova brownout/load
-   controllata e nessuna PSU finale qualificata (`PWR-001`, `PROD-002`).
-3. Release: PFD, recorder, MFD, EMS e Blackbox sono conformi al contratto V1.
-   Sul PFD la release dual-role `pfdrec-d52e377-primary-v1` ha superato
-   manifest, processo canonico, rollback reale e reboot acceptance; il recorder
-   scrive fuori dall'albero immutabile. `PROD-005` è `DONE` per il contratto
-   update/rollback, senza modificare lo stato DEVELOPMENT/NON-CERT.
+1. PFD storage/recorder: root al 100%, recorder senza processo in
+   `auto-restart` e imagery in `ENOSPC`; servono copia/hash e recupero spazio
+   autorizzato prima di altre prove (`PFD-001`, `BBX-001`).
+2. Alimentazione: undervoltage recenti su MFD e Blackbox; nessuna prova
+   brownout/load controllata e nessuna PSU finale qualificata (`PWR-001`,
+   `PROD-002`).
+3. Inventario fisico ASSO5: quattro Sequent, DIP, alimentatore, cablaggi e
+   fotografie posteriori non acquisiti (`PRJ-002`, `AVX-G1-02`).
 4. HMI: touch, leggibilità, sunlight/night, frame-rate, termica e fault su
    pannelli reali non accettati (`PRJ-004`, `AVX-G3-03`).
 5. Synthetic vision: la causa LOD al confine è corretta e verificata software
@@ -149,12 +149,13 @@ Il dettaglio è nel registro canonico
 
 ## 7. Prossima sequenza controllata
 
-1. Acquisire le nove immagini e i metadati dell'inventario ASSO5 senza probing
-   o modifica DIP (`PRJ-002`, `AVX-G1-02`).
-2. Qualificare alimentatore/cavo Blackbox e nodo sensori con piano brownout e
-   carico approvato (`PWR-001`, `PROD-002`).
-3. Integrare e sottoporre a CI i tre branch safety software prima di qualsiasi
-   deployment (`PRJ-003`, `PRJ-004`, `EMS-002`).
+1. Autorizzare il recupero conservativo PFD: fermare il loop recorder e il
+   timer imagery, copiare/hashare i record, liberare spazio soltanto dopo
+   verifica e riavviare con acceptance (`PFD-001`, `BBX-001`).
+2. Qualificare alimentatori/cavi MFD e Blackbox con piano brownout e carico
+   approvato (`PWR-001`, `PROD-002`).
+3. Quando disponibili, completare foto posteriori e label dell'inventario
+   ASSO5 senza probing o modifica DIP (`PRJ-002`, `AVX-G1-02`).
 4. Solo dopo review/merge, eseguire HMI harness su PFD/MFD/EMS e verticale G2
    reale con nuova autorizzazione (`AVX-G2-02`, `AVX-G3-03`).
 5. Dopo un deployment C12 autorizzato, creare sessioni C10 dal commit installato e completare
@@ -664,3 +665,22 @@ da un secondo supporto. Il checkpoint
 `CHECKPOINT-2026-09-29-NAS-RESTORE-ACCESS-GATE.md` registra l'evidenza;
 `PRJ-001` resta `PARTIAL` per le altre dipendenze governance, mentre I-10 è
 `VERIFIED-HOST / PASS`. Nessun runtime avionico è stato contattato.
+
+## 34. Audit read-only dei cinque nodi — 2026-09-29
+
+PFD, MFD, EMS, Blackbox e serverha/NAS sono stati ricontrollati senza modifiche.
+Il bundle `evidence/five-node-health-audit-20260929/README.md` conserva i dati
+osservati. PFD grafico, MFD, EMS e broker Blackbox sono in esecuzione dai
+percorsi release attesi; serverha/NAS sono coerenti a `7aa45b66...`.
+
+L'esito non è però nominale. Sul PFD il filesystem è al 100%, il recorder è in
+`auto-restart` con 101.015 restart e l'imagery fallisce `ENOSPC`; il display
+resta attivo come unità systemd utente. L'EMS usa correttamente
+`ems-62ba90b-hmi-cas-v1`, valore più recente del registro precedente. MFD e
+Blackbox riportano `throttled=0x50000`; il kernel mostra due undervoltage MFD
+il 23 settembre e cinque Blackbox il 28–29 settembre.
+
+**Verificato su hardware reale:** processi, release, storage, rete, termica e
+storico alimentazione. **Non modificato:** servizi, timer, file, record e
+release. **Aperto:** recupero conservativo PFD previa autorizzazione e qualifica
+PSU/cavi MFD/Blackbox. Nessun dato viene promosso ad approvazione al volo.
