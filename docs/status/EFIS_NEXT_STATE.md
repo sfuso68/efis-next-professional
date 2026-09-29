@@ -638,3 +638,21 @@ retro, la label elettrica, la conferma della singola sorgente, operatore/UTC e
 review dei DIP. `AVX-G1-01` resta `IN_PROGRESS`, `AVX-G1-02` resta `OPEN`, il
 manifesto rimane 0/4 e la decisione è `NO_GO`. Nessun probing, vendor read,
 cablaggio, DIP o uscita è stato modificato.
+
+## 33. Gate credenziale restore NAS — 2026-09-29
+
+È stata eseguita una verifica read-only preliminare del restore I-10. GitHub
+`main` e il bare repository di replica su `serverha` coincidono a
+`7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897`; il timer di replica risulta
+attivo e l'ultima unità osservata ha esito `success`. Su `serverha` è però
+presente soltanto l'identità write-only usata dal push verso il NAS. Il test
+batch `git ls-remote` dal server verso il bare NAS è stato rifiutato con
+`Permission denied`.
+
+**Verificato su host reale:** commit GitHub e bare serverha, stato del job di
+replica e assenza di un percorso read-only funzionante. **Non eseguito:** clone
+isolato, `git fsck`, inventario tag/oggetti e Project Control sul contenuto NAS.
+Nessuna working copy o chiave è stata modificata. Il checkpoint
+`CHECKPOINT-2026-09-29-NAS-RESTORE-ACCESS-GATE.md` registra l'evidenza;
+`PRJ-001` resta `PARTIAL` e I-10 resta `BLOCKED-CREDENTIAL / NOT-RUN` fino
+all'installazione di una chiave separata limitata a `git-upload-pack`.
