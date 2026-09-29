@@ -89,6 +89,7 @@ comandi su uscite.
 | 2026-09-29 | AVX-G1-01/02 | `CHECKPOINT-2026-09-29-G1-PARTIAL-VISUAL-INTAKE.md` e capture nodo | HW-PARTIAL/VISUAL-INTAKE-INCOMPLETE/NO-GO; nodo `.89` riconfermato read-only con 10/10 PASS e quattro modelli frontali coerenti, ma retro, label alimentatore, operatore/UTC e review DIP mancanti; manifest ancora 0/4 |
 | 2026-09-29 | AVX-G0-02 / AVX-G6-01 / PRJ-001 | `CHECKPOINT-2026-09-29-NAS-RESTORE-ACCESS-GATE.md` e report I-10 | VERIFIED-HOST/PASS; chiave read-only confinata a `git-upload-pack`, isolamento shell verificato e restore NAS→serverha a `7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897` con fsck/file/oggetti/Project Control PASS; protezione fuori sito resta aperta |
 | 2026-09-29 | PFD-001, MFD-001, EMS-002, BBX-003, SRV-001, PWR-001 | `evidence/five-node-health-audit-20260929/README.md` | MIXED/ACTION-REQUIRED; PFD display attivo ma storage 100%, recorder 101.015 restart e imagery ENOSPC; EMS registry corretto a `62ba90b`; MFD/Blackbox con undervoltage recenti; serverha/NAS integri |
+| 2026-09-29 | PFD-001, BBX-001, BBX-003, NAV-003, PWR-001 | `evidence/pfd-storage-recovery-blackbox-power-20260929/README.md` | PFD-RECOVERY-PASS/BLACKBOX-VERIFY-HW; 49.597 file legacy copiati e verificati checksum su serverha, root 81%, recorder `NRestarts=0`, imagery PASS; Blackbox broker stabile ma transienti alimentazione aperti e `bbxnav` a 157.031 restart senza ricevitori |
 
 Il freeze documentale AVX-G2-01 è stato autorizzato il 2026-09-17 e prodotto
 senza modificare wire o runtime. Il replay degli stessi vettori è stato

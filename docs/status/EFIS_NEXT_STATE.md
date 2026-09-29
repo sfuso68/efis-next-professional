@@ -26,10 +26,10 @@ Il rapporto del 2026-09-20 resta uno snapshot storico.
 | Nodo sensori ASSO5 | HW-PARTIAL / BLOCKED-HW | RPi4 `.89` riconfermato read-only il 2026-09-29 con G1-C10 10/10 PASS; quattro frontali coerenti con 1×SM-I-018, 2×SM-I-011 e 1×8 Thermocouple DAQ, ma retro e label alimentatore mancanti: manifest ancora 0/4, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
-| PFD/MFD | DEGRADED / ACTION REQUIRED | PFD grafico sulla release `pfdrec-d52e377-primary-v1`, ma root al 100%, recorder in auto-restart e imagery ENOSPC; MFD `mfd-3432402-primary-v1` attivo ma con storico undervoltage `0x50000`; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `PWR-001`, `VER-003` |
+| PFD/MFD | PARTIAL / VERIFY-HW | PFD storage recuperato con copia checksum su serverha: root 81%, recorder attivo `NRestarts=0`, imagery PASS; MFD `mfd-3432402-primary-v1` attivo ma con storico undervoltage `0x50000`; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `PWR-001`, `VER-003` |
 | EMS | PARTIAL / DEPLOY CONFORME | RPi4 riconfermato sulla release HMI/CAS `ems-62ba90b-hmi-cas-v1`, processo canonico e `NRestarts=0`; sorgente ancora SIM, input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
-| Blackbox/rete | PARTIAL / POWER VERIFY-HW | broker `blackbox-7655799-primary-v1` attivo, engine SIM e `NRestarts=0`; cinque undervoltage recenti il 28–29 settembre, fault/endurance e autenticazione aperti | `BBX-001`…`004`, `NET-001`, `PWR-001`, `PROD-005` |
+| Blackbox/rete | PARTIAL / POWER + NAV ACTION | broker `blackbox-7655799-primary-v1` attivo, engine SIM e `NRestarts=0`; cinque undervoltage recenti senza errori NVMe/USB correlati; `bbxnav` è in auto-restart senza ricevitori | `BBX-001`…`004`, `NET-001`, `NAV-003`, `PWR-001`, `PROD-005` |
 | Server/NAS/Ground station | PARTIAL | GitHub/serverha/NAS allineati a `7aa45b66...`, replica ristretta e restore PASS; CA/lifecycle, off-site e ritiro copia temporanea aperti | `SRV-001`…`003`, `GS-001`…`003`, ADR-018 |
 | Alimentazione | VERIFY-HW / URGENT | MFD con due e Blackbox con cinque undervoltage kernel recenti; entrambi `get_throttled=0x50000`; PSU/cavi e prove brownout non qualificati | `PWR-001`, `PROD-002`, `VER-003` |
 
@@ -126,12 +126,17 @@ Il dettaglio è nel registro canonico
 - Il 2026-09-29 MFD e Blackbox hanno mostrato `get_throttled=0x50000`; i log
   kernel confermano rispettivamente due e cinque undervoltage recenti. PFD ed
   EMS erano `0x0`, senza qualificare PSU/cavo (`PWR-001`).
+- Nella finestra successiva il PFD ha archiviato su serverha e verificato
+  checksum 49.597 record legacy (11.525.831.016 byte), liberando 11 GiB;
+  recorder e imagery hanno superato l'acceptance reale. La Blackbox non mostra
+  errori NVMe/USB correlati ai transienti, ma `bbxnav` ha 157.031 restart per
+  ricevitori assenti (`PFD-001`, `NAV-003`, `PWR-001`).
 
 ## 6. Blocchi e rischi prioritari
 
-1. PFD storage/recorder: root al 100%, recorder senza processo in
-   `auto-restart` e imagery in `ENOSPC`; servono copia/hash e recupero spazio
-   autorizzato prima di altre prove (`PFD-001`, `BBX-001`).
+1. PFD retention: il recovery storage è PASS e i servizi sono ripristinati,
+   ma senza quota/retention automatica il riempimento può ripetersi; serve soak
+   con monitoraggio margine (`PFD-001`, `BBX-001`).
 2. Alimentazione: undervoltage recenti su MFD e Blackbox; nessuna prova
    brownout/load controllata e nessuna PSU finale qualificata (`PWR-001`,
    `PROD-002`).
@@ -146,12 +151,14 @@ Il dettaglio è nel registro canonico
    e di prova end-to-end (`EMS-003`, `EMS-004`, `AVX-G3-02`).
 7. Safety: Emergency Assist resta consultivo; checklist e servi sono bloccati
    da fonti, identificazione, interlock e HIL (`PAN-001`…`004`).
+8. Radionavigazione Blackbox: `bbxnav` riparte senza limite quando i ricevitori
+   non sono presenti; va resa fail-closed e condizionata alla configurazione
+   reale prima di qualunque uso (`NAV-003`).
 
 ## 7. Prossima sequenza controllata
 
-1. Autorizzare il recupero conservativo PFD: fermare il loop recorder e il
-   timer imagery, copiare/hashare i record, liberare spazio soltanto dopo
-   verifica e riavviare con acceptance (`PFD-001`, `BBX-001`).
+1. Definire quota/retention recorder PFD e fare soak con soglia di spazio,
+   preservando l'archivio verificato su serverha (`PFD-001`, `BBX-001`).
 2. Qualificare alimentatori/cavi MFD e Blackbox con piano brownout e carico
    approvato (`PWR-001`, `PROD-002`).
 3. Quando disponibili, completare foto posteriori e label dell'inventario
@@ -161,6 +168,9 @@ Il dettaglio è nel registro canonico
 5. Dopo un deployment C12 autorizzato, creare sessioni C10 dal commit installato e completare
    C11/C9 su PFD e MFD con confronto visuale della transizione N45/N46
    (`AVX-G3-01`, `SV-001`).
+6. Correggere `bbxnav.service` perché resti inattivo/fail-closed senza
+   ricevitori o configurazione valida, quindi verificare zero restart e stato
+   NAV non valido esplicito (`NAV-003`).
 
 ## 8. Criterio di verità
 
@@ -684,3 +694,29 @@ il 23 settembre e cinque Blackbox il 28–29 settembre.
 storico alimentazione. **Non modificato:** servizi, timer, file, record e
 release. **Aperto:** recupero conservativo PFD previa autorizzazione e qualifica
 PSU/cavi MFD/Blackbox. Nessun dato viene promosso ad approvazione al volo.
+
+## 35. Recovery storage PFD e diagnosi Blackbox — 2026-09-29
+
+La finestra autorizzata ha chiuso il guasto operativo storage del PFD senza
+perdere i record legacy. Recorder e imagery sono stati fermati; la directory
+`/home/efis/efis-next/records`, distinta dal percorso release attivo, è stata
+copiata su serverha. Il confronto checksum successivo ha verificato 49.597
+file e 11.525.831.016 byte con zero differenze. Solo dopo questo PASS la copia
+PFD è stata rimossa; il root è passato dal 100% all'81%, con 11 GiB liberi.
+
+**Verificato su hardware reale PFD:** recorder `active`, PID `969557`, doppio
+campione `NRestarts=0`; scrittura nel percorso release attivo; imagery exit 0,
+1.326 tile riusate/verificate e zero failure; timer attivo. La chiave temporanea
+serverha→PFD è stata rimossa. **Aperto:** quota/retention, soak e 27 gap tile,
+oltre alle acceptance HMI/terrain già previste.
+
+La Blackbox è stata diagnosticata in sola lettura. I cinque transienti di
+undervoltage durano circa due secondi e sono seguiti da normalizzazione; broker
+`NRestarts=0`, nessun errore NVMe/USB correlato. Questo non qualifica PSU o
+cavo. Separatamente, `bbxnav.service` con ricevitori assenti ha raggiunto
+157.031 restart perché usa `Restart=always`; non è stato modificato.
+
+**Verificato su hardware reale Blackbox:** storico kernel, servizi, NVMe, USB,
+termica e contatori. **Aperto:** qualifica elettrica e correzione fail-closed
+del servizio NAV. Evidenza:
+`evidence/pfd-storage-recovery-blackbox-power-20260929/README.md`.
