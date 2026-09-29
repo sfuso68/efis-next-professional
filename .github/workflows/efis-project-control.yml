@@ -99,6 +99,18 @@ jobs:
           python -m unittest tests.test_product_evidence_batch -v
           python tools/product/validate_product_review_gates.py
           python -m unittest tests.test_product_review_gates -v
+          python -m unittest tests.test_package_product_evidence -v
+          python tools/product/validate_product_independent_review.py
+          python -m unittest tests.test_product_evidence_review -v
+          python -m unittest tests.test_manage_product_evidence_session -v
+          python tools/product/manage_product_gate_disposition.py validate-templates
+          python -m unittest tests.test_product_gate_disposition -v
+          python tools/product/manage_product_change_control.py validate-templates
+          python -m unittest tests.test_product_change_control -v
+          python tools/product/manage_product_ccb_decision.py validate-templates
+          python -m unittest tests.test_product_ccb_decision -v
+          python tools/product/manage_product_implementation_plan.py validate-templates
+          python -m unittest tests.test_product_implementation_plan -v
 
       - name: Determine changed files
         id: changes

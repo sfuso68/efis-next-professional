@@ -646,3 +646,104 @@ funzionale non accompagnata da prove.
 
 Questo documento fotografa lo stato noto alla data indicata. Non autorizza
 modifiche hardware, deployment, merge, prove dinamiche o uso in volo.
+
+## 16. Avanzamento operativo 31–35 — evidence packaging
+
+31. **Fonti motore:** template e packager pronti; acquisizione targhette,
+    manuali, revisioni, pagine limiti e firma resta interattiva.
+32. **SKU/release:** capability, allocazione nodi, manifest e firma possono
+    essere congelati; approvazione prodotto e deployment restano separati.
+33. **FPV:** quattro feed e otto misure globali hanno un bundle definito;
+    telecamere, rete VIDEO e benchmark termico/latency non sono stati provati.
+34. **Voce/cabina:** fonti, clip, TTS offline e intelligibilità possono essere
+    acquisiti per due lingue; interfono/PTT e ascolto in cabina restano aperti.
+35. **HIL:** ogni scenario richiede input, log, confronto atteso/reale e replay;
+    fixture isolata ed esecuzione restano da autorizzare.
+
+Tutti i bundle terminano `PACKAGED_PENDING_REVIEW` e `NO-GO`: il packaging
+non sostituisce la revisione indipendente e non promuove lo stato hardware.
+
+## 17. Avanzamento operativo 36–39 — independent review
+
+36. **Schema bundle:** contratto JSON chiuso e fail-closed per tutti i domini.
+37. **Integrità:** validazione autonoma di provenienza, path, byte e SHA-256.
+38. **Review:** cinque template legati ai gate, con tre ruoli indipendenti,
+    firme e finding motivati.
+39. **Automazione:** validator, test di tamper e CI integrati nel Project
+    Control.
+
+Questo livello è completo soltanto software. La compilazione dei record resta
+interattiva; l'esito positivo autorizza esclusivamente il gate successivo.
+
+## 18. Avanzamento operativo 40–44 — session workflow
+
+40. **Init:** directory e risultati `NOT_RUN` creati senza overwrite.
+41. **Status:** missing/unsafe e readiness resi leggibili all'operatore.
+42. **Evidence:** bundle atomico e validato dopo conferma esplicita.
+43. **Review:** record preparato e legato al bundle senza anticipare firme.
+44. **Outcome:** esito immutabile e verificabile, ancora subordinato alla
+    disposizione formale del gate.
+
+La pipeline è pronta per le future sessioni interattive ma non contiene ancora
+evidenza reale.
+
+## 19. Avanzamento operativo 45–49 — gate disposition
+
+45. **Template:** cinque disposizioni `NOT_RUN` legate ai review gate.
+46. **Outcome:** digest e dominio della review verificati prima della decisione.
+47. **Autorità:** quorum di tre persone distinto dai reviewer dell'evidenza.
+48. **Record:** disposizione atomica, immutabile e rilevabile in caso di tamper.
+49. **Confine:** l'accettazione rende soltanto eleggibile una richiesta di
+    change control separata; non assegna ID e non abilita deployment.
+
+Questo livello è completo software ma resta `NOT_RUN` sui dati reali.
+
+## 20. Avanzamento operativo 50–54 — change-control request
+
+50. **Template:** cinque richieste `NOT_RUN` vincolate alla disposizione del
+    rispettivo dominio.
+51. **Impatto:** scope, requisiti, artefatti, nodi, esclusioni, sette domini
+    d'impatto, rollback e piano di verifica sono obbligatori.
+52. **Autorità:** tre ruoli di intake distinti fra loro e indipendenti da
+    reviewer e autorità della disposizione.
+53. **Record:** richiesta e record conclusivo sono immutabili, collegati con
+    SHA-256 e verificabili contro path o contenuti alterati.
+54. **Confine:** l'intake termina in
+    `NO_GO_IMPLEMENTATION_NOT_AUTHORIZED`; una decisione CCB separata resta
+    obbligatoria prima di qualsiasi implementazione o deployment.
+
+Questo livello è completo software ma resta `NOT_RUN` sui dati reali; nessuna
+richiesta reale, decisione CCB o modifica operativa è stata eseguita.
+
+## 21. Avanzamento operativo 55–59 — CCB decision
+
+55. **Template:** cinque decisioni CCB `NOT_RUN` vincolate al change-control
+    del rispettivo dominio.
+56. **Prerequisiti:** richiesta e digest sono verificati prima di aprire la
+    decisione; record mancanti, alterati o non eleggibili sono rifiutati.
+57. **Quorum:** quattro membri unanimi, distinti fra loro e indipendenti da
+    reviewer e autorità delle fasi precedenti.
+58. **Record:** meeting, voto, firme, condizioni e rischi sono congelati in un
+    record immutabile e rilevabile in caso di tamper.
+59. **Confine:** l'approvazione rende soltanto eleggibile un piano di
+    implementazione separato; non assegna ID e non autorizza implementazione.
+
+Questo livello è completo software ma resta `NOT_RUN` sui dati reali. Il
+massimo esito è `NO_GO_IMPLEMENTATION_PLAN_NOT_CREATED`.
+
+## 22. Avanzamento operativo 60–64 — implementation plan
+
+60. **Template:** cinque piani `NOT_RUN` vincolati alla decisione CCB del
+    rispettivo dominio.
+61. **Baseline:** branch, commit, requisiti, artefatti, nodi e fuori-scope sono
+    obbligatori e verificati fail-closed.
+62. **Work package:** ogni attività dichiara verifica, evidenza ed exit
+    criteria; hazard control, rollback e deployment sono espliciti.
+63. **Review:** tre reviewer indipendenti da tutte le autorità precedenti e
+    record immutabile collegato con SHA-256.
+64. **Confine:** il piano termina
+    `NO_GO_IMPLEMENTATION_AUTHORIZATION_NOT_CREATED`; nessuna modifica o
+    distribuzione è autorizzata.
+
+Questo è l'ultimo blocco preparabile senza evidenze e decisioni reali. Le
+attività successive richiedono sessioni interattive, fonti o hardware.

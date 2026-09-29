@@ -1,0 +1,22 @@
+{
+  "schema": "avionix-next.product-review-results.v1",
+  "domain": "voice",
+  "status": "NOT_RUN",
+  "operator_confirmed": false,
+  "operator": null,
+  "captured_utc": null,
+  "intake_path": "config/voice/phraseology-approval-intake-v1.json",
+  "intake_sha256": "a164351592b7d5fb3dab30f84f2f35852922a8091809a0ef958fa89408f97e06",
+  "review_gate_path": "config/voice/voice-cabin-review-gate-v1.json",
+  "review_gate_sha256": "0b74d399da77d4501e738b9432a51077ac3458c745cca29b0e58665ca8f45479",
+  "subjects": [
+    {"id": "it-IT", "required_artifacts": ["authoritative-source", "phrase-review", "fixed-critical-clips", "offline-tts-assets", "intelligibility-report"], "artifacts": {}},
+    {"id": "en-GB", "required_artifacts": ["authoritative-source", "phrase-review", "fixed-critical-clips", "offline-tts-assets", "intelligibility-report"], "artifacts": {}}
+  ],
+  "global_required_artifacts": [],
+  "global_artifacts": {},
+  "limitations": [],
+  "hardware_evidence_claimed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_NOT_RUN"
+}

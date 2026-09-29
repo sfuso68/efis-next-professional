@@ -513,3 +513,111 @@ intake, creare bundle immutabili, acquisire firme indipendenti ed eseguire le
 sessioni autorizzate. Gli stessi cinque requisiti restano `TODO`; tutti i gate
 sono `PREPARED_SW_NOT_RUN`, `hardware_verified=false`,
 `deployment_allowed=false` e `flight_approval=false`.
+
+## 25. Product evidence packagers batch — 2026-09-27
+
+I cinque gate prodotto dispongono ora di template risultati `NOT_RUN` e di un
+confezionatore comune che accetta soltanto acquisizioni esplicitamente
+confermate dall'operatore. Il bundle risultante è immutabile per nome, registra
+dimensione e SHA-256 di ogni artefatto e resta `PACKAGED_PENDING_REVIEW`.
+
+**Implementato:** template motori, SKU/release, FPV, voce/cabina e HIL;
+validazione fail-closed di path, digest, identità, timestamp, set artefatti e
+decisione; packaging atomico; test e CI. **Verificato solo software:** tutti i
+cinque domini producono bundle sintetici pending review; overwrite, path
+escape, file mancanti/vuoti, digest drift e claim safety vengono rifiutati.
+**Verificato su hardware reale:** nulla; nessun nodo o dispositivo è stato
+contattato. **Aperto:** compilazione sul banco, raccolta delle evidenze reali e
+review indipendente. `EMS-004`, `PROD-001`, `FPV-002`, `VOI-003` e `VER-002`
+restano `TODO`; `hardware_verified=false`, `deployment_allowed=false` e
+`flight_approval=false`.
+
+## 26. Independent product evidence review — 2026-09-27
+
+Il bundle prodotto dispone ora di schema chiuso e validazione autonoma di
+sorgenti, path, dimensioni e SHA-256. Cinque template di revisione indipendente
+congelano ruoli e finding già definiti nei review gate.
+
+**Implementato:** schema bundle; validatore byte-per-byte; template review per
+motori, SKU, FPV, voce e HIL; validatore con tre reviewer distinti, firme,
+timestamp e decisione coerente con i finding; test e CI. **Verificato solo
+software:** bundle e review sintetici dei cinque domini PASS; tamper, drift,
+firme errate, reviewer duplicati, finding incoerenti e claim operativi sono
+rifiutati. **Verificato su hardware reale:** nulla. **Aperto:** generare i
+bundle reali e farli revisionare dalle autorità definite. Anche una review
+positiva termina `EVIDENCE_ACCEPTED_FOR_NEXT_GATE`; gli stessi requisiti
+restano `TODO`, senza deployment o approvazione al volo.
+
+## 27. Product evidence session manager — 2026-09-27
+
+La catena prodotto dispone ora di un comando unico per inizializzare una
+sessione, misurarne la completezza, finalizzare il bundle, aprire la review e
+congelarne l'esito. Ogni output finale rifiuta overwrite e conserva il legame
+SHA-256 con il livello precedente.
+
+**Implementato:** cinque comandi operativi e verifica outcome; stato intermedio
+`PREPARED_NOT_RUN`; report di artefatti mancanti/non sicuri; test end-to-end sui
+cinque domini e gate CI. **Verificato solo software:** pipeline sintetica
+completa, review positive e negative, immutabilità e tamper detection.
+**Verificato su hardware reale:** nulla. **Aperto:** eseguire le sessioni con
+artefatti e reviewer reali. L'esito massimo resta
+`NO_GO_PENDING_GATE_DISPOSITION`; nessun requisito cambia stato.
+
+## 28. Product gate disposition — 2026-09-28
+
+La review indipendente può ora essere sottoposta a una disposizione formale
+separata. Cinque template congelano autorità, review gate e confine con il
+change control; il record finale è immutabile e verificabile tramite digest.
+
+**Implementato:** template per cinque domini; collegamento all'outcome;
+separazione fra reviewer e tre autorità decisionali; firme e timestamp;
+accettazione/rifiuto; record immutabile; test e CI. **Verificato solo
+software:** pipeline sintetica positiva e negativa, tamper, overlap di ruoli e
+tentativi di acquisire autorità operativa. **Verificato su hardware reale:**
+nulla. **Aperto:** outcome reali, autorità reali e successiva richiesta formale
+di change control. Anche l'accettazione termina
+`NO_GO_CHANGE_CONTROL_NOT_CREATED`; nessun requisito cambia stato.
+
+## 29. Product change-control request — 2026-09-28
+
+La disposizione positiva può ora alimentare una richiesta formale separata.
+Cinque template congelano scope, analisi d'impatto, rollback, verifica e ruoli
+di intake; il record conclusivo è immutabile e verificabile tramite digest.
+
+**Implementato:** template per cinque domini; collegamento alla disposizione;
+sette aree d'impatto obbligatorie; separazione delle autorità; firme, record,
+test e CI. **Verificato solo software:** pipeline sintetica completa, scope e
+analisi mancanti, path, digest, firma, overlap di ruoli e tamper.
+**Verificato su hardware reale:** nulla. **Aperto:** richieste e firme reali,
+decisione CCB e piano di implementazione separato. Il massimo esito resta
+`NO_GO_IMPLEMENTATION_NOT_AUTHORIZED`; nessun requisito cambia stato.
+
+## 30. Product CCB decision — 2026-09-28
+
+Una richiesta change-control completa può ora essere sottoposta a decisione
+CCB formale. Cinque template impongono quattro ruoli unanimi, indipendenza da
+tutte le persone delle fasi precedenti, firme e record immutabile.
+
+**Implementato:** template per cinque domini; collegamento alla richiesta;
+approve/reject/defer; quorum e segregazione; record, test e CI. **Verificato
+solo software:** pipeline sintetica completa, voto non unanime, overlap di
+ruoli, digest/firme, claim operativi e tamper. **Verificato su hardware
+reale:** nulla. **Aperto:** richieste e board reali, piano di implementazione
+separato ed eventuale successiva autorizzazione. Anche l'approvazione termina
+`NO_GO_IMPLEMENTATION_PLAN_NOT_CREATED`; nessun requisito cambia stato.
+
+## 31. Product implementation plan — 2026-09-29
+
+Una decisione CCB positiva può ora alimentare un piano d'implementazione
+separato. Cinque template impongono baseline, scope, work package, controlli
+rischio, verifica, rollback, deployment e review indipendente.
+
+**Implementato:** template per cinque domini; collegamento CCB; validazione
+completa e record immutabile; test e CI. **Verificato solo software:** pipeline
+sintetica, baseline/scope invalidi, path traversal, pacchetti incompleti,
+firme, overlap, claim operativi e tamper. **Verificato su hardware reale:**
+nulla. **Aperto:** compilazione con dati reali e review di autorizzazione
+separata. Il massimo esito resta
+`NO_GO_IMPLEMENTATION_AUTHORIZATION_NOT_CREATED`; nessun requisito cambia
+stato. Stato dell'arte complessivo:
+`docs/project/AVIONIX_NEXT_STATE_OF_ART_2026-09-29.md`.

@@ -1,0 +1,22 @@
+{
+  "schema": "avionix-next.product-independent-review.v1",
+  "domain": "hil",
+  "status": "NOT_RUN",
+  "coordinator": null,
+  "captured_utc": null,
+  "evidence_bundle_path": null,
+  "evidence_bundle_sha256": "UNRESOLVED",
+  "review_gate_path": "config/hil/hil-execution-review-gate-v1.json",
+  "review_gate_sha256": "d308e0f5574379039dcccc541abeaf34ce5e0151306fa54f0c5906e1bd128f02",
+  "required_review_roles": ["hil-operator", "safety-reviewer", "evidence-reviewer"],
+  "required_findings": ["fixture-isolation", "input-digest-resolution", "deterministic-replay", "fault-containment", "expected-outcome", "artifact-completeness"],
+  "reviewers": [],
+  "findings": {},
+  "limitations": [],
+  "evidence_integrity_verified": false,
+  "review_complete": false,
+  "hardware_verified": false,
+  "deployment_allowed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_NOT_RUN"
+}

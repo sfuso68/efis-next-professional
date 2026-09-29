@@ -1,0 +1,13 @@
+{
+  "schema": "avionix-next.product-implementation-plan.v1", "domain": "sku", "status": "NOT_RUN",
+  "plan_id": null, "owner": null, "prepared_utc": null,
+  "ccb_template_path": "config/product/sku-release-ccb-decision-not-run-v1.json",
+  "ccb_template_sha256": "a233886a6912eab055a27985fc807a8db307b1e3c5214fca891de7dd4ac84580",
+  "ccb_record_path": null, "ccb_record_sha256": "UNRESOLVED",
+  "baseline_branch": null, "baseline_commit": null, "objective": null,
+  "in_scope_requirements": [], "in_scope_artifacts": [], "in_scope_nodes": [], "out_of_scope": [],
+  "work_packages": [], "hazard_controls": [], "verification_plan": null, "rollback_plan": null, "deployment_plan": null,
+  "required_plan_roles": ["implementation-lead", "safety-plan-reviewer", "release-plan-reviewer"],
+  "plan_reviewers": [], "plan_complete": false, "implementation_authorized": false,
+  "deployment_allowed": false, "flight_approval": false, "decision": "NO_GO_NOT_RUN"
+}

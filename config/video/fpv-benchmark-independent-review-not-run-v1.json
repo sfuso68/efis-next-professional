@@ -1,0 +1,22 @@
+{
+  "schema": "avionix-next.product-independent-review.v1",
+  "domain": "fpv",
+  "status": "NOT_RUN",
+  "coordinator": null,
+  "captured_utc": null,
+  "evidence_bundle_path": null,
+  "evidence_bundle_sha256": "UNRESOLVED",
+  "review_gate_path": "config/video/fpv-benchmark-review-gate-v1.json",
+  "review_gate_sha256": "b89ed01f567a122717e15bf7f690c99149cd426e43a887fd2315c230d811e209",
+  "required_review_roles": ["video-owner", "network-reviewer", "thermal-reviewer"],
+  "required_findings": ["four-feed-capacity", "latency-and-drops", "decode-thermal-margin", "feed-loss-recovery", "domain-isolation", "telemetry-sidecar-sync"],
+  "reviewers": [],
+  "findings": {},
+  "limitations": [],
+  "evidence_integrity_verified": false,
+  "review_complete": false,
+  "hardware_verified": false,
+  "deployment_allowed": false,
+  "flight_approval": false,
+  "decision": "NO_GO_NOT_RUN"
+}
