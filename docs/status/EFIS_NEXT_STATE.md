@@ -1,8 +1,8 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-25
+Aggiornamento: 2026-09-29
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `origin/main` `3066f4284b219d98f19f68c2011e97f81fb891c1`
+Baseline integrata esaminata: `origin/main` `7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897`
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -23,7 +23,7 @@ Il rapporto del 2026-09-20 resta uno snapshot storico.
 | Gate/area | Stato | Sintesi | ID autorevoli |
 |---|---|---|---|
 | Governance e fonti | PARTIAL | Nome prodotto `FUSO AVIONICS NEXT` approvato; alias tecnico `EFIS NEXT`; brief, indice, backlog e controllo progetto presenti; topologia Git chiusa da ADR-018; cinque fonti e restore restano aperti | `PRJ-001`, `PRJ-002`, `AVX-G0-02`…`05` |
-| Nodo sensori ASSO5 | BLOCKED-HW | RPi4 `.89` identificato; Sequent 0/4, alimentatore, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
+| Nodo sensori ASSO5 | HW-PARTIAL / BLOCKED-HW | RPi4 `.89` riconfermato read-only il 2026-09-29 con G1-C10 10/10 PASS; quattro frontali coerenti con 1×SM-I-018, 2×SM-I-011 e 1×8 Thermocouple DAQ, ma retro e label alimentatore mancanti: manifest ancora 0/4, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
 | PFD/MFD | PARTIAL | PFD+recorder su `pfdrec-d52e377-primary-v1` e MFD su `mfd-3432402-primary-v1`, entrambi con rollback/reboot PASS; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `VER-003` |
@@ -621,3 +621,20 @@ separata. Il massimo esito resta
 `NO_GO_IMPLEMENTATION_AUTHORIZATION_NOT_CREATED`; nessun requisito cambia
 stato. Stato dell'arte complessivo:
 `docs/project/AVIONIX_NEXT_STATE_OF_ART_2026-09-29.md`.
+
+## 32. G1 capture nodo e intake visuale parziale — 2026-09-29
+
+Il nodo `ems-sensor` è stato riconfermato in sola lettura tramite il capture
+G1-C10: identità RPi4/aarch64, I2C controller-only, rete e health hanno
+superato 10/10 controlli. Il report immutabile è conservato in
+`evidence/g1-node-capture-ems-sensor-20260929/` con SHA-256
+`956413c4faf489ceff6a6238490f48ae269a3ddc9f5b726223d950d86edaa155`.
+
+Quattro fotografie frontali identificano provvisoriamente 1×SM-I-018 V2.1,
+2×SM-I-011 V6.0 e una 8 Thermocouple DAQ V2.1 coerente con SM-I-019. Il quinto
+fotogramma non mostra la label dell'alimentatore e contiene più possibili
+sorgenti. Le fotografie non sono quindi state importate: mancano i quattro
+retro, la label elettrica, la conferma della singola sorgente, operatore/UTC e
+review dei DIP. `AVX-G1-01` resta `IN_PROGRESS`, `AVX-G1-02` resta `OPEN`, il
+manifesto rimane 0/4 e la decisione è `NO_GO`. Nessun probing, vendor read,
+cablaggio, DIP o uscita è stato modificato.
