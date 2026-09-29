@@ -2,7 +2,7 @@
 
 Data: 2026-09-29  
 Ambito: `PRJ-001`, `AVX-G0-02`, `AVX-G6-01`  
-Esito: **BLOCKED-CREDENTIAL / RESTORE-NOT-RUN**  
+Esito: **VERIFIED-HOST / RESTORE-PASS**
 Approvazione al volo: **no**
 
 ## Scopo
@@ -30,23 +30,45 @@ Il riferimento `origin/main` della working copy
 non è stato usato come autorità. Nessun fetch o aggiornamento è stato eseguito
 su quella working copy.
 
-## Decisione fail-closed
+## Credenziale dedicata
 
-Il restore drill I-10 **non è stato avviato**: non è stato creato alcun clone,
-report o albero sotto `/home/sfuso/restore-drills/`. La chiave write-only
-esistente, limitata al flusso di replica, non è stata ampliata né riutilizzata.
+È stata creata su `serverha` l'identità separata
+`efis_nas_restore_ed25519`, fingerprint
+`SHA256:dZJ4aHFArcMEgkUvJVfWMDJAN5zrXQgcoJ4l5329Hgo`. Sul NAS la relativa chiave
+pubblica è limitata al comando:
 
-Per sbloccare il gate serve una nuova credenziale NAS distinta, limitata al
-solo `git-upload-pack` del bare repository professionale, installata e provata
-in una finestra interattiva. Solo dopo quel passaggio si potrà eseguire il
-runbook con lo SHA GitHub corrente e conservare l'evidence JSON reale.
+```text
+git-upload-pack '/volume1/homes/sfuso/git/efis-next-professional.git'
+```
+
+Sono disabilitati agent forwarding, port forwarding, PTY, user rc e X11. Il
+test shell non ha eseguito `uname` e ha prodotto esclusivamente il protocollo
+Git del comando forzato. La chiave write-only di replica non è stata modificata.
+
+## Restore reale
+
+I-10 è stato eseguito su `serverha` con exit code `0`. Il clone isolato è
+conservato in
+`/home/sfuso/restore-drills/20260929T180632Z/repository`; nessuna working copy
+operativa è stata sostituita. Tutti i controlli sono PASS:
+
+- clone isolato senza hardlink;
+- `git fsck --full --strict`;
+- `main` ripristinato uguale allo SHA GitHub atteso;
+- oggetti raggiungibili presenti (`5919` voci);
+- tag richiesti presenti; il repository non dichiara tag (`tag_count=0`);
+- file minimi presenti;
+- Project Control `--check` PASS.
+
+Il report controllato è conservato in
+`evidence/nas-restore-drill-20260929T180632Z/evidence.json`, SHA-256
+`134d08da0b1a3b30f0e236839e026344fffd53030698f593816edcb8458a1abc`.
 
 ## Classificazione
 
 - verificato software: tool e test sintetici già registrati nel checkpoint I-10;
-- verificato su host reale: identità GitHub/bare serverha, stato del timer e
-  rifiuto batch del percorso NAS;
-- non verificato: contenuto del mirror NAS tramite lettura, clone, `git fsck`,
-  tag, oggetti, file minimi e Project Control del restore;
-- stato requisito: invariato, `PRJ-001 PARTIAL` e restore `NOT-RUN`.
-
+- verificato su host reale: credenziale confinata, isolamento shell, lettura
+  NAS, clone, integrità, SHA, oggetti, file minimi e Project Control;
+- non verificato: protezione fuori sito e ripristino da un secondo supporto;
+- stato requisito: `PRJ-001` resta `PARTIAL` per le dipendenze governance
+  residue, mentre il restore NAS→serverha è `PASS`.

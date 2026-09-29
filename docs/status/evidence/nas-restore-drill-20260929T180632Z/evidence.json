@@ -1,0 +1,29 @@
+{
+  "checks": {
+    "isolated_clone": true,
+    "main_matches_expected": true,
+    "object_integrity": true,
+    "project_control_check": true,
+    "reachable_objects_present": true,
+    "required_paths_present": true,
+    "required_tags_present": true
+  },
+  "config_sha256": "1f5b5572962e1e334e59becbc684e7cfae7c22f92405ee5ea4673cceb89896e5",
+  "destination": "/home/sfuso/restore-drills/20260929T180632Z/repository",
+  "details": {
+    "missing_required_paths": [],
+    "reachable_object_entries": 5919,
+    "restored_main": "7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897",
+    "tag_count": 0,
+    "tags": []
+  },
+  "error": "",
+  "expected_main": "7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897",
+  "finished_utc": "2026-09-29T18:06:47.811680Z",
+  "flight_approval": false,
+  "restored_tree_retained": true,
+  "schema": "efis-next.git-restore-drill-report.v1",
+  "source": "efis-nas-restore:/volume1/homes/sfuso/git/efis-next-professional.git",
+  "started_utc": "2026-09-29T18:06:32.936563Z",
+  "status": "PASS"
+}

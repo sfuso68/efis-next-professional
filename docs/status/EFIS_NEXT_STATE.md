@@ -649,10 +649,18 @@ presente soltanto l'identità write-only usata dal push verso il NAS. Il test
 batch `git ls-remote` dal server verso il bare NAS è stato rifiutato con
 `Permission denied`.
 
-**Verificato su host reale:** commit GitHub e bare serverha, stato del job di
-replica e assenza di un percorso read-only funzionante. **Non eseguito:** clone
-isolato, `git fsck`, inventario tag/oggetti e Project Control sul contenuto NAS.
-Nessuna working copy o chiave è stata modificata. Il checkpoint
+È stata quindi installata una nuova chiave distinta, limitata al solo
+`git-upload-pack` del bare professionale e senza shell/forwarding/PTY. La chiave
+write-only di replica non è stata ampliata. Il restore I-10 è stato eseguito in
+`/home/sfuso/restore-drills/20260929T180632Z/repository` con exit code `0`:
+clone isolato, `git fsck`, confronto SHA, oggetti, file minimi e Project Control
+sono tutti PASS; il main ripristinato è `7aa45b66...`. L'albero e il report
+sono conservati, con evidence JSON SHA-256
+`134d08da0b1a3b30f0e236839e026344fffd53030698f593816edcb8458a1abc`.
+
+**Verificato su host reale:** confinamento della credenziale, lettura NAS e
+restore completo NAS→serverha. **Resta aperto:** protezione fuori sito e prova
+da un secondo supporto. Il checkpoint
 `CHECKPOINT-2026-09-29-NAS-RESTORE-ACCESS-GATE.md` registra l'evidenza;
-`PRJ-001` resta `PARTIAL` e I-10 resta `BLOCKED-CREDENTIAL / NOT-RUN` fino
-all'installazione di una chiave separata limitata a `git-upload-pack`.
+`PRJ-001` resta `PARTIAL` per le altre dipendenze governance, mentre I-10 è
+`VERIFIED-HOST / PASS`. Nessun runtime avionico è stato contattato.

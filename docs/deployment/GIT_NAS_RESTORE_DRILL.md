@@ -1,6 +1,6 @@
 # EFIS NEXT — Restore drill Git da NAS
 
-Stato: **PREPARED-SW / NOT-RUN**
+Stato: **VERIFIED-HOST / PASS (2026-09-29)**
 
 Ambito: `PRJ-001`, `AVX-G0-02`, `AVX-G6-01`
 
@@ -69,10 +69,16 @@ come verificato. Questo documento e i test sintetici non costituiscono una
 prova NAS, una verifica hardware avionica o un'autorizzazione a ritirare la
 copia temporanea Blackbox.
 
-## Gate attualmente aperto
+## Ultima esecuzione controllata
 
-La credenziale read-only `git-upload-pack` non è stata installata né verificata
-da questo incremento. La sua creazione richiede una finestra interattiva su
-serverha/NAS e autorizzazione separata. Fino ad allora I-10 resta
-`PREPARED-SW / NOT-RUN`; non modificare il comando forzato della chiave di
-replica write-only già operativa.
+Il 2026-09-29 è stata installata una credenziale separata limitata al solo
+`git-upload-pack` del bare professionale; la chiave write-only di replica non è
+stata modificata. I-10 è stato eseguito da `serverha` contro il NAS con SHA
+GitHub atteso `7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897`.
+
+Esito: `PASS`, exit code `0`. Il clone e il report sono conservati sotto
+`/home/sfuso/restore-drills/20260929T180632Z/`; una copia del report è in
+`docs/status/evidence/nas-restore-drill-20260929T180632Z/evidence.json` con
+SHA-256 `134d08da0b1a3b30f0e236839e026344fffd53030698f593816edcb8458a1abc`.
+La prova non costituisce autorizzazione al volo e non chiude la protezione
+fuori sito.
