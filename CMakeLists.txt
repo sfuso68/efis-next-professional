@@ -490,6 +490,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_release_preparation)
         set_tests_properties(efis_release_preparation_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_bbxnav_supervision_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_bbxnav_supervision)
+        set_tests_properties(efis_bbxnav_supervision_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         add_test(NAME efis_blackbox_broker_observer_tests
             COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_blackbox_broker_observer.py

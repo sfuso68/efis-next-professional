@@ -29,7 +29,7 @@ Il rapporto del 2026-09-20 resta uno snapshot storico.
 | PFD/MFD | PARTIAL / VERIFY-HW | PFD storage recuperato con copia checksum su serverha: root 81%, recorder attivo `NRestarts=0`, imagery PASS; MFD `mfd-3432402-primary-v1` attivo ma con storico undervoltage `0x50000`; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `PWR-001`, `VER-003` |
 | EMS | PARTIAL / DEPLOY CONFORME | RPi4 riconfermato sulla release HMI/CAS `ems-62ba90b-hmi-cas-v1`, processo canonico e `NRestarts=0`; sorgente ancora SIM, input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
-| Blackbox/rete | PARTIAL / POWER + NAV ACTION | broker `blackbox-7655799-primary-v1` attivo, engine SIM e `NRestarts=0`; cinque undervoltage recenti senza errori NVMe/USB correlati; `bbxnav` è in auto-restart senza ricevitori | `BBX-001`…`004`, `NET-001`, `NAV-003`, `PWR-001`, `PROD-005` |
+| Blackbox/rete | PARTIAL / POWER VERIFY-HW / NAV FAIL-CLOSED | broker `blackbox-7655799-primary-v1` attivo, engine SIM e `NRestarts=0`; cinque undervoltage recenti senza errori NVMe/USB; drop-in NAV reale arresta exit 2 senza restart, ricevitori ancora assenti | `BBX-001`…`004`, `NET-001`, `NAV-003`, `PWR-001`, `PROD-005` |
 | Server/NAS/Ground station | PARTIAL | GitHub/serverha/NAS allineati a `7aa45b66...`, replica ristretta e restore PASS; CA/lifecycle, off-site e ritiro copia temporanea aperti | `SRV-001`…`003`, `GS-001`…`003`, ADR-018 |
 | Alimentazione | VERIFY-HW / URGENT | MFD con due e Blackbox con cinque undervoltage kernel recenti; entrambi `get_throttled=0x50000`; PSU/cavi e prove brownout non qualificati | `PWR-001`, `PROD-002`, `VER-003` |
 
@@ -151,9 +151,9 @@ Il dettaglio è nel registro canonico
    e di prova end-to-end (`EMS-003`, `EMS-004`, `AVX-G3-02`).
 7. Safety: Emergency Assist resta consultivo; checklist e servi sono bloccati
    da fonti, identificazione, interlock e HIL (`PAN-001`…`004`).
-8. Radionavigazione Blackbox: `bbxnav` riparte senza limite quando i ricevitori
-   non sono presenti; va resa fail-closed e condizionata alla configurazione
-   reale prima di qualunque uso (`NAV-003`).
+8. Radionavigazione Blackbox: il restart storm è chiuso, ma il drop-in è ancora
+   esterno alla release e ricevitori, frequenze, antenna, decoder e annunci non
+   sono qualificati (`NAV-003`).
 
 ## 7. Prossima sequenza controllata
 
@@ -168,9 +168,9 @@ Il dettaglio è nel registro canonico
 5. Dopo un deployment C12 autorizzato, creare sessioni C10 dal commit installato e completare
    C11/C9 su PFD e MFD con confronto visuale della transizione N45/N46
    (`AVX-G3-01`, `SV-001`).
-6. Correggere `bbxnav.service` perché resti inattivo/fail-closed senza
-   ricevitori o configurazione valida, quindi verificare zero restart e stato
-   NAV non valido esplicito (`NAV-003`).
+6. Integrare la supervisione `bbxnav` nella prossima release, poi inventariare
+   e qualificare ricevitori/frequenze/RF e verificare lo stato NAV non valido
+   esplicito sui display (`NAV-003`).
 
 ## 8. Criterio di verità
 
@@ -720,3 +720,23 @@ cavo. Separatamente, `bbxnav.service` con ricevitori assenti ha raggiunto
 termica e contatori. **Aperto:** qualifica elettrica e correzione fail-closed
 del servizio NAV. Evidenza:
 `evidence/pfd-storage-recovery-blackbox-power-20260929/README.md`.
+
+## 36. Supervisione bbxnav fail-closed — 2026-09-29
+
+Il servizio NAV legacy sulla Blackbox è stato corretto con un drop-in che non
+modifica `ExecStart`, sorgente `ricevitori`, destinazione `vcan0`, utente o
+capability. La policy sostituisce il restart illimitato con
+`Restart=on-failure`, impedisce il riavvio su exit 2 e limita gli altri errori
+a tre tentativi in 60 secondi.
+
+**Verificato solo software:** validatore PASS, 4/4 test PASS, rifiuto delle
+modifiche a comando/sorgente, file unito verificato da `systemd-analyze` su
+ARM64. **Verificato su hardware reale:** drop-in installato, processo terminato
+con exit 2 per ricevitori assenti, unità `failed`, `NRestarts=0` in due
+campioni; broker e `bbxlog` restano `active` con zero restart. Nessun dato NAV
+simulato e nessun CAN reale sono stati abilitati.
+
+**Aperto:** il drop-in è configurazione esterna alla release immutabile;
+ricevitori SDR, frequenze, antenna, qualità RF, decoder e annunci display non
+sono qualificati. `NAV-003` resta `PARTIAL`. Evidenza:
+`evidence/bbxnav-fail-closed-20260929/README.md`.
