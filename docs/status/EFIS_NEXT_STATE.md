@@ -2,7 +2,7 @@
 
 Aggiornamento: 2026-09-30
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `origin/main` `3c7bb4d5495e1ce9f582dd185be48b9563993e48`
+Baseline integrata esaminata: `origin/main` `ff75b242db0aa4075e19cecc07d5cfa779397e07`
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -17,6 +17,12 @@ Il quadro direzionale corrente con pianificazione R0, gate, workstream,
 problemi e attività interattive è in
 [`AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md`](../project/AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md).
 Il rapporto del 2026-09-20 resta uno snapshot storico.
+
+Durante il limite mensile GitHub comunicato il 2026-09-30, i lavori successivi
+sono conservati soltanto in commit locali secondo
+[`CHECKPOINT-2026-09-30-GITHUB-OFFLINE-DEVELOPMENT.md`](CHECKPOINT-2026-09-30-GITHUB-OFFLINE-DEVELOPMENT.md).
+La baseline sopra indicata è l'ultima `main` remota osservata, non una
+dichiarazione sullo stato remoto durante il periodo offline.
 
 ## 1. Quadro immediato
 
