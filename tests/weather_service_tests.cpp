@@ -159,6 +159,7 @@ int main(int argc, char** argv) {
                     "current SRI response was not cached");
         }
         {
+            QSettings().setValue(QStringLiteral("weather/product"), QStringLiteral("VMI"));
             WeatherService weather;
             QElapsedTimer callback;
             callback.start();
