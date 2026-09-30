@@ -104,6 +104,7 @@ la Master Matrix, il registro delle release attive o le evidenze hardware.
 | `c916bf3` | hardening fail-closed cache edge METAR/TAF e registrazione CTest | 9 test Python, CTest mirato, Project Control e `git diff --check` PASS; hardware NOT_RUN |
 | `4a37458` | allowlist fail-closed degli stati radar presentabili in QML | 3 test contratto responsive, validatore UI, Project Control e `git diff --check` PASS; hardware NOT_RUN |
 | `902e063` | classificazione freshness radar C++ a precisione di secondo e clock skew fail-closed | build Qt/MSVC, test servizio radar e contratto responsive via CTest, Project Control e `git diff --check` PASS; hardware NOT_RUN |
+| `95996ed` | isolamento cache radar e contesto delle risposte asincrone per prodotto/tile | build Qt/MSVC, test servizio radar con allowlist/path guard e uscita da CAPPI training, CTest responsive, Project Control e `git diff --check` PASS; hardware NOT_RUN |
 
 Questi commit sono presenti soltanto nel repository locale e non risultano
 pubblicati su GitHub o replicati sul NAS durante il periodo di sospensione.
