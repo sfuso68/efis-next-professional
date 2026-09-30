@@ -117,6 +117,41 @@ class ReleaseSupervisionAssetTests(unittest.TestCase):
         self.assertIn("for role in PFD RECORDER", reboot)
         self.assertIn("--expected-role \"$role\"", reboot)
 
+    def test_pfd_weather_async_rollout_is_pinned_and_fail_closed(self):
+        scripts = ROOT / "deploy" / "scripts"
+        prepare = (scripts / "prepare_pfd_weather_async_release.sh").read_text(
+            encoding="utf-8"
+        )
+        activate = (scripts / "activate_pfd_weather_async_release.sh").read_text(
+            encoding="utf-8"
+        )
+        reboot = (scripts / "verify_pfd_weather_async_reboot.sh").read_text(
+            encoding="utf-8"
+        )
+        release = "pfdrec-3c7bb4d-weather-async-v1"
+        rollback = "pfdrec-7051a47-retention-v1"
+        commit = "3c7bb4d5495e1ce9f582dd185be48b9563993e48"
+        archive_sha = "beb4cce4eed80e950dda6e245ff3bae42842f96242f4836cddeb5fe7310c61f3"
+
+        for content in (prepare, activate, reboot):
+            self.assertIn(release, content)
+            self.assertIn("RPI5_AARCH64", content)
+        self.assertIn(commit, prepare)
+        self.assertIn(archive_sha, prepare)
+        self.assertIn("sha256sum --check --strict", prepare)
+        self.assertIn("--role PFD --role RECORDER", prepare)
+        self.assertIn("efis_weather_service_tests", prepare)
+        self.assertIn("EXECUTION_AUTHORIZED=false", prepare)
+        self.assertIn(rollback, activate)
+        self.assertIn("ROLLBACK_DRILL=PASS", activate)
+        self.assertIn("mv -Tf", activate)
+        self.assertIn("EFIS_WEATHER_SIMULATION_IO_DELAY_MS=400", activate)
+        self.assertIn("event=weather_simulation_worker_slow", activate)
+        self.assertIn("event=callback_stall callback=weather_simulation", activate)
+        self.assertIn("PFD_WEATHER_ASYNC_ACTIVATION=PASS", activate)
+        self.assertIn("PFD_WEATHER_ASYNC_REBOOT_ACCEPTANCE=PASS", reboot)
+        self.assertIn("event=callback_stall callback=weather_simulation", reboot)
+
     def test_ems_runtime_writes_are_outside_immutable_release(self):
         content = (ROOT / "deploy/systemd/release-v1/efis-ems-release-v1.override.conf").read_text(
             encoding="utf-8"

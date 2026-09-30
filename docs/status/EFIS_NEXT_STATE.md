@@ -834,3 +834,28 @@ startup retry, 27 gap tile e acceptance visuale/touch/terrain restano aperti.
 `PFD-001` resta `PARTIAL`; il prodotto resta DEVELOPMENT/NON-CERT e
 `flight_approval=false`. Evidenza:
 `evidence/pfd-weather-async-20260930/README.md`.
+
+## 39. Pacchetto rollout ARM64 del writer meteo — 2026-09-30
+
+**Implementato:** procedura dedicata e fail-closed per preparare, attivare e
+verificare dopo reboot la release dual-role
+`pfdrec-3c7bb4d-weather-async-v1`, fissata al merge completo
+`3c7bb4d5495e1ce9f582dd185be48b9563993e48`. La preparazione verifica l'hash
+dell'archivio sorgente, pretende almeno 12 GiB liberi, compila PFD/recorder e
+il test meteo su ARM64, esegue CTest e genera il manifest immutabile. La fase
+root pretende come base `pfdrec-7051a47-retention-v1`, prova un rollback reale
+e usa un drop-in temporaneo per iniettare 400 ms di latenza nel writer. Il
+gate richiede telemetria del worker lento e fallisce se il callback GUI meteo
+supera la soglia. Una terza procedura verifica servizi, binari, DDP, recorder,
+throttling e assenza dello stall dopo reboot.
+
+**Verificato solo software:** contratto statico dei tre script, pin di commit,
+hash archivio, doppio ruolo, rollback, switch atomico e gate sullo stall sono
+coperti dai test di supervisione release. La procedura dettagliata e' in
+`docs/deployment/PFD_WEATHER_ASYNC_RELEASE.md`.
+
+**Verificato su hardware reale:** nulla. L'accesso SSH da questa workstation
+al PFD non e' disponibile; nessuna build ARM64, attivazione, modifica runtime,
+prova meteo o reboot acceptance e' stata eseguita. `PFD-001` resta `PARTIAL`,
+la release attiva resta `pfdrec-7051a47-retention-v1` e il prodotto resta
+DEVELOPMENT/NON-CERT con `flight_approval=false`.
