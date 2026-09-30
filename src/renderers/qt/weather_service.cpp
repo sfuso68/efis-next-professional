@@ -40,15 +40,11 @@ QString simulationPath(const QString& name) {
 
 WeatherService::WeatherService(QObject* parent) : QObject(parent) {
     QSettings settings;
-    radar_product_ = settings.value(QStringLiteral("weather/product"),QStringLiteral("VMI")).toString();
+    radar_product_ = normalizedRadarProduct(
+        settings.value(QStringLiteral("weather/product"), QStringLiteral("VMI")).toString());
+    if (radar_product_ != QStringLiteral("VMI") && radar_product_ != QStringLiteral("SRI"))
+        radar_product_ = QStringLiteral("VMI");
     audio_enabled_ = settings.value(QStringLiteral("weather/audioEnabled"),true).toBool();
-    const QFileInfo cached(cachePath(QStringLiteral("radar-vmi-veneto.png")));
-    if (cached.exists() && cached.size() > 0) {
-        radar_time_ = cached.lastModified().toUTC();
-        radar_source_ = QUrl::fromLocalFile(cached.absoluteFilePath()).toString();
-        radar_message_ = QStringLiteral("Loaded persistent Radar-DPC cache");
-        updateAgeState();
-    }
     refresh_timer_.setInterval(5*60*1000);
     connect(&refresh_timer_, &QTimer::timeout, this, &WeatherService::refresh);
     refresh_timer_.start();
@@ -92,6 +88,56 @@ QString WeatherService::classifyRadarAgeSeconds(qint64 age_seconds) {
     return QStringLiteral("EXPIRED");
 }
 
+QString WeatherService::normalizedRadarProduct(const QString& product) {
+    const auto candidate = product.trimmed().toUpper();
+    if (candidate == QStringLiteral("VMI") || candidate == QStringLiteral("SRI")
+        || candidate == QStringLiteral("CAPPI 3000"))
+        return candidate;
+    return {};
+}
+
+QString WeatherService::radarCacheFileName(const QString& product, int zoom, int x, int y) {
+    auto normalizedProduct = normalizedRadarProduct(product).toLower();
+    if (normalizedProduct.isEmpty() || zoom < 0 || x < 0 || y < 0) return {};
+    normalizedProduct.replace(QLatin1Char(' '), QLatin1Char('-'));
+    return QStringLiteral("radar-%1-z%2-%3-%4.png")
+        .arg(normalizedProduct)
+        .arg(zoom)
+        .arg(x)
+        .arg(y);
+}
+
+void WeatherService::clearRadarFrame(const QString& message) {
+    radar_source_.clear();
+    radar_time_ = {};
+    radar_state_ = QStringLiteral("NO DATA");
+    radar_message_ = message;
+}
+
+bool WeatherService::loadCurrentRadarCache() {
+    constexpr int zoom = 6;
+    if (tile_x_ < 0 || tile_y_ < 0) {
+        clearRadarFrame(QStringLiteral("Radar unavailable • position unknown"));
+        return false;
+    }
+    const auto filename = radarCacheFileName(radar_product_, zoom, tile_x_, tile_y_);
+    if (filename.isEmpty()) {
+        clearRadarFrame(QStringLiteral("Radar unavailable • invalid cache identity"));
+        return false;
+    }
+    const QFileInfo cached(cachePath(filename));
+    if (!cached.isFile() || cached.size() <= 0) {
+        clearRadarFrame(QStringLiteral("Radar unavailable • no matching cache"));
+        return false;
+    }
+    radar_time_ = cached.lastModified().toUTC();
+    radar_source_ = QUrl::fromLocalFile(cached.absoluteFilePath()).toString()
+        + QStringLiteral("?v=") + QString::number(cached.lastModified().toMSecsSinceEpoch());
+    radar_message_ = QStringLiteral("Loaded matching Radar-DPC cache");
+    updateAgeState();
+    return true;
+}
+
 void WeatherService::updateAgeState() {
     if (simulation_) { radar_state_ = QStringLiteral("SIMULATED"); emit changed(); return; }
     radar_state_ = radar_time_.isValid()
@@ -116,6 +162,10 @@ void WeatherService::setSimulation(bool enabled) {
     } else {
         simulation_timer_.stop();
         simulation_frame_refresh_pending_ = false;
+        if (radar_product_ != QStringLiteral("VMI") && radar_product_ != QStringLiteral("SRI")) {
+            radar_product_ = QStringLiteral("VMI");
+            QSettings().setValue(QStringLiteral("weather/product"), radar_product_);
+        }
         radar_source_.clear();
         radar_time_ = {};
         airport_weather_.clear();
@@ -298,7 +348,14 @@ void WeatherService::updatePosition(double latitude, double longitude) {
     const bool tileChanged = x != tile_x_ || y != tile_y_;
     const bool labelChanged = area != radar_area_;
     radar_area_ = area;
-    if (tileChanged) { tile_x_ = x; tile_y_ = y; if (!simulation_) requestRadar(); }
+    if (tileChanged) {
+        tile_x_ = x;
+        tile_y_ = y;
+        if (!simulation_) {
+            loadCurrentRadarCache();
+            requestRadar();
+        }
+    }
     if (tileChanged || labelChanged) emit changed();
 }
 
@@ -307,7 +364,12 @@ void WeatherService::cycleProduct() {
         radar_product_ = radar_product_ == QStringLiteral("VMI") ? QStringLiteral("SRI") : radar_product_ == QStringLiteral("SRI") ? QStringLiteral("CAPPI 3000") : QStringLiteral("VMI");
     else
         radar_product_ = radar_product_ == QStringLiteral("VMI") ? QStringLiteral("SRI") : QStringLiteral("VMI");
-    if (simulation_) generateSimulation(); else requestRadar();
+    if (simulation_) {
+        generateSimulation();
+    } else {
+        loadCurrentRadarCache();
+        requestRadar();
+    }
     QSettings().setValue(QStringLiteral("weather/product"),radar_product_);
     emit changed();
 }
@@ -317,28 +379,35 @@ void WeatherService::requestRadar() {
     constexpr int count = 1 << zoom;
     constexpr double extent = 20037508.342789244;
     if (tile_x_ < 0 || tile_y_ < 0) { updatePosition(latitude_, longitude_); return; }
+    const int requestX = tile_x_;
+    const int requestY = tile_y_;
+    const auto requestProduct = radar_product_;
     const double minX = (static_cast<double>(tile_x_)/count*2.0-1.0)*extent;
     const double maxX = (static_cast<double>(tile_x_+1)/count*2.0-1.0)*extent;
     const double maxY = (1.0-static_cast<double>(tile_y_)/count*2.0)*extent;
     const double minY = (1.0-static_cast<double>(tile_y_+1)/count*2.0)*extent;
     const auto urlText = QStringLiteral("https://radar-geowebcache.protezionecivile.it/service/wms?service=WMS&version=1.1.1&request=GetMap&layers=radar:%1&styles=&format=image/png&transparent=true&tiled=true&srs=EPSG:3857&bbox=%2,%3,%4,%5&width=256&height=256")
-        .arg(radar_product_.toLower()).arg(minX,0,'f',7).arg(minY,0,'f',7).arg(maxX,0,'f',7).arg(maxY,0,'f',7);
+        .arg(requestProduct.toLower()).arg(minX,0,'f',7).arg(minY,0,'f',7).arg(maxX,0,'f',7).arg(maxY,0,'f',7);
     const QUrl url(urlText);
     auto* reply = network_.get(weatherRequest(url));
-    connect(reply, &QNetworkReply::finished, this, [this, reply] {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, requestProduct, requestX, requestY] {
         const auto data = reply->readAll();
+        const bool requestIsCurrent = requestProduct == radar_product_
+            && requestX == tile_x_ && requestY == tile_y_ && !simulation_;
         if (reply->error() == QNetworkReply::NoError && data.startsWith("\x89PNG") && data.size() > 512) {
-            const auto filename = QStringLiteral("radar-%1-z6-%2-%3.png").arg(radar_product_.toLower()).arg(tile_x_).arg(tile_y_);
+            const auto filename = radarCacheFileName(requestProduct, 6, requestX, requestY);
             QSaveFile file(cachePath(filename));
             if (file.open(QIODevice::WriteOnly) && file.write(data) == data.size() && file.commit()) {
-                radar_time_ = QDateTime::currentDateTimeUtc();
-                radar_source_ = QUrl::fromLocalFile(cachePath(filename)).toString()+QStringLiteral("?v=")+QString::number(radar_time_.toMSecsSinceEpoch());
-                radar_message_ = QStringLiteral("Radar-DPC %1 received").arg(radar_product_);
+                if (requestIsCurrent) {
+                    radar_time_ = QDateTime::currentDateTimeUtc();
+                    radar_source_ = QUrl::fromLocalFile(cachePath(filename)).toString()+QStringLiteral("?v=")+QString::number(radar_time_.toMSecsSinceEpoch());
+                    radar_message_ = QStringLiteral("Radar-DPC %1 received").arg(requestProduct);
+                }
             }
-        } else {
+        } else if (requestIsCurrent) {
             radar_message_ = radar_source_.isEmpty() ? QStringLiteral("Radar unavailable • no cache") : QStringLiteral("Radar offline • cached frame retained");
         }
-        updateAgeState();
+        if (requestIsCurrent) updateAgeState();
         reply->deleteLater();
     });
 }

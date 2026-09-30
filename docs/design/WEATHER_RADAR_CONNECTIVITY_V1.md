@@ -32,6 +32,16 @@ file mtime, rejects future timestamps as `CLOCK_SKEW`, rejects malformed schema 
 station identifiers to four ASCII alphanumeric characters. Stale data may remain visible only
 with its state and age; weather is always marked ineligible for safety authority.
 
+Radar cache identity includes product, zoom and tile coordinates. A position or product change
+may load only the exact matching cached frame; otherwise the image is cleared to `NO DATA`.
+Network replies retain their original request identity and may update the visible frame only
+while that product/tile is still current. Superseded replies may populate their own cache entry
+but cannot be relabelled or displayed as the newly selected product or geographic tile. Product
+names are restricted to the explicit VMI/SRI/CAPPI 3000 allowlist and negative tile coordinates
+or path-like product strings fail closed before cache path construction. CAPPI 3000 remains a
+training-only selection in the current implementation; leaving simulation forces a supported
+live product instead of issuing a mislabeled live request.
+
 ## Hotspot policy
 
 The Raspberry Pi connects to a phone hotspot through a saved NetworkManager connection profile.

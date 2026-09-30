@@ -956,3 +956,23 @@ Il valore di età pubblicato non espone inoltre minuti negativi.
 secondi, oltre al precedente test del writer asincrono. **Verificato su hardware
 reale:** nulla. Download, timestamp del provider, resa grafica e transizioni
 reali su RPi5 restano aperti; `WX-002` resta `PARTIAL`.
+
+## 45. Isolamento cache e risposte radar asincrone — 2026-09-30
+
+Il servizio radar associa ora ogni file di cache a prodotto, zoom, X e Y. Al
+cambio di prodotto o tile carica soltanto la corrispondenza esatta, altrimenti
+cancella il frame e dichiara `NO DATA`; non mantiene più un'immagine del
+contesto precedente con una nuova etichetta. Le callback di rete conservano il
+contesto originale: una risposta superata può essere archiviata nella propria
+chiave, ma non può aggiornare il frame visibile dopo un cambio di posizione,
+prodotto o passaggio alla simulazione. Il prodotto è confinato all'allowlist
+VMI/SRI/CAPPI 3000; stringhe path-like e coordinate negative non generano un
+percorso di cache. CAPPI 3000 resta solo training e l'uscita dalla simulazione
+riporta il prodotto live a VMI, evitando richieste live non supportate.
+
+**Verificato solo software:** build Qt/MSVC e test servizio radar PASS; test
+deterministici dimostrano chiavi distinte VMI/SRI, normalizzazione CAPPI e
+rifiuto di prodotto path-like e coordinate negative.
+**Verificato su hardware reale:** nulla. Race con server controllato, cache
+persistente, provider, georeferenziazione e RPi5 restano aperti; `WX-002`
+rimane `PARTIAL`.
