@@ -95,3 +95,13 @@ Quando il proprietario comunicherà il ripristino di GitHub:
 
 Questo checkpoint è la memoria operativa del periodo offline e non sostituisce
 la Master Matrix, il registro delle release attive o le evidenze hardware.
+
+## Ledger dei commit locali
+
+| Commit | Contenuto | Verifica disponibile |
+|---|---|---|
+| `4c1f282` | checkpoint e riallineamento documentale alla baseline congelata | Project Control e `git diff --check` PASS |
+| `c916bf3` | hardening fail-closed cache edge METAR/TAF e registrazione CTest | 9 test Python, CTest mirato, Project Control e `git diff --check` PASS; hardware NOT_RUN |
+
+Questi commit sono presenti soltanto nel repository locale e non risultano
+pubblicati su GitHub o replicati sul NAS durante il periodo di sospensione.
