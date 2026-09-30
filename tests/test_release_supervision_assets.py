@@ -56,6 +56,41 @@ class ReleaseSupervisionAssetTests(unittest.TestCase):
         content = (self.units / "efis-blackbox-release-v1.override.conf").read_text(encoding="utf-8")
         self.assertIn("--engine-simulation", content)
 
+    def test_blackbox_nav_rollout_is_pinned_manifest_covered_and_reversible(self):
+        scripts = ROOT / "deploy" / "scripts"
+        prepare = (scripts / "prepare_blackbox_nav_immutable_release.sh").read_text(
+            encoding="utf-8"
+        )
+        activate = (scripts / "activate_blackbox_nav_immutable_release.sh").read_text(
+            encoding="utf-8"
+        )
+        reboot = (scripts / "verify_blackbox_nav_reboot.sh").read_text(
+            encoding="utf-8"
+        )
+        release = "blackbox-46e56a9-nav-supervision-v1"
+        rollback = "blackbox-7655799-v1"
+        commit = "46e56a955b6c3a8bdf647789930c3e7855051fa5"
+        archive_sha = "cb969e12e3f055f5be2aeff1c71f13abbcfaca967bb11f2d8223809ada065b1c"
+        nav_asset = "share/systemd/bbxnav-fail-closed.override.conf"
+
+        for content in (prepare, activate, reboot):
+            self.assertIn(release, content)
+            self.assertIn("RPI5_AARCH64", content)
+        self.assertIn(commit, prepare)
+        self.assertIn(archive_sha, prepare)
+        self.assertIn("sha256sum --check --strict", prepare)
+        self.assertIn(f"--artifact {nav_asset}:data", prepare)
+        self.assertIn("EXECUTION_AUTHORIZED=false", prepare)
+        self.assertIn(rollback, activate)
+        self.assertIn("ROLLBACK_DRILL=PASS", activate)
+        self.assertIn("restore_original_nav", activate)
+        self.assertIn("mv -Tf", activate)
+        self.assertIn("ExecMainStatus", activate)
+        self.assertIn("NRestarts", activate)
+        self.assertIn("BLACKBOX_NAV_IMMUTABLE_ACTIVATION=PASS", activate)
+        self.assertIn("BLACKBOX_NAV_REBOOT_ACCEPTANCE=PASS", reboot)
+        self.assertIn("NAV drop-in is not bound to the active release", reboot)
+
     def test_mfd_does_not_write_logs_below_immutable_release(self):
         content = (self.units / "efis-mfd-release-v1.override.conf").read_text(encoding="utf-8")
         self.assertIn("StandardOutput=journal", content)

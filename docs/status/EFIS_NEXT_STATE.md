@@ -881,3 +881,27 @@ nulla. Restano fuori dal perimetro ARM64, nodi di bordo e approvazione al volo.
 La futura migrazione dell'immagine `ubuntu-latest` andra' sorvegliata come
 rischio infrastrutturale, non aggirata rendendo nuovamente facoltativo il gate.
 Evidenza: `evidence/core-sanitizer-baseline-20260930/README.md` (`CORE-001`).
+
+## 41. Preparazione release immutabile Blackbox NAV — 2026-09-30
+
+La policy fail-closed `bbxnav`, già verificata sul nodo reale ma ancora esterna
+alla release, è stata integrata nel contratto della candidata
+`blackbox-46e56a9-nav-supervision-v1`. Il manifesto copre broker e drop-in NAV;
+la futura attivazione collega systemd all'asset della release corrente e prova
+rollback congiunto di binario e policy.
+
+**Implementato:** preparazione ARM64 fissata a commit e SHA-256, manifesto a
+due artefatti, attivazione con backup del drop-in precedente, switch atomico,
+exit 2 senza restart, rollback reale e verifica post-reboot. La preparazione
+resta non mutante e termina con `EXECUTION_AUTHORIZED=false`.
+
+**Verificato solo software:** validazione della policy, test di supervisione,
+contratto statico dei tre script e sintassi shell. **Verificato su hardware
+reale:** nulla in questo incremento. La release attiva resta
+`blackbox-7655799-primary-v1` con il drop-in esterno già verificato.
+
+**Aperto:** build ARM64, attivazione, rollback e reboot acceptance richiedono
+una finestra separata; ricevitori, RF, decoder e annunci display restano non
+qualificati. `NAV-003` e `BBX-003` restano `PARTIAL`; il prodotto resta
+DEVELOPMENT/NON-CERT e `flight_approval=false`. Evidenza:
+`evidence/blackbox-nav-immutable-preparation-20260930/README.md`.
