@@ -87,6 +87,9 @@ class ReleaseSupervisionAssetTests(unittest.TestCase):
             "/home/efis/.local/state/efis-next/recorder.status",
             recorder,
         )
+        self.assertIn("--max-storage-bytes 25769803776", recorder)
+        self.assertIn("--min-free-bytes 12884901888", recorder)
+        self.assertIn("--minimum-completed-segments 120", recorder)
 
     def test_pfd_recorder_rollout_assets_are_guarded_and_dual_role(self):
         scripts = ROOT / "deploy" / "scripts"

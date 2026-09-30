@@ -1,0 +1,281 @@
+{
+  "captured_utc": "2026-09-29T15:02:04Z",
+  "command_evidence": {
+    "addresses": {
+      "argv": [
+        "hostname",
+        "-I"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "192.168.1.89 fd00::5051:ac09:b7d8:3eea"
+    },
+    "architecture": {
+      "argv": [
+        "uname",
+        "-m"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "aarch64"
+    },
+    "filesystems": {
+      "argv": [
+        "df",
+        "-PT"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Filesystem     Type     1024-blocks    Used Available Capacity Mounted on\nudev           devtmpfs     3730508       0   3730508       0% /dev\ntmpfs          tmpfs        1601688    9440   1592248       1% /run\n/dev/mmcblk0p2 ext4        54842132 5116624  46919768      10% /\ntmpfs          tmpfs        4004212     216   4003996       1% /dev/shm\ntmpfs          tmpfs           5120      16      5104       1% /run/lock\n/dev/mmcblk0p1 vfat          522230   79664    442566      16% /boot/firmware\ntmpfs          tmpfs         800840      44    800796       1% /run/user/1000"
+    },
+    "gpio_i2c": {
+      "argv": [
+        "pinctrl",
+        "get",
+        "2-3"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": " 2: a0    pu | hi // GPIO2 = SDA1\n 3: a0    pu | hi // GPIO3 = SCL1"
+    },
+    "hostname": {
+      "argv": [
+        "hostname"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "ems-sensor"
+    },
+    "kernel": {
+      "argv": [
+        "uname",
+        "-a"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Linux ems-sensor 6.12.109+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.12.109-1+rpt1 (2026-09-11) aarch64 GNU/Linux"
+    },
+    "network": {
+      "argv": [
+        "ip",
+        "-j",
+        "address"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"127.0.0.1\",\"prefixlen\":8,\"scope\":\"host\",\"label\":\"lo\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"::1\",\"prefixlen\":128,\"scope\":\"host\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":2,\"ifname\":\"eth0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"88:a2:9e:b6:59:ad\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":3,\"ifname\":\"wlan0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"operstate\":\"UP\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"88:a2:9e:b6:59:ae\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"192.168.1.89\",\"prefixlen\":24,\"broadcast\":\"192.168.1.255\",\"scope\":\"global\",\"dynamic\":true,\"noprefixroute\":true,\"label\":\"wlan0\",\"valid_life_time\":863824,\"preferred_life_time\":863824},{\"family\":\"inet6\",\"local\":\"fd00::5051:ac09:b7d8:3eea\",\"prefixlen\":64,\"scope\":\"global\",\"dynamic\":true,\"noprefixroute\":true,\"valid_life_time\":7180,\"preferred_life_time\":3580},{\"family\":\"inet6\",\"local\":\"fe80::4b2:45ee:f1a:1e33\",\"prefixlen\":64,\"scope\":\"link\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]"
+    },
+    "storage": {
+      "argv": [
+        "lsblk",
+        "-J",
+        "-o",
+        "NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n   \"blockdevices\": [\n      {\n         \"name\": \"mmcblk0\",\n         \"size\": \"53.7G\",\n         \"type\": \"disk\",\n         \"fstype\": null,\n         \"mountpoints\": [\n             null\n         ],\n         \"model\": null,\n         \"children\": [\n            {\n               \"name\": \"mmcblk0p1\",\n               \"size\": \"512M\",\n               \"type\": \"part\",\n               \"fstype\": \"vfat\",\n               \"mountpoints\": [\n                   \"/boot/firmware\"\n               ],\n               \"model\": null\n            },{\n               \"name\": \"mmcblk0p2\",\n               \"size\": \"53.2G\",\n               \"type\": \"part\",\n               \"fstype\": \"ext4\",\n               \"mountpoints\": [\n                   \"/\"\n               ],\n               \"model\": null\n            }\n         ]\n      }\n   ]\n}"
+    },
+    "temperature": {
+      "argv": [
+        "vcgencmd",
+        "measure_temp"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "temp=38.4'C"
+    },
+    "throttled": {
+      "argv": [
+        "vcgencmd",
+        "get_throttled"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "throttled=0x0"
+    }
+  },
+  "controls": [
+    {
+      "id": "G1-C10-01",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-02",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-03",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-04",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-05",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-06",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-07",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-08",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-09",
+      "status": "PASS"
+    },
+    {
+      "id": "G1-C10-10",
+      "status": "PASS"
+    }
+  ],
+  "health": {
+    "temperature": {
+      "argv": [
+        "vcgencmd",
+        "measure_temp"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "temp=38.4'C"
+    },
+    "throttled": {
+      "argv": [
+        "vcgencmd",
+        "get_throttled"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "throttled=0x0"
+    }
+  },
+  "i2c": {
+    "address_probe_performed": false,
+    "boot_config_path": "/boot/firmware/config.txt",
+    "boot_config_sha256": "5f01521f9a0f34ea16f87f86baab5c0bae0a2a3f962b39a634f0fe376ec4253f",
+    "controllers": [
+      {
+        "id": "i2c-1",
+        "name": "bcm2835 (i2c@7e804000)",
+        "of_node": "/sys/firmware/devicetree/base/soc/i2c@7e804000"
+      },
+      {
+        "id": "i2c-20",
+        "name": "fef04500.i2c",
+        "of_node": "/sys/firmware/devicetree/base/soc/i2c@7ef04500"
+      },
+      {
+        "id": "i2c-21",
+        "name": "fef09500.i2c",
+        "of_node": "/sys/firmware/devicetree/base/soc/i2c@7ef09500"
+      }
+    ],
+    "device_nodes": [
+      "/dev/i2c-1",
+      "/dev/i2c-20",
+      "/dev/i2c-21"
+    ],
+    "gpio": {
+      "argv": [
+        "pinctrl",
+        "get",
+        "2-3"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": " 2: a0    pu | hi // GPIO2 = SDA1\n 3: a0    pu | hi // GPIO3 = SCL1"
+    },
+    "i2c_arm_enabled": true,
+    "vendor_read_performed": false
+  },
+  "mode": "READ_ONLY_CONTROLLER_ENUMERATION",
+  "network": {
+    "argv": [
+      "ip",
+      "-j",
+      "address"
+    ],
+    "available": true,
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"127.0.0.1\",\"prefixlen\":8,\"scope\":\"host\",\"label\":\"lo\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"::1\",\"prefixlen\":128,\"scope\":\"host\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":2,\"ifname\":\"eth0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"88:a2:9e:b6:59:ad\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":3,\"ifname\":\"wlan0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"operstate\":\"UP\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"88:a2:9e:b6:59:ae\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"192.168.1.89\",\"prefixlen\":24,\"broadcast\":\"192.168.1.255\",\"scope\":\"global\",\"dynamic\":true,\"noprefixroute\":true,\"label\":\"wlan0\",\"valid_life_time\":863824,\"preferred_life_time\":863824},{\"family\":\"inet6\",\"local\":\"fd00::5051:ac09:b7d8:3eea\",\"prefixlen\":64,\"scope\":\"global\",\"dynamic\":true,\"noprefixroute\":true,\"valid_life_time\":7180,\"preferred_life_time\":3580},{\"family\":\"inet6\",\"local\":\"fe80::4b2:45ee:f1a:1e33\",\"prefixlen\":64,\"scope\":\"link\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]"
+  },
+  "node": {
+    "addresses": [
+      "192.168.1.89",
+      "fd00::5051:ac09:b7d8:3eea"
+    ],
+    "architecture": "aarch64",
+    "hostname": "ems-sensor",
+    "kernel": "Linux ems-sensor 6.12.109+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.12.109-1+rpt1 (2026-09-11) aarch64 GNU/Linux",
+    "model": "Raspberry Pi 4 Model B Rev 1.5",
+    "os_release": {
+      "BUG_REPORT_URL": "https://bugs.debian.org/",
+      "HOME_URL": "https://www.debian.org/",
+      "ID": "debian",
+      "NAME": "Debian GNU/Linux",
+      "PRETTY_NAME": "Debian GNU/Linux 12 (bookworm)",
+      "SUPPORT_URL": "https://www.debian.org/support",
+      "VERSION": "12 (bookworm)",
+      "VERSION_CODENAME": "bookworm",
+      "VERSION_ID": "12"
+    }
+  },
+  "resources": {
+    "filesystems": {
+      "argv": [
+        "df",
+        "-PT"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Filesystem     Type     1024-blocks    Used Available Capacity Mounted on\nudev           devtmpfs     3730508       0   3730508       0% /dev\ntmpfs          tmpfs        1601688    9440   1592248       1% /run\n/dev/mmcblk0p2 ext4        54842132 5116624  46919768      10% /\ntmpfs          tmpfs        4004212     216   4003996       1% /dev/shm\ntmpfs          tmpfs           5120      16      5104       1% /run/lock\n/dev/mmcblk0p1 vfat          522230   79664    442566      16% /boot/firmware\ntmpfs          tmpfs         800840      44    800796       1% /run/user/1000"
+    },
+    "meminfo": "MemTotal:        8008424 kB\nMemFree:         7308980 kB\nMemAvailable:    7574752 kB\nBuffers:           26712 kB\nCached:           327012 kB\nSwapCached:            0 kB\nActive:           463116 kB\nInactive:          65588 kB\nActive(anon):     204224 kB\nInactive(anon):        0 kB\nActive(file):     258892 kB\nInactive(file):    65588 kB\nUnevictable:        9560 kB\nMlocked:               0 kB\nSwapTotal:        524284 kB\nSwapFree:         524284 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:                24 kB\nWriteback:             0 kB\nAnonPages:        185016 kB\nMapped:           161908 kB\nShmem:             28832 kB\nKReclaimable:      21168 kB\nSlab:              50448 kB\nSReclaimable:      21168 kB\nSUnreclaim:        29280 kB\nKernelStack:        4720 kB\nPageTables:         5600 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:     4528496 kB\nCommitted_AS:    1193896 kB\nVmallocTotal:   261087232 kB\nVmallocUsed:       33728 kB\nVmallocChunk:          0 kB\nPercpu:              768 kB\nCmaTotal:         524288 kB\nCmaFree:          505064 kB",
+    "storage": {
+      "argv": [
+        "lsblk",
+        "-J",
+        "-o",
+        "NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL"
+      ],
+      "available": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n   \"blockdevices\": [\n      {\n         \"name\": \"mmcblk0\",\n         \"size\": \"53.7G\",\n         \"type\": \"disk\",\n         \"fstype\": null,\n         \"mountpoints\": [\n             null\n         ],\n         \"model\": null,\n         \"children\": [\n            {\n               \"name\": \"mmcblk0p1\",\n               \"size\": \"512M\",\n               \"type\": \"part\",\n               \"fstype\": \"vfat\",\n               \"mountpoints\": [\n                   \"/boot/firmware\"\n               ],\n               \"model\": null\n            },{\n               \"name\": \"mmcblk0p2\",\n               \"size\": \"53.2G\",\n               \"type\": \"part\",\n               \"fstype\": \"ext4\",\n               \"mountpoints\": [\n                   \"/\"\n               ],\n               \"model\": null\n            }\n         ]\n      }\n   ]\n}"
+    }
+  },
+  "revision": "1.0.0",
+  "safety": {
+    "boards_verified": 0,
+    "decision": "NO_GO_PENDING_PHYSICAL_BOARD_INVENTORY",
+    "flight_approval": false,
+    "forbidden_operations_performed": [],
+    "shell_used": false,
+    "sudo_used": false,
+    "write_command_used": false
+  },
+  "schema": "avionix-next.g1-node-capture.v1"
+}

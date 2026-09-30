@@ -82,6 +82,8 @@ jobs:
           python -m unittest tests.test_release_supervision_assets -v
           python -m unittest tests.test_release_preparation -v
           python -m unittest tests.test_paired_display_release -v
+          python tools/navigation/validate_bbxnav_supervision.py
+          python -m unittest tests.test_bbxnav_supervision -v
 
       - name: Validate AVIONIX data and network contracts
         run: |

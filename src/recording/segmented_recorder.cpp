@@ -2,10 +2,14 @@
 
 #include "efis/recording/flight_record.hpp"
 
+#include <algorithm>
 #include <chrono>
+#include <limits>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <utility>
+#include <vector>
 
 namespace efis::recording {
 
@@ -17,6 +21,84 @@ SegmentedRecorder::SegmentedRecorder(std::filesystem::path directory,
     }
     std::filesystem::create_directories(directory_);
     recover_partials();
+    enforce_retention();
+}
+
+void SegmentedRecorder::enforce_retention() {
+    struct CompletedSegment final {
+        std::filesystem::path path;
+        std::filesystem::file_time_type modified;
+        std::uintmax_t bytes{};
+    };
+
+    std::vector<CompletedSegment> segments;
+    std::uintmax_t total_bytes{};
+    std::error_code error;
+    for (const auto& entry : std::filesystem::directory_iterator(directory_)) {
+        if (entry.is_symlink() || !entry.is_regular_file()) continue;
+        const auto name = entry.path().filename().string();
+        if (!name.starts_with("flight-") || !name.ends_with(".csv")) continue;
+        const auto bytes = entry.file_size(error);
+        if (error) fail("inspect completed segment size: " + error.message());
+        const auto modified = entry.last_write_time(error);
+        if (error) fail("inspect completed segment timestamp: " + error.message());
+        if (total_bytes > std::numeric_limits<std::uintmax_t>::max() - bytes) {
+            fail("completed segment byte total overflow");
+        }
+        segments.push_back({entry.path(), modified, bytes});
+        total_bytes += bytes;
+    }
+    std::ranges::sort(segments, [](const auto& left, const auto& right) {
+        if (left.modified != right.modified) return left.modified < right.modified;
+        return left.path.filename() < right.path.filename();
+    });
+
+    const auto space = std::filesystem::space(directory_, error);
+    if (error) fail("inspect recorder filesystem: " + error.message());
+    completed_segments_ = segments.size();
+    completed_bytes_ = total_bytes;
+    available_bytes_ = space.available;
+    if (!retention_enabled()) return;
+
+    const auto bytes_over_quota = settings_.max_completed_bytes != 0 &&
+            total_bytes > settings_.max_completed_bytes
+        ? total_bytes - settings_.max_completed_bytes : 0;
+    const auto bytes_below_reserve = settings_.min_free_bytes != 0 &&
+            space.available < settings_.min_free_bytes
+        ? settings_.min_free_bytes - space.available : 0;
+    const auto required = std::max(bytes_over_quota, bytes_below_reserve);
+    if (required == 0) return;
+
+    const auto removable_count = segments.size() > settings_.minimum_completed_segments
+        ? segments.size() - settings_.minimum_completed_segments : 0;
+    std::uintmax_t reclaimable{};
+    for (std::size_t index = 0; index < removable_count; ++index) {
+        if (reclaimable > std::numeric_limits<std::uintmax_t>::max() -
+                              segments[index].bytes) {
+            fail("retention reclaimable byte total overflow");
+        }
+        reclaimable += segments[index].bytes;
+        if (reclaimable >= required) break;
+    }
+    if (reclaimable < required) {
+        fail("retention target cannot be met without deleting protected recent segments");
+    }
+
+    std::uintmax_t reclaimed{};
+    std::size_t removed{};
+    while (removed < removable_count && reclaimed < required) {
+        std::filesystem::remove(segments[removed].path, error);
+        if (error) fail("remove expired completed segment: " + error.message());
+        reclaimed += segments[removed].bytes;
+        ++removed;
+    }
+    pruned_segments_ += removed;
+    pruned_bytes_ += reclaimed;
+    completed_segments_ -= removed;
+    completed_bytes_ -= reclaimed;
+    const auto updated_space = std::filesystem::space(directory_, error);
+    if (error) fail("inspect recorder filesystem after retention: " + error.message());
+    available_bytes_ = updated_space.available;
 }
 
 SegmentedRecorder::~SegmentedRecorder() {
@@ -114,6 +196,7 @@ void SegmentedRecorder::close_segment() {
     std::filesystem::rename(partial_path_, final_path, error);
     if (error) fail("publish completed segment: " + error.message());
     partial_path_.clear();
+    enforce_retention();
 }
 
 void SegmentedRecorder::close() { close_segment(); }
