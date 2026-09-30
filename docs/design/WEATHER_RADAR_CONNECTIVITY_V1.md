@@ -26,7 +26,11 @@ set of aligned tiles intersecting the current viewport.
 
 The production service will own downloads outside the render loop, retain the last valid frame
 atomically, enforce age thresholds (CURRENT <= 10 min, STALE 11-20 min, EXPIRED > 20 min), and
-publish a small immutable snapshot to every display.
+publish a small immutable snapshot to every display. The edge text cache now applies the same
+thresholds to METAR/TAF, derives age from the cache record's `fetched_utc` rather than mutable
+file mtime, rejects future timestamps as `CLOCK_SKEW`, rejects malformed schema and confines
+station identifiers to four ASCII alphanumeric characters. Stale data may remain visible only
+with its state and age; weather is always marked ineligible for safety authority.
 
 ## Hotspot policy
 

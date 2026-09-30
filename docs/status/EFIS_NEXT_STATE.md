@@ -911,3 +911,23 @@ una finestra separata; ricevitori, RF, decoder e annunci display restano non
 qualificati. `NAV-003` e `BBX-003` restano `PARTIAL`; il prodotto resta
 DEVELOPMENT/NON-CERT e `flight_approval=false`. Evidenza:
 `evidence/blackbox-nav-immutable-preparation-20260930/README.md`.
+
+## 42. Hardening offline cache meteo edge — 2026-09-30
+
+Il servizio edge METAR/TAF non usa più il `mtime` modificabile del file come
+fonte primaria di freshness e non considera più implicitamente corrente un
+timestamp futuro. Il record deve avere schema V1, payload oggetto e
+`fetched_utc` timezone-aware; gli ICAO sono confinati a quattro caratteri
+alfanumerici ASCII.
+
+**Implementato:** stati deterministici `CURRENT` (<=10 min), `STALE` (11–20
+min), `EXPIRED` (>20 min), `CLOCK_SKEW`, `NO_REPORT`, `NO_DATA` e `INVALID`;
+età, provenienza, soglie e visibilità esplicite; `safety_use_allowed=false` in
+ogni stato; status V2 aggregato per stazione. Cache scadute o con clock skew
+non sono presentabili come osservazioni correnti.
+
+**Verificato solo software:** test locali per confini 600/601/1200/1201 s,
+schema/payload/timestamp corrotti, futuro, assenza report, path traversal ICAO,
+riepilogo stati e resolver pinning. **Verificato su hardware reale:** nulla.
+Provider, licenze, TLS/CA, timer, payload reali, deployment ARM64 e consumer
+RPi5 restano aperti; `BBX-004` e `WX-001` restano `PARTIAL`.
