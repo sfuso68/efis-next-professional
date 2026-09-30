@@ -931,3 +931,15 @@ schema/payload/timestamp corrotti, futuro, assenza report, path traversal ICAO,
 riepilogo stati e resolver pinning. **Verificato su hardware reale:** nulla.
 Provider, licenze, TLS/CA, timer, payload reali, deployment ARM64 e consumer
 RPi5 restano aperti; `BBX-004` e `WX-001` restano `PARTIAL`.
+
+## 43. Allowlist fail-closed overlay radar — 2026-09-30
+
+La proprietà QML `available` non accetta più implicitamente ogni stato diverso
+da `EXPIRED`: richiede ora un'immagine `Ready` e uno stato esplicitamente
+ammesso tra `CURRENT`, `STALE` e `SIMULATED`. Stati ignoti, `NO DATA`, errori e
+future estensioni non riconosciute restano quindi non disponibili per default.
+
+**Verificato solo software:** il validatore responsive controlla proprietà,
+tre stati ammessi e uso dell'allowlist; la suite locale del contratto passa.
+**Verificato su hardware reale:** nulla. Provider, georeferenziazione, cache,
+clock skew e resa RPi5 restano aperti; `WX-002` resta `PARTIAL`.

@@ -104,6 +104,11 @@ def validate_repository(root: Path = ROOT) -> list[str]:
     weather_markers = {
         "property bool compactLayout: false": "compact property",
         "property bool radarEnabled: true": "non-shadowing radar state",
+        "readonly property bool trustedDisplayState:": "fail-closed weather state allowlist",
+        "root.weatherProvider.radarState === \"CURRENT\"": "current weather state",
+        "root.weatherProvider.radarState === \"STALE\"": "stale weather state",
+        "root.weatherProvider.radarState === \"SIMULATED\"": "simulation weather state",
+        "radar.status === Image.Ready && root.trustedDisplayState": "fail-closed image availability",
         "!root.available && root.compactLayout ? \"NO DATA • CHECK HOTSPOT\"": "integrated no-data",
         "!root.loading && !root.compactLayout": "separate banner guard",
         "topMargin: 6*root.uiScale": "regular banner gap",
