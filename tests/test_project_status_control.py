@@ -61,10 +61,25 @@ class ProjectStatusControlTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 2, path)
 
     def test_ci_runs_control_regressions_on_safety_branches(self):
-        workflow = (ROOT / ".github/workflows/efis-project-control.yml").read_text(
+        project_control = (
+            ROOT / ".github/workflows/efis-project-control.yml").read_text(
+                encoding="utf-8")
+        core_ci = (ROOT / ".github/workflows/efis-core-ci.yml").read_text(
             encoding="utf-8")
-        self.assertIn("'safety/**'", workflow)
-        self.assertIn("tests.test_project_status_control", workflow)
+        self.assertIn("'safety/**'", project_control)
+        self.assertIn("tests.test_project_status_control", project_control)
+        self.assertIn("'ci/**'", project_control)
+        self.assertIn("'ci/**'", core_ci)
+
+    def test_core_sanitizer_job_is_blocking(self):
+        workflow = (ROOT / ".github/workflows/efis-core-ci.yml").read_text(
+            encoding="utf-8")
+        marker = "  linux-sanitizers:\n"
+        self.assertIn(marker, workflow)
+        sanitizer_job = workflow.split(marker, 1)[1]
+        self.assertNotIn("continue-on-error:", sanitizer_job)
+        self.assertIn("-fsanitize=address,undefined", sanitizer_job)
+        self.assertIn("ctest --test-dir build/sanitizers", sanitizer_job)
 
 
 if __name__ == "__main__":

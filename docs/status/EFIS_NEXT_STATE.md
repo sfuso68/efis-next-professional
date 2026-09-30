@@ -2,7 +2,7 @@
 
 Aggiornamento: 2026-09-30
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `origin/main` `7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897`
+Baseline integrata esaminata: `origin/main` `3c7bb4d5495e1ce9f582dd185be48b9563993e48`
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -109,6 +109,11 @@ Il dettaglio è nel registro canonico
   EMS risultano integrati nella baseline corrente. Il gate Linux/Qt resta
   candidato nel branch dedicato fino a PR revisionata e CI finale verde; non è
   deployment né acceptance hardware (`PRJ-003`, `PRJ-004`, `EMS-002`).
+- Il job Linux ASan/UBSan ha concluso con successo sei run consecutivi su
+  `main` (#174, #177, #180, #189, #199 e #202). La tolleranza
+  `continue-on-error` e' stata rimossa: una regressione rilevata dai sanitizer
+  blocca ora la CI. Questa e' una verifica software x86-64 e non equivale a
+  test ARM64 o hardware (`CORE-001`).
 
 ## 5. Ultime verifiche hardware che restano valide
 
@@ -859,3 +864,20 @@ al PFD non e' disponibile; nessuna build ARM64, attivazione, modifica runtime,
 prova meteo o reboot acceptance e' stata eseguita. `PFD-001` resta `PARTIAL`,
 la release attiva resta `pfdrec-7051a47-retention-v1` e il prodotto resta
 DEVELOPMENT/NON-CERT con `flight_approval=false`.
+
+## 40. Gate sanitizer Linux bloccante — 2026-09-30
+
+La baseline inizialmente non bloccante e' stata revisionata sui sei run
+consecutivi di `main` #174, #177, #180, #189, #199 e #202. In ogni run il job
+`linux-sanitizers` ha completato con successo la configurazione Debug, la
+compilazione e CTest con AddressSanitizer e UndefinedBehaviorSanitizer.
+
+**Implementato:** rimosso `continue-on-error` dal job. ASan/UBSan diventa un
+gate obbligatorio per push e pull request senza modificare flag, test o timeout.
+
+**Verificato solo software:** evidenza GitHub Actions x86-64 dei sei run e
+validazione locale della sintassi workflow. **Verificato su hardware reale:**
+nulla. Restano fuori dal perimetro ARM64, nodi di bordo e approvazione al volo.
+La futura migrazione dell'immagine `ubuntu-latest` andra' sorvegliata come
+rischio infrastrutturale, non aggirata rendendo nuovamente facoltativo il gate.
+Evidenza: `evidence/core-sanitizer-baseline-20260930/README.md` (`CORE-001`).
