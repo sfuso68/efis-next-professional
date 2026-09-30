@@ -48,8 +48,17 @@ build locale.
 La modifica non e' stata compilata ne' distribuita su ARM64 e non e' stata
 eseguita sul PFD reale. Non chiude quindi `PFD-001`, non dimostra frame-rate,
 termica o assenza di stall sul pannello e non modifica la release attiva
-`pfdrec-7051a47-retention-v1`. Dopo review e merge servono build ARM64,
-release immutabile/rollback e una sessione reale con meteo SIM attivo e
-monitoraggio degli eventi `callback_stall`.
+`pfdrec-7051a47-retention-v1`.
+
+Il merge `3c7bb4d5495e1ce9f582dd185be48b9563993e48` dispone ora di un pacchetto
+di rollout fail-closed in `deploy/scripts/prepare_pfd_weather_async_release.sh`,
+`activate_pfd_weather_async_release.sh` e
+`verify_pfd_weather_async_reboot.sh`. La candidata e'
+`pfdrec-3c7bb4d-weather-async-v1`, con rollback obbligatorio sulla release
+attiva. Il pacchetto richiede build/test nativi ARM64, rollback reale,
+iniezione di 400 ms nel writer e assenza di
+`callback_stall callback=weather_simulation`. Questa preparazione e' stata
+verificata soltanto staticamente/software: nessuno dei tre script e' stato
+eseguito sul PFD.
 
 Il prodotto resta **DEVELOPMENT/NON-CERT** con `flight_approval=false`.
