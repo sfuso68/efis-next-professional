@@ -31,6 +31,10 @@ invariati:
 - `-fsanitize=address,undefined` e `-fno-sanitize-recover=all`;
 - CTest con timeout di 90 secondi.
 
+I trigger `push` di `EFIS Core CI` e `EFIS Project Control` includono inoltre
+`ci/**`, così un branch che cambia la policy CI viene verificato prima del
+merge e non dipende soltanto dall'evento della pull request.
+
 ## Limiti dell'evidenza
 
 - piattaforma verificata: runner GitHub Actions Linux x86-64;
