@@ -988,9 +988,14 @@ risposta VMI tardiva non possa sostituirlo.
 
 L'endpoint radar sostitutivo è disponibile esclusivamente compilando
 `EFIS_WEATHER_TEST_HOOKS`; il prodotto continua a costruire il servizio con
-l'endpoint DPC HTTPS fisso. Il target Qt/MSVC compila e il contratto responsive
-resta PASS. L'eseguibile appena collegato non è stato avviato sulla workstation
-perché il criterio di controllo applicazioni Windows lo ha bloccato: il test
-end-to-end resta quindi `CI_REQUIRED`, non `PASS`, fino all'esecuzione Linux.
-Nessuna prova ARM64, provider reale, georeferenziazione o acceptance display è
-stata eseguita; `WX-002` rimane `PARTIAL`.
+l'endpoint DPC HTTPS fisso. Il workflow Qt compila ed esegue ora esplicitamente
+`efis_weather_service_tests` come gate. Il primo run ha rilevato una dipendenza
+implicita dalle impostazioni del prodotto; il test è stato isolato impostando
+esplicitamente `VMI`. Il run pull request Linux `36786267067` è quindi PASS per
+`linux-qt-golden`, `linux-core` e `linux-sanitizers`, includendo l'inversione
+controllata delle risposte VMI/SRI.
+
+**Verificato solo software:** build Qt/MSVC e test end-to-end Linux CI. **Verificato
+su hardware reale:** nulla. Provider reale, validazione del payload,
+georeferenziazione, cache persistente e resa RPi5 restano aperti; `WX-002`
+rimane `PARTIAL`.
