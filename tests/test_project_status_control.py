@@ -66,6 +66,16 @@ class ProjectStatusControlTests(unittest.TestCase):
         self.assertIn("'safety/**'", workflow)
         self.assertIn("tests.test_project_status_control", workflow)
 
+    def test_core_sanitizer_job_is_blocking(self):
+        workflow = (ROOT / ".github/workflows/efis-core-ci.yml").read_text(
+            encoding="utf-8")
+        marker = "  linux-sanitizers:\n"
+        self.assertIn(marker, workflow)
+        sanitizer_job = workflow.split(marker, 1)[1]
+        self.assertNotIn("continue-on-error:", sanitizer_job)
+        self.assertIn("-fsanitize=address,undefined", sanitizer_job)
+        self.assertIn("ctest --test-dir build/sanitizers", sanitizer_job)
+
 
 if __name__ == "__main__":
     unittest.main()
