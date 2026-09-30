@@ -10,9 +10,12 @@
 #include <csignal>
 #include <filesystem>
 #include <iostream>
+#include <limits>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 
 namespace {
 
@@ -32,7 +35,26 @@ struct Options final {
     // Registrazione MAVLink da rileggere. Quando e' vuota si registra dal
     // simulatore, che resta un ripiego dichiarato e non un dato reale.
     std::filesystem::path replay;
+    efis::recording::RecorderSettings recorder;
 };
+
+std::uint64_t unsigned_option(const std::string& name, const char* value) {
+    const std::string text{value};
+    if (text.empty() || text.front() == '-') {
+        throw std::invalid_argument(name + " requires an unsigned integer");
+    }
+    std::size_t parsed{};
+    std::uint64_t result{};
+    try {
+        result = std::stoull(text, &parsed);
+    } catch (const std::exception&) {
+        throw std::invalid_argument(name + " requires an unsigned integer");
+    }
+    if (parsed != text.size()) {
+        throw std::invalid_argument(name + " requires an unsigned integer");
+    }
+    return result;
+}
 
 Options parse(int argc, char** argv) {
     Options options;
@@ -41,6 +63,20 @@ Options parse(int argc, char** argv) {
         const std::string argument{argv[index]};
         if (argument == "--replay" && index + 1 < argc) {
             options.replay = argv[++index];
+        } else if (argument == "--max-storage-bytes" && index + 1 < argc) {
+            options.recorder.max_completed_bytes =
+                unsigned_option(argument, argv[++index]);
+        } else if (argument == "--min-free-bytes" && index + 1 < argc) {
+            options.recorder.min_free_bytes = unsigned_option(argument, argv[++index]);
+        } else if (argument == "--minimum-completed-segments" && index + 1 < argc) {
+            const auto value = unsigned_option(argument, argv[++index]);
+            if (value > std::numeric_limits<std::size_t>::max()) {
+                throw std::invalid_argument(argument + " exceeds platform size");
+            }
+            options.recorder.minimum_completed_segments =
+                static_cast<std::size_t>(value);
+        } else if (argument.starts_with("--")) {
+            throw std::invalid_argument("unknown or incomplete recorder option: " + argument);
         } else if (positional == 0) {
             options.output = argument;
             ++positional;
@@ -52,6 +88,25 @@ Options parse(int argc, char** argv) {
     return options;
 }
 
+efis::recording::RecorderStatus status_for(
+    const efis::recording::SegmentedRecorder& recorder,
+    std::string state,
+    std::string segment = {}) {
+    return {
+        .state = std::move(state),
+        .updated_wall_ms = wall_milliseconds(),
+        .records = recorder.records_written(),
+        .segment = std::move(segment),
+        .write_failed = !recorder.healthy(),
+        .last_error = recorder.last_error(),
+        .retention_enabled = recorder.retention_enabled(),
+        .completed_segments = recorder.completed_segments(),
+        .completed_bytes = recorder.completed_bytes(),
+        .available_bytes = recorder.available_bytes(),
+        .pruned_segments = recorder.pruned_segments(),
+        .pruned_bytes = recorder.pruned_bytes()};
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -59,12 +114,13 @@ int main(int argc, char** argv) {
     std::signal(SIGINT, stop);
     std::signal(SIGTERM, stop);
 
-    const Options options = parse(argc, argv);
+    Options options;
     std::unique_ptr<efis::recording::SegmentedRecorder> recorder;
     std::uint64_t count{};
     try {
+        options = parse(argc, argv);
         recorder = std::make_unique<efis::recording::SegmentedRecorder>(
-            options.output);
+            options.output, options.recorder);
 
         const auto started = efis::MonoClock::now();
         auto next = started;
@@ -89,11 +145,10 @@ int main(int argc, char** argv) {
             session.step(source, now);
             ++count;
             if (count == 1 || count % 50 == 0) {
-                efis::recording::write_recorder_status(options.status, {
-                    .state = "RECORDING",
-                    .updated_wall_ms = wall_milliseconds(),
-                    .records = recorder->records_written(),
-                    .segment = recorder->current_segment_name()});
+                efis::recording::write_recorder_status(
+                    options.status,
+                    status_for(*recorder, "RECORDING",
+                               recorder->current_segment_name()));
             }
             next += 20ms;
             std::this_thread::sleep_until(next);
@@ -121,11 +176,10 @@ int main(int argc, char** argv) {
             recorder->append(model.normalize(provider.sample(now, elapsed), now));
             ++count;
             if (count == 1 || count % 50 == 0) {
-                efis::recording::write_recorder_status(options.status, {
-                    .state = "RECORDING",
-                    .updated_wall_ms = wall_milliseconds(),
-                    .records = recorder->records_written(),
-                    .segment = recorder->current_segment_name()});
+                efis::recording::write_recorder_status(
+                    options.status,
+                    status_for(*recorder, "RECORDING",
+                               recorder->current_segment_name()));
             }
             next += 20ms;
             std::this_thread::sleep_until(next);
@@ -133,9 +187,8 @@ int main(int argc, char** argv) {
     }
 
         recorder->close();
-        efis::recording::write_recorder_status(options.status, {
-            .state = "STOPPED", .updated_wall_ms = wall_milliseconds(),
-            .records = recorder->records_written(), .segment = {}});
+        efis::recording::write_recorder_status(
+            options.status, status_for(*recorder, "STOPPED"));
         std::cout << "event=recorder_stop records=" << recorder->records_written()
                   << '\n';
         return 0;
@@ -143,11 +196,20 @@ int main(int argc, char** argv) {
         const auto records = recorder ? recorder->records_written() : 0;
         const auto segment = recorder ? recorder->current_segment_name() : std::string{};
         try {
-            efis::recording::write_recorder_status(options.status, {
+            auto status = efis::recording::RecorderStatus{
                 .state = "ERROR", .updated_wall_ms = wall_milliseconds(),
                 .records = records, .segment = segment,
                 .write_failed = true,
-                .last_error = error.what()});
+                .last_error = error.what()};
+            if (recorder) {
+                status.retention_enabled = recorder->retention_enabled();
+                status.completed_segments = recorder->completed_segments();
+                status.completed_bytes = recorder->completed_bytes();
+                status.available_bytes = recorder->available_bytes();
+                status.pruned_segments = recorder->pruned_segments();
+                status.pruned_bytes = recorder->pruned_bytes();
+            }
+            efis::recording::write_recorder_status(options.status, status);
         } catch (const std::exception& status_error) {
             std::cerr << "event=recorder_status_failed reason=\""
                       << status_error.what() << "\"\n";

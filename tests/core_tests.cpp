@@ -426,6 +426,65 @@ int main() {
     require(std::filesystem::exists(test_directory / "interrupted.recovered.csv"),
             "recovered segment must be preserved with an explicit suffix");
 
+    const auto retention_directory = test_directory / "retention";
+    std::filesystem::create_directories(retention_directory);
+    const auto retention_epoch = std::filesystem::file_time_type::clock::now();
+    const auto old_segment = retention_directory / "flight-old.csv";
+    const auto middle_segment = retention_directory / "flight-middle.csv";
+    const auto recent_segment = retention_directory / "flight-recent.csv";
+    const auto unrelated_file = retention_directory / "operator-notes.csv";
+    for (const auto& path : {old_segment, middle_segment, recent_segment}) {
+        std::ofstream output{path};
+        output << std::string(10, 'x');
+    }
+    {
+        std::ofstream output{unrelated_file};
+        output << std::string(100, 'n');
+    }
+    std::filesystem::last_write_time(old_segment, retention_epoch - 3s);
+    std::filesystem::last_write_time(middle_segment, retention_epoch - 2s);
+    std::filesystem::last_write_time(recent_segment, retention_epoch - 1s);
+    {
+        efis::recording::SegmentedRecorder retained{
+            retention_directory,
+            {.records_per_segment = 2,
+             .flush_every_records = 1,
+             .max_completed_bytes = 20,
+             .minimum_completed_segments = 1}};
+        require(retained.retention_enabled(),
+                "a configured byte quota must enable retention");
+        require(retained.pruned_segments() == 1 && retained.pruned_bytes() == 10,
+                "retention must prune only the oldest bytes needed for quota");
+        require(retained.completed_segments() == 2 && retained.completed_bytes() == 20,
+                "retention telemetry must describe the remaining completed set");
+    }
+    require(!std::filesystem::exists(old_segment) &&
+                std::filesystem::exists(middle_segment) &&
+                std::filesystem::exists(recent_segment),
+            "retention must preserve the newest completed segments");
+    require(std::filesystem::exists(unrelated_file),
+            "retention must never remove non-recorder CSV files");
+
+    const auto impossible_directory = test_directory / "retention-impossible";
+    std::filesystem::create_directories(impossible_directory);
+    for (const auto& name : {"flight-protected-a.csv", "flight-protected-b.csv"}) {
+        std::ofstream output{impossible_directory / name};
+        output << std::string(10, 'p');
+    }
+    bool impossible_retention_reported = false;
+    try {
+        efis::recording::SegmentedRecorder impossible{
+            impossible_directory,
+            {.max_completed_bytes = 1, .minimum_completed_segments = 2}};
+    } catch (const std::runtime_error&) {
+        impossible_retention_reported = true;
+    }
+    require(impossible_retention_reported,
+            "an unattainable retention target must fail closed");
+    require(std::filesystem::exists(impossible_directory / "flight-protected-a.csv") &&
+                std::filesystem::exists(impossible_directory / "flight-protected-b.csv"),
+            "retention preflight must not delete when its target is unattainable");
+
     const auto failure_directory = test_directory / "write-failure";
     std::filesystem::create_directories(failure_directory);
     std::string failed_segment;
@@ -490,7 +549,10 @@ int main() {
     efis::recording::write_recorder_status(status_path, {
         .state = "RECORDING", .updated_wall_ms = 1234,
         .records = 5678, .segment = "flight-test.partial",
-        .write_failed = true, .last_error = "flush snapshot"});
+        .write_failed = true, .last_error = "flush snapshot",
+        .retention_enabled = true, .completed_segments = 12,
+        .completed_bytes = 3456, .available_bytes = 7890,
+        .pruned_segments = 3, .pruned_bytes = 1024});
     const auto recorder_status = efis::recording::read_recorder_status(status_path);
     require(recorder_status.state == "RECORDING",
             "recorder heartbeat must preserve state");
@@ -501,6 +563,13 @@ int main() {
     require(recorder_status.write_failed &&
                 recorder_status.last_error == "flush snapshot",
             "recorder heartbeat must preserve write failure diagnostics");
+    require(recorder_status.retention_enabled &&
+                recorder_status.completed_segments == 12 &&
+                recorder_status.completed_bytes == 3456 &&
+                recorder_status.available_bytes == 7890 &&
+                recorder_status.pruned_segments == 3 &&
+                recorder_status.pruned_bytes == 1024,
+            "recorder status V3 must preserve retention telemetry");
     const auto legacy_status_path = test_directory / "run" / "legacy.status";
     {
         std::ofstream legacy{legacy_status_path};

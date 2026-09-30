@@ -1,6 +1,6 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-29
+Aggiornamento: 2026-09-30
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline integrata esaminata: `origin/main` `7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897`
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
@@ -26,7 +26,7 @@ Il rapporto del 2026-09-20 resta uno snapshot storico.
 | Nodo sensori ASSO5 | HW-PARTIAL / BLOCKED-HW | RPi4 `.89` riconfermato read-only il 2026-09-29 con G1-C10 10/10 PASS; quattro frontali coerenti con 1×SM-I-018, 2×SM-I-011 e 1×8 Thermocouple DAQ, ma retro e label alimentatore mancanti: manifest ancora 0/4, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
-| PFD/MFD | PARTIAL / VERIFY-HW | PFD storage recuperato con copia checksum su serverha: root 81%, recorder attivo `NRestarts=0`, imagery PASS; MFD `mfd-3432402-primary-v1` attivo ma con storico undervoltage `0x50000`; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `PWR-001`, `VER-003` |
+| PFD/MFD | PARTIAL / VERIFY-HW | PFD recorder stabile ma buffer già 32 GiB/root 84%; retention 24 GiB + riserva 12 GiB implementata e testata solo software, non distribuita; MFD `mfd-3432402-primary-v1` attivo ma con storico undervoltage `0x50000`; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `PWR-001`, `VER-003` |
 | EMS | PARTIAL / DEPLOY CONFORME | RPi4 riconfermato sulla release HMI/CAS `ems-62ba90b-hmi-cas-v1`, processo canonico e `NRestarts=0`; sorgente ancora SIM, input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
 | Blackbox/rete | PARTIAL / POWER VERIFY-HW / NAV FAIL-CLOSED | broker `blackbox-7655799-primary-v1` attivo, engine SIM e `NRestarts=0`; cinque undervoltage recenti senza errori NVMe/USB; drop-in NAV reale arresta exit 2 senza restart, ricevitori ancora assenti | `BBX-001`…`004`, `NET-001`, `NAV-003`, `PWR-001`, `PROD-005` |
@@ -131,12 +131,16 @@ Il dettaglio è nel registro canonico
   recorder e imagery hanno superato l'acceptance reale. La Blackbox non mostra
   errori NVMe/USB correlati ai transienti, ma `bbxnav` ha 157.031 restart per
   ricevitori assenti (`PFD-001`, `NAV-003`, `PWR-001`).
+- Il 2026-09-30 il PFD è stato ricontrollato in sola lettura: recorder
+  `NRestarts=0`, 9.120 file/32 GiB e root 84%/9,2 GiB liberi. La retention
+  candidata è software-only e non modifica questo stato (`PFD-001`, `BBX-001`).
 
 ## 6. Blocchi e rischi prioritari
 
-1. PFD retention: il recovery storage è PASS e i servizi sono ripristinati,
-   ma senza quota/retention automatica il riempimento può ripetersi; serve soak
-   con monitoraggio margine (`PFD-001`, `BBX-001`).
+1. PFD retention: quota e riserva fail-closed sono implementate e testate solo
+   software; prima dell'attivazione occorrono autorizzazione alla copia dei 32
+   GiB, checksum, release ARM64/rollback e soak con monitoraggio margine
+   (`PFD-001`, `BBX-001`).
 2. Alimentazione: undervoltage recenti su MFD e Blackbox; nessuna prova
    brownout/load controllata e nessuna PSU finale qualificata (`PWR-001`,
    `PROD-002`).
@@ -157,8 +161,9 @@ Il dettaglio è nel registro canonico
 
 ## 7. Prossima sequenza controllata
 
-1. Definire quota/retention recorder PFD e fare soak con soglia di spazio,
-   preservando l'archivio verificato su serverha (`PFD-001`, `BBX-001`).
+1. Autorizzare la copia dei 32 GiB recorder PFD su serverha, verificarla con
+   checksum, poi distribuire la retention tramite release immutabile e fare
+   soak >=24 h con soglia di spazio (`PFD-001`, `BBX-001`).
 2. Qualificare alimentatori/cavi MFD e Blackbox con piano brownout e carico
    approvato (`PWR-001`, `PROD-002`).
 3. Quando disponibili, completare foto posteriori e label dell'inventario
@@ -740,3 +745,27 @@ simulato e nessun CAN reale sono stati abilitati.
 ricevitori SDR, frequenze, antenna, qualità RF, decoder e annunci display non
 sono qualificati. `NAV-003` resta `PARTIAL`. Evidenza:
 `evidence/bbxnav-fail-closed-20260929/README.md`.
+
+## 37. Retention recorder PFD — 2026-09-30
+
+Il riempimento è stato misurato nuovamente in sola lettura: il recorder PFD è
+stabile (`NRestarts=0`) ma il buffer attivo è già cresciuto a 9.120 file/32 GiB
+e il root è all'84% con 9,2 GiB disponibili. Gli ultimi segmenti sono circa
+3,65 MB/minuto, quindi senza controllo il guasto ENOSPC si ripeterebbe.
+
+**Implementato:** retention nativa oldest-first con quota 24 GiB, riserva 12
+GiB, protezione di almeno 120 segmenti recenti, preflight senza cancellazioni
+quando il target è impossibile, selezione dei soli file regolari
+`flight-*.csv` e status V3 con telemetria. La unità release contiene parametri
+espliciti; la policy resta disabilitata se non configurata.
+
+**Verificato solo software:** build MSVC PASS; test core, process-level storage
+e supervisione release PASS. Sono provati rimozione minima oldest-first,
+conservazione di file estranei e fallimento senza cancellazioni per un target
+irraggiungibile. **Verificato su hardware reale:** soltanto audit read-only di
+servizio, percorso, crescita e spazio; serverha ha 146 GiB disponibili.
+
+**Aperto:** la copia dei 32 GiB correnti verso serverha richiede conferma
+esplicita; seguono checksum, build ARM64, release/rollback, prima potatura,
+reboot acceptance e soak >=24 h. Nessun file PFD è stato potato e nessuna
+release è stata distribuita. `PFD-001` e `BBX-001` restano `PARTIAL`.
