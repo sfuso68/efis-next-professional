@@ -28,6 +28,18 @@ int main(int argc, char** argv) {
     qputenv("EFIS_WEATHER_SIMULATION_DIR", outputRoot.toUtf8());
 
     try {
+        require(WeatherService::classifyRadarAgeSeconds(-6) == QStringLiteral("CLOCK SKEW"),
+                "future radar timestamp outside tolerance must fail closed");
+        require(WeatherService::classifyRadarAgeSeconds(-5) == QStringLiteral("CURRENT"),
+                "small clock jitter must remain inside tolerance");
+        require(WeatherService::classifyRadarAgeSeconds(600) == QStringLiteral("CURRENT"),
+                "600 seconds must remain CURRENT");
+        require(WeatherService::classifyRadarAgeSeconds(601) == QStringLiteral("STALE"),
+                "601 seconds must become STALE");
+        require(WeatherService::classifyRadarAgeSeconds(1200) == QStringLiteral("STALE"),
+                "1200 seconds must remain STALE");
+        require(WeatherService::classifyRadarAgeSeconds(1201) == QStringLiteral("EXPIRED"),
+                "1201 seconds must become EXPIRED");
         {
             WeatherService weather;
             QElapsedTimer callback;

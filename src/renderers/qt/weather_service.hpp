@@ -32,6 +32,7 @@ class WeatherService final : public QObject {
 public:
     explicit WeatherService(QObject* parent = nullptr);
     ~WeatherService() override;
+    [[nodiscard]] static QString classifyRadarAgeSeconds(qint64 age_seconds);
     [[nodiscard]] QString radarSource() const { return radar_source_; }
     [[nodiscard]] QString radarState() const { return radar_state_; }
     [[nodiscard]] int radarAgeMinutes() const;

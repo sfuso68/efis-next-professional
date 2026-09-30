@@ -78,13 +78,25 @@ QString WeatherService::cachePath(const QString& name) const {
 }
 
 int WeatherService::radarAgeMinutes() const {
-    return radar_time_.isValid() ? static_cast<int>(radar_time_.secsTo(QDateTime::currentDateTimeUtc())/60) : -1;
+    if (!radar_time_.isValid()) return -1;
+    const auto ageSeconds = radar_time_.secsTo(QDateTime::currentDateTimeUtc());
+    if (ageSeconds < -5) return -1;
+    return static_cast<int>(qMax<qint64>(0, ageSeconds) / 60);
+}
+
+QString WeatherService::classifyRadarAgeSeconds(qint64 age_seconds) {
+    if (age_seconds < -5) return QStringLiteral("CLOCK SKEW");
+    const auto normalizedAge = qMax<qint64>(0, age_seconds);
+    if (normalizedAge <= 600) return QStringLiteral("CURRENT");
+    if (normalizedAge <= 1200) return QStringLiteral("STALE");
+    return QStringLiteral("EXPIRED");
 }
 
 void WeatherService::updateAgeState() {
     if (simulation_) { radar_state_ = QStringLiteral("SIMULATED"); emit changed(); return; }
-    const int age = radarAgeMinutes();
-    radar_state_ = age < 0 ? QStringLiteral("NO DATA") : age <= 10 ? QStringLiteral("CURRENT") : age <= 20 ? QStringLiteral("STALE") : QStringLiteral("EXPIRED");
+    radar_state_ = radar_time_.isValid()
+        ? classifyRadarAgeSeconds(radar_time_.secsTo(QDateTime::currentDateTimeUtc()))
+        : QStringLiteral("NO DATA");
     emit changed();
 }
 

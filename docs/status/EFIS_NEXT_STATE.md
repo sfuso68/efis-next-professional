@@ -943,3 +943,16 @@ future estensioni non riconosciute restano quindi non disponibili per default.
 tre stati ammessi e uso dell'allowlist; la suite locale del contratto passa.
 **Verificato su hardware reale:** nulla. Provider, georeferenziazione, cache,
 clock skew e resa RPi5 restano aperti; `WX-002` resta `PARTIAL`.
+
+## 44. Freshness radar C++ a precisione di secondo — 2026-09-30
+
+Il servizio Qt non classifica più l'età dopo una divisione intera per minuti,
+che manteneva erroneamente `CURRENT` fino a 10 minuti e 59 secondi. Il nuovo
+classificatore usa i secondi: `CURRENT` fino a 600, `STALE` da 601 a 1200 ed
+`EXPIRED` da 1201; timestamp oltre 5 secondi nel futuro producono `CLOCK SKEW`.
+Il valore di età pubblicato non espone inoltre minuti negativi.
+
+**Verificato solo software:** test Qt sui confini -6/-5, 600/601 e 1200/1201
+secondi, oltre al precedente test del writer asincrono. **Verificato su hardware
+reale:** nulla. Download, timestamp del provider, resa grafica e transizioni
+reali su RPi5 restano aperti; `WX-002` resta `PARTIAL`.
