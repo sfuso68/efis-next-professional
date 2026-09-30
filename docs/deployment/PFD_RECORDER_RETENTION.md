@@ -1,6 +1,6 @@
 # PFD recorder retention
 
-Stato: **CANDIDATE / DEVELOPMENT / NON-CERT / NOT DEPLOYED**
+Stato: **ACTIVE VERIFY-HW / DEVELOPMENT / NON-CERT / SOAK OPEN**
 
 Il recorder PFD usa un buffer rotante locale. La policy candidata nella unità
 release V1 imposta:
@@ -34,10 +34,9 @@ La verifica avviene all'avvio e dopo la pubblicazione atomica di ogni nuovo
 segmento. Un errore di ispezione o rimozione resta un errore recorder visibile,
 non un successo silenzioso.
 
-## Gate prima dell'attivazione
+## Attivazione hardware del 2026-09-30
 
-La prima attivazione può rimuovere circa 8 GiB dall'attuale buffer PFD da
-32 GiB. Prima del deployment sono quindi obbligatori:
+La prima attivazione ha seguito i gate seguenti:
 
 1. copia dei record correnti in un percorso datato su `serverha`;
 2. secondo `rsync -aHnc --delete --itemize-changes` con zero differenze;
@@ -47,5 +46,15 @@ La prima attivazione può rimuovere circa 8 GiB dall'attuale buffer PFD da
 6. soak di almeno 24 ore con recorder `NRestarts=0`, status V3 crescente,
    filesystem con almeno 12 GiB disponibili e prova di una rotazione reale.
 
-La copia dei record e il deployment non sono impliciti nella presenza del
-codice. Richiedono finestra autorizzata. Nessun risultato autorizza il volo.
+I gate 1–5 sono PASS su PFD reale. La copia serverha contiene 9.208 file e
+33.777.901.735 byte; il secondo confronto checksum non ha prodotto differenze.
+La prima potatura ha rimosso 2.222 segmenti completati, pari a 8.008.825.406
+byte. Rollback e ritorno alla release candidata sono PASS; il reboot successivo
+ha riavviato entrambi i servizi dai binari manifestati. Una seconda potatura
+autonoma post-reboot ha rimosso 12 segmenti/43.890.672 byte mantenendo circa
+17,4 GB liberi. Il gate 6 resta aperto fino alla maturazione dell'intera
+finestra di 24 ore.
+
+La release attiva è `pfdrec-7051a47-retention-v1`, source commit completo
+`7051a47839389f739f2d1e0ad22b385173299f61`, con
+`flight_approval=false`. Nessun risultato autorizza il volo.

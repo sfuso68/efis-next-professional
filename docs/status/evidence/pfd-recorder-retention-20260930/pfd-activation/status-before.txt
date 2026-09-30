@@ -1,0 +1,11 @@
+MainPID=1495
+NRestarts=1
+ActiveState=active
+SubState=running
+DropInPaths=/home/efis/.config/systemd/user/efis-pfd.service.d/release-v1.conf
+
+MainPID=0
+NRestarts=0
+ActiveState=inactive
+SubState=dead
+DropInPaths=/home/efis/.config/systemd/user/efis-recorder.service.d/release-v1.conf

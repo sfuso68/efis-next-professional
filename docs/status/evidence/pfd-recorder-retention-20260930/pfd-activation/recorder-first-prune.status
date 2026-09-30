@@ -1,0 +1,13 @@
+EFIS_RECORDER_STATUS_V3
+state=RECORDING
+updated_wall_ms=1790744036167
+records=750
+segment=flight-1790744021189-0.partial
+write_failed=0
+last_error=
+retention_enabled=1
+completed_segments=6986
+completed_bytes=25769076329
+available_bytes=17422503936
+pruned_segments=2222
+pruned_bytes=8008825406

@@ -26,7 +26,7 @@ Il rapporto del 2026-09-20 resta uno snapshot storico.
 | Nodo sensori ASSO5 | HW-PARTIAL / BLOCKED-HW | RPi4 `.89` riconfermato read-only il 2026-09-29 con G1-C10 10/10 PASS; quattro frontali coerenti con 1×SM-I-018, 2×SM-I-011 e 1×8 Thermocouple DAQ, ma retro e label alimentatore mancanti: manifest ancora 0/4, DIP, mapping e calibrazione non verificati | `PRJ-002`, `AVX-G1-01`…`04` |
 | ICD distribuito | FROZEN-SW / VERIFY-HW | DDP V2 ed EDP V1 congelati; replay x86-64 e tre ARM64 PASS; verticale reale aperto | `PRJ-003`, `AVX-G2-01`, `AVX-G2-02` |
 | HMI SkyView/EMS | VERIFIED-SW / VERIFY-HW | Contratti e golden multi-risoluzione presenti; touch, pannelli e fault reali aperti | `PRJ-004`, `AVX-G3-03`, `AVX-G3-04` |
-| PFD/MFD | PARTIAL / VERIFY-HW | PFD recorder stabile ma buffer già 32 GiB/root 84%; retention 24 GiB + riserva 12 GiB implementata e testata solo software, non distribuita; MFD `mfd-3432402-primary-v1` attivo ma con storico undervoltage `0x50000`; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `PWR-001`, `VER-003` |
+| PFD/MFD | PARTIAL / VERIFY-HW | PFD `pfdrec-7051a47-retention-v1` attivo e immutabile dopo archivio checksum, prima potatura, rollback e reboot PASS; root 71%/17,4 GB liberi, soak >=24 h ancora aperto; MFD `mfd-3432402-primary-v1` attivo ma con storico undervoltage `0x50000`; terrain e acceptance aperti | `PFD-001`…`003`, `MFD-001`, `NAV-003`, `PWR-001`, `VER-003` |
 | EMS | PARTIAL / DEPLOY CONFORME | RPi4 riconfermato sulla release HMI/CAS `ems-62ba90b-hmi-cas-v1`, processo canonico e `NRestarts=0`; sorgente ancora SIM, input motore reale e limiti controllati mancanti | `EMS-002`…`004`, `PROD-005` |
 | Pixhawk/GNSS/Airspeed | PARTIAL-HW | MAVLink read-only presente; M10 e DLVR non qualificati né calibrati | `PIX-001`, `PIX-002`, `GNSS-001`, `GNSS-002`, `AIR-001`, `AIR-002` |
 | Blackbox/rete | PARTIAL / POWER VERIFY-HW / NAV FAIL-CLOSED | broker `blackbox-7655799-primary-v1` attivo, engine SIM e `NRestarts=0`; cinque undervoltage recenti senza errori NVMe/USB; drop-in NAV reale arresta exit 2 senza restart, ricevitori ancora assenti | `BBX-001`…`004`, `NET-001`, `NAV-003`, `PWR-001`, `PROD-005` |
@@ -161,9 +161,10 @@ Il dettaglio è nel registro canonico
 
 ## 7. Prossima sequenza controllata
 
-1. Autorizzare la copia dei 32 GiB recorder PFD su serverha, verificarla con
-   checksum, poi distribuire la retention tramite release immutabile e fare
-   soak >=24 h con soglia di spazio (`PFD-001`, `BBX-001`).
+1. Completare il soak >=24 h della retention PFD già attiva, verificando
+   `NRestarts=0`, status V3 crescente, rotazione reale e spazio >=12 GiB;
+   analizzare inoltre lo startup retry PFD e lo stall meteo SIM di 10,1 s
+   (`PFD-001`, `BBX-001`).
 2. Qualificare alimentatori/cavi MFD e Blackbox con piano brownout e carico
    approvato (`PWR-001`, `PROD-002`).
 3. Quando disponibili, completare foto posteriori e label dell'inventario
@@ -759,13 +760,48 @@ quando il target è impossibile, selezione dei soli file regolari
 `flight-*.csv` e status V3 con telemetria. La unità release contiene parametri
 espliciti; la policy resta disabilitata se non configurata.
 
-**Verificato solo software:** build MSVC PASS; test core, process-level storage
-e supervisione release PASS. Sono provati rimozione minima oldest-first,
-conservazione di file estranei e fallimento senza cancellazioni per un target
-irraggiungibile. **Verificato su hardware reale:** soltanto audit read-only di
-servizio, percorso, crescita e spazio; serverha ha 146 GiB disponibili.
+**Verificato su hardware reale:** il recorder è stato fermato per ottenere una
+fotografia stabile. I 9.208 file, pari a 33.777.901.735 byte, sono stati copiati
+in `/home/sfuso/archives/pfd-active-records-pre-retention-20260930/records` su
+serverha. Un secondo `rsync -aHnc --delete --itemize-changes` ha prodotto zero
+differenze e un file diff vuoto con SHA-256
+`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+Un primo processo rsync rimasto orfano dopo l'interruzione della sessione è
+stato arrestato per PID; il delta finale ha trasferito zero file e zero byte
+prima del confronto completo conclusivo.
 
-**Aperto:** la copia dei 32 GiB correnti verso serverha richiede conferma
-esplicita; seguono checksum, build ARM64, release/rollback, prima potatura,
-reboot acceptance e soak >=24 h. Nessun file PFD è stato potato e nessuna
-release è stata distribuita. `PFD-001` e `BBX-001` restano `PARTIAL`.
+Il commit completo `7051a47839389f739f2d1e0ad22b385173299f61` è stato
+archiviato in `/tmp`, verificato tramite SHA-256, compilato nativamente ARM64
+con GCC 14.2 e Qt 6.8.2. `efis_core_tests`,
+`efis_recorder_storage_failure_tests` ed
+`efis_release_supervision_asset_tests` sono PASS. La release dual-role
+`pfdrec-7051a47-retention-v1` è stata validata per PFD e RECORDER, resa
+root-owned/read-only e attivata atomicamente. Gli hash attivi sono
+`a64edcf2...28854` per `efis-pfd-qt` e `4cb136ec...87ca5` per
+`efis-recorder`.
+
+La prima potatura ha eliminato soltanto 2.222 segmenti completati oldest-first,
+pari a 8.008.825.406 byte; restavano 6.986 segmenti completati, 25.769.076.329
+byte e 17.422.503.936 byte disponibili. Il rollback reale verso
+`pfdrec-d52e377-primary-v1` e il ritorno alla candidata sono PASS. Dopo reboot
+il boot ID è cambiato in `b52439a1-a261-464d-9005-6025682d1182`; PFD e recorder
+sono attivi dai binari canonici, il recorder V3 avanza, DDP è LIVE a circa 20
+Hz, la root è al 71% con circa 17,4 GB disponibili e
+`vcgencmd get_throttled=0x0`. Un campione successivo ha osservato una seconda
+potatura autonoma post-reboot di 12 segmenti/43.890.672 byte, con recorder
+`NRestarts=0` e spazio ancora pari a circa 17,4 GB.
+
+**Verificato solo software:** oltre ai test ARM64 citati, i test MSVC di core,
+storage process-level e supervisione release sono PASS. Application Control
+Windows ha bloccato due eseguibili non pertinenti e un test non pertinente non
+ha terminato nella finestra; non sono dichiarati PASS. La build ARM64 conserva
+un warning GCC preesistente in `src/protocol/ddp_v2.cpp` e warning Qt su target
+plugin mancanti: restano da revisionare.
+
+**Aperto:** il soak >=24 h non è ancora maturato, quindi non è DONE. Al primo
+boot il PFD ha eseguito uno startup retry (`NRestarts=1`) ed è poi rimasto
+stabile con `Result=success`; manca il log del primo processo. È inoltre stato
+osservato uno stall di 10,1 s nel callback `weather_simulation`, da analizzare
+separatamente. Restano aperti 27 gap tile e le acceptance visuale/touch/terrain.
+`PFD-001` e `BBX-001` restano `PARTIAL`; il prodotto resta
+DEVELOPMENT/NON-CERT e `flight_approval=false`.

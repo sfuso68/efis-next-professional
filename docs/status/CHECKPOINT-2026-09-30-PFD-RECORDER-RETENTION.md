@@ -2,7 +2,7 @@
 
 Data: 2026-09-30
 
-Stato: **IMPLEMENTED-SW / PFD READ-ONLY OBSERVED / NOT DEPLOYED**
+Stato: **ACTIVE VERIFY-HW / ROLLBACK+REBOOT PASS / SOAK OPEN**
 
 ## Implementato
 
@@ -33,24 +33,24 @@ pertinente alla modifica, non ha terminato nella finestra e il run complessivo
 
 ## Verificato su hardware reale
 
-Solo audit read-only PFD:
-
-- recorder `active/running`, PID `969557`, `NRestarts=0`;
-- directory attiva: 9.120 file e 32 GiB;
-- root: 84%, 9,2 GiB disponibili;
-- segmento completato nominale: circa 3,65 MB ogni minuto;
-- serverha: 146 GiB disponibili.
-
-Nessun binario, unità o record PFD è stato modificato in questa fase.
+- copia stabile di 9.208 file/33.777.901.735 byte su serverha;
+- secondo checksum rsync a zero differenze;
+- build ARM64 nativa e tre test mirati PASS;
+- release immutabile `pfdrec-7051a47-retention-v1` attivata;
+- prima potatura oldest-first: 2.222 segmenti/8.008.825.406 byte;
+- rollback reale alla release precedente e ritorno alla candidata: PASS;
+- reboot acceptance: PASS;
+- seconda potatura autonoma post-reboot: 12 segmenti/43.890.672 byte;
+- post-reboot PFD/recorder dai binari manifestati, status V3 crescente, DDP
+  LIVE ~20 Hz, root 71%/17,4 GB liberi e throttled `0x0`.
 
 ## Aperto
 
-- autorizzazione esplicita alla copia dei 32 GiB PFD verso serverha;
-- verifica checksum della copia;
-- build ARM64, release immutabile e rollback;
-- prima potatura controllata;
-- reboot acceptance e soak >=24 h;
-- definizione formale del requisito di conservazione operativo.
+- soak >=24 h con `NRestarts=0`, status V3 crescente e almeno 12 GiB liberi;
+- spiegazione definitiva dello startup retry PFD post-boot;
+- correzione/qualifica dello stall `weather_simulation` di 10,1 s;
+- definizione formale del requisito di conservazione operativo;
+- acceptance visuale/touch/terrain e 27 gap tile.
 
-Decisione: **NO-GO DEPLOYMENT finché copia e verifica non sono autorizzate e
-completate**. Il prodotto resta DEVELOPMENT/NON-CERT e `flight_approval=false`.
+Decisione: **GO LIMITATO AL SOAK DI BANCO; NO-GO FLIGHT**. Il prodotto resta
+DEVELOPMENT/NON-CERT e `flight_approval=false`.
