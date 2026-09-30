@@ -209,6 +209,8 @@ if(EFIS_BUILD_QT_RENDERER)
             )
             target_include_directories(efis_weather_service_tests PRIVATE
                 src/renderers/qt)
+            target_compile_definitions(efis_weather_service_tests PRIVATE
+                EFIS_WEATHER_TEST_HOOKS=1)
             target_link_libraries(efis_weather_service_tests PRIVATE
                 Qt6::Core Qt6::Gui Qt6::Network)
             add_test(NAME efis_weather_service_tests

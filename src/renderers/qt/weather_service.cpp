@@ -18,6 +18,7 @@
 #include <QSettings>
 #include <QThread>
 #include <QUrl>
+#include <QUrlQuery>
 #include <QtMath>
 
 namespace {
@@ -36,9 +37,22 @@ QString simulationPath(const QString& name) {
     QDir().mkpath(root);
     return root + QLatin1Char('/') + name;
 }
+
+QUrl productionRadarEndpoint() {
+    return QUrl(QStringLiteral("https://radar-geowebcache.protezionecivile.it/service/wms"));
+}
 }
 
-WeatherService::WeatherService(QObject* parent) : QObject(parent) {
+WeatherService::WeatherService(QObject* parent)
+    : WeatherService(productionRadarEndpoint(), true, parent) {}
+
+#ifdef EFIS_WEATHER_TEST_HOOKS
+WeatherService::WeatherService(const QUrl& controlled_radar_endpoint, QObject* parent)
+    : WeatherService(controlled_radar_endpoint, false, parent) {}
+#endif
+
+WeatherService::WeatherService(const QUrl& radar_endpoint, bool auto_refresh, QObject* parent)
+    : QObject(parent), radar_endpoint_(radar_endpoint) {
     QSettings settings;
     radar_product_ = normalizedRadarProduct(
         settings.value(QStringLiteral("weather/product"), QStringLiteral("VMI")).toString());
@@ -58,7 +72,7 @@ WeatherService::WeatherService(QObject* parent) : QObject(parent) {
     simulation_worker_context_->moveToThread(&simulation_worker_thread_);
     connect(&simulation_worker_thread_, &QThread::finished, simulation_worker_context_, &QObject::deleteLater);
     simulation_worker_thread_.start();
-    QTimer::singleShot(0, this, &WeatherService::refresh);
+    if (auto_refresh) QTimer::singleShot(0, this, &WeatherService::refresh);
 }
 
 WeatherService::~WeatherService() {
@@ -386,9 +400,22 @@ void WeatherService::requestRadar() {
     const double maxX = (static_cast<double>(tile_x_+1)/count*2.0-1.0)*extent;
     const double maxY = (1.0-static_cast<double>(tile_y_)/count*2.0)*extent;
     const double minY = (1.0-static_cast<double>(tile_y_+1)/count*2.0)*extent;
-    const auto urlText = QStringLiteral("https://radar-geowebcache.protezionecivile.it/service/wms?service=WMS&version=1.1.1&request=GetMap&layers=radar:%1&styles=&format=image/png&transparent=true&tiled=true&srs=EPSG:3857&bbox=%2,%3,%4,%5&width=256&height=256")
-        .arg(requestProduct.toLower()).arg(minX,0,'f',7).arg(minY,0,'f',7).arg(maxX,0,'f',7).arg(maxY,0,'f',7);
-    const QUrl url(urlText);
+    QUrl url(radar_endpoint_);
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("service"), QStringLiteral("WMS"));
+    query.addQueryItem(QStringLiteral("version"), QStringLiteral("1.1.1"));
+    query.addQueryItem(QStringLiteral("request"), QStringLiteral("GetMap"));
+    query.addQueryItem(QStringLiteral("layers"), QStringLiteral("radar:%1").arg(requestProduct.toLower()));
+    query.addQueryItem(QStringLiteral("styles"), QString());
+    query.addQueryItem(QStringLiteral("format"), QStringLiteral("image/png"));
+    query.addQueryItem(QStringLiteral("transparent"), QStringLiteral("true"));
+    query.addQueryItem(QStringLiteral("tiled"), QStringLiteral("true"));
+    query.addQueryItem(QStringLiteral("srs"), QStringLiteral("EPSG:3857"));
+    query.addQueryItem(QStringLiteral("bbox"), QStringLiteral("%1,%2,%3,%4")
+        .arg(minX,0,'f',7).arg(minY,0,'f',7).arg(maxX,0,'f',7).arg(maxY,0,'f',7));
+    query.addQueryItem(QStringLiteral("width"), QStringLiteral("256"));
+    query.addQueryItem(QStringLiteral("height"), QStringLiteral("256"));
+    url.setQuery(query);
     auto* reply = network_.get(weatherRequest(url));
     connect(reply, &QNetworkReply::finished, this, [this, reply, requestProduct, requestX, requestY] {
         const auto data = reply->readAll();

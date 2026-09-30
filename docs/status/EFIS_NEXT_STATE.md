@@ -976,3 +976,21 @@ rifiuto di prodotto path-like e coordinate negative.
 **Verificato su hardware reale:** nulla. Race con server controllato, cache
 persistente, provider, georeferenziazione e RPi5 restano aperti; `WX-002`
 rimane `PARTIAL`.
+
+## 46. Harness radar con server controllato — 2026-09-30
+
+Il target `efis_weather_service_tests` include ora un server HTTP locale
+controllato che riceve due richieste reali Qt Network, conserva la VMI iniziale,
+risponde prima alla SRI corrente e consegna intenzionalmente per ultima la VMI
+ormai superata. Il test richiede che entrambe le risposte restino nelle rispettive
+cache `product/zoom/tile`, che soltanto SRI diventi il frame visibile e che la
+risposta VMI tardiva non possa sostituirlo.
+
+L'endpoint radar sostitutivo è disponibile esclusivamente compilando
+`EFIS_WEATHER_TEST_HOOKS`; il prodotto continua a costruire il servizio con
+l'endpoint DPC HTTPS fisso. Il target Qt/MSVC compila e il contratto responsive
+resta PASS. L'eseguibile appena collegato non è stato avviato sulla workstation
+perché il criterio di controllo applicazioni Windows lo ha bloccato: il test
+end-to-end resta quindi `CI_REQUIRED`, non `PASS`, fino all'esecuzione Linux.
+Nessuna prova ARM64, provider reale, georeferenziazione o acceptance display è
+stata eseguita; `WX-002` rimane `PARTIAL`.

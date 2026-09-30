@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QThread>
 #include <QTimer>
+#include <QUrl>
 #include <QVariantList>
 
 class WeatherService final : public QObject {
@@ -31,6 +32,9 @@ class WeatherService final : public QObject {
     Q_PROPERTY(QVariantList airportWeather READ airportWeather NOTIFY changed)
 public:
     explicit WeatherService(QObject* parent = nullptr);
+#ifdef EFIS_WEATHER_TEST_HOOKS
+    explicit WeatherService(const QUrl& controlled_radar_endpoint, QObject* parent = nullptr);
+#endif
     ~WeatherService() override;
     [[nodiscard]] static QString classifyRadarAgeSeconds(qint64 age_seconds);
     [[nodiscard]] static QString normalizedRadarProduct(const QString& product);
@@ -66,6 +70,7 @@ public:
 signals:
     void changed();
 private:
+    WeatherService(const QUrl& radar_endpoint, bool auto_refresh, QObject* parent);
     struct SimulationFrameResult {
         QString path;
         QString product;
@@ -83,6 +88,7 @@ private:
     void clearRadarFrame(const QString& message);
     [[nodiscard]] QString cachePath(const QString& name) const;
     QNetworkAccessManager network_;
+    QUrl radar_endpoint_;
     QTimer refresh_timer_;
     QTimer age_timer_;
     QString radar_source_;
