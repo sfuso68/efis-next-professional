@@ -202,6 +202,18 @@ if(EFIS_BUILD_QT_RENDERER)
             efis_core Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Quick3D Qt6::QuickControls2 Qt6::Concurrent Qt6::Network)
 
         if(EFIS_BUILD_TESTS)
+            qt_add_executable(efis_weather_service_tests
+                tests/weather_service_tests.cpp
+                src/renderers/qt/weather_service.cpp
+                src/renderers/qt/weather_service.hpp
+            )
+            target_include_directories(efis_weather_service_tests PRIVATE
+                src/renderers/qt)
+            target_link_libraries(efis_weather_service_tests PRIVATE
+                Qt6::Core Qt6::Gui Qt6::Network)
+            add_test(NAME efis_weather_service_tests
+                     COMMAND efis_weather_service_tests)
+
             qt_add_executable(efis_pfd_aircraft_profile_tests
                 tests/pfd_aircraft_profile_tests.cpp
                 src/renderers/qt/pfd_controller.cpp

@@ -805,3 +805,32 @@ osservato uno stall di 10,1 s nel callback `weather_simulation`, da analizzare
 separatamente. Restano aperti 27 gap tile e le acceptance visuale/touch/terrain.
 `PFD-001` e `BBX-001` restano `PARTIAL`; il prodotto resta
 DEVELOPMENT/NON-CERT e `flight_approval=false`.
+
+## 38. Writer meteo simulato asincrono PFD — 2026-09-30
+
+Lo stall `weather_simulation` di 10,1 secondi e' stato ricondotto al percorso
+sincrono che comprimeva il frame PNG e lo committava su disco nel callback
+GUI. La generazione logica dello scenario resta sul thread grafico, mentre
+compressione e commit atomico sono ora eseguiti da un writer dedicato. Una
+sola scrittura puo' essere attiva; le richieste concorrenti vengono aggregate
+in un refresh successivo, evitando code illimitate.
+
+**Implementato:** writer `QThread`, back-pressure single-frame, pubblicazione
+del nuovo URL soltanto dopo commit riuscito, errori fail-visible, telemetria
+separata GUI/worker e percorsi diagnostici configurabili.
+
+**Verificato solo software:** build Qt/MSVC del test e di `efis-pfd-qt` PASS.
+Il test mirato inietta 400 ms di latenza I/O, verifica ritorno del callback in
+meno di 150 ms e pubblicazione asincrona del frame; CTest PASS in 0,46 s.
+Il relink finale dopo sola formattazione e' compilato PASS, ma il nuovo hash
+del test e' stato bloccato da Windows Device Guard e non viene contato come
+seconda esecuzione PASS.
+
+**Verificato su hardware reale:** nulla. La release PFD attiva non e' stata
+modificata e lo stall reale non e' ancora chiuso. Dopo review/merge servono
+build ARM64, release immutabile con rollback e sessione PFD reale con meteo
+SIM e controllo degli eventi `callback_stall`. Il soak retention >=24 h,
+startup retry, 27 gap tile e acceptance visuale/touch/terrain restano aperti.
+`PFD-001` resta `PARTIAL`; il prodotto resta DEVELOPMENT/NON-CERT e
+`flight_approval=false`. Evidenza:
+`evidence/pfd-weather-async-20260930/README.md`.

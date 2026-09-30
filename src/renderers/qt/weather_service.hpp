@@ -3,6 +3,7 @@
 #include <QDateTime>
 #include <QNetworkAccessManager>
 #include <QObject>
+#include <QThread>
 #include <QTimer>
 #include <QVariantList>
 
@@ -30,6 +31,7 @@ class WeatherService final : public QObject {
     Q_PROPERTY(QVariantList airportWeather READ airportWeather NOTIFY changed)
 public:
     explicit WeatherService(QObject* parent = nullptr);
+    ~WeatherService() override;
     [[nodiscard]] QString radarSource() const { return radar_source_; }
     [[nodiscard]] QString radarState() const { return radar_state_; }
     [[nodiscard]] int radarAgeMinutes() const;
@@ -61,6 +63,15 @@ public:
 signals:
     void changed();
 private:
+    struct SimulationFrameResult {
+        QString path;
+        QString product;
+        quint64 phase{};
+        qint64 worker_milliseconds{};
+        bool saved{};
+        QString error;
+    };
+
     void requestRadar();
     void requestMetar();
     void requestTaf();
@@ -83,7 +94,12 @@ private:
     bool simulation_{};
     int simulation_phase_{};
     QTimer simulation_timer_;
+    QThread simulation_worker_thread_;
+    QObject* simulation_worker_context_{};
+    bool simulation_frame_in_flight_{};
+    bool simulation_frame_refresh_pending_{};
     void generateSimulation();
+    void finishSimulationFrame(const SimulationFrameResult& result);
     void updateScenario(int stage);
     void recordEvent(const QString& type, const QString& detail);
     QString scenario_{QStringLiteral("VFR")};

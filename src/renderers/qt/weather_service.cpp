@@ -8,12 +8,15 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QImage>
+#include <QImageWriter>
 #include <QPainter>
+#include <QPointer>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QSaveFile>
 #include <QStandardPaths>
 #include <QSettings>
+#include <QThread>
 #include <QUrl>
 #include <QtMath>
 
@@ -26,7 +29,8 @@ QNetworkRequest weatherRequest(const QUrl& url) {
 }
 
 QString simulationPath(const QString& name) {
-    auto root = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    auto root = qEnvironmentVariable("EFIS_WEATHER_SIMULATION_DIR");
+    if (root.isEmpty()) root = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     if (root.isEmpty()) root = QDir::tempPath();
     root += QStringLiteral("/efis-next/weather-simulation");
     QDir().mkpath(root);
@@ -53,7 +57,17 @@ WeatherService::WeatherService(QObject* parent) : QObject(parent) {
     age_timer_.start();
     simulation_timer_.setInterval(3000);
     connect(&simulation_timer_, &QTimer::timeout, this, &WeatherService::generateSimulation);
+    simulation_worker_thread_.setObjectName(QStringLiteral("weather-simulation-writer"));
+    simulation_worker_context_ = new QObject;
+    simulation_worker_context_->moveToThread(&simulation_worker_thread_);
+    connect(&simulation_worker_thread_, &QThread::finished, simulation_worker_context_, &QObject::deleteLater);
+    simulation_worker_thread_.start();
     QTimer::singleShot(0, this, &WeatherService::refresh);
+}
+
+WeatherService::~WeatherService() {
+    simulation_worker_thread_.quit();
+    simulation_worker_thread_.wait();
 }
 
 QString WeatherService::cachePath(const QString& name) const {
@@ -89,6 +103,7 @@ void WeatherService::setSimulation(bool enabled) {
         generateSimulation();
     } else {
         simulation_timer_.stop();
+        simulation_frame_refresh_pending_ = false;
         radar_source_.clear();
         radar_time_ = {};
         airport_weather_.clear();
@@ -157,32 +172,7 @@ void WeatherService::generateSimulation() {
     if (!simulation_) return;
     QElapsedTimer callbackElapsed;
     callbackElapsed.start();
-    QImage image(256, 256, QImage::Format_ARGB32_Premultiplied);
-    image.fill(Qt::transparent);
-    QPainter painter(&image);
-    painter.setRenderHint(QPainter::Antialiasing);
-    const int drift = simulation_phase_ % 48;
-    const auto drawCell = [&painter](const QPoint& center, int radius, const QColor& outer, const QColor& core) {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(outer);
-        painter.drawEllipse(center, radius, radius*3/5);
-        painter.setBrush(core);
-        painter.drawEllipse(center, radius/2, radius/3);
-    };
-    const bool cappi = radar_product_.startsWith(QStringLiteral("CAPPI"));
-    drawCell(QPoint(52+drift,72),42,cappi?QColor(40,120,230,130):QColor(20,210,70,125),cappi?QColor(190,70,240,205):QColor(255,220,30,190));
-    drawCell(QPoint(142+drift/2,126),34,cappi?QColor(40,150,230,135):QColor(20,190,60,130),QColor(245,55,35,215));
-    drawCell(QPoint(205-drift/3,196),28,cappi?QColor(80,100,220,120):QColor(30,200,80,115),QColor(255,170,20,185));
-    painter.end();
-    const auto filename = QStringLiteral("radar-sim-%1.png").arg(radar_product_.toLower());
-    const auto framePath = simulationPath(filename);
-    QSaveFile file(framePath);
-    if (file.open(QIODevice::WriteOnly) && image.save(&file,"PNG") && file.commit()) {
-        radar_time_ = QDateTime::currentDateTimeUtc();
-        radar_source_ = QUrl::fromLocalFile(framePath).toString()+QStringLiteral("?v=")+QString::number(++simulation_phase_);
-        radar_state_ = QStringLiteral("SIMULATED");
-        radar_message_ = QStringLiteral("Animated training weather • not observed data");
-    }
+    ++simulation_phase_;
     const int stage = forced_scenario_>=0 ? forced_scenario_ : (simulation_phase_/4)%4;
     updateScenario(stage);
     const QString category = stage==0 ? QStringLiteral("VFR") : stage==1 ? QStringLiteral("MVFR") : QStringLiteral("IFR");
@@ -192,11 +182,94 @@ void WeatherService::generateSimulation() {
         QVariantMap{{QStringLiteral("icao"),QStringLiteral("LIPZ")},{QStringLiteral("metar"),QStringLiteral("SIM METAR LIPZ 181950Z 15011KT 8000 SCT020 22/18 Q1011")},{QStringLiteral("category"),QStringLiteral("MVFR")},{QStringLiteral("observed"),QStringLiteral("SIM")},{QStringLiteral("taf"),QStringLiteral("SIM TAF LIPZ 181700Z 1818/1918 16012KT 7000 SHRA SCT018 TEMPO 1821/1903 TSRA BKN010CB")},{QStringLiteral("simulated"),true}}
     };
     emit changed();
+
+    if (simulation_frame_in_flight_) {
+        simulation_frame_refresh_pending_ = true;
+        qWarning().noquote() << "event=weather_simulation_frame_deferred reason=encoder_busy phase=" << simulation_phase_;
+    } else {
+        QImage image(256, 256, QImage::Format_ARGB32_Premultiplied);
+        image.fill(Qt::transparent);
+        QPainter painter(&image);
+        painter.setRenderHint(QPainter::Antialiasing);
+        const int drift = simulation_phase_ % 48;
+        const auto drawCell = [&painter](const QPoint& center, int radius, const QColor& outer, const QColor& core) {
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(outer);
+            painter.drawEllipse(center, radius, radius*3/5);
+            painter.setBrush(core);
+            painter.drawEllipse(center, radius/2, radius/3);
+        };
+        const bool cappi = radar_product_.startsWith(QStringLiteral("CAPPI"));
+        drawCell(QPoint(52+drift,72),42,cappi?QColor(40,120,230,130):QColor(20,210,70,125),cappi?QColor(190,70,240,205):QColor(255,220,30,190));
+        drawCell(QPoint(142+drift/2,126),34,cappi?QColor(40,150,230,135):QColor(20,190,60,130),QColor(245,55,35,215));
+        drawCell(QPoint(205-drift/3,196),28,cappi?QColor(80,100,220,120):QColor(30,200,80,115),QColor(255,170,20,185));
+        painter.end();
+
+        const auto product = radar_product_;
+        const auto phase = static_cast<quint64>(simulation_phase_);
+        const auto framePath = simulationPath(QStringLiteral("radar-sim-%1.png").arg(product.toLower()));
+        const int diagnosticDelay = qBound(0, qEnvironmentVariableIntValue("EFIS_WEATHER_SIMULATION_IO_DELAY_MS"), 5000);
+        simulation_frame_in_flight_ = true;
+        QPointer<WeatherService> service(this);
+        const bool queued = QMetaObject::invokeMethod(simulation_worker_context_,
+            [service, image = std::move(image), framePath, product, phase, diagnosticDelay]() mutable {
+                QElapsedTimer workerElapsed;
+                workerElapsed.start();
+                if (diagnosticDelay > 0) QThread::msleep(static_cast<unsigned long>(diagnosticDelay));
+                QSaveFile file(framePath);
+                bool saved = false;
+                QString error;
+                if (!file.open(QIODevice::WriteOnly)) {
+                    error = file.errorString();
+                } else {
+                    QImageWriter writer(&file, "PNG");
+                    if (!writer.write(image)) {
+                        error = writer.errorString();
+                        file.cancelWriting();
+                    } else if (!file.commit()) {
+                        error = file.errorString();
+                    } else {
+                        saved = true;
+                    }
+                }
+                const SimulationFrameResult result{framePath, product, phase, workerElapsed.elapsed(), saved, error};
+                if (service) QMetaObject::invokeMethod(service,
+                    [service, result] { if (service) service->finishSimulationFrame(result); },
+                    Qt::QueuedConnection);
+            }, Qt::QueuedConnection);
+        if (!queued) {
+            simulation_frame_in_flight_ = false;
+            radar_message_ = QStringLiteral("Simulation frame worker unavailable");
+            qWarning().noquote() << "event=weather_simulation_frame_queue_failed phase=" << phase;
+            emit changed();
+        }
+    }
     const auto callbackMilliseconds = callbackElapsed.elapsed();
     if (callbackMilliseconds >= 100) {
         qWarning().noquote()
             << "event=callback_stall callback=weather_simulation duration_ms="
             << callbackMilliseconds;
+    }
+}
+
+void WeatherService::finishSimulationFrame(const SimulationFrameResult& result) {
+    simulation_frame_in_flight_ = false;
+    if (result.worker_milliseconds >= 100)
+        qWarning().noquote() << "event=weather_simulation_worker_slow duration_ms=" << result.worker_milliseconds << "phase=" << result.phase;
+    if (simulation_ && result.saved && result.product == radar_product_) {
+        radar_time_ = QDateTime::currentDateTimeUtc();
+        radar_source_ = QUrl::fromLocalFile(result.path).toString()+QStringLiteral("?v=")+QString::number(result.phase);
+        radar_state_ = QStringLiteral("SIMULATED");
+        radar_message_ = QStringLiteral("Animated training weather • not observed data");
+        emit changed();
+    } else if (!result.saved) {
+        radar_message_ = QStringLiteral("Simulation frame write failed: %1").arg(result.error);
+        qWarning().noquote() << "event=weather_simulation_frame_write_failed phase=" << result.phase << "error=" << result.error;
+        emit changed();
+    }
+    if (simulation_ && simulation_frame_refresh_pending_) {
+        simulation_frame_refresh_pending_ = false;
+        QTimer::singleShot(0, this, &WeatherService::generateSimulation);
     }
 }
 
