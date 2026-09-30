@@ -108,3 +108,16 @@ la Master Matrix, il registro delle release attive o le evidenze hardware.
 
 Questi commit sono presenti soltanto nel repository locale e non risultano
 pubblicati su GitHub o replicati sul NAS durante il periodo di sospensione.
+
+## Ripresa GitHub — 2026-09-30
+
+Il proprietario ha autorizzato nuovamente commit e uso di GitHub. Il primo
+`fetch` in sola lettura ha confermato `origin/main` ancora a
+`ff75b242db0aa4075e19cecc07d5cfa779397e07`, uguale alla baseline congelata:
+divergenza `0` commit remoti e `9` commit locali, merge base coincidente con la
+baseline. Non sono quindi necessari merge preliminari, rebase o reset.
+
+Prima della pubblicazione il branch deve nuovamente superare build/test mirati,
+Project Control e `git diff --check`. Push, PR, CI e qualsiasi merge remoto
+devono essere registrati separatamente; questo riscontro non equivale ancora a
+CI PASS né a integrazione in `main`.
