@@ -32,6 +32,9 @@ class WeatherService final : public QObject {
 public:
     explicit WeatherService(QObject* parent = nullptr);
     ~WeatherService() override;
+    [[nodiscard]] static QString classifyRadarAgeSeconds(qint64 age_seconds);
+    [[nodiscard]] static QString normalizedRadarProduct(const QString& product);
+    [[nodiscard]] static QString radarCacheFileName(const QString& product, int zoom, int x, int y);
     [[nodiscard]] QString radarSource() const { return radar_source_; }
     [[nodiscard]] QString radarState() const { return radar_state_; }
     [[nodiscard]] int radarAgeMinutes() const;
@@ -76,6 +79,8 @@ private:
     void requestMetar();
     void requestTaf();
     void updateAgeState();
+    bool loadCurrentRadarCache();
+    void clearRadarFrame(const QString& message);
     [[nodiscard]] QString cachePath(const QString& name) const;
     QNetworkAccessManager network_;
     QTimer refresh_timer_;

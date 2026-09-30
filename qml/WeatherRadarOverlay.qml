@@ -11,7 +11,10 @@ Item {
     property int refreshMinutes: 5
     property real badgeTopMargin: 6
     property var weatherProvider: weather
-    readonly property bool available: radar.status === Image.Ready && root.weatherProvider.radarState !== "EXPIRED"
+    readonly property bool trustedDisplayState: root.weatherProvider.radarState === "CURRENT"
+                                                || root.weatherProvider.radarState === "STALE"
+                                                || root.weatherProvider.radarState === "SIMULATED"
+    readonly property bool available: radar.status === Image.Ready && root.trustedDisplayState
     readonly property bool loading: radar.status === Image.Loading
 
     clip: true

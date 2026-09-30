@@ -360,6 +360,11 @@ if(EFIS_BUILD_TESTS)
             "(requires Python3 and target efis-pfd-qt).")
     endif()
     if(Python3_Interpreter_FOUND)
+        add_test(NAME efis_edge_weather_cache_tests
+            COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/server/edge-node/test_edge_weather.py)
+        set_tests_properties(efis_edge_weather_cache_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/server/edge-node)
         add_test(NAME efis_emergency_event_transport_tests
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/blackbox/test_emergency_event_transport.py)
         add_test(NAME efis_voice_replay_adapter_tests

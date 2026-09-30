@@ -28,6 +28,33 @@ int main(int argc, char** argv) {
     qputenv("EFIS_WEATHER_SIMULATION_DIR", outputRoot.toUtf8());
 
     try {
+        require(WeatherService::classifyRadarAgeSeconds(-6) == QStringLiteral("CLOCK SKEW"),
+                "future radar timestamp outside tolerance must fail closed");
+        require(WeatherService::classifyRadarAgeSeconds(-5) == QStringLiteral("CURRENT"),
+                "small clock jitter must remain inside tolerance");
+        require(WeatherService::classifyRadarAgeSeconds(600) == QStringLiteral("CURRENT"),
+                "600 seconds must remain CURRENT");
+        require(WeatherService::classifyRadarAgeSeconds(601) == QStringLiteral("STALE"),
+                "601 seconds must become STALE");
+        require(WeatherService::classifyRadarAgeSeconds(1200) == QStringLiteral("STALE"),
+                "1200 seconds must remain STALE");
+        require(WeatherService::classifyRadarAgeSeconds(1201) == QStringLiteral("EXPIRED"),
+                "1201 seconds must become EXPIRED");
+        require(WeatherService::radarCacheFileName(QStringLiteral("VMI"), 6, 34, 22)
+                    == QStringLiteral("radar-vmi-z6-34-22.png"),
+                "VMI cache key must include product, zoom and tile");
+        require(WeatherService::radarCacheFileName(QStringLiteral("CAPPI 3000"), 6, 34, 22)
+                    == QStringLiteral("radar-cappi-3000-z6-34-22.png"),
+                "cache product must be normalized without losing identity");
+        require(WeatherService::radarCacheFileName(QStringLiteral("SRI"), 6, 34, 22)
+                    != WeatherService::radarCacheFileName(QStringLiteral("VMI"), 6, 34, 22),
+                "different products must never share a cache key");
+        require(WeatherService::normalizedRadarProduct(QStringLiteral(" sri ")) == QStringLiteral("SRI"),
+                "known products must normalize deterministically");
+        require(WeatherService::radarCacheFileName(QStringLiteral("../VMI"), 6, 34, 22).isEmpty(),
+                "unknown or path-like product names must fail closed");
+        require(WeatherService::radarCacheFileName(QStringLiteral("VMI"), 6, -1, 22).isEmpty(),
+                "negative tile coordinates must fail closed");
         {
             WeatherService weather;
             QElapsedTimer callback;
@@ -58,6 +85,13 @@ int main(int argc, char** argv) {
             require(weather.radarState() == QStringLiteral("SIMULATED"),
                     "simulation frame did not publish SIMULATED state");
             require(weather.simulationPhase() >= 1, "simulation phase did not advance");
+            weather.cycleProduct();
+            weather.cycleProduct();
+            require(weather.radarProduct() == QStringLiteral("CAPPI 3000"),
+                    "simulation must expose the CAPPI training product");
+            weather.setSimulation(false);
+            require(weather.radarProduct() == QStringLiteral("VMI"),
+                    "leaving simulation must reject the simulation-only CAPPI product");
         }
         QDir(outputRoot).removeRecursively();
         std::cout << "weather_service_tests: PASS\n";

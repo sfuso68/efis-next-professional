@@ -2,7 +2,7 @@
 
 Aggiornamento: 2026-09-30
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `origin/main` `3c7bb4d5495e1ce9f582dd185be48b9563993e48`
+Baseline integrata esaminata: `origin/main` `ff75b242db0aa4075e19cecc07d5cfa779397e07`
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -17,6 +17,12 @@ Il quadro direzionale corrente con pianificazione R0, gate, workstream,
 problemi e attività interattive è in
 [`AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md`](../project/AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md).
 Il rapporto del 2026-09-20 resta uno snapshot storico.
+
+Durante il limite mensile GitHub comunicato il 2026-09-30, i lavori successivi
+sono conservati soltanto in commit locali secondo
+[`CHECKPOINT-2026-09-30-GITHUB-OFFLINE-DEVELOPMENT.md`](CHECKPOINT-2026-09-30-GITHUB-OFFLINE-DEVELOPMENT.md).
+La baseline sopra indicata è l'ultima `main` remota osservata, non una
+dichiarazione sullo stato remoto durante il periodo offline.
 
 ## 1. Quadro immediato
 
@@ -905,3 +911,68 @@ una finestra separata; ricevitori, RF, decoder e annunci display restano non
 qualificati. `NAV-003` e `BBX-003` restano `PARTIAL`; il prodotto resta
 DEVELOPMENT/NON-CERT e `flight_approval=false`. Evidenza:
 `evidence/blackbox-nav-immutable-preparation-20260930/README.md`.
+
+## 42. Hardening offline cache meteo edge — 2026-09-30
+
+Il servizio edge METAR/TAF non usa più il `mtime` modificabile del file come
+fonte primaria di freshness e non considera più implicitamente corrente un
+timestamp futuro. Il record deve avere schema V1, payload oggetto e
+`fetched_utc` timezone-aware; gli ICAO sono confinati a quattro caratteri
+alfanumerici ASCII.
+
+**Implementato:** stati deterministici `CURRENT` (<=10 min), `STALE` (11–20
+min), `EXPIRED` (>20 min), `CLOCK_SKEW`, `NO_REPORT`, `NO_DATA` e `INVALID`;
+età, provenienza, soglie e visibilità esplicite; `safety_use_allowed=false` in
+ogni stato; status V2 aggregato per stazione. Cache scadute o con clock skew
+non sono presentabili come osservazioni correnti.
+
+**Verificato solo software:** test locali per confini 600/601/1200/1201 s,
+schema/payload/timestamp corrotti, futuro, assenza report, path traversal ICAO,
+riepilogo stati e resolver pinning. **Verificato su hardware reale:** nulla.
+Provider, licenze, TLS/CA, timer, payload reali, deployment ARM64 e consumer
+RPi5 restano aperti; `BBX-004` e `WX-001` restano `PARTIAL`.
+
+## 43. Allowlist fail-closed overlay radar — 2026-09-30
+
+La proprietà QML `available` non accetta più implicitamente ogni stato diverso
+da `EXPIRED`: richiede ora un'immagine `Ready` e uno stato esplicitamente
+ammesso tra `CURRENT`, `STALE` e `SIMULATED`. Stati ignoti, `NO DATA`, errori e
+future estensioni non riconosciute restano quindi non disponibili per default.
+
+**Verificato solo software:** il validatore responsive controlla proprietà,
+tre stati ammessi e uso dell'allowlist; la suite locale del contratto passa.
+**Verificato su hardware reale:** nulla. Provider, georeferenziazione, cache,
+clock skew e resa RPi5 restano aperti; `WX-002` resta `PARTIAL`.
+
+## 44. Freshness radar C++ a precisione di secondo — 2026-09-30
+
+Il servizio Qt non classifica più l'età dopo una divisione intera per minuti,
+che manteneva erroneamente `CURRENT` fino a 10 minuti e 59 secondi. Il nuovo
+classificatore usa i secondi: `CURRENT` fino a 600, `STALE` da 601 a 1200 ed
+`EXPIRED` da 1201; timestamp oltre 5 secondi nel futuro producono `CLOCK SKEW`.
+Il valore di età pubblicato non espone inoltre minuti negativi.
+
+**Verificato solo software:** test Qt sui confini -6/-5, 600/601 e 1200/1201
+secondi, oltre al precedente test del writer asincrono. **Verificato su hardware
+reale:** nulla. Download, timestamp del provider, resa grafica e transizioni
+reali su RPi5 restano aperti; `WX-002` resta `PARTIAL`.
+
+## 45. Isolamento cache e risposte radar asincrone — 2026-09-30
+
+Il servizio radar associa ora ogni file di cache a prodotto, zoom, X e Y. Al
+cambio di prodotto o tile carica soltanto la corrispondenza esatta, altrimenti
+cancella il frame e dichiara `NO DATA`; non mantiene più un'immagine del
+contesto precedente con una nuova etichetta. Le callback di rete conservano il
+contesto originale: una risposta superata può essere archiviata nella propria
+chiave, ma non può aggiornare il frame visibile dopo un cambio di posizione,
+prodotto o passaggio alla simulazione. Il prodotto è confinato all'allowlist
+VMI/SRI/CAPPI 3000; stringhe path-like e coordinate negative non generano un
+percorso di cache. CAPPI 3000 resta solo training e l'uscita dalla simulazione
+riporta il prodotto live a VMI, evitando richieste live non supportate.
+
+**Verificato solo software:** build Qt/MSVC e test servizio radar PASS; test
+deterministici dimostrano chiavi distinte VMI/SRI, normalizzazione CAPPI e
+rifiuto di prodotto path-like e coordinate negative.
+**Verificato su hardware reale:** nulla. Race con server controllato, cache
+persistente, provider, georeferenziazione e RPi5 restano aperti; `WX-002`
+rimane `PARTIAL`.
