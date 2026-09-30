@@ -46,6 +46,14 @@ jobs:
       - name: Build Qt renderer
         run: cmake --build build/linux-qt --target efis-pfd-qt --parallel 4
 
+      - name: Build weather service tests
+        run: cmake --build build/linux-qt --target efis_weather_service_tests --parallel 4
+
+      - name: Test weather service
+        run: >-
+          ctest --test-dir build/linux-qt --output-on-failure --timeout 60
+          -R '^efis_weather_service_tests$'
+
       - name: Capture bootstrap candidate or verify committed Linux baseline
         shell: bash
         run: |
