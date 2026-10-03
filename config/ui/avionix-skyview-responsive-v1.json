@@ -7,17 +7,17 @@
   "tape_vertical_margin_logical_px": 12,
   "weather_right_margin_logical_px": 8,
   "compact_weather": {
-    "width_logical_px": 154,
-    "height_logical_px": 64,
-    "top_margin_logical_px": 62,
+    "width_logical_px": 146,
+    "height_logical_px": 60,
+    "top_margin_logical_px": 78,
     "badge_height_logical_px": 44,
     "legend_visible": false,
     "no_data_integrated": true
   },
   "regular_weather": {
-    "width_logical_px": 178,
-    "height_logical_px": 103,
-    "top_margin_logical_px": 62,
+    "width_logical_px": 170,
+    "height_logical_px": 96,
+    "top_margin_logical_px": 78,
     "badge_height_logical_px": 34,
     "legend_visible": true,
     "no_data_gap_logical_px": 6

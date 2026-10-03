@@ -999,3 +999,34 @@ controllata delle risposte VMI/SRI.
 su hardware reale:** nulla. Provider reale, validazione del payload,
 georeferenziazione, cache persistente e resa RPi5 restano aperti; `WX-002`
 rimane `PARTIAL`.
+
+## 47. Correzione leggibilità PFD da pannello reale — 2026-10-03
+
+Una fotografia del MFD reale ha localizzato quattro difetti della pagina PFD:
+lo stato `AIRSPEED FAIL` non era dominante nel punto di lettura IAS, ALT/VS
+avevano gerarchia e separazione insufficienti, la bussola inferiore esponeva
+etichette senza un arco graduato chiaramente distinguibile e i dati NAV da
+6–8 px si perdevano sul terreno. Il meteo compatto invadeva inoltre la fascia
+della prua superiore. La fotografia e il relativo digest sono conservati sul
+branch di evidenza `work/mfd-hardware-baseline-20261003`, commit `08203d4`.
+
+**Implementato:** flag locale `IAS FAIL` fail-closed; finestre IAS/ALT e VS più
+opache, separate e leggibili; fascia ALT/VS ampliata; bussola inferiore con arco
+reale ±35°, tacche ogni 5° e valori ogni 10°; pannello NAV contrastato da
+340×48 px con testo principale da 10 px e secondario da 9 px; scala distanza
+spostata fuori dal pannello; overlay meteo ridotto e abbassato sotto la fascia
+heading. Il contratto responsive e il validatore sono stati aggiornati senza
+modificare autorità di comando, sorgenti dati o logica di validità.
+
+**Verificato solo software:** `qmllint` senza errori; compilazione completa
+Qt/MSVC Release di 413 step, inclusa generazione QML AOT, PASS; validatore
+SkyView responsive PASS; 21 test Python mirati HMI/SkyView PASS. La cattura
+offscreen Windows non è stata prodotta perché Smart App Control ha bloccato
+l'eseguibile locale non firmato.
+
+**Verificato su hardware reale:** soltanto la release precedente che ha
+originato il difetto e la fotografia di riferimento; questa correzione non è
+stata installata né osservata su RPi5. **Aperto:** cattura Linux/Qt, review
+visuale 1024×600, build ARM64, release immutabile, rollback e acceptance touch
+su MFD prima di qualunque distribuzione PFD. `PFD-002` e `MFD-001` restano
+`PARTIAL`; nessuna approvazione al volo.

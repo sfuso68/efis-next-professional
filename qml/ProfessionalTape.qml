@@ -130,11 +130,18 @@ Rectangle {
         // numero composto.
         anchors.rightMargin: tape.rightSide ? 45*tape.uiScale : 0
         anchors.leftMargin: tape.rightSide ? 0 : 5*tape.uiScale
-        width: (tape.role === "IAS" ? 66 : 76)*tape.uiScale; height: 50*tape.uiScale
-        color: "#A0061018"; border.color: "transparent"; border.width: 0; radius: 2*tape.uiScale
-        Text { anchors.centerIn: parent; text: tape.valid ? Math.round(tape.value) : "---";
+        width: (tape.role === "IAS" ? 78 : 82)*tape.uiScale; height: 52*tape.uiScale
+        color: tape.valid ? "#D9061018" : "#E0280B10"
+        border.color: tape.valid ? "#A8C2CD" : theme.warning
+        border.width: tape.valid ? 1*tape.uiScale : 2*tape.uiScale; radius: 3*tape.uiScale
+        Text { visible: tape.valid; anchors.centerIn: parent; text: Math.round(tape.value);
             color: tape.indicatedValueColor(); font.pixelSize: (tape.role === "IAS" ? 30 : 27)*tape.uiScale; font.bold: true;
             style: Text.Outline; styleColor: "#C0000000" }
+        Column {
+            visible: !tape.valid; anchors.centerIn: parent; spacing: -1*tape.uiScale
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: tape.role; color: theme.warning; font.pixelSize: 10*tape.uiScale; font.bold: true }
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "FAIL"; color: theme.warning; font.pixelSize: 16*tape.uiScale; font.bold: true }
+        }
     }
 
     Canvas {
@@ -170,12 +177,12 @@ Rectangle {
     }
 
     Rectangle { visible: tape.rightSide; anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
-        width: 31*tape.uiScale; color: "transparent"; border.color: "transparent"
+        width: 36*tape.uiScale; color: "#38040B11"; border.color: "transparent"
         Rectangle { anchors { left: parent.left; top: parent.top; bottom: parent.bottom } width: 1*tape.uiScale; color: "#7A91A1" }
         Text { anchors { top: parent.top; horizontalCenter: parent.horizontalCenter; topMargin: 8*tape.uiScale } text: "VS"; color: theme.secondary; font.pixelSize: 7*tape.uiScale; font.bold: true }
-        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 36*tape.uiScale;
-            color: "#F003080D"; border.color: theme.borderBright
-            Text { anchors.centerIn: parent; text: tape.verticalSpeedValid ? Math.round(tape.verticalSpeed/100)*100 : "---"; color: tape.verticalSpeedValid ? theme.primary : theme.warning; font.pixelSize: 10*tape.uiScale; font.bold: true }
+        Rectangle { anchors.verticalCenter: parent.verticalCenter; width: parent.width; height: 42*tape.uiScale;
+            color: "#F0061018"; border.color: tape.verticalSpeedValid ? "#A8C2CD" : theme.warning
+            Text { anchors.centerIn: parent; text: tape.verticalSpeedValid ? Math.round(tape.verticalSpeed/100)*100 : "FAIL"; color: tape.verticalSpeedValid ? theme.primary : theme.warning; font.pixelSize: 11*tape.uiScale; font.bold: true }
         }
     }
 

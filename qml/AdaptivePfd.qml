@@ -24,7 +24,7 @@ Item {
         selectedCourse: controller.selectedCourse; commandedRoll: controller.commandedRoll;
         commandedPitch: controller.commandedPitch; flightDirectorActive: controller.flightDirectorActive;
         navigationValid: controller.navigationValid
-        leftInstrumentInset: 120*root.uiScale; rightInstrumentInset: 128*root.uiScale
+        leftInstrumentInset: 120*root.uiScale; rightInstrumentInset: 140*root.uiScale
         imageryState: controller.imageryState; imageryOfflineReady: controller.imageryOfflineReady
         imageryTileCount: controller.imageryTileCount; imageryCoverageGaps: controller.imageryCoverageGaps
         goldenMode: root.goldenMode
@@ -46,7 +46,7 @@ Item {
     }
 
     ProfessionalTape { id: altitudeTape; z: 2; anchors { right: parent.right; top: fma.bottom; topMargin: 12*root.uiScale; bottom: dock.top; bottomMargin: 12*root.uiScale }
-        width: 128*root.uiScale; uiScale: root.uiScale; role: "ALT"; value: controller.altitude;
+        width: 140*root.uiScale; uiScale: root.uiScale; role: "ALT"; value: controller.altitude;
         selectedValue: controller.selectedAltitude; selectedValid: controller.selectedAltitudeValid
         trend: controller.verticalSpeedValid ? controller.altitudeTrend : 0; valid: controller.altitudeValid;
         verticalSpeed: controller.verticalSpeed; verticalSpeedValid: controller.verticalSpeedValid }
@@ -55,9 +55,9 @@ Item {
         id: weatherOverlay
         z: 3
         readonly property bool compactSkyView: root.width <= 1100
-        anchors { right: altitudeTape.left; top: fma.bottom; rightMargin: 8*root.uiScale; topMargin: 62*root.uiScale }
-        width: (compactSkyView ? 154 : 178)*root.uiScale
-        height: (compactSkyView ? 64 : 103)*root.uiScale
+        anchors { right: altitudeTape.left; top: fma.bottom; rightMargin: 8*root.uiScale; topMargin: 78*root.uiScale }
+        width: (compactSkyView ? 146 : 170)*root.uiScale
+        height: (compactSkyView ? 60 : 96)*root.uiScale
         uiScale: root.uiScale; radarOpacity: 0.72
         compactLayout: compactSkyView
         weatherProvider: root.goldenMode ? root.controller : weather

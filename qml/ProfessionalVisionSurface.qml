@@ -188,33 +188,72 @@ Rectangle {
         Item { anchors { left: parent.left; right: parent.right; bottom: parent.bottom } height: 125*vision.uiScale; z: 20
             TapHandler { acceptedButtons: Qt.LeftButton; onTapped: vision.navigationRequested() }
         }
-        Repeater { model: 8; delegate: Text { required property int index
-                visible: vision.headingValid
-                property real compassAngle: (235+index*10)*Math.PI/180
-                property real compassRadius: vision.width*.402
-                x: vision.width*.5 + Math.cos(compassAngle)*compassRadius - width/2
-                y: vision.height*.96+vision.width*.4257*.81915204 + Math.sin(compassAngle)*compassRadius - height/2
-                text: vision.headingValid ? ("000"+Math.round((vision.heading-35+index*10+360)%360)).slice(-3) : "---"
-                color: (index===3||index===4) ? theme.primary : "#C9D6DA"; font.pixelSize: 8*vision.uiScale; font.bold: true
-        } }
-        Rectangle { visible: vision.selectedCourseValid; anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 17*vision.uiScale }
-            width: 2*vision.uiScale; height: 52*vision.uiScale; color: theme.magenta }
-        Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 4*vision.uiScale }
-            text: "▲"; color: theme.primary; font.pixelSize: 15*vision.uiScale; font.bold: true }
-        Item { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 7*vision.uiScale }
-            width: 292*vision.uiScale; height: 36*vision.uiScale
-            Column { anchors.left: parent.left; spacing: 1*vision.uiScale
-                Text { text: "GPS1 • SIM"; color: theme.magenta; font.pixelSize: 8*vision.uiScale; font.bold: true }
-                Text { text: "DTK  "+(vision.selectedCourseValid ? Math.round(vision.selectedCourse)+"°" : "---"); color: vision.selectedCourseValid ? theme.primary : theme.amber; font.pixelSize: 7*vision.uiScale; font.bold: true }
-                Text { text: "DIS  "+(vision.positionValid && isFinite(vision.distanceNm()) ? vision.distanceNm().toFixed(1)+" NM" : "---"); color: vision.positionValid ? theme.cyan : theme.amber; font.pixelSize: 7*vision.uiScale; font.bold: true }
-            }
-            Column { anchors.right: parent.right; spacing: 1*vision.uiScale
-                Text { anchors.right: parent.right; text: vision.selectedAirport.icao || "----"; color: theme.magenta; font.pixelSize: 8*vision.uiScale; font.bold: true }
-                Text { anchors.right: parent.right; text: "ETE  "+vision.eteText(); color: theme.primary; font.pixelSize: 7*vision.uiScale; font.bold: true }
-                Text { anchors.right: parent.right; text: vision.navigationValid?"CDI VALID":"NAV INVALID"; color: vision.navigationValid?theme.green:theme.amber; font.pixelSize: 7*vision.uiScale; font.bold: true }
+        Canvas {
+            id: lowerCompass
+            visible: vision.headingValid
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+            height: 135*vision.uiScale
+            property real observedHeading: vision.heading
+            property real observedScale: vision.uiScale
+            onObservedHeadingChanged: requestPaint()
+            onObservedScaleChanged: requestPaint()
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+            onPaint: {
+                const ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+                const radius = width * 0.42
+                const cx = width / 2
+                const cy = height + radius * 0.78
+                ctx.strokeStyle = "#D6E5E9"
+                ctx.lineWidth = Math.max(1.2, 1.4 * vision.uiScale)
+                ctx.beginPath()
+                ctx.arc(cx, cy, radius, 235*Math.PI/180, 305*Math.PI/180, false)
+                ctx.stroke()
+                ctx.textAlign = "center"
+                ctx.textBaseline = "middle"
+                ctx.font = "bold " + Math.round(9*vision.uiScale) + "px sans-serif"
+                for (let offset=-35; offset<=35; offset+=5) {
+                    const angle = (270+offset)*Math.PI/180
+                    const major = offset % 10 === 0
+                    const outerX = cx + Math.cos(angle)*radius
+                    const outerY = cy + Math.sin(angle)*radius
+                    const innerRadius = radius - (major ? 13 : 7)*vision.uiScale
+                    const innerX = cx + Math.cos(angle)*innerRadius
+                    const innerY = cy + Math.sin(angle)*innerRadius
+                    ctx.strokeStyle = major ? "#F4F7FA" : "#9FB3BE"
+                    ctx.lineWidth = major ? 1.6*vision.uiScale : 1.0*vision.uiScale
+                    ctx.beginPath(); ctx.moveTo(outerX,outerY); ctx.lineTo(innerX,innerY); ctx.stroke()
+                    if (major) {
+                        const labelRadius = radius - 28*vision.uiScale
+                        const lx = cx + Math.cos(angle)*labelRadius
+                        const ly = cy + Math.sin(angle)*labelRadius
+                        const value = Math.round((vision.heading+offset+360)%360)
+                        ctx.fillStyle = Math.abs(offset)<=10 ? "#FFFFFF" : "#D4E0E5"
+                        ctx.fillText(("000"+value).slice(-3), lx, ly)
+                    }
+                }
             }
         }
-        Item { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 6*vision.uiScale } width: 76*vision.uiScale; height: 12*vision.uiScale
+        Rectangle { visible: vision.selectedCourseValid; anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 48*vision.uiScale }
+            width: 3*vision.uiScale; height: 39*vision.uiScale; color: theme.magenta }
+        Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 48*vision.uiScale }
+            text: "▲"; color: theme.primary; font.pixelSize: 15*vision.uiScale; font.bold: true }
+        Rectangle { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 4*vision.uiScale }
+            width: 340*vision.uiScale; height: 48*vision.uiScale; radius: 4*vision.uiScale
+            color: "#C0050D14"; border.color: "#78909D"; border.width: 1*vision.uiScale
+            Column { anchors { left: parent.left; leftMargin: 10*vision.uiScale; verticalCenter: parent.verticalCenter } spacing: 1*vision.uiScale
+                Text { text: "GPS1 • SIM"; color: theme.magenta; font.pixelSize: 10*vision.uiScale; font.bold: true }
+                Text { text: "DTK  "+(vision.selectedCourseValid ? Math.round(vision.selectedCourse)+"°" : "---"); color: vision.selectedCourseValid ? theme.primary : theme.amber; font.pixelSize: 9*vision.uiScale; font.bold: true }
+                Text { text: "DIS  "+(vision.positionValid && isFinite(vision.distanceNm()) ? vision.distanceNm().toFixed(1)+" NM" : "---"); color: vision.positionValid ? theme.cyan : theme.amber; font.pixelSize: 9*vision.uiScale; font.bold: true }
+            }
+            Column { anchors { right: parent.right; rightMargin: 10*vision.uiScale; verticalCenter: parent.verticalCenter } spacing: 1*vision.uiScale
+                Text { anchors.right: parent.right; text: vision.selectedAirport.icao || "----"; color: theme.magenta; font.pixelSize: 10*vision.uiScale; font.bold: true }
+                Text { anchors.right: parent.right; text: "ETE  "+vision.eteText(); color: theme.primary; font.pixelSize: 9*vision.uiScale; font.bold: true }
+                Text { anchors.right: parent.right; text: vision.navigationValid?"CDI VALID":"NAV INVALID"; color: vision.navigationValid?theme.green:theme.amber; font.pixelSize: 9*vision.uiScale; font.bold: true }
+            }
+        }
+        Item { anchors { horizontalCenter: parent.horizontalCenter; horizontalCenterOffset: 250*vision.uiScale; bottom: parent.bottom; bottomMargin: 8*vision.uiScale } width: 90*vision.uiScale; height: 12*vision.uiScale
             Rectangle { anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter } height: 1*vision.uiScale; color: theme.cyan }
             Rectangle { anchors.left: parent.left; width: 1*vision.uiScale; height: 7*vision.uiScale; color: theme.cyan }
             Rectangle { anchors.right: parent.right; width: 1*vision.uiScale; height: 7*vision.uiScale; color: theme.cyan }
