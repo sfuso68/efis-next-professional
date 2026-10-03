@@ -54,6 +54,23 @@ jobs:
           ctest --test-dir build/linux-qt --output-on-failure --timeout 60
           -R '^efis_weather_service_tests$'
 
+      - name: Capture PFD SkyView review candidate
+        run: >-
+          python3 tools/ui/capture_hmi_golden.py
+          --executable build/linux-qt/efis-pfd-qt
+          --output-dir build/linux-skyview-candidate
+          --platform offscreen
+          --delay-ms 1200
+          --role skyview
+
+      - name: Upload PFD SkyView review candidate
+        uses: actions/upload-artifact@v6
+        with:
+          name: pfd-skyview-linux-review-candidate
+          path: build/linux-skyview-candidate
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Capture bootstrap candidate or verify committed Linux baseline
         shell: bash
         run: |
