@@ -1024,16 +1024,27 @@ SkyView responsive PASS; 21 test Python mirati HMI/SkyView PASS. La cattura
 offscreen Windows non è stata prodotta perché Smart App Control ha bloccato
 l'eseguibile locale non firmato. La CI è stata inoltre estesa con una cattura
 Linux/offscreen PFD-SkyView separata nelle risoluzioni 1024×600, 1280×800 e
-1920×1080 e con artefatto di review a conservazione limitata; l'esito del primo
-run e la review delle immagini devono essere registrati prima di considerare
-chiuso il gate software visivo. Il primo artefatto ha rivelato che la fixture
+1920×1080 e con artefatto di review a conservazione limitata. Il primo
+artefatto ha rivelato che la fixture
 SkyView ometteva nove flag di validità e produceva quindi `ATTITUDE INVALID`,
 VS `FAIL` e bussole nascoste pur con CI verde. La fixture e il validatore sono
-stati corretti in modo fail-closed; serve un nuovo artefatto prima della review.
+stati corretti in modo fail-closed. Il nuovo artefatto del commit `35059b9`,
+generato il 2026-10-04T06:53:02Z, è stato revisionato alle tre risoluzioni:
+assetto, scala heading superiore, arco HSI inferiore, dati NAV, IAS, ALT e VS
+sono presenti; `ATTITUDE INVALID` e i falsi `FAIL` non compaiono; le finestre
+ALT e VS non si sovrappongono. A 1024×600 il layout resta denso ma utilizzabile;
+1280×800 e 1920×1080 hanno margini e gerarchia migliori. SHA-256 immagini:
+`f72cc2a955dd4d4c742d01badab7f1f28321879561fba058f52b8619116a91e2`,
+`f171aef9e51803b1cf2f7b8cbe4ca115b0b1eecd08526cc9c165a1088d81f82a` e
+`024cb4c414f3d6bac2851cf2dc1a9a231aec2caf666cbfbf8da1527082e9bf48`.
+I run GitHub Actions `37183809227` (push) e `37183811270` (pull request) sono
+PASS per `linux-qt-golden`, `linux-core` e `linux-sanitizers`. Il target Qt/MSVC
+è stato inoltre ricompilato incrementalmente dopo la correzione della fixture.
 
 **Verificato su hardware reale:** soltanto la release precedente che ha
 originato il difetto e la fotografia di riferimento; questa correzione non è
-stata installata né osservata su RPi5. **Aperto:** cattura Linux/Qt, review
-visuale 1024×600, build ARM64, release immutabile, rollback e acceptance touch
-su MFD prima di qualunque distribuzione PFD. `PFD-002` e `MFD-001` restano
+stata installata né osservata su RPi5. Cattura Linux/Qt, review visuale
+1024×600 e CI sono concluse solo a livello software. **Aperto:** restano build
+ARM64, release immutabile, rollback e acceptance touch/leggibilità sul MFD
+reale prima di qualunque distribuzione PFD. `PFD-002` e `MFD-001` restano
 `PARTIAL`; nessuna approvazione al volo.
