@@ -1048,3 +1048,39 @@ stata installata né osservata su RPi5. Cattura Linux/Qt, review visuale
 ARM64, release immutabile, rollback e acceptance touch/leggibilità sul MFD
 reale prima di qualunque distribuzione PFD. `PFD-002` e `MFD-001` restano
 `PARTIAL`; nessuna approvazione al volo.
+
+## 48. Preparazione release ARM64 MFD per la leggibilità PFD — 2026-10-04
+
+È stato formalizzato il gate successivo alla review Linux della sezione 47,
+senza contattare o modificare il nodo `pi5`. La candidata MFD è fissata al
+commit `76afead639599a08cb187bf93f1127c84a4df9ed`; il relativo archivio Git
+riproducibile misura 50.548.958 byte e ha SHA-256
+`b318d9da3914826cdc4c5a07b5803be25d17973b4685df64633646a053ee740b`.
+
+**Implementato:** procedura dedicata di preparazione nativa ARM64 senza
+switch; attivazione root con identità nodo, architettura, riserva disco,
+manifesto, supervisore unico, assenza di servizi display concorrenti,
+`get_throttled=0x0`, porta DDP 49002, switch atomico e recupero automatico;
+rollback reale verso `mfd-3432402-primary-v1`; ritorno alla candidata e
+verifica post-reboot read-only. Il drop-in MFD azzera inoltre la condizione
+legacy sul percorso non canonico `build-rpi5` e controlla il binario verificato
+`bin/efis-pfd-qt`.
+
+**Verificato solo software:** sintassi dei tre script con Bash; 37 test release,
+supervisione e paired-display PASS (un test symlink non applicabile su Windows
+è SKIP); Project Control `--check` PASS; l'archivio è stato generato due volte
+con identico digest e dimensione. La preparazione dichiara
+`EXECUTION_AUTHORIZED=false`; la verifica reboot dichiara
+`VISUAL_TOUCH_ACCEPTANCE=NOT_RUN` e `FLIGHT_APPROVAL=false`.
+
+**Verificato su hardware reale:** nulla in questo incremento. La release attiva
+resta `mfd-3432402-primary-v1`; non sono stati eseguiti build ARM64, switch,
+restart, reboot, rollback o nuova osservazione grafica sul nodo.
+
+**Aperto / bloccante:** il precedente `get_throttled=0x50000` impedisce
+intenzionalmente l'attivazione finché alimentatore/cavo non sono qualificati e
+un avvio pulito non restituisce `0x0`. Dopo autorizzazione di banco occorrono
+trasferimento archivio, build/test ARM64, attivazione, rollback, reboot e
+acceptance operatore a 1024×600 su IAS, ALT/VS, bussole, NAV, overlay, touch e
+terrain. Solo dopo un PASS MFD si potrà preparare il PFD primario. `MFD-001`,
+`PFD-002`, `PWR-001` e `VER-003` restano aperti/PARTIAL.

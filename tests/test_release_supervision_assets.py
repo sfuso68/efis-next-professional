@@ -93,9 +93,50 @@ class ReleaseSupervisionAssetTests(unittest.TestCase):
 
     def test_mfd_does_not_write_logs_below_immutable_release(self):
         content = (self.units / "efis-mfd-release-v1.override.conf").read_text(encoding="utf-8")
+        self.assertIn("ConditionPathExists=\n", content)
+        self.assertIn(
+            "ConditionPathExists=/home/pi/efis-next-current/bin/efis-pfd-qt",
+            content,
+        )
+        self.assertNotIn("ConditionPathExists=/home/pi/efis-next-current/build-rpi5", content)
         self.assertIn("StandardOutput=journal", content)
         self.assertIn("StandardError=journal", content)
         self.assertNotIn("efis-next-current/logs", content)
+
+    def test_mfd_legibility_rollout_is_pinned_guarded_and_reversible(self):
+        scripts = ROOT / "deploy" / "scripts"
+        prepare = (scripts / "prepare_mfd_legibility_immutable_release.sh").read_text(
+            encoding="utf-8"
+        )
+        activate = (scripts / "activate_mfd_legibility_immutable_release.sh").read_text(
+            encoding="utf-8"
+        )
+        reboot = (scripts / "verify_mfd_legibility_reboot_acceptance.sh").read_text(
+            encoding="utf-8"
+        )
+        release = "mfd-76afead-legibility-v1"
+        candidate = "/home/pi/efis-next-release-mfd-76afead-v1"
+        rollback = "/home/pi/efis-next-release-mfd-3432402-v1"
+        commit = "76afead639599a08cb187bf93f1127c84a4df9ed"
+        archive_sha = "b318d9da3914826cdc4c5a07b5803be25d17973b4685df64633646a053ee740b"
+
+        for content in (prepare, activate, reboot):
+            self.assertIn("RPI5_AARCH64", content)
+            self.assertIn(candidate, content)
+        self.assertIn(release, prepare)
+        self.assertIn(commit, prepare)
+        self.assertIn(archive_sha, prepare)
+        self.assertIn("sha256sum --check --strict", prepare)
+        self.assertIn("EXECUTION_AUTHORIZED=false", prepare)
+        self.assertIn("skyview_responsive", prepare)
+        self.assertIn(rollback, activate)
+        self.assertIn("grep -qx 'throttled=0x0'", activate)
+        self.assertIn("ROLLBACK_DRILL=PASS", activate)
+        self.assertIn("mv -Tf", activate)
+        self.assertIn("MFD_LEGIBILITY_IMMUTABLE_ACTIVATION=PASS", activate)
+        self.assertIn("MFD_LEGIBILITY_REBOOT_ACCEPTANCE=PASS", reboot)
+        self.assertIn("VISUAL_TOUCH_ACCEPTANCE=NOT_RUN", reboot)
+        self.assertIn("FLIGHT_APPROVAL=false", reboot)
 
     def test_pfd_and_recorder_share_one_validated_release_without_runtime_writes(self):
         pfd = (self.units / "efis-pfd-release-v1.override.conf").read_text(
