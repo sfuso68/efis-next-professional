@@ -90,6 +90,7 @@ def validate_repository(root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     pfd = (root / "qml/AdaptivePfd.qml").read_text(encoding="utf-8")
     weather = (root / "qml/WeatherRadarOverlay.qml").read_text(encoding="utf-8")
+    fixture = (root / "qml/HmiGoldenController.qml").read_text(encoding="utf-8")
     markers = {
         "readonly property bool compactSkyView: root.width <= 1100": "breakpoint",
         "topMargin: 78*root.uiScale": "top clearance",
@@ -114,6 +115,17 @@ def validate_repository(root: Path = ROOT) -> list[str]:
     for marker, (source, label) in legibility_markers.items():
         if marker not in source:
             errors.append(f"PFD legibility missing {label}: {marker}")
+    required_fixture_validity = (
+        "selectedAirspeedValid", "selectedAltitudeValid", "verticalSpeedValid",
+        "attitudeValid", "headingValid", "positionValid", "groundSpeedValid",
+        "selectedCourseValid", "flightDirectorGuidanceValid",
+    )
+    for name in required_fixture_validity:
+        marker = f"property bool {name}:true"
+        if marker not in fixture:
+            errors.append(
+                f"SkyView fixture must exercise valid primary flight data: {marker}"
+            )
     weather_markers = {
         "property bool compactLayout: false": "compact property",
         "property bool radarEnabled: true": "non-shadowing radar state",

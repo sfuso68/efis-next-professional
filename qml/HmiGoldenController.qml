@@ -40,23 +40,32 @@ QtObject {
     property string blackBoxState:"ONLINE"
     property real airspeed:96
     property real selectedAirspeed:100
+    property bool selectedAirspeedValid:true
     property real airspeedTrend:3
     property bool airspeedValid:true
     property real altitude:4200
     property real selectedAltitude:4500
+    property bool selectedAltitudeValid:true
     property real altitudeTrend:180
     property bool altitudeValid:true
     property real verticalSpeed:350
+    property bool verticalSpeedValid:true
     property real roll:-4
     property real pitch:2
+    property bool attitudeValid:true
     property real heading:327
+    property bool headingValid:true
     property real latitude:46.1648
     property real longitude:12.2487
+    property bool positionValid:true
     property real groundSpeed:104
+    property bool groundSpeedValid:true
     property real selectedCourse:332
+    property bool selectedCourseValid:true
     property real commandedRoll:0
     property real commandedPitch:4
     property bool flightDirectorActive:true
+    property bool flightDirectorGuidanceValid:true
     property bool navigationValid:true
     property var selectedAirport:({icao:"LIDB",latitude_deg:46.16655,longitude_deg:12.25039})
     property var aircraftSpeedProfile:({vso:39,vs1:45,vx:61,vy:68,vfe:81,vno:118,vne:145,va:97,bestGlide:65,vref:55})

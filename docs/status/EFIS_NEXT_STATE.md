@@ -1026,7 +1026,10 @@ l'eseguibile locale non firmato. La CI è stata inoltre estesa con una cattura
 Linux/offscreen PFD-SkyView separata nelle risoluzioni 1024×600, 1280×800 e
 1920×1080 e con artefatto di review a conservazione limitata; l'esito del primo
 run e la review delle immagini devono essere registrati prima di considerare
-chiuso il gate software visivo.
+chiuso il gate software visivo. Il primo artefatto ha rivelato che la fixture
+SkyView ometteva nove flag di validità e produceva quindi `ATTITUDE INVALID`,
+VS `FAIL` e bussole nascoste pur con CI verde. La fixture e il validatore sono
+stati corretti in modo fail-closed; serve un nuovo artefatto prima della review.
 
 **Verificato su hardware reale:** soltanto la release precedente che ha
 originato il difetto e la fotografia di riferimento; questa correzione non è
