@@ -1,6 +1,6 @@
 # MFD legibility immutable release — software preparation
 
-Date: 2026-10-04  
+Date: 2026-10-04
 Status: PREPARED-SW / NOT RUN ON HARDWARE / DEVELOPMENT-NON-CERT
 
 ## Identity
