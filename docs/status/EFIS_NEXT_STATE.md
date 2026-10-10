@@ -1084,3 +1084,44 @@ trasferimento archivio, build/test ARM64, attivazione, rollback, reboot e
 acceptance operatore a 1024×600 su IAS, ALT/VS, bussole, NAV, overlay, touch e
 terrain. Solo dopo un PASS MFD si potrà preparare il PFD primario. `MFD-001`,
 `PFD-002`, `PWR-001` e `VER-003` restano aperti/PARTIAL.
+
+## 49. Planning e cruscotto progetto — 2026-10-10
+
+PRJ-001 resta PARTIAL. Implementati audit documentale e planning aggiornato
+in `docs/project/FUSO_AVIONICS_NEXT_STATE_AND_PLAN_2026-10-10.md`, generatore
+di viewer offline ricercabile/filtrabile con evidence/rischio/next/acceptance
+e download handoff. Fonte unica: matrice; nessuna modifica di stato dalla UI.
+Il digest identifica lo snapshot; nessuna acquisizione live o automazione
+ricorrente installata. GitHub non raggiungibile nel controllo locale odierno:
+main, CI, merge e replica NAS non riconfermati. Hardware: NOT_RUN.
+Restano da verificare browser interattivo e pubblicazione serverha.
+Verificato solo software: generazione dashboard PASS, confronto deterministico
+`generate_dashboard --check` PASS, `generate_status --check` PASS, 2/2 test
+unitari PASS (determinismo/embedding sicuro e rifiuto colonne incomplete).
+Correzione del conteggio sezione 48: 37 test totali, 36 PASS e 1 SKIP,
+non 37 PASS più 1 SKIP.
+
+### Pubblicazione serverha — 2026-10-10
+
+Installati sotto utente sfuso viewer read-only `avionix-dashboard.service`
+e refresh `avionix-dashboard-refresh.timer` ogni cinque minuti, con linger
+già attivo. Bind esclusivo 127.0.0.1:8766, accesso via tunnel SSH; nessuna
+modifica Caddy/firewall/servizi avionici. Il viewer serve solo index/status,
+non espone repository né credenziali, usa no-store e mostra errori/stale.
+Verifica reale server: servizi active, HTTP index/status PASS, bind e timer
+PASS. Reboot e verifica visuale browser NOT_RUN.
+Fonte attuale mirror locale `7aa45b66…`, datato 29 settembre, NON aggiornato
+da GitHub. Main remoto letto oggi `1cc0a786…`: sincronizzazione incompleta.
+Stato esposto LOCAL_MIRROR_ONLY/github_verified=false. Chiave deploy dedicata
+generata su serverha, autorizzazione GitHub read-only ancora necessaria.
+Nessun commit/push/merge o cambiamento di stato requisiti: PRJ-001 PARTIAL.
+
+Completamento: deploy key autorizzata e verificata; host key confrontata con
+GitHub Docs e fissata in file dedicato. Refresh legge direttamente main via
+SSH read-only in `.local/state/avionix-dashboard/github.git`, senza toccare
+mirror NAS. Fetch fail-closed senza force; GitHub main `1cc0a78682741872e19082ae84dae936370e3d7e`
+osservato e servito con `GITHUB_SYNC_OK`, Result=success/ExecMainStatus=0.
+SSH isolato con `-F /dev/null` evita errore permessi della configurazione
+systemd nel servizio confinato; nessuna modifica SSH globale.
+Il timer aggiorna main ogni cinque minuti: branch/PR non integrati non sono
+inclusi. Nessuna qualifica hardware implicita e reboot server NOT_RUN.

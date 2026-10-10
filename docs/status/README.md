@@ -89,3 +89,19 @@ autorità e registra i conflitti aperti.
 Il quadro direzionale completo corrente, inclusi avanzamento, problemi,
 attività interattive e planning operativo, è in
 `docs/project/AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md`.
+
+Aggiornamento documentale del 2026-10-10:
+`docs/project/FUSO_AVIONICS_NEXT_STATE_AND_PLAN_2026-10-10.md`.
+Cruscotto offline read-only: `docs/status/PROJECT_DASHBOARD.html`.
+Generare/verificare con `python -m tools.project_status.generate_dashboard`
+e lo stesso comando con `--check`. Non è monitoraggio live dei nodi.
+
+Serverha: viewer localhost:8766 + timer 5 minuti installati il 2026-10-10.
+Accesso Windows: `ssh -i C:\Users\stefa\.ssh\codex_efis_pfd_ed25519 -N -L 8766:127.0.0.1:8766 sfuso@192.168.1.6`,
+poi http://localhost:8766. Fonte attualmente mirror locale arretrato;
+sincronizzazione GitHub bloccata dall'autorizzazione deploy key read-only.
+
+Aggiornamento: deploy key autorizzata il 2026-10-10, refresh diretto di main
+GitHub attivo in repository dedicato, stato `GITHUB_SYNC_OK`. In errore
+conserva l'ultimo HTML ma segnala ERROR; oltre 15 minuti senza refresh segnala
+monitor obsoleto. Non include lavoro non integrato in main.
