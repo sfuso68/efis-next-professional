@@ -1125,3 +1125,8 @@ SSH isolato con `-F /dev/null` evita errore permessi della configurazione
 systemd nel servizio confinato; nessuna modifica SSH globale.
 Il timer aggiorna main ogni cinque minuti: branch/PR non integrati non sono
 inclusi. Nessuna qualifica hardware implicita e reboot server NOT_RUN.
+
+Audit successivo read-only: `SERVERHA_NAS_AUDIT_2026-10-10.md` conferma
+GitHub/cruscotto `1cc0a786…`, serverha backup/NAS `7aa45b66…` arretrati,
+timer NAS active/success e 114 GB disponibili su serverha. Allineamento
+backup e restore aggiornato restano aperti; nessuna sovrascrittura.
