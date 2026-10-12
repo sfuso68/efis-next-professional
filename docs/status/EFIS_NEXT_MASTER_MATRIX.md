@@ -23,6 +23,11 @@ filtri e handoff. PRJ-001 resta PARTIAL: integrazione CI, pubblicazione su
 serverha, monitor ricorrente e baseline remota non verificati; nessun nuovo
 collaudo hardware o avanzamento di stato implicito.
 
+Incremento PRJ-001 del 2026-10-12: pipeline main/tag GitHub-serverha-NAS
+fast-forward, bundle preventivo, refs storiche preservate e restore NAS reale
+PASS in `backup-pipeline-20261012.json`. PARTIAL invariato: off-site,
+retention bundle, reboot/fault e backup nuovi branch restano aperti.
+
 | ID | Area / requisito | Nodo | Stato | Evidenza attuale | Dipendenze / rischio | Prossimo passo | Criterio di chiusura |
 |---|---|---|---|---|---|---|---|
 | PRJ-001 | Master Brief e indice documentale FUSO AVIONICS NEXT | Governance | PARTIAL | Il proprietario ha approvato `FUSO AVIONICS NEXT` come nome prodotto e `EFIS NEXT` come alias tecnico il 2026-09-22; Brief R0, indice di autorità, backlog G0–G7, rapporto corrente e audit presenti; ADR-018 chiude AVX-G0-02/03 con GitHub/serverha/Blackbox/NAS allineati alla baseline storica `5891f75`, ruoli non ambigui e replica NAS ristretta verificata; C3 distingue quella baseline e `work/codex-multisource-p1` dall'HEAD `main` verificato all'ingresso del blocco `9f95862f200e93d107b7da520177da12b21586cc`, senza riscrivere gli snapshot storici; Project Control rifiuta stati non canonici, richiede la matrice e sorveglia integralmente src/ e tools/ con test di regressione; baseline C++20 di `.clang-format`, `.clang-tidy` e pre-commit documentata senza riformattazione massiva né gate CI bloccante; restore pack I-10 fail-closed implementato e verificato con sei test sintetici il 2026-09-25; il 2026-09-29 la chiave read-only è stata confinata a `git-upload-pack` e il restore NAS→serverha di `7aa45b66fc71824eb0dd4b1e6ffe898ecfcdb897` ha superato clone isolato, fsck, oggetti, file minimi e Project Control | cinque riferimenti interni non reperiti; baseline warning clang-tidy e applicazione CI restano da revisionare; protezione fuori sito, migrazione tecnica del naming e ritiro della copia Blackbox restano aperti | aggiungere una copia off-site e provarne il restore; recuperare i documenti, produrre brief R1 con naming approvato e revisionare la baseline clang-tidy | fonti indicizzate con hash, conflitti chiusi o accettati, restore provato, release correnti provate e brief revisionato |

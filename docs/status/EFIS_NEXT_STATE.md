@@ -1130,3 +1130,24 @@ Audit successivo read-only: `SERVERHA_NAS_AUDIT_2026-10-10.md` conferma
 GitHub/cruscotto `1cc0a786…`, serverha backup/NAS `7aa45b66…` arretrati,
 timer NAS active/success e 114 GB disponibili su serverha. Allineamento
 backup e restore aggiornato restano aperti; nessuna sovrascrittura.
+
+## 50. Pipeline backup corretta — 2026-10-12
+
+PRJ-001 resta PARTIAL. Implementata pipeline GitHub read-only -> serverha
+-> NAS per main e tag, senza force/prune/delete. Bundle preventivo verificato
+con digest, copie refs storiche, lock esclusivo, controllo ancestry server
+e NAS, rifiuto tag divergenti, CAS main e verifica preservazione altre refs.
+Wrapper precedente conservato `efis-git-sync-nas.pre-github-20261012`;
+timer esistente 15 minuti ripristinato active. Nessun nodo avionico modificato.
+
+Verificato su infrastruttura reale: main `1cc0a786…` allineato; restore
+isolato NAS read-only, fsck completo e SHA-256 di matrice, stato e CMakeLists
+PASS. Seconda esecuzione invariata PASS senza nuovo bundle; mantiene data
+della prova restore precedente separata dal checked_utc. Evidenza completa
+`backup-pipeline-20261012.json`. Primo restore FAIL per uso della chiave
+receive-pack, poi configurazione corretta con alias efis-nas-restore.
+
+Aperto: restore da bundle preventivo non eseguito (solo bundle verify);
+reboot/power-loss, fault test automatizzati, quota/retention bundle e off-site
+non verificati. Backup dei nuovi branch GitHub non incluso: pipeline conserva
+gli storici NAS ma replica automaticamente solo main/tag. Non è full mirror.
