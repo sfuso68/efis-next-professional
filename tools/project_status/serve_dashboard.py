@@ -58,6 +58,21 @@ def refresh():
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        if self.path == '/backup-status.json':
+            path = Path.home() / '.local/state/efis-git-backup/latest.json'
+            if not path.exists():
+                self.send_error(503)
+                return
+            raw = json.loads(path.read_text())
+            fields = ['status', 'timestamp_utc', 'checked_utc', 'main', 'restore',
+                      'no_change', 'preexisting_nas_refs_preserved']
+            body = json.dumps({k: raw[k] for k in fields if k in raw}).encode()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+            self.wfile.write(body)
+            return
         names = {'/': 'index.html', '/status.json': 'status.json'}
         name = names.get(self.path)
         if not name or not (ROOT / name).exists():
@@ -67,7 +82,9 @@ class Handler(BaseHTTPRequestHandler):
         if name == 'index.html':
             monitor = '''<aside id="monitor" style="background:#593b12;padding:16px">Verifica aggiornamento…</aside><script>
 async function health(){try{const r=await fetch('/status.json',{cache:'no-store'});if(!r.ok)throw Error(r.status);const s=await r.json(),age=(Date.now()-Date.parse(s.checked_utc))/60000;document.getElementById('monitor').textContent=(age>15?'MONITOR OBSOLETO — ':'')+s.status+' • verifica '+s.checked_utc+' • commit '+(s.commit||'?')+' del '+(s.commit_date||'?')+' • '+(s.note||s.error||'');}catch(e){document.getElementById('monitor').textContent='MONITOR NON DISPONIBILE: '+e;}}health();setInterval(health,60000);setTimeout(()=>location.reload(),300000);</script>'''
-            body = body.replace(b'<h1>', monitor.encode('utf-8') + b'<h1>', 1)
+            backup = '''<aside id="backup" style="background:#213249;padding:16px">Backup: verifica…</aside><script>
+async function backupHealth(){try{const r=await fetch('/backup-status.json',{cache:'no-store'});if(!r.ok)throw Error(r.status);const s=await r.json(),t=s.checked_utc||s.timestamp_utc;const iso=t&&t.includes('T')&&!t.includes('-')?t.slice(0,4)+'-'+t.slice(4,6)+'-'+t.slice(6,8)+'T'+t.slice(9,11)+':'+t.slice(11,13)+':'+t.slice(13,15)+'Z':t;const stale=!iso||!Number.isFinite(Date.parse(iso))||(Date.now()-Date.parse(iso))>45*60000;document.getElementById('backup').textContent='BACKUP '+s.status+(stale?' — OBSOLETO':'')+' • controllo '+t+' • restore '+s.restore+' del '+s.timestamp_utc+' • main '+s.main;}catch(e){document.getElementById('backup').textContent='BACKUP NON VERIFICABILE: '+e;}}backupHealth();setInterval(backupHealth,60000);</script>'''
+            body = body.replace(b'<h1>', (monitor + backup).encode('utf-8') + b'<h1>', 1)
         self.send_response(200)
         self.send_header('Content-Type', 'application/json' if name.endswith('json') else 'text/html; charset=utf-8')
         self.send_header('Cache-Control', 'no-store')

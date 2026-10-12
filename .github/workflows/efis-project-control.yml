@@ -33,6 +33,8 @@ jobs:
           python -m unittest tests.test_project_status_control -v
           python -m unittest tests.test_git_restore_drill -v
           python tools/project_status/generate_status.py --check
+          python -m tools.project_status.generate_dashboard --check
+          python -m unittest tests.test_project_dashboard tests.test_dashboard_refresh tests.test_backup_guards -v
 
       - name: Validate G1 sensor-node discovery contract
         run: |

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
-import fcntl
+import shutil
 
 REPO = Path('/home/sfuso/git/efis-next-professional.git')
 STATE = Path('/home/sfuso/.local/state/efis-git-backup')
@@ -34,7 +34,24 @@ def refs(remote, ssh):
                 (line.split() for line in git('ls-remote', '--refs', remote, ssh=ssh).splitlines()))
 
 
+def check_tag_conflicts(github, server, nas):
+    for ref, oid in github.items():
+        if ref.startswith('refs/tags/'):
+            for label, existing in [('server', server), ('NAS', nas)]:
+                if ref in existing and existing[ref] != oid:
+                    raise RuntimeError(label + ' tag conflict: ' + ref)
+
+
+def check_preserved(before, after, target):
+    if after.get('refs/heads/main') != target:
+        raise RuntimeError('NAS main mismatch')
+    for ref, oid in before.items():
+        if ref != 'refs/heads/main' and after.get(ref) != oid:
+            raise RuntimeError('Preexisting NAS ref changed: ' + ref)
+
+
 def main():
+    import fcntl  # Linux service; helpers remain testable on Windows.
     STATE.mkdir(parents=True, exist_ok=True)
     with (STATE / 'lock').open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -43,7 +60,10 @@ def main():
         try:
             before = git('for-each-ref', '--format=%(objectname) %(refname)')
             nas_before = refs(NAS_READ, RESTORE_SSH)
-            github = refs(GH, GH_SSH)
+            github = {r: o for r, o in refs(GH, GH_SSH).items()
+                      if r == 'refs/heads/main' or r.startswith('refs/tags/')}
+            server = {r: o for o, r in (line.split() for line in before.splitlines())}
+            check_tag_conflicts(github, server, nas_before)
             latest = STATE / 'latest.json'
             previous = json.loads(latest.read_text()) if latest.exists() else {}
             if (previous.get('status') == 'PASS' and previous.get('main') == github['refs/heads/main']
@@ -57,6 +77,9 @@ def main():
                 print('PASS: refs unchanged; prior restore evidence retained')
                 return 0
             # Preserve all preexisting server and NAS branches/tags before modifying main.
+            # Stop rather than delete backup data when storage margin is insufficient.
+            if shutil.disk_usage(STATE).free < 2 * 1024 ** 3:
+                raise RuntimeError('Backup storage reserve below 2 GiB; no pruning authorized')
             archive = f'refs/backup/{stamp}'
             for ref, oid in nas_before.items():
                 if ref.startswith(('refs/heads/', 'refs/tags/')):
@@ -91,11 +114,7 @@ def main():
             specs = ['refs/heads/main:refs/heads/main'] + [f'{r}:{r}' for r, _ in tag_specs]
             git('push', NAS, *specs, ssh=NAS_SSH)
             after = refs(NAS_READ, RESTORE_SSH)
-            if after['refs/heads/main'] != target:
-                raise RuntimeError('NAS main mismatch')
-            for ref, oid in nas_before.items():
-                if ref != 'refs/heads/main' and after.get(ref) != oid:
-                    raise RuntimeError('Preexisting NAS ref changed: ' + ref)
+            check_preserved(nas_before, after, target)
             with tempfile.TemporaryDirectory(prefix='efis-restore-', dir=STATE) as tmp:
                 restore = Path(tmp) / 'restore.git'
                 run(['git', 'clone', '--bare', NAS_READ, str(restore)], RESTORE_SSH)

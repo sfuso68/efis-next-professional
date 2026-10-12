@@ -1151,3 +1151,16 @@ Aperto: restore da bundle preventivo non eseguito (solo bundle verify);
 reboot/power-loss, fault test automatizzati, quota/retention bundle e off-site
 non verificati. Backup dei nuovi branch GitHub non incluso: pipeline conserva
 gli storici NAS ma replica automaticamente solo main/tag. Non è full mirror.
+
+## 51. Blocco autonomo controllo e regressione — 2026-10-12
+
+Implementati gate CI dashboard, 7 guardie test backup, riserva 2 GiB senza
+pruning, poll main/tag e monitor backup/errori/stale con data restore separata.
+Registro attività/coda: `docs/project/AUTONOMOUS_EXECUTION_2026-10-12.md`.
+Verificato software: 16 test controllo/dashboard/backup e 57 regressioni
+G1/G2/qualification PASS. Serverha: 8 test PASS e servizi monitor aggiornati;
+esecuzione backup completa PASS, endpoint backup HTTP PASS e servizi active.
+GitHub CI non verificata; nuova
+acceptance visuale browser NOT_RUN. Nessun nodo avionico/sensore modificato.
+PRJ-001/002 restano PARTIAL, PRJ-003 VERIFY-HW: nessuna verifica offline
+equivale a dato reale o qualifica di banco. Coda A1–A7 resta da eseguire.
