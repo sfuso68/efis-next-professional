@@ -17,6 +17,11 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+PRJ-001 incremento 2026-10-13: restore bundle pre-migrazione 41 refs PASS
+in `bundle-restore-20261013.json`, 8 nuovi test bundle/HTTP PASS su serverha;
+20 regression HMI/product locali PASS. Stato PARTIAL invariato; packaging,
+retention, off-site e verifica hardware restano aperti.
+
 Incremento PRJ-001 del 2026-10-10: audit documentale, planning per gate e
 cruscotto offline `PROJECT_DASHBOARD.html` generato dalla matrice con digest,
 filtri e handoff. PRJ-001 resta PARTIAL: integrazione CI, pubblicazione su

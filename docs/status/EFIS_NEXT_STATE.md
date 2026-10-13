@@ -1164,3 +1164,23 @@ GitHub CI non verificata; nuova
 acceptance visuale browser NOT_RUN. Nessun nodo avionico/sensore modificato.
 PRJ-001/002 restano PARTIAL, PRJ-003 VERIFY-HW: nessuna verifica offline
 equivale a dato reale o qualifica di banco. Coda A1–A7 resta da eseguire.
+
+## 52. Restore bundle e HTTP — 2026-10-13
+
+PRJ-001 PARTIAL invariato. Implementato verificatore bundle con SHA-256
+prima dell'import, directory temporanea, import tutte refs, fsck completo,
+confronto refs annunciate e digest file. Bundle pre-migrazione `eb5c9326…779b3`
+recupera main `7aa45b66…` e 41 refs: PASS reale serverha, evidenza
+`bundle-restore-20261013.json`, nessuna copia attiva sostituita.
+
+Software su serverha: 3 test bundle (digest errato, bundle invalido,
+round-trip refs archiviate) e 5 test HTTP PASS. Backup JSON non valido dà
+503, POST rifiutato, path non permessi 404, cache no-store e dettagli interni
+esclusi. Servizio monitor active aggiornato; browser/reboot NOT_RUN.
+20 regression locali HMI responsive/EMS state/product review PASS, non
+acceptance visuale hardware. Gate CI esteso; run GitHub non verificata.
+
+A2 verificato; A1 HTTP/fault verificato ma packaging completo aperto.
+A3 policy proposta in `docs/project/BACKUP_POLICY_PROPOSAL_2026-10-13.md`:
+branch, retention/off-site NON attivati, nessuna potatura.
+Nessun collaudo o modifica avionica in questo incremento.

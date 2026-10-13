@@ -10,6 +10,7 @@ import tempfile
 from tools.project_status.generate_dashboard import build
 
 ROOT = Path.home() / '.local/state/avionix-dashboard'
+BACKUP_STATUS = Path.home() / '.local/state/efis-git-backup/latest.json'
 REPO = ROOT / 'github.git'
 REMOTE = 'git@github.com:sfuso68/efis-next-professional.git'
 
@@ -59,11 +60,17 @@ def refresh():
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/backup-status.json':
-            path = Path.home() / '.local/state/efis-git-backup/latest.json'
+            path = BACKUP_STATUS
             if not path.exists():
                 self.send_error(503)
                 return
-            raw = json.loads(path.read_text())
+            try:
+                raw = json.loads(path.read_text())
+                if not isinstance(raw, dict):
+                    raise ValueError('Expected object')
+            except (OSError, ValueError):
+                self.send_error(503, 'Backup status unavailable')
+                return
             fields = ['status', 'timestamp_utc', 'checked_utc', 'main', 'restore',
                       'no_change', 'preexisting_nas_refs_preserved']
             body = json.dumps({k: raw[k] for k in fields if k in raw}).encode()
