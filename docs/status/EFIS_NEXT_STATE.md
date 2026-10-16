@@ -1184,3 +1184,23 @@ A2 verificato; A1 HTTP/fault verificato ma packaging completo aperto.
 A3 policy proposta in `docs/project/BACKUP_POLICY_PROPOSAL_2026-10-13.md`:
 branch, retention/off-site NON attivati, nessuna potatura.
 Nessun collaudo o modifica avionica in questo incremento.
+
+## 53. Packaging e regressione cache meteo — 2026-10-16
+
+PRJ-001/WX-001/WX-002 restano PARTIAL. Implementati manifest deterministico
+di nove file, verifica SHA-256/allowlist/symlink, installazione versionata
+idempotente e runbook `docs/project/DASHBOARD_PACKAGE_RUNBOOK.md`.
+Pacchetto `8361a0440dfcd858127725e21f0f1791baf96d81f3ef52a3908857a1becb6e34`.
+Due test packaging locali PASS; staging serverha verificato e ripetuto,
+senza cambio release attiva. Attivazione atomica/rollback suite intera aperti:
+non dichiarare A1 completamente chiuso.
+
+Meteo: aggiunte fixture JSON corrotto, override stato/provenance, limite
+clock skew -5/-6 s. Dodici test edge-weather offline su serverha PASS;
+nessun servizio/provider interrogato. Python embedded Windows non carica
+_ssl: test meteo locale bloccato dal runtime, non prova fallimento prodotto.
+Il binario Qt preesistente Windows fallisce: `controlled radar server did not
+complete both responses`. Build corrente/provenance del binario non
+riconfermate: WX-002 NON PASS e occorre ricompilazione/test Linux controllato.
+Provider reali, payload/georeferenziazione e ARM64 rimangono aperti.
+CI aggiornata per packaging/edge weather, run remota non verificata.

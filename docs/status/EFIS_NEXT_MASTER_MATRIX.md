@@ -17,6 +17,11 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+Incremento PRJ-001/WX-001/WX-002 del 2026-10-16: packaging/staging versionato
+e due test PASS; 12 test cache meteo Linux offline PASS. Binario radar Qt
+Windows preesistente FAIL (server controllato incompleto), build corrente e
+test Linux da eseguire. Stati PARTIAL invariati; dettagli in stato sezione 53.
+
 PRJ-001 incremento 2026-10-13: restore bundle pre-migrazione 41 refs PASS
 in `bundle-restore-20261013.json`, 8 nuovi test bundle/HTTP PASS su serverha;
 20 regression HMI/product locali PASS. Stato PARTIAL invariato; packaging,
