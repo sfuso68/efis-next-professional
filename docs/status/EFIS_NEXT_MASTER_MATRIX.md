@@ -17,6 +17,11 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+Incremento PRJ-001/WX-002 2026-10-16: attivazione transazionale e rollback
+reale HTTP verificati, test radar ricompilato MSVC/Qt PASS e CTest 3/3 PASS.
+Evidenza `activation-radar-20261016.json`. Stati PARTIAL invariati: desktop
+e infrastruttura non equivalgono a radar provider/ARM64 qualificato.
+
 Incremento PRJ-001/WX-001/WX-002 del 2026-10-16: packaging/staging versionato
 e due test PASS; 12 test cache meteo Linux offline PASS. Binario radar Qt
 Windows preesistente FAIL (server controllato incompleto), build corrente e

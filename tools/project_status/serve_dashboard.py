@@ -59,6 +59,16 @@ def refresh():
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        if self.path == '/release.json':
+            manifest = Path(__file__).resolve().parents[2] / 'manifest.json'
+            identity = json.loads(manifest.read_text()).get('package_id') if manifest.exists() else 'legacy'
+            body = json.dumps({'package_id': identity}).encode()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if self.path == '/backup-status.json':
             path = BACKUP_STATUS
             if not path.exists():

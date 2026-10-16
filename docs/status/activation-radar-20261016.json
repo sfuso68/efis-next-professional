@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-16",
+  "activation": {
+    "host": "serverha",
+    "status": "ACTIVE",
+    "package_id": "79c511e662b6bb95a355f8765214a1013f210f5b037bf18eea2bb03c326d3ac3",
+    "rollback_drill": "PASS",
+    "restored_package_id": "f6a356b342d67eba35ba74b0a9d386d5dc80ab173c0ebe49c169ea40e28afca9",
+    "http_identity_verified": true,
+    "backup_status": "PASS",
+    "unit_tests": 3
+  },
+  "radar": {
+    "build": "PASS",
+    "toolchain": "MSVC 14.51 / Qt 6.11.1 / Windows x64 Debug",
+    "target": "efis_weather_service_tests",
+    "test": "PASS",
+    "ctest_consecutive_passes": 3,
+    "binary_sha256": "76502489a58c5995aa587e9ac6cf9bd39181153bb88e3025a50d9ab2b2b9b276",
+    "weather_cpp_sha256": "bbbbe641b7333ba7e0e1cdf460cedfc04ae7b4293eccce6bee80bbd48b0e523f",
+    "test_cpp_sha256": "13c63b43ac7b11b49206fa5b75a5de885595c9feed0a94b6e683396ea7c89afd",
+    "production_source_changed": false,
+    "sandbox_execution_qualified": false,
+    "arm64_provider_georeference_verified": false
+  },
+  "flight_approval": false
+}

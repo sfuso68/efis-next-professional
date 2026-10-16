@@ -1204,3 +1204,24 @@ complete both responses`. Build corrente/provenance del binario non
 riconfermate: WX-002 NON PASS e occorre ricompilazione/test Linux controllato.
 Provider reali, payload/georeferenziazione e ARM64 rimangono aperti.
 CI aggiornata per packaging/edge weather, run remota non verificata.
+
+## 54. Chiusura attivazione e test radar aggiornato — 2026-10-16
+
+Implementata attivazione transazionale suite monitor/refresh/backup con
+manifest verificato, lock, snapshot drop-in, restart/health HTTP versione,
+rollback automatico di configurazione e controllo HTTP della versione
+precedente. Tre unit test PASS. Reale serverha: drill ripristina `f6a356…`
+e verifica HTTP; attivazione definitiva `79c511…` ACTIVE, backup PASS e timer
+attivi. Vecchi file/release conservati. Evidenza `activation-radar-20261016.json`.
+Chiusa A1 nel perimetro di aggiornamento di installazione già configurata;
+bootstrap credenziali, reboot e fault power-loss restano separati.
+
+Radar Qt: ricompilati test e weather_service.cpp dal checkout corrente con
+MSVC/Qt 6.11.1; esecuzione diretta PASS e CTest ripetuto 3/3 PASS fuori
+sandbox. Nessuna modifica codice radar necessaria. Il fallimento precedente
+non si riproduce fuori sandbox; la build sandbox riporta C1902 PDB e il test
+HTTP sandbox falliva. Non è dimostrata una regressione prodotto. Digesti
+binario/sorgenti registrati; chiusa la verifica Qt desktop richiesta.
+WX-002 resta PARTIAL: provider/georeferenziazione/ARM64 ancora non provati.
+PRJ-001 resta PARTIAL per off-site/retention e ulteriori gate.
+CI aggiornata, run GitHub non verificata. Nessun nodo avionico modificato.

@@ -9,7 +9,7 @@ import tempfile
 FILES = tuple('tools/project_status/' + name for name in (
     'generate_status.py', 'generate_dashboard.py', 'serve_dashboard.py',
     'sync_backup.py', 'verify_backup_bundle.py', 'github_dashboard_known_hosts',
-    'install_dashboard.sh', 'efis-git-sync-nas', 'package_dashboard.py'))
+    'install_dashboard.sh', 'efis-git-sync-nas', 'package_dashboard.py', 'activate_dashboard.py'))
 
 
 def digest(path):
