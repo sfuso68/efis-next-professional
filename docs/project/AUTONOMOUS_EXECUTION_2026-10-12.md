@@ -32,3 +32,7 @@ Il workflow CI è aggiornato ma run GitHub non eseguita/verificata qui.
 Non «tutti i punti completati»: gate power, cablaggi/calibrazione, fonti
 motore specifiche, fault fisici, latenza FPV/audio, HIL e approvazioni richiedono
 interazione. Il lavoro autonomo prepara e prova software ma non li sostituisce.
+
+Aggiornamento successivo: `AUTONOMOUS_REVIEW_2026-10-17.md` consolida la coda
+A1–A7, le consegne verificate e i gate ancora aperti. Le righe precedenti
+sono lo snapshot del 12 ottobre, non lo stato corrente di ciascuna consegna.

@@ -1,0 +1,69 @@
+{
+  "schema": "avionix-next.autonomous-verification.v1",
+  "utc": "2026-10-17T04:19:22.491794+00:00",
+  "flight_approval": false,
+  "hardware_verification": "NOT_RUN",
+  "groups": {
+    "A4-contracts": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "C:\\Program Files\\Dassault Systemes\\SOLIDWORKS 3DEXPERIENCE R2026x\\SOLIDWORKS\\Simulation\\Topology\\tools\\smapy\\python\\python.exe",
+        "-c",
+        "import sys,unittest,tempfile;sys.path.insert(0,'C:\\\\Users\\\\stefa\\\\.codex\\\\.chatgpt-projects\\\\g-p-6a8162f124ac8191abb9a466a8cdcd25\\\\tmp\\\\efis-next-main-integration');tempfile.tempdir='C:\\\\Users\\\\stefa\\\\.codex\\\\.chatgpt-projects\\\\g-p-6a8162f124ac8191abb9a466a8cdcd25\\\\tmp';s=unittest.defaultTestLoader.loadTestsFromNames(['tests.test_avionix_icd', 'tests.test_avionix_data_contract', 'tests.test_g1_g2_readiness', 'tests.test_g2_vertical_acceptance']);r=unittest.TextTestRunner(verbosity=1).run(s);sys.exit(not r.wasSuccessful())"
+      ],
+      "stdout": "",
+      "stderr": ".....................................\n----------------------------------------------------------------------\nRan 37 tests in 0.147s\n\nOK\n"
+    },
+    "A6-profiles": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "C:\\Program Files\\Dassault Systemes\\SOLIDWORKS 3DEXPERIENCE R2026x\\SOLIDWORKS\\Simulation\\Topology\\tools\\smapy\\python\\python.exe",
+        "-c",
+        "import sys,unittest,tempfile;sys.path.insert(0,'C:\\\\Users\\\\stefa\\\\.codex\\\\.chatgpt-projects\\\\g-p-6a8162f124ac8191abb9a466a8cdcd25\\\\tmp\\\\efis-next-main-integration');tempfile.tempdir='C:\\\\Users\\\\stefa\\\\.codex\\\\.chatgpt-projects\\\\g-p-6a8162f124ac8191abb9a466a8cdcd25\\\\tmp';s=unittest.defaultTestLoader.loadTestsFromNames(['tests.test_product_contracts_batch', 'tests.test_product_tools_batch', 'tests.test_product_review_gates', 'tests.test_product_evidence_review', 'tests.test_product_implementation_plan']);r=unittest.TextTestRunner(verbosity=1).run(s);sys.exit(not r.wasSuccessful())"
+      ],
+      "stdout": "",
+      "stderr": "..........................................\n----------------------------------------------------------------------\nRan 42 tests in 8.740s\n\nOK\n"
+    },
+    "A7-hmi": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "C:\\Program Files\\Dassault Systemes\\SOLIDWORKS 3DEXPERIENCE R2026x\\SOLIDWORKS\\Simulation\\Topology\\tools\\smapy\\python\\python.exe",
+        "-c",
+        "import sys,unittest,tempfile;sys.path.insert(0,'C:\\\\Users\\\\stefa\\\\.codex\\\\.chatgpt-projects\\\\g-p-6a8162f124ac8191abb9a466a8cdcd25\\\\tmp\\\\efis-next-main-integration');tempfile.tempdir='C:\\\\Users\\\\stefa\\\\.codex\\\\.chatgpt-projects\\\\g-p-6a8162f124ac8191abb9a466a8cdcd25\\\\tmp';s=unittest.defaultTestLoader.loadTestsFromNames(['tests.test_avionix_hmi_contract', 'tests.test_skyview_responsive', 'tests.test_ems_state_presentation', 'tests.test_ems_responsive_state_matrix', 'tests.test_hmi_golden_tools']);r=unittest.TextTestRunner(verbosity=1).run(s);sys.exit(not r.wasSuccessful())"
+      ],
+      "stdout": "",
+      "stderr": "....................................\n----------------------------------------------------------------------\nRan 36 tests in 70.251s\n\nOK\n"
+    },
+    "project-control": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "C:\\Program Files\\Dassault Systemes\\SOLIDWORKS 3DEXPERIENCE R2026x\\SOLIDWORKS\\Simulation\\Topology\\tools\\smapy\\python\\python.exe",
+        "-c",
+        "import sys,unittest,tempfile;sys.path.insert(0,'C:\\\\Users\\\\stefa\\\\.codex\\\\.chatgpt-projects\\\\g-p-6a8162f124ac8191abb9a466a8cdcd25\\\\tmp\\\\efis-next-main-integration');tempfile.tempdir='C:\\\\Users\\\\stefa\\\\.codex\\\\.chatgpt-projects\\\\g-p-6a8162f124ac8191abb9a466a8cdcd25\\\\tmp';s=unittest.defaultTestLoader.loadTestsFromNames(['tests.test_project_status_control', 'tests.test_project_dashboard', 'tests.test_dashboard_refresh', 'tests.test_backup_guards', 'tests.test_dashboard_package', 'tests.test_dashboard_activation']);r=unittest.TextTestRunner(verbosity=1).run(s);sys.exit(not r.wasSuccessful())"
+      ],
+      "stdout": "",
+      "stderr": ".....................\n----------------------------------------------------------------------\nRan 21 tests in 1.375s\n\nOK\n"
+    },
+    "native": {
+      "status": "FAIL",
+      "exit_code": 8,
+      "command": [
+        "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\ctest.exe",
+        "--test-dir",
+        "build-offline-qt",
+        "-R",
+        "^efis_(freshness_budget|arbitration|ddp_v2|edp_v1|avionix_icd_vector|engine|engine_runtime|engine_runtime_store|operational_profile_model|pfd_aircraft_profile)_tests$",
+        "--output-on-failure"
+      ],
+      "stdout": "Test project C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-offline-qt\n      Start  2: efis_pfd_aircraft_profile_tests\n 1/10 Test  #2: efis_pfd_aircraft_profile_tests ........***Not Run   0.00 sec\n      Start  5: efis_freshness_budget_tests\n 2/10 Test  #5: efis_freshness_budget_tests ............   Passed   10.07 sec\n      Start 55: efis_arbitration_tests\n 3/10 Test #55: efis_arbitration_tests .................   Passed    0.63 sec\n      Start 57: efis_ddp_v2_tests\n 4/10 Test #57: efis_ddp_v2_tests ......................   Passed    0.51 sec\n      Start 60: efis_edp_v1_tests\n 5/10 Test #60: efis_edp_v1_tests ......................   Passed   10.07 sec\n      Start 61: efis_avionix_icd_vector_tests\n 6/10 Test #61: efis_avionix_icd_vector_tests ..........   Passed    0.43 sec\n      Start 62: efis_engine_tests\n 7/10 Test #62: efis_engine_tests ......................   Passed    0.36 sec\n      Start 64: efis_engine_runtime_tests\n 8/10 Test #64: efis_engine_runtime_tests ..............   Passed    6.86 sec\n      Start 65: efis_engine_runtime_store_tests\n 9/10 Test #65: efis_engine_runtime_store_tests ........   Passed    1.07 sec\n      Start 67: efis_operational_profile_model_tests\n10/10 Test #67: efis_operational_profile_model_tests ...   Passed   13.65 sec\n\n90% tests passed, 1 tests failed out of 10\n\nTotal Test time (real) =  44.43 sec\n\nThe following tests FAILED:\n\t  2 - efis_pfd_aircraft_profile_tests (BAD_COMMAND)\n",
+      "stderr": "Process not started\n C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-offline-qt/efis_pfd_aircraft_profile_tests.exe\n[unknown error]\nErrors while running CTest\n"
+    }
+  },
+  "head": "329a942a132b6ae8820dee42e56f7ccf7504e38c",
+  "tracked_changes": "",
+  "status": "INCOMPLETE"
+}

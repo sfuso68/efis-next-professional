@@ -1,0 +1,41 @@
+{
+  "schema": "avionix-next.autonomous-consolidation.v1",
+  "date": "2026-10-17",
+  "scope": "software_and_isolated_verification_only",
+  "python": {
+    "contracts": {"tests": 37, "status": "PASS"},
+    "product_profiles": {"tests": 42, "status": "PASS"},
+    "hmi_after_png_fast_path": {"tests": 37, "seconds": 22.823, "status": "PASS"},
+    "project_control": {"tests": 21, "status": "PASS"},
+    "new_runner_and_storage_guards": {"tests": 6, "status": "PASS"}
+  },
+  "native_windows": {"compiled_targets": 10, "passed": 9, "not_started_policy_blocked": 1},
+  "native_profile_linux": {
+    "status": "PASS",
+    "network": "none",
+    "qt": "6.8.2",
+    "compiler": "GCC 14.2.0",
+    "source_commit": "329a942a132b6ae8820dee42e56f7ccf7504e38c",
+    "archive_sha256": "41d6bdec6eb27316744a0fc6d77100d83b5f79876a53eb7c19b224e52a095e3e",
+    "image_id": "sha256:a5cacdf5da9309fd3417ca30f3ce1e790d0576b561bde22a9863ec2a2c997ab5",
+    "binary_sha256": "1ebc35f9d03eef1f5529900e6a4617aa634a78ec564ae5e62bcab37fee6114df",
+    "test_cpp_sha256": "ada146884e0739cb2e0fedb5ab46232f4f9ea54b855170eefaa560dc01662479",
+    "pfd_cpp_sha256": "cdc8ecf8c4f4c043930ac8aacc0e7b0c34490e5ac67eff40af41bb5c847d34d6"
+  },
+  "new_radar_validation": {
+    "build": "PASS",
+    "ctest_consecutive_passes": 3,
+    "platform": "Windows MSVC Qt 6.11.1",
+    "source_cpp_sha256": "d8d53ba4244586b0f0b2b15fd996eed239f6afc6f89e8944afa4fd13ffa524b5",
+    "test_cpp_sha256": "17a03600aa1198b572462a0b83384b46df696442b675aef5822999960dcf8595",
+    "deployed_to_avionics": false
+  },
+  "storage_inventory": {
+    "host": "serverha", "bundles": 9, "bundle_bytes": 498108584,
+    "filesystem_free_bytes": 121493479424, "deletion_candidates": [], "files_deleted": 0
+  },
+  "windows_policy_disabled": false,
+  "hardware_acceptance": "NOT_RUN",
+  "github_ci_verified": false,
+  "flight_approval": false
+}

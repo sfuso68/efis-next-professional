@@ -37,6 +37,7 @@ public:
 #endif
     ~WeatherService() override;
     [[nodiscard]] static QString classifyRadarAgeSeconds(qint64 age_seconds);
+    [[nodiscard]] static bool validRadarPayload(const QByteArray& data);
     [[nodiscard]] static QString normalizedRadarProduct(const QString& product);
     [[nodiscard]] static QString radarCacheFileName(const QString& product, int zoom, int x, int y);
     [[nodiscard]] QString radarSource() const { return radar_source_; }

@@ -1225,3 +1225,28 @@ binario/sorgenti registrati; chiusa la verifica Qt desktop richiesta.
 WX-002 resta PARTIAL: provider/georeferenziazione/ARM64 ancora non provati.
 PRJ-001 resta PARTIAL per off-site/retention e ulteriori gate.
 CI aggiornata, run GitHub non verificata. Nessun nodo avionico modificato.
+
+## 55. Restante piano autonomo A3–A7 — 2026-10-17
+
+Registro `docs/project/AUTONOMOUS_REVIEW_2026-10-17.md`, evidenze sotto
+`docs/status/evidence/autonomous-20261017/`. Implementati runner ripetibile
+per gruppi con timeout/log e inventario backup read-only. 37 contratti,
+42 product/review, 37 HMI (dopo fast path PNG) e 21 controllo PASS; sei nuovi
+test runner/storage PASS. Test nativi ricompilati: nove Windows PASS; test
+PFD profili bloccato dalla policy applicazioni Windows, non dal codice.
+Stesso sorgente/hash in container GCC14.2/Qt6.8.2 Linux x64 senza rete PASS.
+Non disabilitata alcuna protezione Windows. Container immagine/archivio privati
+conservati su serverha, nessuna distribuzione a pannelli o cambi servizi.
+
+Correzione WX-002: validazione PNG 256×256 decodificato e limite 4 MiB prima
+di cache/pubblicazione, cache corrotta/symlink rifiutata, buffer limitato,
+fixture reali/negative. Build Qt Windows PASS e CTest 3/3 PASS. Solo SW,
+NON distribuita ai display. Miglioramento tool golden PNG None: stessi pixel
+e stato riga precedente preservati, test misto None/Up PASS.
+
+Inventario reale serverha: nove bundle/498.108.584 byte e 121.493.479.424
+byte filesystem liberi al controllo; nessuna selezione/cancellazione.
+Stati requisiti invariati: manuali/seriali UL/ULS non acquisiti, limiti non
+attivati; G1/G2 live, ARM64, provider/georef, coverage e acceptance HMI aperti.
+CI estesa ma run GitHub non verificata. Il report Windows iniziale rimane
+INCOMPLETE, con consolidamento Linux separato, senza nascondere il blocco OS.

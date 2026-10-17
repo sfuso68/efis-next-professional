@@ -105,3 +105,9 @@ Aggiornamento: deploy key autorizzata il 2026-10-10, refresh diretto di main
 GitHub attivo in repository dedicato, stato `GITHUB_SYNC_OK`. In errore
 conserva l'ultimo HTML ma segnala ERROR; oltre 15 minuti senza refresh segnala
 monitor obsoleto. Non include lavoro non integrato in main.
+
+Ripresa autonoma 2026-10-17: `docs/project/AUTONOMOUS_REVIEW_2026-10-17.md`.
+Evidenze separate Windows/Linux e consolidamento in
+`docs/status/evidence/autonomous-20261017/`. Il runner
+`python -m tools.project_status.run_autonomous_checks --output output/checks.json`
+non modifica hardware o stati; senza `--ctest` il gate nativo è NOT_RUN.
