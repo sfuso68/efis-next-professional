@@ -999,3 +999,273 @@ controllata delle risposte VMI/SRI.
 su hardware reale:** nulla. Provider reale, validazione del payload,
 georeferenziazione, cache persistente e resa RPi5 restano aperti; `WX-002`
 rimane `PARTIAL`.
+
+## 47. Correzione leggibilità PFD da pannello reale — 2026-10-03
+
+Una fotografia del MFD reale ha localizzato quattro difetti della pagina PFD:
+lo stato `AIRSPEED FAIL` non era dominante nel punto di lettura IAS, ALT/VS
+avevano gerarchia e separazione insufficienti, la bussola inferiore esponeva
+etichette senza un arco graduato chiaramente distinguibile e i dati NAV da
+6–8 px si perdevano sul terreno. Il meteo compatto invadeva inoltre la fascia
+della prua superiore. La fotografia e il relativo digest sono conservati sul
+branch di evidenza `work/mfd-hardware-baseline-20261003`, commit `08203d4`.
+
+**Implementato:** flag locale `IAS FAIL` fail-closed; finestre IAS/ALT e VS più
+opache, separate e leggibili; fascia ALT/VS ampliata; bussola inferiore con arco
+reale ±35°, tacche ogni 5° e valori ogni 10°; pannello NAV contrastato da
+340×48 px con testo principale da 10 px e secondario da 9 px; scala distanza
+spostata fuori dal pannello; overlay meteo ridotto e abbassato sotto la fascia
+heading. Il contratto responsive e il validatore sono stati aggiornati senza
+modificare autorità di comando, sorgenti dati o logica di validità.
+
+**Verificato solo software:** `qmllint` senza errori; compilazione completa
+Qt/MSVC Release di 413 step, inclusa generazione QML AOT, PASS; validatore
+SkyView responsive PASS; 21 test Python mirati HMI/SkyView PASS. La cattura
+offscreen Windows non è stata prodotta perché Smart App Control ha bloccato
+l'eseguibile locale non firmato. La CI è stata inoltre estesa con una cattura
+Linux/offscreen PFD-SkyView separata nelle risoluzioni 1024×600, 1280×800 e
+1920×1080 e con artefatto di review a conservazione limitata. Il primo
+artefatto ha rivelato che la fixture
+SkyView ometteva nove flag di validità e produceva quindi `ATTITUDE INVALID`,
+VS `FAIL` e bussole nascoste pur con CI verde. La fixture e il validatore sono
+stati corretti in modo fail-closed. Il nuovo artefatto del commit `35059b9`,
+generato il 2026-10-04T06:53:02Z, è stato revisionato alle tre risoluzioni:
+assetto, scala heading superiore, arco HSI inferiore, dati NAV, IAS, ALT e VS
+sono presenti; `ATTITUDE INVALID` e i falsi `FAIL` non compaiono; le finestre
+ALT e VS non si sovrappongono. A 1024×600 il layout resta denso ma utilizzabile;
+1280×800 e 1920×1080 hanno margini e gerarchia migliori. SHA-256 immagini:
+`f72cc2a955dd4d4c742d01badab7f1f28321879561fba058f52b8619116a91e2`,
+`f171aef9e51803b1cf2f7b8cbe4ca115b0b1eecd08526cc9c165a1088d81f82a` e
+`024cb4c414f3d6bac2851cf2dc1a9a231aec2caf666cbfbf8da1527082e9bf48`.
+I run GitHub Actions `37183809227` (push) e `37183811270` (pull request) sono
+PASS per `linux-qt-golden`, `linux-core` e `linux-sanitizers`. Il target Qt/MSVC
+è stato inoltre ricompilato incrementalmente dopo la correzione della fixture.
+
+**Verificato su hardware reale:** soltanto la release precedente che ha
+originato il difetto e la fotografia di riferimento; questa correzione non è
+stata installata né osservata su RPi5. Cattura Linux/Qt, review visuale
+1024×600 e CI sono concluse solo a livello software. **Aperto:** restano build
+ARM64, release immutabile, rollback e acceptance touch/leggibilità sul MFD
+reale prima di qualunque distribuzione PFD. `PFD-002` e `MFD-001` restano
+`PARTIAL`; nessuna approvazione al volo.
+
+## 48. Preparazione release ARM64 MFD per la leggibilità PFD — 2026-10-04
+
+È stato formalizzato il gate successivo alla review Linux della sezione 47,
+senza contattare o modificare il nodo `pi5`. La candidata MFD è fissata al
+commit `76afead639599a08cb187bf93f1127c84a4df9ed`; il relativo archivio Git
+riproducibile misura 50.548.958 byte e ha SHA-256
+`b318d9da3914826cdc4c5a07b5803be25d17973b4685df64633646a053ee740b`.
+
+**Implementato:** procedura dedicata di preparazione nativa ARM64 senza
+switch; attivazione root con identità nodo, architettura, riserva disco,
+manifesto, supervisore unico, assenza di servizi display concorrenti,
+`get_throttled=0x0`, porta DDP 49002, switch atomico e recupero automatico;
+rollback reale verso `mfd-3432402-primary-v1`; ritorno alla candidata e
+verifica post-reboot read-only. Il drop-in MFD azzera inoltre la condizione
+legacy sul percorso non canonico `build-rpi5` e controlla il binario verificato
+`bin/efis-pfd-qt`.
+
+**Verificato solo software:** sintassi dei tre script con Bash; 37 test release,
+supervisione e paired-display PASS (un test symlink non applicabile su Windows
+è SKIP); Project Control `--check` PASS; l'archivio è stato generato due volte
+con identico digest e dimensione. La preparazione dichiara
+`EXECUTION_AUTHORIZED=false`; la verifica reboot dichiara
+`VISUAL_TOUCH_ACCEPTANCE=NOT_RUN` e `FLIGHT_APPROVAL=false`.
+
+**Verificato su hardware reale:** nulla in questo incremento. La release attiva
+resta `mfd-3432402-primary-v1`; non sono stati eseguiti build ARM64, switch,
+restart, reboot, rollback o nuova osservazione grafica sul nodo.
+
+**Aperto / bloccante:** il precedente `get_throttled=0x50000` impedisce
+intenzionalmente l'attivazione finché alimentatore/cavo non sono qualificati e
+un avvio pulito non restituisce `0x0`. Dopo autorizzazione di banco occorrono
+trasferimento archivio, build/test ARM64, attivazione, rollback, reboot e
+acceptance operatore a 1024×600 su IAS, ALT/VS, bussole, NAV, overlay, touch e
+terrain. Solo dopo un PASS MFD si potrà preparare il PFD primario. `MFD-001`,
+`PFD-002`, `PWR-001` e `VER-003` restano aperti/PARTIAL.
+
+## 49. Planning e cruscotto progetto — 2026-10-10
+
+PRJ-001 resta PARTIAL. Implementati audit documentale e planning aggiornato
+in `docs/project/FUSO_AVIONICS_NEXT_STATE_AND_PLAN_2026-10-10.md`, generatore
+di viewer offline ricercabile/filtrabile con evidence/rischio/next/acceptance
+e download handoff. Fonte unica: matrice; nessuna modifica di stato dalla UI.
+Il digest identifica lo snapshot; nessuna acquisizione live o automazione
+ricorrente installata. GitHub non raggiungibile nel controllo locale odierno:
+main, CI, merge e replica NAS non riconfermati. Hardware: NOT_RUN.
+Restano da verificare browser interattivo e pubblicazione serverha.
+Verificato solo software: generazione dashboard PASS, confronto deterministico
+`generate_dashboard --check` PASS, `generate_status --check` PASS, 2/2 test
+unitari PASS (determinismo/embedding sicuro e rifiuto colonne incomplete).
+Correzione del conteggio sezione 48: 37 test totali, 36 PASS e 1 SKIP,
+non 37 PASS più 1 SKIP.
+
+### Pubblicazione serverha — 2026-10-10
+
+Installati sotto utente sfuso viewer read-only `avionix-dashboard.service`
+e refresh `avionix-dashboard-refresh.timer` ogni cinque minuti, con linger
+già attivo. Bind esclusivo 127.0.0.1:8766, accesso via tunnel SSH; nessuna
+modifica Caddy/firewall/servizi avionici. Il viewer serve solo index/status,
+non espone repository né credenziali, usa no-store e mostra errori/stale.
+Verifica reale server: servizi active, HTTP index/status PASS, bind e timer
+PASS. Reboot e verifica visuale browser NOT_RUN.
+Fonte attuale mirror locale `7aa45b66…`, datato 29 settembre, NON aggiornato
+da GitHub. Main remoto letto oggi `1cc0a786…`: sincronizzazione incompleta.
+Stato esposto LOCAL_MIRROR_ONLY/github_verified=false. Chiave deploy dedicata
+generata su serverha, autorizzazione GitHub read-only ancora necessaria.
+Nessun commit/push/merge o cambiamento di stato requisiti: PRJ-001 PARTIAL.
+
+Completamento: deploy key autorizzata e verificata; host key confrontata con
+GitHub Docs e fissata in file dedicato. Refresh legge direttamente main via
+SSH read-only in `.local/state/avionix-dashboard/github.git`, senza toccare
+mirror NAS. Fetch fail-closed senza force; GitHub main `1cc0a78682741872e19082ae84dae936370e3d7e`
+osservato e servito con `GITHUB_SYNC_OK`, Result=success/ExecMainStatus=0.
+SSH isolato con `-F /dev/null` evita errore permessi della configurazione
+systemd nel servizio confinato; nessuna modifica SSH globale.
+Il timer aggiorna main ogni cinque minuti: branch/PR non integrati non sono
+inclusi. Nessuna qualifica hardware implicita e reboot server NOT_RUN.
+
+Audit successivo read-only: `SERVERHA_NAS_AUDIT_2026-10-10.md` conferma
+GitHub/cruscotto `1cc0a786…`, serverha backup/NAS `7aa45b66…` arretrati,
+timer NAS active/success e 114 GB disponibili su serverha. Allineamento
+backup e restore aggiornato restano aperti; nessuna sovrascrittura.
+
+## 50. Pipeline backup corretta — 2026-10-12
+
+PRJ-001 resta PARTIAL. Implementata pipeline GitHub read-only -> serverha
+-> NAS per main e tag, senza force/prune/delete. Bundle preventivo verificato
+con digest, copie refs storiche, lock esclusivo, controllo ancestry server
+e NAS, rifiuto tag divergenti, CAS main e verifica preservazione altre refs.
+Wrapper precedente conservato `efis-git-sync-nas.pre-github-20261012`;
+timer esistente 15 minuti ripristinato active. Nessun nodo avionico modificato.
+
+Verificato su infrastruttura reale: main `1cc0a786…` allineato; restore
+isolato NAS read-only, fsck completo e SHA-256 di matrice, stato e CMakeLists
+PASS. Seconda esecuzione invariata PASS senza nuovo bundle; mantiene data
+della prova restore precedente separata dal checked_utc. Evidenza completa
+`backup-pipeline-20261012.json`. Primo restore FAIL per uso della chiave
+receive-pack, poi configurazione corretta con alias efis-nas-restore.
+
+Aperto: restore da bundle preventivo non eseguito (solo bundle verify);
+reboot/power-loss, fault test automatizzati, quota/retention bundle e off-site
+non verificati. Backup dei nuovi branch GitHub non incluso: pipeline conserva
+gli storici NAS ma replica automaticamente solo main/tag. Non è full mirror.
+
+## 51. Blocco autonomo controllo e regressione — 2026-10-12
+
+Implementati gate CI dashboard, 7 guardie test backup, riserva 2 GiB senza
+pruning, poll main/tag e monitor backup/errori/stale con data restore separata.
+Registro attività/coda: `docs/project/AUTONOMOUS_EXECUTION_2026-10-12.md`.
+Verificato software: 16 test controllo/dashboard/backup e 57 regressioni
+G1/G2/qualification PASS. Serverha: 8 test PASS e servizi monitor aggiornati;
+esecuzione backup completa PASS, endpoint backup HTTP PASS e servizi active.
+GitHub CI non verificata; nuova
+acceptance visuale browser NOT_RUN. Nessun nodo avionico/sensore modificato.
+PRJ-001/002 restano PARTIAL, PRJ-003 VERIFY-HW: nessuna verifica offline
+equivale a dato reale o qualifica di banco. Coda A1–A7 resta da eseguire.
+
+## 52. Restore bundle e HTTP — 2026-10-13
+
+PRJ-001 PARTIAL invariato. Implementato verificatore bundle con SHA-256
+prima dell'import, directory temporanea, import tutte refs, fsck completo,
+confronto refs annunciate e digest file. Bundle pre-migrazione `eb5c9326…779b3`
+recupera main `7aa45b66…` e 41 refs: PASS reale serverha, evidenza
+`bundle-restore-20261013.json`, nessuna copia attiva sostituita.
+
+Software su serverha: 3 test bundle (digest errato, bundle invalido,
+round-trip refs archiviate) e 5 test HTTP PASS. Backup JSON non valido dà
+503, POST rifiutato, path non permessi 404, cache no-store e dettagli interni
+esclusi. Servizio monitor active aggiornato; browser/reboot NOT_RUN.
+20 regression locali HMI responsive/EMS state/product review PASS, non
+acceptance visuale hardware. Gate CI esteso; run GitHub non verificata.
+
+A2 verificato; A1 HTTP/fault verificato ma packaging completo aperto.
+A3 policy proposta in `docs/project/BACKUP_POLICY_PROPOSAL_2026-10-13.md`:
+branch, retention/off-site NON attivati, nessuna potatura.
+Nessun collaudo o modifica avionica in questo incremento.
+
+## 53. Packaging e regressione cache meteo — 2026-10-16
+
+PRJ-001/WX-001/WX-002 restano PARTIAL. Implementati manifest deterministico
+di nove file, verifica SHA-256/allowlist/symlink, installazione versionata
+idempotente e runbook `docs/project/DASHBOARD_PACKAGE_RUNBOOK.md`.
+Pacchetto `8361a0440dfcd858127725e21f0f1791baf96d81f3ef52a3908857a1becb6e34`.
+Due test packaging locali PASS; staging serverha verificato e ripetuto,
+senza cambio release attiva. Attivazione atomica/rollback suite intera aperti:
+non dichiarare A1 completamente chiuso.
+
+Meteo: aggiunte fixture JSON corrotto, override stato/provenance, limite
+clock skew -5/-6 s. Dodici test edge-weather offline su serverha PASS;
+nessun servizio/provider interrogato. Python embedded Windows non carica
+_ssl: test meteo locale bloccato dal runtime, non prova fallimento prodotto.
+Il binario Qt preesistente Windows fallisce: `controlled radar server did not
+complete both responses`. Build corrente/provenance del binario non
+riconfermate: WX-002 NON PASS e occorre ricompilazione/test Linux controllato.
+Provider reali, payload/georeferenziazione e ARM64 rimangono aperti.
+CI aggiornata per packaging/edge weather, run remota non verificata.
+
+## 54. Chiusura attivazione e test radar aggiornato — 2026-10-16
+
+Implementata attivazione transazionale suite monitor/refresh/backup con
+manifest verificato, lock, snapshot drop-in, restart/health HTTP versione,
+rollback automatico di configurazione e controllo HTTP della versione
+precedente. Tre unit test PASS. Reale serverha: drill ripristina `f6a356…`
+e verifica HTTP; attivazione definitiva `79c511…` ACTIVE, backup PASS e timer
+attivi. Vecchi file/release conservati. Evidenza `activation-radar-20261016.json`.
+Chiusa A1 nel perimetro di aggiornamento di installazione già configurata;
+bootstrap credenziali, reboot e fault power-loss restano separati.
+
+Radar Qt: ricompilati test e weather_service.cpp dal checkout corrente con
+MSVC/Qt 6.11.1; esecuzione diretta PASS e CTest ripetuto 3/3 PASS fuori
+sandbox. Nessuna modifica codice radar necessaria. Il fallimento precedente
+non si riproduce fuori sandbox; la build sandbox riporta C1902 PDB e il test
+HTTP sandbox falliva. Non è dimostrata una regressione prodotto. Digesti
+binario/sorgenti registrati; chiusa la verifica Qt desktop richiesta.
+WX-002 resta PARTIAL: provider/georeferenziazione/ARM64 ancora non provati.
+PRJ-001 resta PARTIAL per off-site/retention e ulteriori gate.
+CI aggiornata, run GitHub non verificata. Nessun nodo avionico modificato.
+
+## 55. Restante piano autonomo A3–A7 — 2026-10-17
+
+Registro `docs/project/AUTONOMOUS_REVIEW_2026-10-17.md`, evidenze sotto
+`docs/status/evidence/autonomous-20261017/`. Implementati runner ripetibile
+per gruppi con timeout/log e inventario backup read-only. 37 contratti,
+42 product/review, 37 HMI (dopo fast path PNG) e 21 controllo PASS; sei nuovi
+test runner/storage PASS. Test nativi ricompilati: nove Windows PASS; test
+PFD profili bloccato dalla policy applicazioni Windows, non dal codice.
+Stesso sorgente/hash in container GCC14.2/Qt6.8.2 Linux x64 senza rete PASS.
+Non disabilitata alcuna protezione Windows. Container immagine/archivio privati
+conservati su serverha, nessuna distribuzione a pannelli o cambi servizi.
+
+Correzione WX-002: validazione PNG 256×256 decodificato e limite 4 MiB prima
+di cache/pubblicazione, cache corrotta/symlink rifiutata, buffer limitato,
+fixture reali/negative. Build Qt Windows PASS e CTest 3/3 PASS. Solo SW,
+NON distribuita ai display. Miglioramento tool golden PNG None: stessi pixel
+e stato riga precedente preservati, test misto None/Up PASS.
+
+Inventario reale serverha: nove bundle/498.108.584 byte e 121.493.479.424
+byte filesystem liberi al controllo; nessuna selezione/cancellazione.
+Stati requisiti invariati: manuali/seriali UL/ULS non acquisiti, limiti non
+attivati; G1/G2 live, ARM64, provider/georef, coverage e acceptance HMI aperti.
+CI estesa ma run GitHub non verificata. Il report Windows iniziale rimane
+INCOMPLETE, con consolidamento Linux separato, senza nascondere il blocco OS.
+
+## 56. Consolidamento tramite PR #48 — 2026-10-17
+
+Autorizzazione utente: integrazione del branch `work/project-dashboard-planning-v1`
+in main tramite PR #48. Baseline sorgente del lotto `21ac032…`, main prima
+dell'integrazione `1cc0a786…`; 16 commit/59 file, inclusa la legibilità PFD e
+preparazione MFD non ancora distribuite. Confronto GitHub: ahead 16/behind 0,
+nessun conflitto. PR: https://github.com/sfuso68/efis-next-professional/pull/48.
+
+Implementato/verificato software: sezioni 49–55 e relative evidenze. Verificato
+su infrastruttura reale: monitor/backup/restore serverha e NAS, container test
+Linux isolato; nessuna nuova verifica su hardware avionico. Gli esiti finali
+CI e il commit di merge sono tracciati nella PR GitHub, non dedotti dai test
+locali. Non integrare con gate falliti o bypassando le protezioni.
+
+Il merge aggiorna il codice e la documentazione condivisi, NON le release
+PFD/MFD/EMS/Blackbox. Dopo integrazione, cruscotto e backup acquisiscono main
+tramite i timer; qualunque deploy avionico resta separato dai gate hardware.
+Stati requisiti invariati; restano aperti i punti elencati nella sezione 55.

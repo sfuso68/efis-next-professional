@@ -196,3 +196,38 @@ autorizza lo switch. L'attivazione richiede una finestra di banco esplicita,
 `PROD-005` non può essere chiuso prima di manifest PFD/RECORDER PASS, prova di
 rollback, ritorno al candidato, reboot acceptance, stato recorder crescente e
 aggiornamento del registro canonico.
+
+## Batch MFD leggibilità PFD 76afead
+
+La correzione di leggibilità PFD validata in CI viene preparata prima sul MFD
+RPi5, mai direttamente sul PFD primario. La sorgente candidata è il commit
+`76afead639599a08cb187bf93f1127c84a4df9ed`, che include sia le correzioni HMI
+del commit `89cf41d` sia il reset fail-closed della vecchia
+`ConditionPathExists=.../build-rpi5` verso il solo artefatto canonico
+`bin/efis-pfd-qt`.
+
+Gli asset sono:
+
+- `prepare_mfd_legibility_immutable_release.sh`: verifica archivio e rollback,
+  compila nativamente ARM64, esegue i test mirati e produce manifesto MFD senza
+  modificare servizio o puntatore;
+- `activate_mfd_legibility_immutable_release.sh`: richiede nodo, architettura,
+  supervisore unico e `get_throttled=0x0`, installa il gate systemd, esegue
+  switch atomico, prova candidata, rollback reale e ritorno alla candidata;
+- `verify_mfd_legibility_reboot_acceptance.sh`: verifica read-only dopo reboot
+  processo, binario, manifesto, porta DDP, conflitti display, alimentazione e
+  journal. L'acceptance visuale/touch resta esplicitamente `NOT_RUN`.
+
+L'archivio riproducibile si genera con:
+
+```sh
+git archive --format=tar.gz --prefix=efis-next-76afead/ \
+  --output=efis-next-76afead.tar.gz 76afead639599a08cb187bf93f1127c84a4df9ed
+```
+
+SHA-256 atteso:
+`b318d9da3914826cdc4c5a07b5803be25d17973b4685df64633646a053ee740b`.
+La candidata prevista è `/home/pi/efis-next-release-mfd-76afead-v1`; il
+rollback resta `/home/pi/efis-next-release-mfd-3432402-v1`. Nessuno degli
+script autorizza il volo e la preparazione termina con
+`EXECUTION_AUTHORIZED=false`.

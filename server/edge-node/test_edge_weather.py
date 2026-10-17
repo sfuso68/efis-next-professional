@@ -35,6 +35,29 @@ class EdgeWeatherTest(unittest.TestCase):
             self.assertTrue(item["stale"])
             self.assertFalse(item["display_allowed"])
 
+    def test_corrupt_json_is_invalid(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, 'LIPH.json').write_text('{broken', encoding='utf-8')
+            item = edge_weather.cached(directory, 'LIPH', now=NOW)
+            self.assertEqual('INVALID', item['state'])
+            self.assertFalse(item['display_allowed'])
+
+    def test_cached_flags_cannot_override_computed_freshness(self):
+        with tempfile.TemporaryDirectory() as directory:
+            payload = record(1201)
+            payload.update(state='CURRENT', display_allowed=True, safety_use_allowed=True)
+            self.write(directory, 'LIPH', payload)
+            item = edge_weather.cached(directory, 'LIPH', now=NOW)
+            self.assertEqual('EXPIRED', item['state'])
+            self.assertFalse(item['display_allowed'])
+            self.assertFalse(item['safety_use_allowed'])
+
+    def test_small_clock_jitter_and_exact_future_limit(self):
+        for age, expected in [(-5, 'CURRENT'), (-6, 'CLOCK_SKEW')]:
+            with self.subTest(age=age), tempfile.TemporaryDirectory() as directory:
+                self.write(directory, 'LIPH', record(age))
+                self.assertEqual(expected, edge_weather.cached(directory, 'LIPH', now=NOW)['state'])
+
     def test_current_stale_and_expired_thresholds_are_deterministic(self):
         cases = ((600, "CURRENT", True), (601, "STALE", True),
                  (1200, "STALE", True), (1201, "EXPIRED", False))

@@ -45,10 +45,10 @@ def validate(data: object) -> list[str]:
     compact = data.get("compact_weather")
     if not isinstance(compact, dict):
         compact = {}
-    if compact.get("width_logical_px") != 154 or compact.get("height_logical_px") != 64:
-        _error(errors, 7, "compact weather dimensions must be 154x64")
-    if compact.get("top_margin_logical_px") != 62:
-        _error(errors, 8, "compact weather must clear the heading ribbon by 62 px")
+    if compact.get("width_logical_px") != 146 or compact.get("height_logical_px") != 60:
+        _error(errors, 7, "compact weather dimensions must be 146x60")
+    if compact.get("top_margin_logical_px") != 78:
+        _error(errors, 8, "compact weather must clear the heading ribbon by 78 px")
     if compact.get("badge_height_logical_px") != 44:
         _error(errors, 9, "compact status badge must preserve 44 px")
     if compact.get("legend_visible") is not False:
@@ -61,10 +61,10 @@ def validate(data: object) -> list[str]:
     regular = data.get("regular_weather")
     if not isinstance(regular, dict):
         regular = {}
-    if regular.get("width_logical_px") != 178 or regular.get("height_logical_px") != 103:
-        _error(errors, 12, "regular weather dimensions must be 178x103")
-    if regular.get("top_margin_logical_px") != 62:
-        _error(errors, 13, "regular weather must clear the heading ribbon by 62 px")
+    if regular.get("width_logical_px") != 170 or regular.get("height_logical_px") != 96:
+        _error(errors, 12, "regular weather dimensions must be 170x96")
+    if regular.get("top_margin_logical_px") != 78:
+        _error(errors, 13, "regular weather must clear the heading ribbon by 78 px")
     if regular.get("badge_height_logical_px") != 34:
         _error(errors, 14, "regular status badge must be 34 px")
     if regular.get("legend_visible") is not True:
@@ -90,17 +90,42 @@ def validate_repository(root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     pfd = (root / "qml/AdaptivePfd.qml").read_text(encoding="utf-8")
     weather = (root / "qml/WeatherRadarOverlay.qml").read_text(encoding="utf-8")
+    fixture = (root / "qml/HmiGoldenController.qml").read_text(encoding="utf-8")
     markers = {
         "readonly property bool compactSkyView: root.width <= 1100": "breakpoint",
-        "topMargin: 62*root.uiScale": "top clearance",
-        "width: (compactSkyView ? 154 : 178)*root.uiScale": "responsive width",
-        "height: (compactSkyView ? 64 : 103)*root.uiScale": "responsive height",
+        "topMargin: 78*root.uiScale": "top clearance",
+        "width: (compactSkyView ? 146 : 170)*root.uiScale": "responsive width",
+        "height: (compactSkyView ? 60 : 96)*root.uiScale": "responsive height",
         "compactLayout: compactSkyView": "responsive propagation",
         "interactive: !root.goldenMode": "golden interaction lock",
     }
     for marker, label in markers.items():
         if marker not in pfd:
             errors.append(f"AdaptivePfd missing {label}: {marker}")
+    tape = (root / "qml/ProfessionalTape.qml").read_text(encoding="utf-8")
+    vision = (root / "qml/ProfessionalVisionSurface.qml").read_text(encoding="utf-8")
+    legibility_markers = {
+        'text: "FAIL"; color: theme.warning': (tape, "local tape failure flag"),
+        "id: lowerCompass": (vision, "lower compass canvas"),
+        "ctx.arc(cx, cy, radius": (vision, "lower compass graduated arc"),
+        "width: 340*vision.uiScale; height: 48*vision.uiScale":
+            (vision, "navigation contrast panel"),
+        "font.pixelSize: 10*vision.uiScale": (vision, "navigation primary text floor"),
+    }
+    for marker, (source, label) in legibility_markers.items():
+        if marker not in source:
+            errors.append(f"PFD legibility missing {label}: {marker}")
+    required_fixture_validity = (
+        "selectedAirspeedValid", "selectedAltitudeValid", "verticalSpeedValid",
+        "attitudeValid", "headingValid", "positionValid", "groundSpeedValid",
+        "selectedCourseValid", "flightDirectorGuidanceValid",
+    )
+    for name in required_fixture_validity:
+        marker = f"property bool {name}:true"
+        if marker not in fixture:
+            errors.append(
+                f"SkyView fixture must exercise valid primary flight data: {marker}"
+            )
     weather_markers = {
         "property bool compactLayout: false": "compact property",
         "property bool radarEnabled: true": "non-shadowing radar state",

@@ -66,6 +66,11 @@ def png_pixels(path: Path) -> bytes:
         filter_type = decoded[cursor]
         source = decoded[cursor + 1:cursor + 1 + stride]
         cursor += stride + 1
+        if filter_type == 0:
+            # PNG None filter is already decoded; avoid a per-byte Python loop.
+            pixels.extend(source)
+            previous = bytearray(source)
+            continue
         row = bytearray(stride)
         for index, value in enumerate(source):
             left = row[index - channels] if index >= channels else 0

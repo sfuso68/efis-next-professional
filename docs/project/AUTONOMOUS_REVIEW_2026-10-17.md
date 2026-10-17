@@ -1,0 +1,61 @@
+# Ripresa piano A1–A7 — 2026-10-17
+
+La matrice rimane autorevole; non è una dichiarazione di completamento EFIS.
+
+| Blocco | Consegna verificata | Cosa resta |
+|---|---|---|
+| A1 | Pacchetto, installazione versionata, attivazione/rollback HTTP reali del 16 ottobre | reboot/power-loss e bootstrap chiavi fuori perimetro |
+| A2 | Restore NAS e bundle pre-migrazione con refs/hash verificati | off-site e disaster recovery completo |
+| A3 | Policy proposta e inventario: 9 bundle, 498.108.584 byte; nessuna cancellazione | approvare quota/retention, destinazione cifrata e budget; nuovi branch non replicati |
+| A4 | 37 test contratti Python e test nativi freshness/arbitraggio/DDP/EDP/vettori PASS | ERAP/source identity, sorgenti reali e jitter/fault fisici |
+| A5 | Cache edge già 12 PASS; nuova validazione PNG radar 256×256, max 4 MiB, decodifica completa; CTest 3/3 PASS | payload provider/georef reali, coverage Nord Italia e ARM64, cache timestamp prodotto |
+| A6 | 42 test product/review PASS; motore/runtime/persistenza/profili ricompilati e testati | manuali applicabili e seriali UL/ULS: UNRESOLVED, nessun limite operativo attivato |
+| A7 | 37 test HMI/fixture/golden tools PASS; decoding PNG None accelerato con test pixel | catture fresche rendering e acceptance fisica touch/leggibilità/FPS su ogni display |
+
+## Evidenze e ripetibilità
+
+`docs/status/evidence/autonomous-20261017/verification.json` conserva il
+primo lotto: 136 test Python PASS e 9/10 nativi Windows PASS, un eseguibile
+non avviato per policy applicazioni. NON rimuovere quel fallimento dal report.
+`consolidated.json` collega il successivo gruppo HMI 37 PASS (un test aggiunto),
+sei test runner/storage PASS e la verifica indipendente del profilo su Linux.
+
+La policy Windows non è stata disattivata. Il test PFD profili, stesso hash
+sorgente, è stato compilato in container su serverha con GCC 14.2/Qt 6.8.2
+ed eseguito senza rete: PASS. Immagine e archivio privati restano sul server,
+non sono stati pubblicati; nessun servizio produttivo sostituito. Non è ARM64.
+Il Dockerfile ripete l'harness sul source.tar fissato; apt non è uno snapshot
+immutabile, quindi per ripetizione identica usare l'image ID registrato.
+
+Comando aggregato dal root del repository (Qt runtime nel PATH):
+
+```sh
+python -m tools.project_status.run_autonomous_checks --output output/checks.json --ctest /percorso/ctest
+```
+
+Senza CTest il gate nativo è NOT_RUN, non PASS. Ogni gruppo ha timeout e log;
+nessun comando legge bus o comanda hardware. Una policy OS può rendere il
+report INCOMPLETE: usare una piattaforma controllata diversa, non aggirarla.
+
+## Difetto radar corretto, non distribuito
+
+Prima una firma PNG più lunghezza >512 byte bastava a pubblicare CURRENT,
+e la cache era caricata senza decodifica. Ora PNG troncati/falsi, dimensioni
+non 256×256 e cache invalida sono rifiutati; download buffer limitato a
+4 MiB+1 e abort oltre soglia. Fixture HTTP usano PNG reali, non firma finta.
+Restano invariati isolamento prodotto/tile e rifiuto della risposta superata.
+Nessuna accettazione di dati provider implicita. Il fix non è stato attivato
+sui PFD/MFD e richiede il normale processo release/rollback/acceptance.
+
+## Lavori non chiudibili automaticamente
+
+- Power, cablaggi, retro/DIP delle quattro Sequent, channel map e calibrazione.
+- Fonti controllate specifiche aeromobile/912 UL/ULS, approvazione limiti.
+- Qualifica switch, bus, jitter e fault con sorgenti reali; HIL e EMI/vibrazioni.
+- Meteo provider/licenze/TLS/georef, coverage terreno, FPV reale e audio cockpit.
+- Approvazione off-site/quota e di qualsiasi potatura; nessun delete dedotto.
+- Merge/release e accettazioni operatore: nessuna promozione implicita a DONE.
+
+Non inventare altri blocchi numerati per far apparire chiuso il progetto:
+le prossime modifiche devono partire da uno di questi gap e da un criterio
+misurabile, non dal numero di passi eseguiti.

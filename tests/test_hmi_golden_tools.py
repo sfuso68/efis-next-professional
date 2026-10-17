@@ -9,7 +9,7 @@ import unittest
 import zlib
 
 from tools.ui.capture_hmi_golden import (
-    SIZES_BY_ROLE, png_pixel_sha256, png_size,
+    SIZES_BY_ROLE, png_pixel_sha256, png_size, png_pixels,
     write_manifest as build_manifest,
 )
 from tools.ui.compare_hmi_golden import difference
@@ -55,6 +55,18 @@ def write_manifest(directory: Path, manifest: dict) -> None:
 
 
 class HmiGoldenToolsTests(unittest.TestCase):
+    def test_none_fast_path_preserves_previous_row_for_up_filter(self):
+        def chunk(kind, payload):
+            body = kind + payload
+            return struct.pack('>I', len(payload)) + body + struct.pack('>I', zlib.crc32(body))
+        header = chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 2, 8, 6, 0, 0, 0))
+        pixels = bytes([10, 20, 30, 40, 11, 22, 33, 44])
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'mixed.png'
+            rows = b'\x00' + pixels[:4] + b'\x02' + bytes([1, 2, 3, 4])
+            path.write_bytes(b'\x89PNG\r\n\x1a\n' + header + chunk(b'IDAT', zlib.compress(rows)) + chunk(b'IEND', b''))
+            self.assertEqual(pixels, png_pixels(path))
+
     def test_visual_difference_has_explicit_tolerance_metrics(self):
         self.assertEqual(difference(bytes([1, 2, 3]), bytes([1, 4, 3])), (2, 2/3, 1/3))
 

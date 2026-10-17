@@ -9,6 +9,8 @@
 #include <QJsonObject>
 #include <QImage>
 #include <QImageWriter>
+#include <QImageReader>
+#include <QBuffer>
 #include <QPainter>
 #include <QPointer>
 #include <QNetworkReply>
@@ -22,6 +24,7 @@
 #include <QtMath>
 
 namespace {
+constexpr qint64 maximumRadarPayloadBytes = 4 * 1024 * 1024;
 QNetworkRequest weatherRequest(const QUrl& url) {
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("EFIS-Next/0.1 weather-service"));
@@ -102,6 +105,18 @@ QString WeatherService::classifyRadarAgeSeconds(qint64 age_seconds) {
     return QStringLiteral("EXPIRED");
 }
 
+bool WeatherService::validRadarPayload(const QByteArray& data) {
+    if (data.size() > maximumRadarPayloadBytes || !data.startsWith(QByteArray("\x89PNG\r\n\x1a\n", 8)))
+        return false;
+    QBuffer buffer;
+    buffer.setData(data);
+    if (!buffer.open(QIODevice::ReadOnly)) return false;
+    QImageReader reader(&buffer, "png");
+    if (reader.size() != QSize(256, 256)) return false;
+    const auto image = reader.read();
+    return !image.isNull() && image.size() == QSize(256, 256);
+}
+
 QString WeatherService::normalizedRadarProduct(const QString& product) {
     const auto candidate = product.trimmed().toUpper();
     if (candidate == QStringLiteral("VMI") || candidate == QStringLiteral("SRI")
@@ -140,8 +155,13 @@ bool WeatherService::loadCurrentRadarCache() {
         return false;
     }
     const QFileInfo cached(cachePath(filename));
-    if (!cached.isFile() || cached.size() <= 0) {
+    if (!cached.isFile() || cached.isSymLink() || cached.size() <= 0 || cached.size() > maximumRadarPayloadBytes) {
         clearRadarFrame(QStringLiteral("Radar unavailable • no matching cache"));
+        return false;
+    }
+    QFile cachedFile(cached.absoluteFilePath());
+    if (!cachedFile.open(QIODevice::ReadOnly) || !validRadarPayload(cachedFile.read(maximumRadarPayloadBytes + 1))) {
+        clearRadarFrame(QStringLiteral("Radar unavailable • invalid cached image"));
         return false;
     }
     radar_time_ = cached.lastModified().toUTC();
@@ -417,11 +437,15 @@ void WeatherService::requestRadar() {
     query.addQueryItem(QStringLiteral("height"), QStringLiteral("256"));
     url.setQuery(query);
     auto* reply = network_.get(weatherRequest(url));
+    reply->setReadBufferSize(maximumRadarPayloadBytes + 1);
+    connect(reply, &QNetworkReply::readyRead, this, [reply] {
+        if (reply->bytesAvailable() > maximumRadarPayloadBytes) reply->abort();
+    });
     connect(reply, &QNetworkReply::finished, this, [this, reply, requestProduct, requestX, requestY] {
         const auto data = reply->readAll();
         const bool requestIsCurrent = requestProduct == radar_product_
             && requestX == tile_x_ && requestY == tile_y_ && !simulation_;
-        if (reply->error() == QNetworkReply::NoError && data.startsWith("\x89PNG") && data.size() > 512) {
+        if (reply->error() == QNetworkReply::NoError && validRadarPayload(data)) {
             const auto filename = radarCacheFileName(requestProduct, 6, requestX, requestY);
             QSaveFile file(cachePath(filename));
             if (file.open(QIODevice::WriteOnly) && file.write(data) == data.size() && file.commit()) {

@@ -14,6 +14,9 @@
 #include <QTcpSocket>
 #include <QTimer>
 #include <QUrl>
+#include <QBuffer>
+#include <QImage>
+#include <QFile>
 
 #include <cstdlib>
 #include <functional>
@@ -27,8 +30,12 @@ void require(bool condition, const char* message) {
 }
 
 QByteArray radarPayload(char marker) {
-    QByteArray payload("\x89PNG\r\n\x1a\n", 8);
-    payload.append(600, marker);
+    QImage image(256, 256, QImage::Format_ARGB32);
+    image.fill(qRgba(static_cast<unsigned char>(marker), 60, 90, 255));
+    QByteArray payload;
+    QBuffer buffer(&payload);
+    require(buffer.open(QIODevice::WriteOnly), "PNG fixture buffer must open");
+    require(image.save(&buffer, "PNG"), "PNG fixture must encode");
     return payload;
 }
 
@@ -103,6 +110,20 @@ int main(int argc, char** argv) {
     QDir(weatherCacheRoot).removeRecursively();
 
     try {
+        const auto png = radarPayload('T');
+        require(WeatherService::validRadarPayload(png), "real 256x256 PNG must validate");
+        require(!WeatherService::validRadarPayload(QByteArray("\x89PNG\r\n\x1a\n", 8) + QByteArray(600, 'x')),
+                "signature-only payload must fail closed");
+        require(!WeatherService::validRadarPayload(png.left(40)), "truncated PNG must fail closed");
+        require(!WeatherService::validRadarPayload(QByteArray(4 * 1024 * 1024 + 1, 'x')),
+                "oversized payload must fail closed");
+        QImage wrongSize(512, 256, QImage::Format_ARGB32);
+        wrongSize.fill(Qt::transparent);
+        QByteArray wrongData;
+        QBuffer wrongBuffer(&wrongData);
+        require(wrongBuffer.open(QIODevice::WriteOnly) && wrongSize.save(&wrongBuffer, "PNG"),
+                "wrong-dimension fixture must encode");
+        require(!WeatherService::validRadarPayload(wrongData), "wrong dimensions must fail closed");
         require(WeatherService::classifyRadarAgeSeconds(-6) == QStringLiteral("CLOCK SKEW"),
                 "future radar timestamp outside tolerance must fail closed");
         require(WeatherService::classifyRadarAgeSeconds(-5) == QStringLiteral("CURRENT"),
@@ -135,7 +156,14 @@ int main(int argc, char** argv) {
             require(server.listen(), "controlled radar server did not listen");
             QSettings().setValue(QStringLiteral("weather/product"), QStringLiteral("VMI"));
             WeatherService weather(server.endpoint());
+            QDir().mkpath(weatherCacheRoot);
+            QFile invalidCache(weatherCacheRoot + QLatin1Char('/')
+                + WeatherService::radarCacheFileName(QStringLiteral("VMI"), 6, 34, 22));
+            require(invalidCache.open(QIODevice::WriteOnly), "invalid cache fixture must open");
+            invalidCache.write("not a PNG");
+            invalidCache.close();
             weather.updatePosition(45.648, 12.194);
+            require(weather.radarSource().isEmpty(), "corrupt cached image must not become available");
             weather.cycleProduct();
             require(weather.radarProduct() == QStringLiteral("SRI"),
                     "controlled race did not select SRI");
