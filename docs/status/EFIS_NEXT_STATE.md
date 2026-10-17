@@ -1250,3 +1250,22 @@ Stati requisiti invariati: manuali/seriali UL/ULS non acquisiti, limiti non
 attivati; G1/G2 live, ARM64, provider/georef, coverage e acceptance HMI aperti.
 CI estesa ma run GitHub non verificata. Il report Windows iniziale rimane
 INCOMPLETE, con consolidamento Linux separato, senza nascondere il blocco OS.
+
+## 56. Consolidamento tramite PR #48 — 2026-10-17
+
+Autorizzazione utente: integrazione del branch `work/project-dashboard-planning-v1`
+in main tramite PR #48. Baseline sorgente del lotto `21ac032…`, main prima
+dell'integrazione `1cc0a786…`; 16 commit/59 file, inclusa la legibilità PFD e
+preparazione MFD non ancora distribuite. Confronto GitHub: ahead 16/behind 0,
+nessun conflitto. PR: https://github.com/sfuso68/efis-next-professional/pull/48.
+
+Implementato/verificato software: sezioni 49–55 e relative evidenze. Verificato
+su infrastruttura reale: monitor/backup/restore serverha e NAS, container test
+Linux isolato; nessuna nuova verifica su hardware avionico. Gli esiti finali
+CI e il commit di merge sono tracciati nella PR GitHub, non dedotti dai test
+locali. Non integrare con gate falliti o bypassando le protezioni.
+
+Il merge aggiorna il codice e la documentazione condivisi, NON le release
+PFD/MFD/EMS/Blackbox. Dopo integrazione, cruscotto e backup acquisiscono main
+tramite i timer; qualunque deploy avionico resta separato dai gate hardware.
+Stati requisiti invariati; restano aperti i punti elencati nella sezione 55.
