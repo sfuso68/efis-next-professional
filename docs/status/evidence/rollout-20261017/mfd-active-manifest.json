@@ -1,0 +1,20 @@
+{
+  "artifacts": [
+    {
+      "executable": true,
+      "path": "bin/efis-pfd-qt",
+      "sha256": "5c3c1a42ad1f068fa742f2f3bb2f5225a9ba58a97bde6bf6145baf5b5abed64e"
+    }
+  ],
+  "built_utc": "2026-09-12T21:52:01Z",
+  "flight_approval": false,
+  "platform": "RPI5_AARCH64",
+  "release_id": "mfd-3432402-primary-v1",
+  "repository": "sfuso68/efis-next-professional",
+  "roles": [
+    "MFD"
+  ],
+  "schema": "efis-next.release-manifest.v1",
+  "simulation_mode": true,
+  "source_commit": "3432402ae35c168a14a14fe408a2b635fe750c92"
+}

@@ -1,6 +1,6 @@
 # EFIS NEXT — Registro canonico delle release sui nodi
 
-Aggiornamento documentale: 2026-09-21
+Aggiornamento documentale: 2026-10-17
 Stato: DEVELOPMENT / NON-CERT
 
 Questo file è l'unica fonte documentale autorizzata per rispondere alla domanda
@@ -45,3 +45,31 @@ L'inventario iniziale è documentato in
 La migrazione autorizzata MFD/EMS/Blackbox e le prove di rollback/reboot sono in
 [`evidence/release-immutability-20260920/README.md`](evidence/release-immutability-20260920/README.md).
 Nessuna riga di questo registro autorizza deployment, rollback o uso in volo.
+
+## Riconferma read-only del 2026-10-17
+
+Le quattro release del registro sono state rilette tramite SSH, manifesto e
+processo, e rimangono attive senza sostituzioni. Copie dei manifesti ed esiti
+sono in `evidence/rollout-20261017/`. Questa osservazione aggiorna le date
+storiche della tabella senza promuovere i gate ancora aperti.
+
+| Nodo | Release riconfermata | Processo | Gate rollout main a0be9a5 |
+|---|---|---|---|
+| PFD `.45` | `pfdrec-7051a47-retention-v1` | PFD 1495, recorder 1419 | `0x0`; attende canary MFD |
+| MFD `.49` | `mfd-3432402-primary-v1` | 1395, NRestarts 0 | `0x50000`; solo staging, niente attivazione |
+| EMS `.36` | `ems-62ba90b-hmi-cas-v1` | 949 | `0x0`; sudo non interattivo richiede password |
+| Blackbox `.47` | `blackbox-7655799-primary-v1` | broker 1301, NRestarts 0 | `0x50000`; bbxnav exit 2, NRestarts 0 |
+
+Il puntatore Blackbox effettivo è `/opt/efis-blackbox-current`, risolto in
+`/opt/efis-blackbox-releases/blackbox-7655799-v1`, non un path sotto `/home/pi`.
+Il sensore `.89` non risponde alla connessione SSH: nessuna nuova attestazione
+del suo stato, nessun deployment prima di G1. Il meteo Blackbox termina il
+refresh osservato con exit 0; l'attività transitoria non è stata scambiata per
+un errore. I bit `0x50000` sono storici, non prova di sottotensione attiva.
+Nessun reboot, servizio riavviato o puntatore modificato in questo controllo.
+
+Candidata MFD separata: `mfd-a0be9a5-main-v1`, sorgente main
+`a0be9a52494ea7ccb5a3890e94d03b671162383b`, sotto
+`/home/pi/efis-next-release-mfd-a0be9a5-v1`. Build ARM64, cinque gruppi CTest,
+manifesti candidata e rollback PASS. **STAGING SOLTANTO**, non root-owned e
+non attivata; no acceptance visuale/reboot/rollback drill della nuova release.

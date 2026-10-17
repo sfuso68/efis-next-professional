@@ -1,0 +1,15 @@
+{
+  "schema": "efis-next.rollout-observation.v1",
+  "observed_date_utc": "2026-10-17",
+  "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b",
+  "source_archive_sha256": "0ab89831f0887b1729aea5837feb98d329edb252bfe27e3dcad0b913b8334c15",
+  "flight_approval": false,
+  "nodes": [
+    {"role": "PFD_RECORDER", "address": "192.168.1.45", "ssh": "PASS", "hostname": "efis-pfd-01", "arch": "aarch64", "throttled": "0x0", "free_root_human": "17G", "current": "/home/efis/efis-next-releases/pfdrec-7051a47-retention-v1", "pfd_pid": 1495, "recorder_pid": 1419, "activation": "NOT_RUN_MFD_CANARY_REQUIRED"},
+    {"role": "MFD", "address": "192.168.1.49", "ssh": "PASS", "hostname": "pi5", "arch": "aarch64", "throttled": "0x50000", "free_root_human": "32G", "current": "/home/pi/efis-next-release-mfd-3432402-v1", "service": "efis-next-mfd-direct.service", "pid": 1395, "restarts": 0, "activation": "NOT_RUN_POWER_GATE"},
+    {"role": "EMS", "address": "192.168.1.36", "ssh": "PASS", "hostname": "efis", "arch": "aarch64", "throttled": "0x0", "free_root_human": "92G", "current": "/home/pi/efis-next-releases/ems-62ba90b-hmi-cas-v1", "pid": 949, "sudo_noninteractive": "PASSWORD_REQUIRED", "activation": "NOT_RUN_PRIVILEGE_GATE"},
+    {"role": "BLACKBOX", "address": "192.168.1.47", "ssh": "PASS", "hostname": "efisblackbox", "arch": "aarch64", "throttled": "0x50000", "free_root_human": "352G", "current": "/opt/efis-blackbox-releases/blackbox-7655799-v1", "broker_pid": 1301, "broker_restarts": 0, "bbxnav_exit_status": 2, "bbxnav_restarts": 0, "weather_sync_exit_status": 0, "activation": "NOT_RUN_POWER_GATE"},
+    {"role": "SENSOR", "address": "192.168.1.89", "ssh": "TIMEOUT", "activation": "NOT_RUN_UNREACHABLE_AND_G1_REQUIRED"}
+  ],
+  "limits": "0x50000 records historical undervoltage/throttling, not proof of a currently active fault. No reboot was used to clear the evidence. No visual, touch, provider, live georeferencing, or flight acceptance performed."
+}

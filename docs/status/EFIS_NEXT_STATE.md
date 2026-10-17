@@ -1,8 +1,8 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-30
+Aggiornamento: 2026-10-17
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `origin/main` `ff75b242db0aa4075e19cecc07d5cfa779397e07`
+Baseline integrata esaminata: `main` `a0be9a52494ea7ccb5a3890e94d03b671162383b` (PR #48)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -21,8 +21,8 @@ Il rapporto del 2026-09-20 resta uno snapshot storico.
 Durante il limite mensile GitHub comunicato il 2026-09-30, i lavori successivi
 sono conservati soltanto in commit locali secondo
 [`CHECKPOINT-2026-09-30-GITHUB-OFFLINE-DEVELOPMENT.md`](CHECKPOINT-2026-09-30-GITHUB-OFFLINE-DEVELOPMENT.md).
-La baseline sopra indicata è l'ultima `main` remota osservata, non una
-dichiarazione sullo stato remoto durante il periodo offline.
+Il periodo offline è storico: la baseline in testa è stata riconfermata dopo
+il merge PR #48; non implica che la stessa versione sia distribuita ai nodi.
 
 ## 1. Quadro immediato
 
@@ -1269,3 +1269,29 @@ Il merge aggiorna il codice e la documentazione condivisi, NON le release
 PFD/MFD/EMS/Blackbox. Dopo integrazione, cruscotto e backup acquisiscono main
 tramite i timer; qualunque deploy avionico resta separato dai gate hardware.
 Stati requisiti invariati; restano aperti i punti elencati nella sezione 55.
+
+## 57. Rollout richiesto sui nodi disponibili — 2026-10-17
+
+Autorizzata la distribuzione di main a0be9a5. Inventario SSH reale su quattro
+nodi, manifesti e processi riconfermati in `evidence/rollout-20261017/`.
+MFD e Blackbox hanno storico alimentazione 0x50000; EMS sano ma richiede sudo
+interattivo; sensore .89 irraggiungibile e comunque vincolato a G1. Il PFD sano
+attende il canary MFD previsto dal piano: nessun bypass e nessun reboot per
+azzerare l'evidenza dei transienti.
+
+Implementato solo helper di staging versionato come evidenza; nessun sorgente
+avionico modificato. Sul MFD compilati nativamente renderer, test radar e
+test profili da main: CTest 5/5 PASS (radar, profili, golden tools, contratto,
+responsive). Sono verifiche software ARM64 sul nodo reale, NON acceptance
+grafica del pannello. Il preparatore iniziale fallisce perché il rollback
+storico non contiene il validatore; log preservato. Completion separata con
+validatore corrente controlla entrambi i manifesti/file PASS, ldd risolto.
+
+Preparata candidata `mfd-a0be9a5-main-v1` con simulation_mode=true e
+flight_approval=false, non ancora sigillata root-owned o attivata. PID MFD 1395
+e NRestarts 0 invariati. Nessuna release attiva aggiornata, nessun restart,
+bus, rete, firmware o pulizia modificati. Restano: qualificazione power,
+finestra root EMS, inventario sensore, attivazione MFD con rollback/reboot e
+acceptance visuale, poi PFD dual-role con recorder/retention e gli altri ruoli.
+WX-002 resta PARTIAL; PROD-005 DONE riguarda il contratto storico, non questo
+rollout. Stato e conteggi globali non promossi.

@@ -1,0 +1,125 @@
+Start testing: Oct 17 07:31 CEST
+----------------------------------------------------------
+1/67 Testing: efis_weather_service_tests
+1/67 Test: efis_weather_service_tests
+Command: "/home/pi/efis-release-mfd-a0be9a5-stage/build/efis_weather_service_tests"
+Directory: /home/pi/efis-release-mfd-a0be9a5-stage/build
+"efis_weather_service_tests" start time: Oct 17 07:31 CEST
+Output:
+----------------------------------------------------------
+libpng error: xxxx: bad header (invalid type)
+libpng error: Read Error
+event=weather_simulation_frame_deferred reason=encoder_busy phase= 2
+event=weather_simulation_worker_slow duration_ms= 414 phase= 1
+event=weather_simulation_frame_deferred reason=encoder_busy phase= 4
+weather_service_tests: PASS
+<end of output>
+Test time =   1.09 sec
+----------------------------------------------------------
+Test Passed.
+"efis_weather_service_tests" end time: Oct 17 07:31 CEST
+"efis_weather_service_tests" time elapsed: 00:00:01
+----------------------------------------------------------
+
+2/67 Testing: efis_pfd_aircraft_profile_tests
+2/67 Test: efis_pfd_aircraft_profile_tests
+Command: "/home/pi/efis-release-mfd-a0be9a5-stage/build/efis_pfd_aircraft_profile_tests"
+Directory: /home/pi/efis-release-mfd-a0be9a5-stage/build
+"efis_pfd_aircraft_profile_tests" start time: Oct 17 07:31 CEST
+Output:
+----------------------------------------------------------
+event=simulation_role role= DISABLED
+event=aircraft_profile_unavailable reason=no_complete_valid_profile
+event=catalog_index_unavailable
+event=navigation_index_unavailable
+event=radionavigation_index_unavailable
+event=imagery_package_unavailable
+event=simulation_role role= DISABLED
+event=aircraft_profile_unavailable reason=no_complete_valid_profile
+event=catalog_index_unavailable
+event=navigation_index_unavailable
+event=radionavigation_index_unavailable
+event=imagery_package_unavailable
+event=simulation_role role= DISABLED
+event=aircraft_profile_rejected path= /tmp/efis_pfd_aircraft_profile_tests-uiUaiY/incomplete.json reason=missing_invalid_or_inconsistent_vspeeds
+event=aircraft_profile_unavailable reason=no_complete_valid_profile
+event=catalog_index_unavailable
+event=navigation_index_unavailable
+event=radionavigation_index_unavailable
+event=imagery_package_unavailable
+event=simulation_role role= DISABLED
+event=aircraft_profile_loaded path= /tmp/efis_pfd_aircraft_profile_tests-uiUaiY/complete.json profile= TEST • AIRCRAFT state= VERIFIED
+event=catalog_index_unavailable
+event=navigation_index_unavailable
+event=radionavigation_index_unavailable
+event=imagery_package_unavailable
+PFD aircraft profile fail-closed tests passed
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"efis_pfd_aircraft_profile_tests" end time: Oct 17 07:31 CEST
+"efis_pfd_aircraft_profile_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+26/67 Testing: efis_hmi_golden_tools_tests
+26/67 Test: efis_hmi_golden_tools_tests
+Command: "/usr/bin/python3" "-m" "unittest" "tests.test_hmi_golden_tools"
+Directory: /home/pi/efis-release-mfd-a0be9a5-stage/source
+"efis_hmi_golden_tools_tests" start time: Oct 17 07:31 CEST
+Output:
+----------------------------------------------------------
+........
+----------------------------------------------------------------------
+Ran 8 tests in 1.606s
+
+OK
+<end of output>
+Test time =   1.73 sec
+----------------------------------------------------------
+Test Passed.
+"efis_hmi_golden_tools_tests" end time: Oct 17 07:31 CEST
+"efis_hmi_golden_tools_tests" time elapsed: 00:00:01
+----------------------------------------------------------
+
+27/67 Testing: efis_avionix_hmi_contract_tests
+27/67 Test: efis_avionix_hmi_contract_tests
+Command: "/usr/bin/python3" "-m" "unittest" "tests.test_avionix_hmi_contract"
+Directory: /home/pi/efis-release-mfd-a0be9a5-stage/source
+"efis_avionix_hmi_contract_tests" start time: Oct 17 07:31 CEST
+Output:
+----------------------------------------------------------
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 0.007s
+
+OK
+<end of output>
+Test time =   0.10 sec
+----------------------------------------------------------
+Test Passed.
+"efis_avionix_hmi_contract_tests" end time: Oct 17 07:31 CEST
+"efis_avionix_hmi_contract_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+28/67 Testing: efis_skyview_responsive_tests
+28/67 Test: efis_skyview_responsive_tests
+Command: "/usr/bin/python3" "-m" "unittest" "tests.test_skyview_responsive"
+Directory: /home/pi/efis-release-mfd-a0be9a5-stage/source
+"efis_skyview_responsive_tests" start time: Oct 17 07:31 CEST
+Output:
+----------------------------------------------------------
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.002s
+
+OK
+<end of output>
+Test time =   0.09 sec
+----------------------------------------------------------
+Test Passed.
+"efis_skyview_responsive_tests" end time: Oct 17 07:31 CEST
+"efis_skyview_responsive_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 17 07:31 CEST
