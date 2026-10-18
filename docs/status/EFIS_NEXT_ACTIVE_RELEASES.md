@@ -1,6 +1,6 @@
 # EFIS NEXT — Registro canonico delle release sui nodi
 
-Aggiornamento documentale: 2026-10-17
+Aggiornamento documentale: 2026-10-18
 Stato: DEVELOPMENT / NON-CERT
 
 Questo file è l'unica fonte documentale autorizzata per rispondere alla domanda
@@ -73,3 +73,23 @@ Candidata MFD separata: `mfd-a0be9a5-main-v1`, sorgente main
 `/home/pi/efis-next-release-mfd-a0be9a5-v1`. Build ARM64, cinque gruppi CTest,
 manifesti candidata e rollback PASS. **STAGING SOLTANTO**, non root-owned e
 non attivata; no acceptance visuale/reboot/rollback drill della nuova release.
+
+## Preparazione autonoma del 2026-10-18 — nessuna attivazione
+
+Evidenze: `evidence/rollout-20261018/`. Main resta a0be9a5; il MFD esegue
+15/15 regressioni software ARM64 più un test storage recorder PASS.
+
+| Candidata | Nodo dove depositata | Stato |
+|---|---|---|
+| `mfd-a0be9a5-main-v1` | MFD `.49`, path della sezione precedente | Staging, power gate invariato |
+| `pfdrec-a0be9a5-main-v1` | PFD `.45`, `/home/efis/efis-release-pfdrec-a0be9a5-stage/pfdrec-a0be9a5-main-v1` | Due artefatti compilati su MFD RPi5; manifesti candidata/rollback e dipendenze verificati sul PFD, nessuno switch |
+| `blackbox-a0be9a5-main-v1` | Blackbox `.47`, `/home/pi/efis-release-blackbox-a0be9a5-stage/blackbox-a0be9a5-main-v1` | Broker compilato su MFD RPi5; manifesti/dipendenze PASS sul destinatario; mai eseguito |
+| `ems-a0be9a5-main-v1` | EMS `.36`, `/home/pi/efis-next-releases/ems-a0be9a5-main-v1` | Build nativa RPi4, 7/7 test, manifesti/dipendenze e smoke QML isolato PASS; non attivata |
+
+I pacchetti depositati restano staging non sigillato root-owned. Le release
+attive sono ancora quelle riconfermate il 17; il 18 i PID PFD 1495, recorder
+1419, MFD 1395, Blackbox 1301 sono invariati. Il PFD riporta NRestarts=1
+storico e recorder/MFD/Blackbox 0: non attribuire quell'1 a questo lavoro.
+Nessuna variazione a retention, configurazione, rete, unità o bus.
+Anche EMS conserva current `ems-62ba90b-hmi-cas-v1`, PID 949/NRestarts 0;
+la cattura offscreen della candidata non è una cattura del pannello operativo.

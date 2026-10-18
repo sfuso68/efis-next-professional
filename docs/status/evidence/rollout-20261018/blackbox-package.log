@@ -1,0 +1,8 @@
+[1/2] Building CXX object CMakeFiles/efis-blackbox-broker.dir/src/apps/efis_blackbox_broker_main.cpp.o
+[2/2] Linking CXX executable efis-blackbox-broker
+{"artifacts": 1, "flight_approval": false, "manifest": "/home/pi/efis-release-mfd-a0be9a5-stage/blackbox-a0be9a5-main-v1/release-manifest.json", "release_id": "blackbox-a0be9a5-main-v1", "schema": "efis-next.release-build.v1", "status": "PASS"}
+{"artifacts_checked": 1, "artifacts_declared": 1, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "blackbox-a0be9a5-main-v1", "roles": ["BLACKBOX"], "schema": "efis-next.release-validation.v1", "status": "PASS"}
+85bf9aad2124d5e75504fe772f5fae69e319b0d6ce5515fc7e6a611638b87512  /home/pi/efis-release-mfd-a0be9a5-stage/blackbox-a0be9a5-main-v1.tar.gz
+37c96d54c4e884161fd25c71350af71f6a69aca73e3f5af1217bdbf1ede71cc4  /home/pi/efis-release-mfd-a0be9a5-stage/blackbox-a0be9a5-main-v1/release-manifest.json
+BLACKBOX_PACKAGE=PASS
+ACTIVATION=NOT_RUN_POWER_GATE

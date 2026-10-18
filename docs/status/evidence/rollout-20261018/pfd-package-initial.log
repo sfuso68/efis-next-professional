@@ -1,0 +1,12 @@
+Internal ctest changing into directory: /home/pi/efis-release-mfd-a0be9a5-stage/build
+Test project /home/pi/efis-release-mfd-a0be9a5-stage/build
+    Start 51: efis_recorder_storage_failure_tests
+1/1 Test #51: efis_recorder_storage_failure_tests ...   Passed    0.10 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.10 sec
+Traceback (most recent call last):
+  File "/home/pi/efis-release-mfd-a0be9a5-stage/pfdrec-a0be9a5-main-v1/tools/deployment/build_release_manifest.py", line 16, in <module>
+    from tools.deployment.validate_release_manifest import PLATFORMS, ROLES, validate
+ModuleNotFoundError: No module named 'tools'

@@ -1,0 +1,484 @@
+/home/pi/efis-release-ems-a0be9a5-stage/efis-next-a0be9a5-arm64.tar.gz: OK
+Sun 18 Oct 20:19:01 UTC 2026
+-- The CXX compiler identification is GNU 14.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- EFIS EMS golden rerender gate: NOT REGISTERED (requires Python3 and target efis-pfd-qt).
+-- Performing Test HAVE_STDATOMIC
+-- Performing Test HAVE_STDATOMIC - Success
+-- Found OpenGL: /usr/lib/aarch64-linux-gnu/libOpenGL.so
+qmldir file not found at "/usr/lib/aarch64-linux-gnu/qt6/qml/QtQuick3D"
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquick2plugin' is a dependency of 'efis-ems-qt', but the
+  link target it defines (Qt6::qtquick2plugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qmlplugin' is a dependency of 'efis-ems-qt', but the link
+  target it defines (Qt6::qmlplugin) does not exist in the current scope.
+  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'modelsplugin' is a dependency of 'efis-ems-qt', but the
+  link target it defines (Qt6::modelsplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'workerscriptplugin' is a dependency of 'efis-ems-qt', but
+  the link target it defines (Qt6::workerscriptplugin) does not exist in the
+  current scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2plugin' is a dependency of 'efis-ems-qt',
+  but the link target it defines (Qt6::qtquickcontrols2plugin) does not exist
+  in the current scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2fusionstyleplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2fusionstyleplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2materialstyleplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2materialstyleplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2imaginestyleplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2imaginestyleplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2universalstyleplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2universalstyleplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2basicstyleplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2basicstyleplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquicktemplates2plugin' is a dependency of 'efis-ems-qt',
+  but the link target it defines (Qt6::qtquicktemplates2plugin) does not
+  exist in the current scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2implplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2implplugin) does not exist in the current scope.  The
+  plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2fusionstyleimplplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2fusionstyleimplplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'quickwindowplugin' is a dependency of 'efis-ems-qt', but
+  the link target it defines (Qt6::quickwindow) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2materialstyleimplplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2materialstyleimplplugin) does not exist in the
+  current scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2imaginestyleimplplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2imaginestyleimplplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2universalstyleimplplugin' is a dependency
+  of 'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2universalstyleimplplugin) does not exist in the
+  current scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qtquickcontrols2basicstyleimplplugin' is a dependency of
+  'efis-ems-qt', but the link target it defines
+  (Qt6::qtquickcontrols2basicstyleimplplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+CMake Warning at /usr/lib/aarch64-linux-gnu/cmake/Qt6Qml/Qt6QmlMacros.cmake:4216 (message):
+  The qml plugin 'qmlshapesplugin' is a dependency of 'efis-ems-qt', but the
+  link target it defines (Qt6::qmlshapesplugin) does not exist in the current
+  scope.  The plugin will not be linked.
+Call Stack (most recent call first):
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (qt6_import_qml_plugins)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:745 (cmake_language)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:823 (_qt_internal_finalize_executable)
+  /usr/lib/aarch64-linux-gnu/cmake/Qt6Core/Qt6CoreMacros.cmake:792:EVAL:1 (qt6_finalize_target)
+  CMakeLists.txt:DEFERRED
+
+
+-- Configuring done (4.7s)
+-- Generating done (0.5s)
+-- Build files have been written to: /home/pi/efis-release-ems-a0be9a5-stage/build
+[  0%] Running qmlimportscanner for efis-ems-qt
+[  0%] Building CXX object CMakeFiles/efis_core.dir/src/core/alert_engine.cpp.o
+qmldir file not found at "/usr/lib/aarch64-linux-gnu/qt6/qml/QtQuick3D"
+[  0%] Built target efis-ems-qt_qmlimportscan
+[  0%] Copying efis-ems-qt qml sources into build dir
+[  0%] Built target efis-ems-qt_copy_qml
+[  2%] Copying efis-ems-qt qml resources into build dir
+[  2%] Built target efis-ems-qt_copy_res
+[  4%] Building CXX object CMakeFiles/efis_core.dir/src/emergency/emergency_assist.cpp.o
+[  4%] Building CXX object CMakeFiles/efis_core.dir/src/emergency/emergency_input.cpp.o
+[  4%] Building CXX object CMakeFiles/efis_core.dir/src/emergency/emergency_audio.cpp.o
+[  6%] Building CXX object CMakeFiles/efis_core.dir/src/voice/voice_assist.cpp.o
+[  6%] Building CXX object CMakeFiles/efis_core.dir/src/core/flight_model.cpp.o
+[  8%] Building CXX object CMakeFiles/efis_core.dir/src/core/node_health.cpp.o
+[  8%] Building CXX object CMakeFiles/efis_core.dir/src/core/snapshot_arbitrator.cpp.o
+[ 10%] Building CXX object CMakeFiles/efis_core.dir/src/core/flight_source.cpp.o
+[ 10%] Building CXX object CMakeFiles/efis_core.dir/src/core/engine_source.cpp.o
+[ 12%] Building CXX object CMakeFiles/efis_core.dir/src/core/derived_state.cpp.o
+[ 12%] Building CXX object CMakeFiles/efis_core.dir/src/core/engine_runtime.cpp.o
+[ 12%] Building CXX object CMakeFiles/efis_core.dir/src/core/engine_runtime_store.cpp.o
+[ 14%] Building CXX object CMakeFiles/efis_core.dir/src/core/stasis_monitor.cpp.o
+[ 14%] Building CXX object CMakeFiles/efis_core.dir/src/core/cross_check.cpp.o
+[ 16%] Building CXX object CMakeFiles/efis_core.dir/src/recording/flight_record.cpp.o
+[ 16%] Building CXX object CMakeFiles/efis_core.dir/src/recording/snapshot_recorder.cpp.o
+[ 18%] Building CXX object CMakeFiles/efis_core.dir/src/recording/segmented_recorder.cpp.o
+[ 18%] Building CXX object CMakeFiles/efis_core.dir/src/recording/recorder_status.cpp.o
+[ 20%] Building CXX object CMakeFiles/efis_core.dir/src/display/display_model.cpp.o
+[ 20%] Building CXX object CMakeFiles/efis_core.dir/src/display/terrain_projection.cpp.o
+[ 22%] Building CXX object CMakeFiles/efis_core.dir/src/providers/simulation_provider.cpp.o
+[ 22%] Building CXX object CMakeFiles/efis_core.dir/src/providers/simulation_source.cpp.o
+[ 22%] Building CXX object CMakeFiles/efis_core.dir/src/providers/ddp_udp_source.cpp.o
+[ 24%] Building CXX object CMakeFiles/efis_core.dir/src/providers/ddp_udp_publisher.cpp.o
+[ 24%] Building CXX object CMakeFiles/efis_core.dir/src/providers/edp_udp.cpp.o
+[ 26%] Building CXX object CMakeFiles/efis_core.dir/src/providers/engine_simulation_provider.cpp.o
+[ 26%] Building CXX object CMakeFiles/efis_core.dir/src/providers/sensor_adapter_health.cpp.o
+[ 28%] Building CXX object CMakeFiles/efis_core.dir/src/simulation/system_simulator.cpp.o
+[ 28%] Building CXX object CMakeFiles/efis_core.dir/src/providers/mavlink_parser.cpp.o
+[ 30%] Building CXX object CMakeFiles/efis_core.dir/src/providers/mavlink_adapter.cpp.o
+[ 30%] Building CXX object CMakeFiles/efis_core.dir/src/providers/esp32_can_adapter.cpp.o
+[ 30%] Building CXX object CMakeFiles/efis_core.dir/src/io/can_source.cpp.o
+[ 32%] Building CXX object CMakeFiles/efis_core.dir/src/providers/dronecan.cpp.o
+[ 32%] Building CXX object CMakeFiles/efis_core.dir/src/io/socketcan_source.cpp.o
+[ 34%] Building CXX object CMakeFiles/efis_core.dir/src/ingest/mavlink_pipeline.cpp.o
+[ 34%] Building CXX object CMakeFiles/efis_core.dir/src/ingest/recording_session.cpp.o
+[ 36%] Building CXX object CMakeFiles/efis_core.dir/src/ingest/blackbox_publisher_session.cpp.o
+[ 36%] Building CXX object CMakeFiles/efis_core.dir/src/io/byte_source.cpp.o
+[ 38%] Building CXX object CMakeFiles/efis_core.dir/src/io/udp_datagram.cpp.o
+[ 38%] Building CXX object CMakeFiles/efis_core.dir/src/io/readonly_udp_fanout.cpp.o
+[ 38%] Building CXX object CMakeFiles/efis_core.dir/src/bench/sensor_bench.cpp.o
+[ 40%] Building CXX object CMakeFiles/efis_core.dir/src/core/altimetry.cpp.o
+[ 40%] Building CXX object CMakeFiles/efis_core.dir/src/core/flight_dynamics.cpp.o
+[ 42%] Building CXX object CMakeFiles/efis_core.dir/src/core/signal_access.cpp.o
+[ 42%] Building CXX object CMakeFiles/efis_core.dir/src/protocol/ddp_v2.cpp.o
+[ 44%] Building CXX object CMakeFiles/efis_core.dir/src/protocol/ddp_session.cpp.o
+In file included from /usr/include/aarch64-linux-gnu/c++/14/bits/c++allocator.h:33,
+                 from /usr/include/c++/14/bits/allocator.h:46,
+                 from /usr/include/c++/14/string:43,
+                 from /usr/include/c++/14/bits/locale_classes.h:40,
+                 from /usr/include/c++/14/bits/ios_base.h:41,
+                 from /usr/include/c++/14/ios:44,
+                 from /usr/include/c++/14/istream:40,
+                 from /usr/include/c++/14/sstream:40,
+                 from /usr/include/c++/14/chrono:45,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/include/efis/core/types.hpp:3,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/include/efis/core/sample.hpp:3,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/include/efis/core/flight_snapshot.hpp:3,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/include/efis/protocol/ddp_v2.hpp:3,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/src/protocol/ddp_v2.cpp:1:
+In member function ‘void std::__new_allocator<_Tp>::deallocate(_Tp*, size_type) [with _Tp = unsigned char]’,
+    inlined from ‘constexpr void std::allocator< <template-parameter-1-1> >::deallocate(_Tp*, std::size_t) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/allocator.h:208:35,
+    inlined from ‘static constexpr void std::allocator_traits<std::allocator<_CharT> >::deallocate(allocator_type&, pointer, size_type) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/alloc_traits.h:550:23,
+    inlined from ‘constexpr std::vector<_Tp, _Alloc>::_M_realloc_append(_Args&& ...)::_Guard::~_Guard() [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:616:18,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::_M_realloc_append(_Args&& ...) [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:688:7,
+    inlined from ‘constexpr std::vector<_Tp, _Alloc>::reference std::vector<_Tp, _Alloc>::emplace_back(_Args&& ...) [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:123:21,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::push_back(value_type&&) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/stl_vector.h:1301:21,
+    inlined from ‘std::vector<unsigned char> efis::protocol::ddp::encode_snapshot(const efis::FlightSnapshot&, Profile, uint32_t, uint64_t, efis::MonoTime)’ at /home/pi/efis-release-ems-a0be9a5-stage/source/src/protocol/ddp_v2.cpp:157:22:
+/usr/include/c++/14/bits/new_allocator.h:172:33: warning: ‘void operator delete(void*, std::size_t)’ called on pointer ‘<unknown>’ with nonzero offset [1, 5764607523034234885] [-Wfree-nonheap-object]
+  172 |         _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+      |                                 ^
+In member function ‘_Tp* std::__new_allocator<_Tp>::allocate(size_type, const void*) [with _Tp = unsigned char]’,
+    inlined from ‘constexpr _Tp* std::allocator< <template-parameter-1-1> >::allocate(std::size_t) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/allocator.h:196:40,
+    inlined from ‘static constexpr _Tp* std::allocator_traits<std::allocator<_CharT> >::allocate(allocator_type&, size_type) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/alloc_traits.h:515:28,
+    inlined from ‘constexpr std::_Vector_base<_Tp, _Alloc>::pointer std::_Vector_base<_Tp, _Alloc>::_M_allocate(std::size_t) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/stl_vector.h:380:33,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::reserve(size_type) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:79:33,
+    inlined from ‘std::vector<unsigned char> efis::protocol::ddp::encode_snapshot(const efis::FlightSnapshot&, Profile, uint32_t, uint64_t, efis::MonoTime)’ at /home/pi/efis-release-ems-a0be9a5-stage/source/src/protocol/ddp_v2.cpp:156:20:
+/usr/include/c++/14/bits/new_allocator.h:151:55: note: returned from ‘void* operator new(std::size_t)’
+  151 |         return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp)));
+      |                                                       ^
+[ 44%] Building CXX object CMakeFiles/efis_core.dir/src/protocol/edp_v1.cpp.o
+[ 46%] Building CXX object CMakeFiles/efis_core.dir/src/instruments/dial.cpp.o
+[ 46%] Building CXX object CMakeFiles/efis_core.dir/src/instruments/panel.cpp.o
+[ 46%] Building CXX object CMakeFiles/efis_core.dir/src/instruments/panel_store.cpp.o
+[ 48%] Building CXX object CMakeFiles/efis_core.dir/src/instruments/horizon.cpp.o
+[ 48%] Building CXX object CMakeFiles/efis_core.dir/src/instruments/svg_dial_renderer.cpp.o
+[ 50%] Linking CXX static library libefis_core.a
+[ 50%] Built target efis_core
+[ 50%] Built target efis-ems-qt_autogen_timestamp_deps
+[ 50%] Automatic MOC and UIC for target efis-ems-qt
+[ 50%] Built target efis-ems-qt_autogen
+[ 54%] Running rcc for resource efis-ems-qt_raw_qml_0
+[ 54%] Running AUTOMOC file extraction for target efis-ems-qt
+[ 54%] Running rcc for resource efis-ems-qt_raw_qml_0_extra_qmldirs
+[ 56%] Running rcc for resource qmake_EfisNextEms
+[ 56%] Generating .rcc/qmlcache/efis-ems-qt_qmlcache_loader.cpp
+[ 56%] Running moc --collect-json for target efis-ems-qt
+[ 56%] Generating meta_types/qt6efis-ems-qt_release_metatypes.json
+[ 56%] Automatic QML type registration for target efis-ems-qt
+[ 58%] Generating .rcc/qmlcache/efis-ems-qt_qml/CommandRail_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/CommandRail_qml.cpp.aotstats
+[ 58%] Generating .rcc/qmlcache/efis-ems-qt_qml/AdaptiveEmsView_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/AdaptiveEmsView_qml.cpp.aotstats
+[ 60%] Generating .rcc/qmlcache/efis-ems-qt_qml/EfisTouchKeyboard_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/EfisTouchKeyboard_qml.cpp.aotstats
+[ 62%] Generating .rcc/qmlcache/efis-ems-qt_qml/EmsGaugeV3_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/EmsGaugeV3_qml.cpp.aotstats
+[ 64%] Generating .rcc/qmlcache/efis-ems-qt_qml/EmsMain_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/EmsMain_qml.cpp.aotstats
+[ 66%] Generating .rcc/qmlcache/efis-ems-qt_qml/EmsSetupOverlay_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/EmsSetupOverlay_qml.cpp.aotstats
+[ 66%] Generating .rcc/qmlcache/efis-ems-qt_qml/EmsVectorIcon_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/EmsVectorIcon_qml.cpp.aotstats
+[ 66%] Generating .rcc/qmlcache/efis-ems-qt_qml/EngineTemperatureBars_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/EngineTemperatureBars_qml.cpp.aotstats
+[ 66%] Generating .rcc/qmlcache/efis-ems-qt_qml/HmiAirframePanel_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/HmiAirframePanel_qml.cpp.aotstats
+[ 68%] Generating .rcc/qmlcache/efis-ems-qt_qml/HmiArcGaugeV4_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/HmiArcGaugeV4_qml.cpp.aotstats
+[ 68%] Generating .rcc/qmlcache/efis-ems-qt_qml/HmiCylinderMatrixV2_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/HmiCylinderMatrixV2_qml.cpp.aotstats
+[ 68%] Generating .rcc/qmlcache/efis-ems-qt_qml/HmiDataStateBadge_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/HmiDataStateBadge_qml.cpp.aotstats
+[ 68%] Generating .rcc/qmlcache/efis-ems-qt_qml/HmiElectricalSynoptic_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/HmiElectricalSynoptic_qml.cpp.aotstats
+[ 70%] Generating .rcc/qmlcache/efis-ems-qt_qml/HmiFuelStatus_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/HmiFuelStatus_qml.cpp.aotstats
+[ 72%] Generating .rcc/qmlcache/efis-ems-qt_qml/HmiTokens_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/HmiTokens_qml.cpp.aotstats
+[ 72%] Generating .rcc/qmlcache/efis-ems-qt_qml/OperationalProfileSetup_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/OperationalProfileSetup_qml.cpp.aotstats
+[ 72%] Generating .rcc/qmlcache/efis-ems-qt_qml/ProfessionalCircularGauge_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/ProfessionalCircularGauge_qml.cpp.aotstats
+[ 72%] Generating .rcc/qmlcache/efis-ems-qt_qml/Theme_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/Theme_qml.cpp.aotstats
+[ 74%] Building CXX object CMakeFiles/efis-ems-qt.dir/efis-ems-qt_autogen/mocs_compilation.cpp.o
+[ 74%] Building CXX object CMakeFiles/efis-ems-qt.dir/src/nodes/ems/main.cpp.o
+[ 74%] Building CXX object CMakeFiles/efis-ems-qt.dir/src/nodes/ems/ems_controller.cpp.o
+[ 76%] Building CXX object CMakeFiles/efis-ems-qt.dir/src/nodes/ems/capture_request.cpp.o
+In file included from /usr/include/c++/14/bits/stl_algo.h:61,
+                 from /usr/include/c++/14/chrono:48,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/include/efis/core/types.hpp:3,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/include/efis/core/sample.hpp:3,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/include/efis/engine/engine_snapshot.hpp:3,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/include/efis/providers/engine_simulation_provider.hpp:3,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/src/nodes/ems/ems_controller.hpp:11,
+                 from /home/pi/efis-release-ems-a0be9a5-stage/source/src/nodes/ems/ems_controller.cpp:1:
+/usr/include/c++/14/bits/stl_heap.h: In function ‘constexpr void std::__adjust_heap(_RandomAccessIterator, _Distance, _Distance, _Tp, _Compare) [with _RandomAccessIterator = __gnu_cxx::__normal_iterator<pair<double, double>*, vector<pair<double, double> > >; _Distance = long int; _Tp = pair<double, double>; _Compare = __gnu_cxx::__ops::_Iter_less_iter]’:
+/usr/include/c++/14/bits/stl_heap.h:224:5: note: parameter passing for argument of type ‘std::pair<double, double>’ when C++17 is enabled changed to match C++14 in GCC 10.1
+  224 |     __adjust_heap(_RandomAccessIterator __first, _Distance __holeIndex,
+      |     ^~~~~~~~~~~~~
+[ 76%] Building CXX object CMakeFiles/efis-ems-qt.dir/src/renderers/qt/circular_gauge_item.cpp.o
+[ 78%] Building CXX object CMakeFiles/efis-ems-qt.dir/src/setup/operational_profile_model.cpp.o
+[ 78%] Building CXX object CMakeFiles/efis-ems-qt.dir/efis-ems-qt_qmltyperegistrations.cpp.o
+[ 80%] Building CXX object CMakeFiles/efis-ems-qt.dir/.qt/rcc/qrc_qmake_EfisNextEms.cpp.o
+[ 80%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qmlcache_loader.cpp.o
+[ 82%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/EmsMain_qml.cpp.o
+[ 82%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/AdaptiveEmsView_qml.cpp.o
+[ 82%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/CommandRail_qml.cpp.o
+[ 84%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/ProfessionalCircularGauge_qml.cpp.o
+[ 84%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/EmsGaugeV3_qml.cpp.o
+[ 86%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/EngineTemperatureBars_qml.cpp.o
+[ 86%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/EmsVectorIcon_qml.cpp.o
+[ 88%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/EmsSetupOverlay_qml.cpp.o
+[ 88%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/OperationalProfileSetup_qml.cpp.o
+[ 90%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/EfisTouchKeyboard_qml.cpp.o
+[ 90%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/Theme_qml.cpp.o
+[ 92%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/HmiTokens_qml.cpp.o
+[ 92%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/HmiDataStateBadge_qml.cpp.o
+[ 92%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/HmiArcGaugeV4_qml.cpp.o
+[ 94%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/HmiCylinderMatrixV2_qml.cpp.o
+[ 94%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/HmiAirframePanel_qml.cpp.o
+[ 96%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/HmiFuelStatus_qml.cpp.o
+[ 96%] Building CXX object CMakeFiles/efis-ems-qt.dir/.rcc/qmlcache/efis-ems-qt_qml/HmiElectricalSynoptic_qml.cpp.o
+[ 98%] Building CXX object CMakeFiles/efis-ems-qt.dir/.qt/rcc/qrc_efis-ems-qt_raw_qml_0.cpp.o
+[ 98%] Building CXX object CMakeFiles/efis-ems-qt.dir/.qt/rcc/qrc_efis-ems-qt_raw_qml_0_extra_qmldirs.cpp.o
+[100%] Linking CXX executable efis-ems-qt
+[100%] Built target efis-ems-qt
+[ 92%] Built target efis_core
+[ 92%] Built target efis_engine_tests_autogen_timestamp_deps
+[ 92%] Automatic MOC and UIC for target efis_engine_tests
+[ 92%] Built target efis_engine_tests_autogen
+[ 96%] Building CXX object CMakeFiles/efis_engine_tests.dir/tests/engine_tests.cpp.o
+[ 96%] Building CXX object CMakeFiles/efis_engine_tests.dir/efis_engine_tests_autogen/mocs_compilation.cpp.o
+[100%] Linking CXX executable efis_engine_tests
+[100%] Built target efis_engine_tests
+[ 96%] Built target efis_core
+[ 96%] Built target efis_engine_runtime_tests_autogen_timestamp_deps
+[ 96%] Automatic MOC and UIC for target efis_engine_runtime_tests
+[ 96%] Built target efis_engine_runtime_tests_autogen
+[ 96%] Building CXX object CMakeFiles/efis_engine_runtime_tests.dir/tests/engine_runtime_tests.cpp.o
+[ 96%] Building CXX object CMakeFiles/efis_engine_runtime_tests.dir/efis_engine_runtime_tests_autogen/mocs_compilation.cpp.o
+[100%] Linking CXX executable efis_engine_runtime_tests
+[100%] Built target efis_engine_runtime_tests
+[ 92%] Built target efis_core
+[ 92%] Built target efis_engine_runtime_store_tests_autogen_timestamp_deps
+[ 96%] Automatic MOC and UIC for target efis_engine_runtime_store_tests
+[ 96%] Built target efis_engine_runtime_store_tests_autogen
+[100%] Building CXX object CMakeFiles/efis_engine_runtime_store_tests.dir/efis_engine_runtime_store_tests_autogen/mocs_compilation.cpp.o
+[100%] Building CXX object CMakeFiles/efis_engine_runtime_store_tests.dir/tests/engine_runtime_store_tests.cpp.o
+[100%] Linking CXX executable efis_engine_runtime_store_tests
+[100%] Built target efis_engine_runtime_store_tests
+[ 96%] Built target efis_core
+[100%] Building CXX object CMakeFiles/efis_edp_v1_tests.dir/tests/edp_v1_tests.cpp.o
+[100%] Linking CXX executable efis_edp_v1_tests
+[100%] Built target efis_edp_v1_tests
+[ 92%] Built target efis_core
+[ 92%] Built target efis_ems_link_presentation_tests_autogen_timestamp_deps
+[ 96%] Automatic MOC and UIC for target efis_ems_link_presentation_tests
+[ 96%] Built target efis_ems_link_presentation_tests_autogen
+[100%] Building CXX object CMakeFiles/efis_ems_link_presentation_tests.dir/efis_ems_link_presentation_tests_autogen/mocs_compilation.cpp.o
+[100%] Building CXX object CMakeFiles/efis_ems_link_presentation_tests.dir/tests/ems_link_presentation_tests.cpp.o
+[100%] Linking CXX executable efis_ems_link_presentation_tests
+[100%] Built target efis_ems_link_presentation_tests
+Internal ctest changing into directory: /home/pi/efis-release-ems-a0be9a5-stage/build
+Test project /home/pi/efis-release-ems-a0be9a5-stage/build
+    Start 27: efis_ems_state_presentation_tests
+1/7 Test #27: efis_ems_state_presentation_tests ........   Passed    0.31 sec
+    Start 28: efis_ems_responsive_state_matrix_tests
+2/7 Test #28: efis_ems_responsive_state_matrix_tests ...   Passed   60.45 sec
+    Start 57: efis_edp_v1_tests
+3/7 Test #57: efis_edp_v1_tests ........................   Passed    0.01 sec
+    Start 59: efis_engine_tests
+4/7 Test #59: efis_engine_tests ........................   Passed    0.01 sec
+    Start 60: efis_ems_link_presentation_tests
+5/7 Test #60: efis_ems_link_presentation_tests .........   Passed    0.00 sec
+    Start 61: efis_engine_runtime_tests
+6/7 Test #61: efis_engine_runtime_tests ................   Passed    0.00 sec
+    Start 62: efis_engine_runtime_store_tests
+7/7 Test #62: efis_engine_runtime_store_tests ..........   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 7
+
+Total Test time (real) =  60.82 sec
+Traceback (most recent call last):
+  File "/home/pi/efis-next-releases/ems-a0be9a5-main-v1/tools/deployment/build_release_manifest.py", line 16, in <module>
+    from tools.deployment.validate_release_manifest import PLATFORMS, ROLES, validate
+ModuleNotFoundError: No module named 'tools'
+STAGING_FAILED_EVIDENCE_PRESERVED

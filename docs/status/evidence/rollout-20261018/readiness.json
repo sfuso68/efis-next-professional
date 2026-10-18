@@ -1,0 +1,28 @@
+{
+  "schema": "efis-next.rollout-readiness-observation.v1",
+  "observed_date_utc": "2026-10-18",
+  "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b",
+  "activation": "NOT_RUN",
+  "flight_approval": false,
+  "candidates_root_sealed": false,
+  "checks": {
+    "mfd_ctest": {"passed": 15, "failed": 0},
+    "recorder_storage_fixture_ctest": {"passed": 1, "failed": 0},
+    "ems_ctest": {"passed": 7, "failed": 0},
+    "ems_isolated_qml_startup": "PASS",
+    "candidate_and_previous_manifest_files": "PASS_ON_ALL_FOUR_REACHABLE_NODES",
+    "dynamic_dependencies": "PASS_ON_CANDIDATE_DESTINATIONS",
+    "physical_display_acceptance": "NOT_RUN",
+    "new_release_rollback_drill": "NOT_RUN",
+    "new_release_reboot_acceptance": "NOT_RUN"
+  },
+  "nodes": [
+    {"role": "PFD_RECORDER", "address": "192.168.1.45", "active": "pfdrec-7051a47-retention-v1", "candidate": "pfdrec-a0be9a5-main-v1", "staging": "PASS", "build_host": "pi5", "gate": "MFD_CANARY_REQUIRED"},
+    {"role": "MFD", "address": "192.168.1.49", "active": "mfd-3432402-primary-v1", "candidate": "mfd-a0be9a5-main-v1", "staging": "PASS", "build_host": "pi5", "gate": "POWER_HISTORY_0x50000"},
+    {"role": "EMS", "address": "192.168.1.36", "active": "ems-62ba90b-hmi-cas-v1", "candidate": "ems-a0be9a5-main-v1", "staging": "PASS", "build_host": "efis", "gate": "SUDO_PASSWORD_REQUIRED"},
+    {"role": "BLACKBOX", "address": "192.168.1.47", "active": "blackbox-7655799-primary-v1", "candidate": "blackbox-a0be9a5-main-v1", "staging": "PASS", "build_host": "pi5", "gate": "POWER_HISTORY_0x50000"},
+    {"role": "SENSOR", "address": "192.168.1.89", "staging": "NOT_RUN", "gate": "SSH_TIMEOUT_AND_G1_REQUIRED"}
+  ],
+  "infrastructure": {"dashboard_and_timers": "ACTIVE", "backup_report": "PASS", "restore_report": "PASS", "new_full_restore_today": false, "backup_main": "a0be9a52494ea7ccb5a3890e94d03b671162383b"},
+  "limits": "Software tests on real ARM64 computers do not verify live sensors, actuators, display readability, GPU gauges, weather provider georeferencing or flight safety. No current symlink, production service, network configuration, firmware, bus or retention setting changed."
+}

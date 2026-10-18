@@ -1,0 +1,20 @@
+{
+  "artifacts": [
+    {
+      "executable": true,
+      "path": "bin/efis-blackbox-broker",
+      "sha256": "f7d3ce2c7f19eef3bcc8999d7ce90b3ab5f1cc1bd6c9b4783d80a46f70140cdd"
+    }
+  ],
+  "built_utc": "2026-10-18T20:23:49Z",
+  "flight_approval": false,
+  "platform": "RPI5_AARCH64",
+  "release_id": "blackbox-a0be9a5-main-v1",
+  "repository": "sfuso68/efis-next-professional",
+  "roles": [
+    "BLACKBOX"
+  ],
+  "schema": "efis-next.release-manifest.v1",
+  "simulation_mode": true,
+  "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b"
+}

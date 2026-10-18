@@ -1,0 +1,20 @@
+{
+  "artifacts": [
+    {
+      "executable": true,
+      "path": "bin/efis-ems-qt",
+      "sha256": "8256045bf8707a7c269562799dafdb79f6ab4bee21341946aeafcf0dcfce33f6"
+    }
+  ],
+  "built_utc": "2026-10-18T20:30:35Z",
+  "flight_approval": false,
+  "platform": "RPI4_AARCH64",
+  "release_id": "ems-a0be9a5-main-v1",
+  "repository": "sfuso68/efis-next-professional",
+  "roles": [
+    "EMS"
+  ],
+  "schema": "efis-next.release-manifest.v1",
+  "simulation_mode": true,
+  "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b"
+}

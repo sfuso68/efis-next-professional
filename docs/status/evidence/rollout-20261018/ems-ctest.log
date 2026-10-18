@@ -1,0 +1,123 @@
+Start testing: Oct 18 22:29 CEST
+----------------------------------------------------------
+27/64 Testing: efis_ems_state_presentation_tests
+27/64 Test: efis_ems_state_presentation_tests
+Command: "/usr/bin/python3" "-m" "unittest" "tests.test_ems_state_presentation"
+Directory: /home/pi/efis-release-ems-a0be9a5-stage/source
+"efis_ems_state_presentation_tests" start time: Oct 18 22:29 CEST
+Output:
+----------------------------------------------------------
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.040s
+
+OK
+<end of output>
+Test time =   0.31 sec
+----------------------------------------------------------
+Test Passed.
+"efis_ems_state_presentation_tests" end time: Oct 18 22:29 CEST
+"efis_ems_state_presentation_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+28/64 Testing: efis_ems_responsive_state_matrix_tests
+28/64 Test: efis_ems_responsive_state_matrix_tests
+Command: "/usr/bin/python3" "-m" "unittest" "tests.test_ems_responsive_state_matrix"
+Directory: /home/pi/efis-release-ems-a0be9a5-stage/source
+"efis_ems_responsive_state_matrix_tests" start time: Oct 18 22:29 CEST
+Output:
+----------------------------------------------------------
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 59.954s
+
+OK
+<end of output>
+Test time =  60.45 sec
+----------------------------------------------------------
+Test Passed.
+"efis_ems_responsive_state_matrix_tests" end time: Oct 18 22:30 CEST
+"efis_ems_responsive_state_matrix_tests" time elapsed: 00:01:00
+----------------------------------------------------------
+
+57/64 Testing: efis_edp_v1_tests
+57/64 Test: efis_edp_v1_tests
+Command: "/home/pi/efis-release-ems-a0be9a5-stage/build/efis_edp_v1_tests"
+Directory: /home/pi/efis-release-ems-a0be9a5-stage/build
+"efis_edp_v1_tests" start time: Oct 18 22:30 CEST
+Output:
+----------------------------------------------------------
+EDP V1 tests passed
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"efis_edp_v1_tests" end time: Oct 18 22:30 CEST
+"efis_edp_v1_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+59/64 Testing: efis_engine_tests
+59/64 Test: efis_engine_tests
+Command: "/home/pi/efis-release-ems-a0be9a5-stage/build/efis_engine_tests"
+Directory: /home/pi/efis-release-ems-a0be9a5-stage/build
+"efis_engine_tests" start time: Oct 18 22:30 CEST
+Output:
+----------------------------------------------------------
+engine tests passed
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"efis_engine_tests" end time: Oct 18 22:30 CEST
+"efis_engine_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+60/64 Testing: efis_ems_link_presentation_tests
+60/64 Test: efis_ems_link_presentation_tests
+Command: "/home/pi/efis-release-ems-a0be9a5-stage/build/efis_ems_link_presentation_tests"
+Directory: /home/pi/efis-release-ems-a0be9a5-stage/build
+"efis_ems_link_presentation_tests" start time: Oct 18 22:30 CEST
+Output:
+----------------------------------------------------------
+EMS link presentation behavioral tests passed
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"efis_ems_link_presentation_tests" end time: Oct 18 22:30 CEST
+"efis_ems_link_presentation_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+61/64 Testing: efis_engine_runtime_tests
+61/64 Test: efis_engine_runtime_tests
+Command: "/home/pi/efis-release-ems-a0be9a5-stage/build/efis_engine_runtime_tests"
+Directory: /home/pi/efis-release-ems-a0be9a5-stage/build
+"efis_engine_runtime_tests" start time: Oct 18 22:30 CEST
+Output:
+----------------------------------------------------------
+engine runtime tests passed
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"efis_engine_runtime_tests" end time: Oct 18 22:30 CEST
+"efis_engine_runtime_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+62/64 Testing: efis_engine_runtime_store_tests
+62/64 Test: efis_engine_runtime_store_tests
+Command: "/home/pi/efis-release-ems-a0be9a5-stage/build/efis_engine_runtime_store_tests"
+Directory: /home/pi/efis-release-ems-a0be9a5-stage/build
+"efis_engine_runtime_store_tests" start time: Oct 18 22:30 CEST
+Output:
+----------------------------------------------------------
+engine runtime store tests passed
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"efis_engine_runtime_store_tests" end time: Oct 18 22:30 CEST
+"efis_engine_runtime_store_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 18 22:30 CEST

@@ -1,6 +1,6 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-17
+Aggiornamento: 2026-10-18
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline integrata esaminata: `main` `a0be9a52494ea7ccb5a3890e94d03b671162383b` (PR #48)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
@@ -1295,3 +1295,31 @@ finestra root EMS, inventario sensore, attivazione MFD con rollback/reboot e
 acceptance visuale, poi PFD dual-role con recorder/retention e gli altri ruoli.
 WX-002 resta PARTIAL; PROD-005 DONE riguarda il contratto storico, non questo
 rollout. Stato e conteggi globali non promossi.
+
+## 58. Preparazione autonoma delle quattro candidate — 2026-10-18
+
+Main remoto riconfermato a0be9a5. Evidenza `evidence/rollout-20261018/`.
+Nessun sorgente avionico modificato; helper di staging/test e log conservati.
+MFD: regressioni estese 15/15 PASS e test storage recorder 1/1 PASS. Su MFD
+RPi5 compilati anche recorder e broker; PFD+recorder e Blackbox trasferiti ai
+destinatari in staging. Manifesti candidata/rollback, hash e dipendenze PASS
+sui destinatari, senza eseguire il broker candidato o cambiare current.
+
+EMS: build nativa RPi4/Qt6.8.2 con Make (Ninja assente), 7/7 test PASS;
+manifesti candidata/rollback PASS e startup QML offscreen isolato PASS, con
+SIM/EDP non configurato e cattura software. Nessuna prova degli indicatori
+GPU o del pannello fisico implicita. Errori helper di import Python e wrapper
+SSH conservati; completamento con import root esplicito e verifica indipendente,
+senza modifiche alle release precedenti. Warning GCC/QML nei log non nascosti.
+
+Le quattro candidate a0be9a5 sono solo staging, non sigillate root-owned o
+attivate. Servizi/retention/configurazioni operative invariati; PFD NRestarts 1
+storico e recorder/MFD/EMS/Blackbox 0. Serverha viewer/timer attivi, report
+backup/restore PASS riconfermato (non un nuovo restore completo).
+
+Restano bloccanti: qualificazione power MFD/Blackbox, canary MFD prima del
+PFD, sudo EMS, inventario G1 e accesso sensore .89, rollback/reboot/visuale di
+ogni nuova release. Nessuna interazione CAN/Pixhawk, modifica rete o potatura.
+Non chiusi provider radar/georeferenziazione, calibrazione o motori reali.
+Gli stati globali e l'avanzamento rimangono invariati; staging e test software
+sui Raspberry non equivalgono a collaudo avionico o autorizzazione al volo.
