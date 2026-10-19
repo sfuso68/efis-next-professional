@@ -1351,3 +1351,34 @@ refs preservati. Nessuna release attivata, servizio riavviato, rete, hardware,
 bus o retention modificati. PWR-001 VERIFY-HW e PROD-005 contratto storico DONE
 invariati; prima azione operatore: identità PSU/cavi e metodo di alimentazione
 MFD/Blackbox, poi piano power sotto carico e finestra banco/acceptance.
+
+## 60. Attivatore EMS pronto per comando locale — 2026-10-19
+
+Richiesta esplicita: preparare l'attivazione EMS e fornire il comando sudo;
+l'agente NON ha eseguito --activate. Tool standalone
+`tools/deployment/activate_ems_a0be9a5.py` consegnato in
+`/home/pi/activate_ems_a0be9a5.py`, hash e comando fissati in
+`docs/deployment/EMS_A0BE9A5_ACTIVATION.md`. Nuovo target previsto
+`/opt/efis-next-ems-releases/ems-a0be9a5-main-v1`, non ancora creato.
+
+Implementati: pin host/modello, source archive e binario, manifesti, profilo,
+unità e validatore globale root; lock, sigillatura da sorgente verificato,
+fsync e switch atomico; candidata→precedente→candidata e recovery armato solo
+prima del primo stop. Il comando root legge e verifica in memoria i byte
+dell'attivatore con Python -I; nessun helper da candidata scrivibile eseguito.
+Unità/environment, calibrazioni e contatori non modificati dall'attivatore;
+snapshot file ore prima della transizione. Non esegue reboot.
+
+Verifica solo software: 17 test fault/orchestrazione su Linux ARM64 PASS;
+Windows 16 PASS/1 SKIP symlink. Verifica reale READ-ONLY: unità/environment,
+profilo identico e codice runtime store invariato tra old/new, manifesti,
+PID, socket, archivio e preflight PASS; lanciatore hash-check --check-only PASS.
+Evidenza `evidence/ems-activation-20261019/`. Il servizio precedente conserva
+PID 949 e NRestarts 0. Nessuna prova reale di stop/switch/sealing/recovery,
+rollback drill, reboot o pannello dichiarata: attende esecuzione operatore.
+
+Questa preparazione riguarda EMS soltanto: attivatore MFD aggiornato e gate
+power MFD/Blackbox restano aperti. Il primo avvio deve essere al banco con
+Blackbox/Ethernet attivi; in FAIL non ripetere o cancellare staging alla cieca.
+Esito operativo successivo e registro release andranno aggiornati solo dopo
+una nuova osservazione del nodo. Nessuna promozione di stato o uso in volo.

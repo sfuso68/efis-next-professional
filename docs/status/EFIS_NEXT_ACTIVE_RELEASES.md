@@ -98,3 +98,9 @@ Il preflight read-only del 19 riconferma i medesimi current, manifesti e PID
 sui quattro nodi (`evidence/activation-preflight-20261019/`). PFD supera i
 controlli automatici ma non è autorizzato prima del canary; MFD/Blackbox hanno
 power history 0x50000, EMS richiede finestra sudo operatore. Nessuno switch.
+
+Preparato sul solo EMS l'attivatore pinned `activate_ems_a0be9a5.py`, preflight
+read-only PASS e 17 test software ARM64 PASS; istruzioni in
+`docs/deployment/EMS_A0BE9A5_ACTIVATION.md`. Il target sigillato previsto sotto
+`/opt/efis-next-ems-releases/` NON è ancora stato creato/attivato: corrente
+resta `ems-62ba90b-hmi-cas-v1`, PID 949/NRestarts 0 alla verifica di consegna.

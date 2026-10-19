@@ -1,0 +1,22 @@
+test_atomic_point_failure_cleans_only_its_own_temporary_link (test_ems_activation.EmsActivationTests.test_atomic_point_failure_cleans_only_its_own_temporary_link) ... ok
+test_bad_archive_is_rejected_before_any_file_is_extracted (test_ems_activation.EmsActivationTests.test_bad_archive_is_rejected_before_any_file_is_extracted) ... ok
+test_candidate_previous_candidate_and_no_recovery_on_success (test_ems_activation.EmsActivationTests.test_candidate_previous_candidate_and_no_recovery_on_success) ... ok
+test_check_only_failure_constructs_no_mutating_operations (test_ems_activation.EmsActivationTests.test_check_only_failure_constructs_no_mutating_operations) ... ok
+test_check_only_pass_constructs_no_mutating_operations (test_ems_activation.EmsActivationTests.test_check_only_pass_constructs_no_mutating_operations) ... ok
+test_each_mutation_or_later_gate_failure_recovers_once (test_ems_activation.EmsActivationTests.test_each_mutation_or_later_gate_failure_recovers_once) ... ok
+test_first_gate_failure_never_arms_recovery (test_ems_activation.EmsActivationTests.test_first_gate_failure_never_arms_recovery) ... ok
+test_interrupt_after_mutation_recovers (test_ems_activation.EmsActivationTests.test_interrupt_after_mutation_recovers) ... ok
+test_manifest_validation_executes_only_system_isolated_validator (test_ems_activation.EmsActivationTests.test_manifest_validation_executes_only_system_isolated_validator) ... ok
+test_ordinary_archive_is_extracted_under_prefix_only (test_ems_activation.EmsActivationTests.test_ordinary_archive_is_extracted_under_prefix_only) ... ok
+test_point_never_overwrites_regular_current_file (test_ems_activation.EmsActivationTests.test_point_never_overwrites_regular_current_file) ... ok
+test_point_refuses_unpinned_target (test_ems_activation.EmsActivationTests.test_point_refuses_unpinned_target) ... ok
+test_prepare_failure_never_restarts_previous_service (test_ems_activation.EmsActivationTests.test_prepare_failure_never_restarts_previous_service) ... ok
+test_read_pinned_hash_mismatch_does_not_return_payload (test_ems_activation.EmsActivationTests.test_read_pinned_hash_mismatch_does_not_return_payload) ... ok
+test_recovery_attempts_previous_even_if_stop_returns_error (test_ems_activation.EmsActivationTests.test_recovery_attempts_previous_even_if_stop_returns_error) ... ok
+test_recovery_failure_is_explicit_not_reported_pass (test_ems_activation.EmsActivationTests.test_recovery_failure_is_explicit_not_reported_pass) ... ok
+test_root_helpers_must_not_be_writable_by_other_users (test_ems_activation.EmsActivationTests.test_root_helpers_must_not_be_writable_by_other_users) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.050s
+
+OK

@@ -73,6 +73,11 @@ Quando siamo nella finestra prevista, verrà preparato e verificato il comando
 di attivazione root esatto da eseguire qui, con sorgente, hash, rollback e gate.
 La semplice abilitazione di sudo non è l'attivazione della nuova release.
 
+Aggiornamento EMS del 19: attivatore nuovo preparato e provato solo come
+preflight/test software. Comando locale con hash fissato in
+[`EMS_A0BE9A5_ACTIVATION.md`](EMS_A0BE9A5_ACTIVATION.md). Questo aggiorna il
+passo di preparazione EMS, non autorizza gli attivatori MFD o EMS storici.
+
 ## 3. Preflight già disponibile: nessun restart
 
 Su ciascun nodo, nella directory del suo utente:
