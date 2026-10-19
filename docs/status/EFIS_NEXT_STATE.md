@@ -1382,3 +1382,28 @@ power MFD/Blackbox restano aperti. Il primo avvio deve essere al banco con
 Blackbox/Ethernet attivi; in FAIL non ripetere o cancellare staging alla cieca.
 Esito operativo successivo e registro release andranno aggiornati solo dopo
 una nuova osservazione del nodo. Nessuna promozione di stato o uso in volo.
+
+## 61. EMS attivato dall'operatore, verifiche prima del reboot — 2026-10-19
+
+ID coinvolto PROD-005. Operatore dichiara eseguito il comando locale; controllo
+SSH read-only alle 19:18 UTC conferma current sigillato root/read-only
+`/opt/efis-next-ems-releases/ems-a0be9a5-main-v1`, sorgente a0be9a5,
+PID 46812 e NRestarts 0. Manifesto, binario, profilo, unità/environment,
+validatore e release precedente superano i pin. Verificate 1363 entry sigillate.
+
+Verifica su hardware reale: result.json PASS e rollback_drill PASS; journal
+mostra candidata PID 46751 → precedente 46780 → candidata 46812, tutti con
+startup e EDP LIVE da BLACKBOX 47 SIM. Socket 10.77.10.12:49003 del PID
+corretto. Tredici heartbeat della candidata finale 55.1–58.5 Hz, snapshot circa
+20 Hz; nessun fault runtime/QML fra quelli cercati nel journal del PID finale.
+Power 0x0, temperatura 59.9 °C. File ore esterno presente, 213 byte; nessun
+reset o ripristino dati eseguito dal controllo. Non è una misura di accuratezza
+dei sensori né una qualifica prestazionale o di power-loss recovery.
+
+Evidenza locale originale root:
+`/var/lib/efis-next/activation-evidence/ems-a0be9a5-20261019T191627560963Z`;
+report osservato e hash dei file in `evidence/ems-activation-20261019/post-activation.json`.
+L'agente non ha attivato nuovamente, riavviato o modificato il nodo.
+Restano NOT_RUN la verifica visiva/touch e reboot acceptance della nuova release.
+Chiedere conferma pannello prima di concordare un reboot; flight_approval=false.
+Nessuna promozione degli altri rollout o dei gate alimentazione MFD/Blackbox.

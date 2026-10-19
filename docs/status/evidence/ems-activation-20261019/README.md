@@ -27,3 +27,14 @@ SHA script consegnato e launcher nel runbook
 `check-signed-launcher.sh`. Validatore globale hash
 `cbe02dd613140352ddea334d46de498708110436fc2d0a037aa741a4571fd368`.
 Preflight e hash originali in `preflight.log` e `signed-launcher.log`.
+
+## Aggiornamento dopo comando operatore, 19:18 UTC
+
+Le dichiarazioni di NON eseguito sopra descrivono la consegna precedente.
+Ora `post-activation.json` registra il controllo remoto in sola lettura:
+result.json e rollback reale PASS, current sigillato, PID 46812/NRestarts 0,
+pin unità/environment/manifesti e socket PASS; 13 heartbeat 55.1–58.5 Hz,
+power 0x0. Journal dei tre avvii (46751/46780/46812) osservato sul nodo.
+Originali conservati nella directory root indicata nello stato; hash nel report,
+non tutte le copie originali sono importate nel repository. Non eseguiti reboot,
+accettazione visuale/touch, prove sensori o power-loss recovery.

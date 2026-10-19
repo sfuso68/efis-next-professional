@@ -104,3 +104,18 @@ read-only PASS e 17 test software ARM64 PASS; istruzioni in
 `docs/deployment/EMS_A0BE9A5_ACTIVATION.md`. Il target sigillato previsto sotto
 `/opt/efis-next-ems-releases/` NON è ancora stato creato/attivato: corrente
 resta `ems-62ba90b-hmi-cas-v1`, PID 949/NRestarts 0 alla verifica di consegna.
+
+## EMS: osservazione post-attivazione operatore — 2026-10-19 19:18 UTC
+
+Questa osservazione sostituisce per EMS lo stato di sola preparazione sopra.
+Current `/home/pi/efis-next-current` ora punta al target root/read-only
+`/opt/efis-next-ems-releases/ems-a0be9a5-main-v1`, sorgente
+`a0be9a52494ea7ccb5a3890e94d03b671162383b`. Servizio active/running,
+PID 46812, NRestarts 0, ExecMainStatus 0; attivo dalle 19:17:07 UTC.
+Manifesto `9bd369facf5a348ec83d9dd6f9eaa388f7dc90f9b839861a62cd67528095e625`
+e binario `8256045bf8707a7c269562799dafdb79f6ab4bee21341946aeafcf0dcfce33f6`
+verificati. Rollback reale candidata→precedente→candidata PASS, precedente
+`ems-62ba90b-hmi-cas-v1` conservata e validata. Power 0x0, EDP BLACKBOX 47 SIM
+e heartbeat rendering positivi. Evidenza `ems-activation-20261019/post-activation.json`.
+**Reboot e acceptance visuale/touch ancora NOT_RUN; nessuna approvazione al volo.**
+Gli altri nodi non sono stati attivati o riavviati in questa verifica.
