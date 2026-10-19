@@ -1,0 +1,58 @@
+{
+  "activation_authorized": false,
+  "blocking_checks": [
+    "power_history_clear",
+    "process_paths_current"
+  ],
+  "checks": {
+    "architecture": true,
+    "candidate_verified": true,
+    "current_is_previous": true,
+    "hostname": true,
+    "noninteractive_privilege": true,
+    "physical_model": true,
+    "power_history_clear": false,
+    "previous_verified": true,
+    "process_paths_current": false,
+    "services_active": true
+  },
+  "flight_approval": false,
+  "node": "BLACKBOX",
+  "observed": {
+    "arch": "aarch64",
+    "candidate": {
+      "manifest_sha256": "37c96d54c4e884161fd25c71350af71f6a69aca73e3f5af1217bdbf1ede71cc4",
+      "pass": true,
+      "release_id": "blackbox-a0be9a5-main-v1"
+    },
+    "current": "/opt/efis-blackbox-releases/blackbox-7655799-v1",
+    "host": "efisblackbox",
+    "model": "Raspberry Pi 5 Model B Rev 1.1",
+    "previous": {
+      "manifest_sha256": "7ada1c350f69a426876b8163c8b817d01795f122f85f14034445c362c9f71d05",
+      "pass": true,
+      "release_id": "blackbox-7655799-primary-v1"
+    },
+    "services": {
+      "efis-blackbox-broker.service": {
+        "ActiveState": "active",
+        "MainPID": "1301",
+        "NRestarts": "0",
+        "executable": null
+      }
+    },
+    "sudo_available": true,
+    "temperature": "temp=46.1'C",
+    "throttled": "throttled=0x50000"
+  },
+  "remaining_manual_gates": [
+    "qualified power evidence",
+    "authorized bench window",
+    "pinned transactional activator and rollback",
+    "reboot and visual acceptance"
+  ],
+  "schema": "efis-next.activation-preflight.v1",
+  "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b",
+  "status": "BLOCKED",
+  "timestamp_utc": "2026-10-19T18:06:19.952046+00:00"
+}

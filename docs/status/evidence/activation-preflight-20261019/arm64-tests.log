@@ -1,0 +1,20 @@
+test_bad_service_pid_is_not_a_running_service (test_activation_preflight.ActivationPreflightTests.test_bad_service_pid_is_not_a_running_service) ... ok
+test_changed_manifest_digest_rejected (test_activation_preflight.ActivationPreflightTests.test_changed_manifest_digest_rejected) ... ok
+test_command_timeout_returns_unavailable (test_activation_preflight.ActivationPreflightTests.test_command_timeout_returns_unavailable) ... ok
+test_historical_and_active_power_faults_block (test_activation_preflight.ActivationPreflightTests.test_historical_and_active_power_faults_block) ... ok
+test_incomplete_dual_role_manifest_rejected (test_activation_preflight.ActivationPreflightTests.test_incomplete_dual_role_manifest_rejected) ... ok
+test_missing_evidence_fails_closed (test_activation_preflight.ActivationPreflightTests.test_missing_evidence_fails_closed) ... ok
+test_missing_or_malformed_manifest_rejected (test_activation_preflight.ActivationPreflightTests.test_missing_or_malformed_manifest_rejected) ... ok
+test_pass_is_not_activation_or_flight_authorization (test_activation_preflight.ActivationPreflightTests.test_pass_is_not_activation_or_flight_authorization) ... ok
+test_pfd_needs_both_services_and_manual_canary (test_activation_preflight.ActivationPreflightTests.test_pfd_needs_both_services_and_manual_canary) ... ok
+test_previous_manifest_is_pinned_too (test_activation_preflight.ActivationPreflightTests.test_previous_manifest_is_pinned_too) ... ok
+test_process_fallback_only_reads_one_valid_pid_link (test_activation_preflight.ActivationPreflightTests.test_process_fallback_only_reads_one_valid_pid_link) ... ok
+test_real_validator_and_artifact_hash_are_used (test_activation_preflight.ActivationPreflightTests.test_real_validator_and_artifact_hash_are_used) ... ok
+test_source_or_safety_marker_change_rejected (test_activation_preflight.ActivationPreflightTests.test_source_or_safety_marker_change_rejected) ... ok
+test_stale_process_executable_is_rejected (test_activation_preflight.ActivationPreflightTests.test_stale_process_executable_is_rejected) ... ok
+test_wrong_identity_current_and_missing_privilege_block (test_activation_preflight.ActivationPreflightTests.test_wrong_identity_current_and_missing_privilege_block) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.008s
+
+OK

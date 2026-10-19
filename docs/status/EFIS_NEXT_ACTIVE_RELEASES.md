@@ -1,6 +1,6 @@
 # EFIS NEXT — Registro canonico delle release sui nodi
 
-Aggiornamento documentale: 2026-10-18
+Aggiornamento documentale: 2026-10-19
 Stato: DEVELOPMENT / NON-CERT
 
 Questo file è l'unica fonte documentale autorizzata per rispondere alla domanda
@@ -93,3 +93,8 @@ storico e recorder/MFD/Blackbox 0: non attribuire quell'1 a questo lavoro.
 Nessuna variazione a retention, configurazione, rete, unità o bus.
 Anche EMS conserva current `ems-62ba90b-hmi-cas-v1`, PID 949/NRestarts 0;
 la cattura offscreen della candidata non è una cattura del pannello operativo.
+
+Il preflight read-only del 19 riconferma i medesimi current, manifesti e PID
+sui quattro nodi (`evidence/activation-preflight-20261019/`). PFD supera i
+controlli automatici ma non è autorizzato prima del canary; MFD/Blackbox hanno
+power history 0x50000, EMS richiede finestra sudo operatore. Nessuno switch.

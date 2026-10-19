@@ -1,0 +1,57 @@
+{
+  "activation_authorized": false,
+  "blocking_checks": [
+    "power_history_clear"
+  ],
+  "checks": {
+    "architecture": true,
+    "candidate_verified": true,
+    "current_is_previous": true,
+    "hostname": true,
+    "noninteractive_privilege": true,
+    "physical_model": true,
+    "power_history_clear": false,
+    "previous_verified": true,
+    "process_paths_current": true,
+    "services_active": true
+  },
+  "flight_approval": false,
+  "node": "MFD",
+  "observed": {
+    "arch": "aarch64",
+    "candidate": {
+      "manifest_sha256": "252c6f374da0a1cf5feba3477fc7419d65000ba8480ffff0cce149775c385eaa",
+      "pass": true,
+      "release_id": "mfd-a0be9a5-main-v1"
+    },
+    "current": "/home/pi/efis-next-release-mfd-3432402-v1",
+    "host": "pi5",
+    "model": "Raspberry Pi 5 Model B Rev 1.1",
+    "previous": {
+      "manifest_sha256": "4a259e2f5c23fc3d876f3c08181fad67bbec69b00aad403c782232cf1956a1fe",
+      "pass": true,
+      "release_id": "mfd-3432402-primary-v1"
+    },
+    "services": {
+      "efis-next-mfd-direct.service": {
+        "ActiveState": "active",
+        "MainPID": "1395",
+        "NRestarts": "0",
+        "executable": "/home/pi/efis-next-release-mfd-3432402-v1/bin/efis-pfd-qt"
+      }
+    },
+    "sudo_available": true,
+    "temperature": "temp=58.7'C",
+    "throttled": "throttled=0x50000"
+  },
+  "remaining_manual_gates": [
+    "qualified power evidence",
+    "authorized bench window",
+    "pinned transactional activator and rollback",
+    "reboot and visual acceptance"
+  ],
+  "schema": "efis-next.activation-preflight.v1",
+  "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b",
+  "status": "BLOCKED",
+  "timestamp_utc": "2026-10-19T18:07:06.117515+00:00"
+}

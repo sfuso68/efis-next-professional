@@ -1,8 +1,8 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-18
+Aggiornamento: 2026-10-19
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `main` `a0be9a52494ea7ccb5a3890e94d03b671162383b` (PR #48)
+Baseline integrata esaminata: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49); candidate applicative ancora a0be9a5
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -1323,3 +1323,31 @@ ogni nuova release. Nessuna interazione CAN/Pixhawk, modifica rete o potatura.
 Non chiusi provider radar/georeferenziazione, calibrazione o motori reali.
 Gli stati globali e l'avanzamento rimangono invariati; staging e test software
 sui Raspberry non equivalgono a collaudo avionico o autorizzazione al volo.
+
+## 59. Preflight e sblocco attivazioni — 2026-10-19
+
+Implementato checker read-only con pin candidati/rollback, identità fisica,
+ruoli completi PFD+recorder, PID/eseguibili e gate alimentazione/privilegi.
+15 unit test Windows e 15 Linux ARM64 PASS. Aggiunto alla CI Project Control;
+esito della nuova CI non ancora verificato. Runbook
+`docs/deployment/ACTIVATION_UNBLOCK_2026-10-19.md`, evidenza
+`evidence/activation-preflight-20261019/`.
+
+Esecuzione reale: PFD controlli automatici PASS, canary MFD manuale aperto;
+MFD/Blackbox bloccati soltanto da power history; EMS da sudo non interattivo.
+Manifesti ed eseguibili verificati; Blackbox richiede lettura root limitata
+del link /proc/PID/exe, non esecuzione privilegiata del checker. Sudo locale
+operatore non concede automaticamente il timestamp alla sessione SSH agente.
+Sensore .89 irraggiungibile/G1 separato: non è un blocco dei display SIM.
+
+Rischio individuato in sola lettura: attivatore MFD storico pinned a76afead
+arma recovery prima del gate power e potrebbe riavviare anche senza switch.
+Non eseguito; il nuovo checker non attiva né arma quel trap. L'attivatore
+transazionale aggiornato e il suo recovery restano da preparare/verificare
+prima della finestra root: questo blocco non li dichiara completati.
+
+Serverha cruscotto e replica NAS già su main 4aea1e4, report restore PASS e
+refs preservati. Nessuna release attivata, servizio riavviato, rete, hardware,
+bus o retention modificati. PWR-001 VERIFY-HW e PROD-005 contratto storico DONE
+invariati; prima azione operatore: identità PSU/cavi e metodo di alimentazione
+MFD/Blackbox, poi piano power sotto carico e finestra banco/acceptance.

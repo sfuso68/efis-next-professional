@@ -1,0 +1,62 @@
+{
+  "activation_authorized": false,
+  "blocking_checks": [],
+  "checks": {
+    "architecture": true,
+    "candidate_verified": true,
+    "current_is_previous": true,
+    "hostname": true,
+    "noninteractive_privilege": true,
+    "physical_model": true,
+    "power_history_clear": true,
+    "previous_verified": true,
+    "process_paths_current": true,
+    "services_active": true
+  },
+  "flight_approval": false,
+  "node": "PFD",
+  "observed": {
+    "arch": "aarch64",
+    "candidate": {
+      "manifest_sha256": "8e3d3a9a929f27261eb70805bf437d4a0588890c16b3ca142ba3b8cbfb64ef26",
+      "pass": true,
+      "release_id": "pfdrec-a0be9a5-main-v1"
+    },
+    "current": "/home/efis/efis-next-releases/pfdrec-7051a47-retention-v1",
+    "host": "efis-pfd-01",
+    "model": "Raspberry Pi 5 Model B Rev 1.1",
+    "previous": {
+      "manifest_sha256": "92fdb5178bd91a7fd7abfc8909e892bfaeaa9c122243fc27f596afc87b48f644",
+      "pass": true,
+      "release_id": "pfdrec-7051a47-retention-v1"
+    },
+    "services": {
+      "efis-pfd.service": {
+        "ActiveState": "active",
+        "MainPID": "1495",
+        "NRestarts": "1",
+        "executable": "/home/efis/efis-next-releases/pfdrec-7051a47-retention-v1/bin/efis-pfd-qt"
+      },
+      "efis-recorder.service": {
+        "ActiveState": "active",
+        "MainPID": "1419",
+        "NRestarts": "0",
+        "executable": "/home/efis/efis-next-releases/pfdrec-7051a47-retention-v1/bin/efis-recorder"
+      }
+    },
+    "sudo_available": true,
+    "temperature": "temp=48.8'C",
+    "throttled": "throttled=0x0"
+  },
+  "remaining_manual_gates": [
+    "qualified power evidence",
+    "authorized bench window",
+    "pinned transactional activator and rollback",
+    "reboot and visual acceptance",
+    "MFD canary accepted"
+  ],
+  "schema": "efis-next.activation-preflight.v1",
+  "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b",
+  "status": "AUTOMATIC_PREFLIGHT_PASS",
+  "timestamp_utc": "2026-10-19T18:07:07.626938+00:00"
+}

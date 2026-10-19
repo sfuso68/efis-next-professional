@@ -1,0 +1,57 @@
+{
+  "activation_authorized": false,
+  "blocking_checks": [
+    "noninteractive_privilege"
+  ],
+  "checks": {
+    "architecture": true,
+    "candidate_verified": true,
+    "current_is_previous": true,
+    "hostname": true,
+    "noninteractive_privilege": false,
+    "physical_model": true,
+    "power_history_clear": true,
+    "previous_verified": true,
+    "process_paths_current": true,
+    "services_active": true
+  },
+  "flight_approval": false,
+  "node": "EMS",
+  "observed": {
+    "arch": "aarch64",
+    "candidate": {
+      "manifest_sha256": "9bd369facf5a348ec83d9dd6f9eaa388f7dc90f9b839861a62cd67528095e625",
+      "pass": true,
+      "release_id": "ems-a0be9a5-main-v1"
+    },
+    "current": "/home/pi/efis-next-releases/ems-62ba90b-hmi-cas-v1",
+    "host": "efis",
+    "model": "Raspberry Pi 4 Model B Rev 1.5",
+    "previous": {
+      "manifest_sha256": "cb0378c580e4b76bd81749a36e9dc005974c8a9e523f07a23aa5390cac68e66f",
+      "pass": true,
+      "release_id": "ems-62ba90b-hmi-cas-v1"
+    },
+    "services": {
+      "efis-ems.service": {
+        "ActiveState": "active",
+        "MainPID": "949",
+        "NRestarts": "0",
+        "executable": "/home/pi/efis-next-releases/ems-62ba90b-hmi-cas-v1/bin/efis-ems-qt"
+      }
+    },
+    "sudo_available": false,
+    "temperature": "temp=59.9'C",
+    "throttled": "throttled=0x0"
+  },
+  "remaining_manual_gates": [
+    "qualified power evidence",
+    "authorized bench window",
+    "pinned transactional activator and rollback",
+    "reboot and visual acceptance"
+  ],
+  "schema": "efis-next.activation-preflight.v1",
+  "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b",
+  "status": "BLOCKED",
+  "timestamp_utc": "2026-10-19T18:07:06.467223+00:00"
+}
