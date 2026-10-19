@@ -38,3 +38,15 @@ power 0x0. Journal dei tre avvii (46751/46780/46812) osservato sul nodo.
 Originali conservati nella directory root indicata nello stato; hash nel report,
 non tutte le copie originali sono importate nel repository. Non eseguiti reboot,
 accettazione visuale/touch, prove sensori o power-loss recovery.
+
+## Reboot autorizzato, 19:21 UTC
+
+Operatore conferma visuale e touch prima del reboot. Riavviato soltanto EMS;
+boot ID cambiato, stessa release avviata automaticamente, PID 948/NRestarts 0.
+`reboot-acceptance.json` contiene il report reale in sola lettura dopo avvio:
+pin integrità e configurazione, EDP LIVE SIM, rendering e power PASS. Questo
+supera il precedente NOT_RUN del reboot tecnico, non aggiorna retroattivamente
+il result.json originale root. Visuale/touch dopo reboot ancora NOT_RUN.
+Un tentativo iniziale di guard PowerShell è fallito prima di inviare reboot;
+il comando successivo di reboot è terminato con exit 0. Timeout SSH transitorio
+durante avvio, poi connessione riuscita. Nessun altro nodo modificato.

@@ -1407,3 +1407,27 @@ L'agente non ha attivato nuovamente, riavviato o modificato il nodo.
 Restano NOT_RUN la verifica visiva/touch e reboot acceptance della nuova release.
 Chiedere conferma pannello prima di concordare un reboot; flight_approval=false.
 Nessuna promozione degli altri rollout o dei gate alimentazione MFD/Blackbox.
+
+## 62. EMS: reboot autorizzato e avvio automatico verificato — 2026-10-19
+
+PROD-005. Operatore conferma pannello leggibile e funzionante, touch compreso,
+prima del reboot; consenso esplicito al riavvio del solo EMS. Un primo guard
+SSH mal quotato è fallito senza mutazioni; successivo systemctl reboot exit 0.
+Primo tentativo SSH durante avvio in timeout, poi nodo di nuovo raggiungibile.
+
+Hardware reale: boot ID da ec0eed02-052f-426b-804e-53be70646081 a
+e61b90b8-4aa4-4e23-86b4-b5dbf13fe6d5; servizio enabled/active/running,
+PID 948, NRestarts 0, ExecMainStatus 0. Current resta sigillato a0be9a5.
+Pin di manifesti candidata/precedente, binari, profilo, unità/environment,
+validatore, root/read-only 1363 entry e socket EDP del PID corretto PASS.
+Startup EGLFS/Qt6.8.2 ed EDP LIVE BLACKBOX 47 SIM presenti nel nuovo boot;
+quattro heartbeat osservati 49.5–56.2 Hz, snapshot circa 20 Hz. Nessun fault
+QML/runtime fra quelli cercati. Power 0x0, temperatura 58.9 °C; file ore
+esterno presente, non resettato dall'agente. Report in
+`evidence/ems-activation-20261019/reboot-acceptance.json`.
+
+Verifica automatica di reboot PASS; conferma visiva/touch pre-reboot registrata
+come dichiarazione operatore, non osservazione agente. Controllo pannello dopo
+reboot ancora da confermare; nessuna prova di sensori reali, power-loss,
+accuratezza ore o qualifica al volo dedotta. Flight approval rimane false.
+Nessun altro nodo, firmware, rete o sorgente avionico modificato.

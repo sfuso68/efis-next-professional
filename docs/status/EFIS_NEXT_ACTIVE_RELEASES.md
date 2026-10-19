@@ -119,3 +119,13 @@ verificati. Rollback reale candidata→precedente→candidata PASS, precedente
 e heartbeat rendering positivi. Evidenza `ems-activation-20261019/post-activation.json`.
 **Reboot e acceptance visuale/touch ancora NOT_RUN; nessuna approvazione al volo.**
 Gli altri nodi non sono stati attivati o riavviati in questa verifica.
+
+### EMS dopo reboot autorizzato — 2026-10-19 19:21 UTC
+
+La stessa release `ems-a0be9a5-main-v1` riparte automaticamente: enabled,
+active/running, PID 948, NRestarts 0, ExecMainStatus 0. Boot ID nuovo
+`e61b90b8-4aa4-4e23-86b4-b5dbf13fe6d5`. Pin release/configurazione e socket
+PASS, EDP LIVE BLACKBOX 47 SIM, rendering positivo, power 0x0. Report
+`ems-activation-20261019/reboot-acceptance.json`. Reboot automatic checks PASS;
+operatore conferma visuale/touch prima del reboot, riconferma dopo boot aperta.
+La release precedente resta conservata; nessun altro nodo riavviato.
