@@ -31,4 +31,3 @@ test_strict_json_rejects_duplicate_fields_non_finite_and_bad_utf8 (test_edge_wea
 Ran 28 tests in 0.691s
 
 OK
-
