@@ -5,6 +5,7 @@ import argparse
 import base64
 import contextlib
 import json
+import math
 import os
 import re
 import socket
@@ -22,6 +23,9 @@ STALE_MAX_AGE_SECONDS = 20 * 60
 FUTURE_TOLERANCE_SECONDS = 5
 ICAO_RE = re.compile(r"^[A-Z0-9]{4}$")
 CACHE_SCHEMA = "efis-next.edge-weather-cache.v1"
+MAX_RESPONSE_BYTES = 256 * 1024
+MAX_CACHE_BYTES = 512 * 1024
+MAX_BULLETIN_CHARACTERS = 32768
 
 
 def normalized_icao(value):
@@ -65,14 +69,18 @@ def temporary_resolver(resolve):
 
 
 def atomic_json(path, payload):
+    # Serialize before opening any temporary file. Invalid/oversize updates
+    # must leave the last complete cache generation untouched.
+    encoded = (json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n").encode("utf-8")
+    if len(encoded) > MAX_CACHE_BYTES:
+        raise ValueError("cache envelope exceeds size limit")
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary = tempfile.mkstemp(prefix=path.name + ".", dir=path.parent)
     temporary_path = Path(temporary)
     try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
-            json.dump(payload, stream, indent=2, sort_keys=True)
-            stream.write("\n")
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(encoded)
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary_path, path)
@@ -90,6 +98,8 @@ def _result(station, state, *, age_seconds=None, has_report=False, reason=None):
         "has_report": has_report,
         "display_allowed": state in {"CURRENT", "STALE"} and has_report,
         "safety_use_allowed": False,
+        "freshness_basis": "FETCH_TIME_ONLY",
+        "provider_report_time_validated": False,
         "freshness_thresholds_seconds": {
             "current_max": CURRENT_MAX_AGE_SECONDS,
             "stale_max": STALE_MAX_AGE_SECONDS,
@@ -110,25 +120,77 @@ def _fetched_timestamp(data):
     return parsed.astimezone(timezone.utc)
 
 
+def _unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON field")
+        result[key] = value
+    return result
+
+
+def _invalid_constant(value):
+    raise ValueError("non-finite JSON number")
+
+
+def _finite_float(value):
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("non-finite JSON number")
+    return number
+
+
+def limited_json(stream, limit):
+    raw = stream.read(limit + 1)
+    if len(raw) > limit:
+        raise ValueError("JSON exceeds size limit")
+    return json.loads(raw.decode("utf-8"), object_pairs_hook=_unique_object,
+                      parse_constant=_invalid_constant, parse_float=_finite_float)
+
+
+def validate_provider_payload(payload, station):
+    if not isinstance(payload, dict):
+        raise ValueError("weather provider response must be a JSON object")
+    if not any(name in payload for name in ("metar", "taf")):
+        raise ValueError("provider bulletin fields missing")
+    for name in ("metar", "taf"):
+        value = payload.get(name)
+        if value is not None and not isinstance(value, str):
+            raise ValueError(name + " must be text or null")
+        if isinstance(value, str) and len(value) > MAX_BULLETIN_CHARACTERS:
+            raise ValueError(name + " exceeds bulletin size limit")
+    # Identity fields are optional until the real provider contract is qualified.
+    # If supplied, none may disagree with the requested cache key.
+    for name in ("icao", "station"):
+        if name in payload and (not isinstance(payload[name], str) or
+                                normalized_icao(payload[name]) != station):
+            raise ValueError("provider station mismatch")
+    return payload
+
+
 def cached(cache, icao, now=None):
     station = normalized_icao(icao)
     path = Path(cache) / (station + ".json")
     if not path.is_file() or path.is_symlink():
         return _result(station, "NO_DATA", reason="CACHE_FILE_MISSING")
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        with path.open("rb") as stream:
+            data = limited_json(stream, MAX_CACHE_BYTES)
         if not isinstance(data, dict) or data.get("schema") != CACHE_SCHEMA:
             raise ValueError("cache schema mismatch")
-        report = data.get("provider_payload")
-        if not isinstance(report, dict):
-            raise ValueError("provider_payload must be an object")
+        if "icao" in data and data["icao"] != station:
+            raise ValueError("cache station mismatch")
+        report = validate_provider_payload(data.get("provider_payload"), station)
         fetched = _fetched_timestamp(data)
-    except (OSError, ValueError, TypeError) as exc:
+    except (OSError, ValueError, TypeError, RecursionError) as exc:
         return _result(station, "INVALID", reason=str(exc))
 
     current_time = time.time() if now is None else float(now)
+    if not math.isfinite(current_time):
+        return _result(station, "CLOCK_SKEW", reason="INVALID_LOCAL_CLOCK")
     age_float = current_time - fetched.timestamp()
-    has_report = bool(report.get("metar") or report.get("taf"))
+    has_report = any(isinstance(report.get(key), str) and bool(report[key].strip())
+                     for key in ("metar", "taf"))
     if age_float < -FUTURE_TOLERANCE_SECONDS:
         computed = _result(
             station,
@@ -141,9 +203,9 @@ def cached(cache, icao, now=None):
         age = max(0, int(age_float))
         if not has_report:
             state = "NO_REPORT"
-        elif age <= CURRENT_MAX_AGE_SECONDS:
+        elif age_float <= CURRENT_MAX_AGE_SECONDS:
             state = "CURRENT"
-        elif age <= STALE_MAX_AGE_SECONDS:
+        elif age_float <= STALE_MAX_AGE_SECONDS:
             state = "STALE"
         else:
             state = "EXPIRED"
@@ -201,11 +263,11 @@ def sync_one(cache, base_url, icao, username=None, password=None, ca_file=None, 
     context = ssl.create_default_context(cafile=ca_file) if ca_file else None
     with temporary_resolver(resolve):
         with urllib.request.urlopen(request, timeout=20, context=context) as response:
-            payload = json.load(response)
-    if not isinstance(payload, dict):
-        raise ValueError("weather provider response must be a JSON object")
+            payload = limited_json(response, MAX_RESPONSE_BYTES)
+    validate_provider_payload(payload, station)
     cached_payload = {
         "schema": CACHE_SCHEMA,
+        "icao": station,
         "provider_payload": payload,
         "provider_url": base_url,
         "fetched_utc": datetime.now(timezone.utc).isoformat(),

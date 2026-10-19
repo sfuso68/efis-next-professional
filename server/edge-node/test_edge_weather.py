@@ -1,9 +1,17 @@
 import json
+import io
+import contextlib
+import subprocess
+import sys
+import threading
 import socket
 import tempfile
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timezone
 from pathlib import Path
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.error import HTTPError, URLError
 
 import edge_weather
 
@@ -23,6 +31,151 @@ def record(age_seconds=0, *, metar="TEST METAR", taf=None, fetched_utc=None):
 
 
 class EdgeWeatherTest(unittest.TestCase):
+    def test_blank_bulletins_are_no_report(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.write(directory, "LIPH", record(metar=" \n ", taf="\t"))
+            self.assertEqual(edge_weather.cached(directory, "LIPH", now=NOW)["state"], "NO_REPORT")
+
+    def test_fractional_age_does_not_extend_freshness_limits(self):
+        for age, expected in [(600.01, "STALE"), (1200.01, "EXPIRED")]:
+            with self.subTest(age=age), tempfile.TemporaryDirectory() as directory:
+                self.write(directory, "LIPH", record(age))
+                self.assertEqual(edge_weather.cached(directory, "LIPH", now=NOW)["state"], expected)
+
+    def test_non_finite_local_clock_is_not_current(self):
+        for now in (float("nan"), float("inf"), float("-inf")):
+            with self.subTest(now=now), tempfile.TemporaryDirectory() as directory:
+                self.write(directory, "LIPH", record())
+                item = edge_weather.cached(directory, "LIPH", now=now)
+                self.assertEqual(item["state"], "CLOCK_SKEW")
+                self.assertFalse(item["display_allowed"])
+
+    def test_strict_json_rejects_duplicate_fields_non_finite_and_bad_utf8(self):
+        for raw in (b'{"metar":"one","metar":"two"}', b'{"n":NaN}',
+                    b'{"n":Infinity}', b'{"n":1e999}', b'\xff', b'{'):
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                edge_weather.limited_json(io.BytesIO(raw), 256)
+
+    def test_stream_read_is_bounded_by_limit_plus_one(self):
+        stream = io.BytesIO(b"x" * 100)
+        with self.assertRaises(ValueError): edge_weather.limited_json(stream, 10)
+        self.assertEqual(stream.tell(), 11)
+
+    def test_station_mismatch_is_invalid_in_envelope_and_payload(self):
+        for location in ("envelope", "provider"):
+            with self.subTest(location=location), tempfile.TemporaryDirectory() as directory:
+                payload = record()
+                (payload if location == "envelope" else payload["provider_payload"])["icao"] = "LIPZ"
+                self.write(directory, "LIPH", payload)
+                self.assertEqual(edge_weather.cached(directory, "LIPH", now=NOW)["state"], "INVALID")
+
+    def test_missing_fields_and_oversize_bulletin_rejected(self):
+        for payload in ({"error": "unavailable"}, {"metar": "x" * (edge_weather.MAX_BULLETIN_CHARACTERS + 1)},
+                        {"taf": True}, {"metar": "report", "station": "LIPZ"}):
+            with self.subTest(payload_type=type(payload)), self.assertRaises(ValueError):
+                edge_weather.validate_provider_payload(payload, "LIPH")
+
+    def test_cached_oversize_json_is_invalid(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, "LIPH.json").write_bytes(b" " * (edge_weather.MAX_CACHE_BYTES + 1))
+            self.assertEqual(edge_weather.cached(directory, "LIPH", now=NOW)["state"], "INVALID")
+
+    def test_network_http_timeout_and_truncated_payload_preserve_last_good(self):
+        for error in (URLError("offline"), HTTPError("https://example.invalid", 503, "unavailable", {}, None),
+                      TimeoutError("timeout")):
+            with self.subTest(error=type(error)), tempfile.TemporaryDirectory() as directory:
+                self.write(directory, "LIPH", record())
+                before = Path(directory, "LIPH.json").read_bytes()
+                with patch.object(edge_weather.urllib.request, "urlopen", side_effect=error):
+                    with self.assertRaises((URLError, TimeoutError)):
+                        edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
+                self.assertEqual(Path(directory, "LIPH.json").read_bytes(), before)
+        with tempfile.TemporaryDirectory() as directory:
+            self.write(directory, "LIPH", record())
+            before = Path(directory, "LIPH.json").read_bytes()
+            for raw in (b'{"metar":', b" " * (edge_weather.MAX_RESPONSE_BYTES + 1)):
+                with patch.object(edge_weather.urllib.request, "urlopen", return_value=io.BytesIO(raw)):
+                    with self.assertRaises(ValueError): edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
+                self.assertEqual(Path(directory, "LIPH.json").read_bytes(), before)
+
+    def test_atomic_write_fsync_or_replace_failure_preserves_cache_and_cleans_temp(self):
+        for operation in ("fsync", "replace"):
+            with self.subTest(operation=operation), tempfile.TemporaryDirectory() as directory:
+                target = Path(directory, "LIPH.json")
+                self.write(directory, "LIPH", record())
+                before = target.read_bytes()
+                with patch.object(edge_weather.os, operation, side_effect=OSError("injected I/O fault")):
+                    with self.assertRaises(OSError): edge_weather.atomic_json(target, record(100))
+                self.assertEqual(target.read_bytes(), before)
+                self.assertEqual(list(Path(directory).iterdir()), [target])
+
+    def test_serialization_failure_never_replaces_valid_cache(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory, "LIPH.json"); self.write(directory, "LIPH", record())
+            before = target.read_bytes()
+            for bad in ({"number": float("nan")}, {"huge": "x" * edge_weather.MAX_CACHE_BYTES}):
+                with self.assertRaises(ValueError): edge_weather.atomic_json(target, bad)
+                self.assertEqual(target.read_bytes(), before)
+                self.assertEqual(list(Path(directory).iterdir()), [target])
+
+    def test_restart_reopens_persisted_cache_in_separate_interpreter(self):
+        with tempfile.TemporaryDirectory() as directory:
+            edge_weather.atomic_json(Path(directory, "LIPH.json"), record(800))
+            code = ("import sys,json;sys.path.insert(0,sys.argv[1]);import edge_weather;"
+                    "print(json.dumps(edge_weather.cached(sys.argv[2],'LIPH',now=" + str(NOW) + "))) ")
+            result = subprocess.run([sys.executable, "-I", "-c", code, str(Path(edge_weather.__file__).parent), directory],
+                                    capture_output=True, text=True, timeout=15, check=True)
+            item = json.loads(result.stdout)
+            self.assertEqual(item["state"], "STALE")
+            self.assertEqual(item["age_seconds"], 800)
+            self.assertFalse(item["safety_use_allowed"])
+
+    def test_freshness_claim_is_only_fetch_time_not_bulletin_time(self):
+        with tempfile.TemporaryDirectory() as directory:
+            payload = record()
+            payload.update(freshness_basis="OBSERVATION_TIME", provider_report_time_validated=True)
+            self.write(directory, "LIPH", payload)
+            item = edge_weather.cached(directory, "LIPH", now=NOW)
+            self.assertEqual(item["freshness_basis"], "FETCH_TIME_ONLY")
+            self.assertFalse(item["provider_report_time_validated"])
+
+    def test_loopback_http_sync_and_offline_reopen(self):
+        class FixtureHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                raw = b'{"icao":"LIPH","metar":"TEST ONLY METAR","taf":null}'
+                self.send_response(200); self.send_header("Content-Length", str(len(raw))); self.end_headers()
+                self.wfile.write(raw)
+            def log_message(self, *args): pass
+        server = ThreadingHTTPServer(("127.0.0.1", 0), FixtureHandler)
+        worker = threading.Thread(target=server.serve_forever, daemon=True); worker.start()
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                edge_weather.sync_one(directory, "http://127.0.0.1:" + str(server.server_port), "LIPH")
+                item = edge_weather.cached(directory, "LIPH")
+                self.assertEqual(item["state"], "CURRENT")
+                self.assertEqual(item["provider_payload"]["metar"], "TEST ONLY METAR")
+                self.assertEqual(item["icao"], "LIPH")
+        finally:
+            server.shutdown(); server.server_close(); worker.join(timeout=5)
+
+    def test_non_text_bulletin_is_not_available(self):
+        for value in (True, 123, {"raw": "report"}, ["report"]):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as directory:
+                self.write(directory, "LIPH", record(metar=value))
+                item = edge_weather.cached(directory, "LIPH", now=NOW)
+                self.assertEqual(item["state"], "INVALID")
+                self.assertFalse(item["display_allowed"])
+
+    def test_failed_validation_preserves_last_good_cache_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.write(directory, "LIPH", record())
+            target = Path(directory, "LIPH.json")
+            before = target.read_bytes()
+            with patch.object(edge_weather.urllib.request, "urlopen", return_value=io.BytesIO(b'{"metar":true}')):
+                with self.assertRaises(ValueError):
+                    edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
+            self.assertEqual(target.read_bytes(), before)
+
     def write(self, directory, station, payload):
         Path(directory, station + ".json").write_text(
             json.dumps(payload), encoding="utf-8"

@@ -59,3 +59,16 @@ sui PFD/MFD e richiede il normale processo release/rollback/acceptance.
 Non inventare altri blocchi numerati per far apparire chiuso il progetto:
 le prossime modifiche devono partire da uno di questi gap e da un criterio
 misurabile, non dal numero di passi eseguiti.
+
+## Aggiornamento A5 del 2026-10-19: cache METAR/TAF
+
+Completato il blocco software di integrità/persistenza cache: rifiuto payload
+malformati e limiti JSON, stazione coerente, conservazione ultima generazione
+su fault rete/fsync/rename, riapertura in processo separato, freshness soltanto
+di fetch esplicita. 28 test PASS Linux serverha e 28 ARM64, non deployment o
+acceptance hardware. Evidenza `weather-cache-20261019`, runbook
+`docs/deployment/WEATHER_CACHE_INTEGRITY.md`. WX-001 PARTIAL invariato.
+Tutte le attivazioni restano bloccate su richiesta del proprietario fino alla
+verifica alimentatori. Prossimo gap A5: payload/TLS e tempi effettivi provider,
+licenze/georeferenziazione e cache radar persistente, senza attribuire al fetch
+l'autorità temporale di un'osservazione meteorologica.

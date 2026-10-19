@@ -1460,3 +1460,32 @@ override USB, firmware, rete o cablaggio; nessun carico sintetico aggiunto.
 0x0 MFD non è approvazione fisica: foto/modello PSU e cavo, prova rappresentativa
 ed approvazione documentata per boot rimangono necessari. PWR-001 VERIFY-HW
 invariato. La capacità 5 A dell'alimentatore non è attestata dai PDO osservati.
+
+## 64. A5/WX-001: integrità cache METAR/TAF senza attivazione — 2026-10-19
+
+Richiesta: avanzare autonomamente, lasciando bloccate tutte le attivazioni fino
+alla verifica alimentatori. Branch software `work/weather-cache-integrity-v1`
+derivato dal branch PR #50, non una nuova release da attivare.
+
+Riprodotto su Linux: due test generano cinque failure inclusi subtest. La cache
+accettava metar booleano/numero/oggetto/array come report CURRENT e sync poteva
+sovrascrivere l'ultima generazione buona con quel payload. Implementati
+contratto testuale fail-closed, identità ICAO se presente, lettura JSON limitata,
+rifiuto duplicati/non finiti/UTF-8 invalido e validazione prima della scrittura.
+Serializzazione limitata prima del file temporaneo; test errori fsync/rename
+preservano i byte precedenti e puliscono solo il temporaneo del writer.
+Confini freshness frazionari corretti; età dichiarata FETCH_TIME_ONLY e
+provider_report_time_validated=false, nessuna autorità safety.
+
+Verificato SOLO SOFTWARE: 28/28 test Linux serverha e 28/28 Linux ARM64 MFD,
+in directory di test isolate, con HTTP loopback sintetico e riapertura in un
+interprete separato. Windows embedded Python bloccato all'import DLL _ssl:
+nessun PASS dichiarato e nessuna protezione OS aggirata. Evidenza con hash e
+log in `evidence/weather-cache-20261019/`; runbook WEATHER_CACHE_INTEGRITY.md.
+Non è una prova di power-loss, write concurrency, payload/TLS/provider reali,
+età osservativa METAR/validità TAF o resa del consumer sul pannello.
+
+WX-001 resta PARTIAL. Nessun servizio/cache di produzione, release, rete,
+firmware, timer o soglia power modificati; nessuna attivazione o reboot.
+Rimangono aperti qualifica provider/CA/licenza, adapter del payload reale e
+prove end-to-end; power e gli altri gate hardware restano bloccanti invariati.

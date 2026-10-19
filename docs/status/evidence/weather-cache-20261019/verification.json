@@ -1,0 +1,27 @@
+{
+  "schema": "efis-next.weather-cache-verification.v1",
+  "date": "2026-10-19",
+  "requirement": "WX-001",
+  "source_sha256": "77144795904eba531119b68604b99fb54d3840440c3a12571b919e2f7b41ae82",
+  "tests_sha256": "c3dcae982d0df014f59fa305520c2f97420e9131d013ad86f6e393c2ede4e39e",
+  "test_archive_sha256": "65e5f2c2e00e9614d72c0fbb22893f9945745c68d75a79dcde0026669848f359",
+  "baseline_regression": {
+    "tests_run": 2,
+    "status": "FAIL_REPRODUCED",
+    "failure_count_including_subtests": 5,
+    "reason": "non-text report exposed as CURRENT; invalid sync replaced good cache"
+  },
+  "linux_serverha": {"tests_run": 28, "status": "PASS", "log": "linux-serverha.log"},
+  "linux_arm64_mfd": {"tests_run": 28, "status": "PASS", "log": "linux-arm64.log"},
+  "windows_embedded_python": {
+    "status": "BLOCKED",
+    "reason": "_ssl DLL import failure before test execution; no OS policy changed"
+  },
+  "test_mode": "ISOLATED_DIRECTORIES_SYNTHETIC_FIXTURES_LOOPBACK_ONLY",
+  "production_deployment": "NOT_RUN",
+  "hardware_acceptance": "NOT_RUN",
+  "provider_qualification": "NOT_RUN",
+  "physical_power_loss": "NOT_RUN",
+  "activation_authorized": false,
+  "flight_approval": false
+}
