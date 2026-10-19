@@ -1,8 +1,8 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-30
+Aggiornamento: 2026-10-18
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `origin/main` `ff75b242db0aa4075e19cecc07d5cfa779397e07`
+Baseline integrata esaminata: `main` `a0be9a52494ea7ccb5a3890e94d03b671162383b` (PR #48)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -21,8 +21,8 @@ Il rapporto del 2026-09-20 resta uno snapshot storico.
 Durante il limite mensile GitHub comunicato il 2026-09-30, i lavori successivi
 sono conservati soltanto in commit locali secondo
 [`CHECKPOINT-2026-09-30-GITHUB-OFFLINE-DEVELOPMENT.md`](CHECKPOINT-2026-09-30-GITHUB-OFFLINE-DEVELOPMENT.md).
-La baseline sopra indicata è l'ultima `main` remota osservata, non una
-dichiarazione sullo stato remoto durante il periodo offline.
+Il periodo offline è storico: la baseline in testa è stata riconfermata dopo
+il merge PR #48; non implica che la stessa versione sia distribuita ai nodi.
 
 ## 1. Quadro immediato
 
@@ -1269,3 +1269,57 @@ Il merge aggiorna il codice e la documentazione condivisi, NON le release
 PFD/MFD/EMS/Blackbox. Dopo integrazione, cruscotto e backup acquisiscono main
 tramite i timer; qualunque deploy avionico resta separato dai gate hardware.
 Stati requisiti invariati; restano aperti i punti elencati nella sezione 55.
+
+## 57. Rollout richiesto sui nodi disponibili — 2026-10-17
+
+Autorizzata la distribuzione di main a0be9a5. Inventario SSH reale su quattro
+nodi, manifesti e processi riconfermati in `evidence/rollout-20261017/`.
+MFD e Blackbox hanno storico alimentazione 0x50000; EMS sano ma richiede sudo
+interattivo; sensore .89 irraggiungibile e comunque vincolato a G1. Il PFD sano
+attende il canary MFD previsto dal piano: nessun bypass e nessun reboot per
+azzerare l'evidenza dei transienti.
+
+Implementato solo helper di staging versionato come evidenza; nessun sorgente
+avionico modificato. Sul MFD compilati nativamente renderer, test radar e
+test profili da main: CTest 5/5 PASS (radar, profili, golden tools, contratto,
+responsive). Sono verifiche software ARM64 sul nodo reale, NON acceptance
+grafica del pannello. Il preparatore iniziale fallisce perché il rollback
+storico non contiene il validatore; log preservato. Completion separata con
+validatore corrente controlla entrambi i manifesti/file PASS, ldd risolto.
+
+Preparata candidata `mfd-a0be9a5-main-v1` con simulation_mode=true e
+flight_approval=false, non ancora sigillata root-owned o attivata. PID MFD 1395
+e NRestarts 0 invariati. Nessuna release attiva aggiornata, nessun restart,
+bus, rete, firmware o pulizia modificati. Restano: qualificazione power,
+finestra root EMS, inventario sensore, attivazione MFD con rollback/reboot e
+acceptance visuale, poi PFD dual-role con recorder/retention e gli altri ruoli.
+WX-002 resta PARTIAL; PROD-005 DONE riguarda il contratto storico, non questo
+rollout. Stato e conteggi globali non promossi.
+
+## 58. Preparazione autonoma delle quattro candidate — 2026-10-18
+
+Main remoto riconfermato a0be9a5. Evidenza `evidence/rollout-20261018/`.
+Nessun sorgente avionico modificato; helper di staging/test e log conservati.
+MFD: regressioni estese 15/15 PASS e test storage recorder 1/1 PASS. Su MFD
+RPi5 compilati anche recorder e broker; PFD+recorder e Blackbox trasferiti ai
+destinatari in staging. Manifesti candidata/rollback, hash e dipendenze PASS
+sui destinatari, senza eseguire il broker candidato o cambiare current.
+
+EMS: build nativa RPi4/Qt6.8.2 con Make (Ninja assente), 7/7 test PASS;
+manifesti candidata/rollback PASS e startup QML offscreen isolato PASS, con
+SIM/EDP non configurato e cattura software. Nessuna prova degli indicatori
+GPU o del pannello fisico implicita. Errori helper di import Python e wrapper
+SSH conservati; completamento con import root esplicito e verifica indipendente,
+senza modifiche alle release precedenti. Warning GCC/QML nei log non nascosti.
+
+Le quattro candidate a0be9a5 sono solo staging, non sigillate root-owned o
+attivate. Servizi/retention/configurazioni operative invariati; PFD NRestarts 1
+storico e recorder/MFD/EMS/Blackbox 0. Serverha viewer/timer attivi, report
+backup/restore PASS riconfermato (non un nuovo restore completo).
+
+Restano bloccanti: qualificazione power MFD/Blackbox, canary MFD prima del
+PFD, sudo EMS, inventario G1 e accesso sensore .89, rollback/reboot/visuale di
+ogni nuova release. Nessuna interazione CAN/Pixhawk, modifica rete o potatura.
+Non chiusi provider radar/georeferenziazione, calibrazione o motori reali.
+Gli stati globali e l'avanzamento rimangono invariati; staging e test software
+sui Raspberry non equivalgono a collaudo avionico o autorizzazione al volo.

@@ -1,0 +1,20 @@
+{
+  "artifacts": [
+    {
+      "executable": true,
+      "path": "bin/efis-ems-qt",
+      "sha256": "4ebab1d5a7a10387987be49eb4d36554dccfb67e5ccd08d6e461b484b96073f7"
+    }
+  ],
+  "built_utc": "2026-09-20T18:36:08Z",
+  "flight_approval": false,
+  "platform": "RPI4_AARCH64",
+  "release_id": "ems-62ba90b-hmi-cas-v1",
+  "repository": "sfuso68/efis-next-professional",
+  "roles": [
+    "EMS"
+  ],
+  "schema": "efis-next.release-manifest.v1",
+  "simulation_mode": true,
+  "source_commit": "62ba90bcc53799303af2fa1de5b8ec3b1b5fb35f"
+}

@@ -1,0 +1,10 @@
+event=operational_catalog_loaded profiles= 3 fields= 447
+event=ems_edp_link_transition state= SIM engine_state= SIM FALLBACK age_ms= -1 accepted= 0 rejected= 0 crc_rejected= 0 sequence_gaps= 0 publisher_restarts= 0 source_node= N/A publisher_instance= N/A sequence= N/A last_rejection= NONE node= SIMULATED
+event=startup product=efis-next component=ems version=0.1.0 qt= 6.8.2 platform= offscreen
+event=capture_armed node=ems signal=SIGUSR1 directory= logs pid= 44561
+event=fuel_leak_monitor state= MONITORING excess_gph= -0.00333187
+event=capture node=ems trigger=startup saved= true path= /home/pi/efis-release-ems-a0be9a5-stage/smoke/ems-layout.png
+786a2a8eb2e2493d844532b1d7615af91da3ab8687a24e204d8cee50498cf004  /home/pi/efis-release-ems-a0be9a5-stage/smoke/ems-layout.png
+EMS_QML_STARTUP=PASS
+PHYSICAL_GAUGE_RENDERING=NOT_VERIFIED_SOFTWARE_BACKEND
+ACTIVATION=NOT_RUN

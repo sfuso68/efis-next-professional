@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    {
+      "executable": true,
+      "path": "bin/efis-pfd-qt",
+      "sha256": "a64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854"
+    },
+    {
+      "executable": true,
+      "path": "bin/efis-recorder",
+      "sha256": "4cb136ec14a326e1cdf8c091cfc9324eb670e53c3b52bf84c292e77197e87ca5"
+    }
+  ],
+  "built_utc": "2026-09-30T04:51:57Z",
+  "flight_approval": false,
+  "platform": "RPI5_AARCH64",
+  "release_id": "pfdrec-7051a47-retention-v1",
+  "repository": "sfuso68/efis-next-professional",
+  "roles": [
+    "PFD",
+    "RECORDER"
+  ],
+  "schema": "efis-next.release-manifest.v1",
+  "simulation_mode": true,
+  "source_commit": "7051a47839389f739f2d1e0ad22b385173299f61"
+}

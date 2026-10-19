@@ -1,0 +1,18 @@
+/home/pi/efis-release-blackbox-a0be9a5-stage/blackbox-a0be9a5-main-v1.tar.gz: OK
+{"artifacts_checked": 1, "artifacts_declared": 1, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "blackbox-a0be9a5-main-v1", "roles": ["BLACKBOX"], "schema": "efis-next.release-validation.v1", "status": "PASS"}
+{"artifacts_checked": 1, "artifacts_declared": 1, "flight_approval": false, "platform": "RPI5_AARCH64", "release_id": "blackbox-7655799-primary-v1", "roles": ["BLACKBOX"], "schema": "efis-next.release-validation.v1", "status": "PASS"}
+	linux-vdso.so.1 (0x00007ffefd518000)
+	libstdc++.so.6 => /lib/aarch64-linux-gnu/libstdc++.so.6 (0x00007ffefd200000)
+	libm.so.6 => /lib/aarch64-linux-gnu/libm.so.6 (0x00007ffefd150000)
+	libgcc_s.so.1 => /lib/aarch64-linux-gnu/libgcc_s.so.1 (0x00007ffefd110000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x00007ffefcf40000)
+	/lib/ld-linux-aarch64.so.1 (0x00007ffefd4e0000)
+MainPID=1301
+NRestarts=0
+ActiveState=active
+37c96d54c4e884161fd25c71350af71f6a69aca73e3f5af1217bdbf1ede71cc4  /home/pi/efis-release-blackbox-a0be9a5-stage/blackbox-a0be9a5-main-v1/release-manifest.json
+f7d3ce2c7f19eef3bcc8999d7ce90b3ab5f1cc1bd6c9b4783d80a46f70140cdd  /home/pi/efis-release-blackbox-a0be9a5-stage/blackbox-a0be9a5-main-v1/bin/efis-blackbox-broker
+throttled=0x50000
+BLACKBOX_STAGING=PASS
+LIVE_BUS_ACCESS=NOT_RUN
+ACTIVATION=NOT_RUN_POWER_GATE
