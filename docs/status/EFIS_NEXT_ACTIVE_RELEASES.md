@@ -129,3 +129,10 @@ PASS, EDP LIVE BLACKBOX 47 SIM, rendering positivo, power 0x0. Report
 `ems-activation-20261019/reboot-acceptance.json`. Reboot automatic checks PASS;
 operatore conferma visuale/touch prima del reboot, riconferma dopo boot aperta.
 La release precedente resta conservata; nessun altro nodo riavviato.
+
+Riconferma successiva operatore: schermata/touch EMS funzionanti anche dopo
+reboot. Chiusura visuale di questo rollout SIM; flight_approval resta false.
+Nel controllo power successivo MFD osservato PID 1328/NRestarts 0 e Blackbox
+PID 1294/NRestarts 0, entrambi dopo nuovi boot esterni all'agente. Nessuno
+switch di release eseguito in quel controllo; nuova attestazione power in
+`evidence/power-20261019/`, non una promozione delle candidate degli altri nodi.

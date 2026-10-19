@@ -1,0 +1,46 @@
+{
+  "timestamp_utc": "2026-10-19T19:30:34.035480+00:00",
+  "hostname": "pi5",
+  "boot_id": "83193aa2-fb72-4b5f-85a1-d1a98988ac04",
+  "mode": "PASSIVE_EXISTING_WORKLOAD_NO_STRESS",
+  "requested_duration_seconds": 30,
+  "samples": [
+    {
+      "uptime_seconds": 62.99,
+      "throttled": "throttled=0x0",
+      "ext5v_volts": 5.18044
+    },
+    {
+      "uptime_seconds": 68,
+      "throttled": "throttled=0x0",
+      "ext5v_volts": 5.05448
+    },
+    {
+      "uptime_seconds": 73,
+      "throttled": "throttled=0x0",
+      "ext5v_volts": 5.03304
+    },
+    {
+      "uptime_seconds": 78.01,
+      "throttled": "throttled=0x0",
+      "ext5v_volts": 5.11746
+    },
+    {
+      "uptime_seconds": 83.01,
+      "throttled": "throttled=0x0",
+      "ext5v_volts": 5.05582
+    },
+    {
+      "uptime_seconds": 88.02,
+      "throttled": "throttled=0x0",
+      "ext5v_volts": 5.092
+    },
+    {
+      "uptime_seconds": 93.03,
+      "throttled": "throttled=0x0",
+      "ext5v_volts": 5.02902
+    }
+  ],
+  "kernel_power_events_current_boot": [],
+  "qualified_power": false
+}

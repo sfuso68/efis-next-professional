@@ -91,6 +91,7 @@ jobs:
           python -m unittest tests.test_release_preparation -v
           python -m unittest tests.test_activation_preflight -v
           python -m unittest tests.test_ems_activation -v
+          python -m unittest tests.test_mfd_activation -v
           python -m unittest tests.test_paired_display_release -v
           python tools/navigation/validate_bbxnav_supervision.py
           python -m unittest tests.test_bbxnav_supervision -v

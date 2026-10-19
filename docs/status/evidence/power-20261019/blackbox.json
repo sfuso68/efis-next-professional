@@ -1,0 +1,51 @@
+{
+  "timestamp_utc": "2026-10-19T19:30:33.341562+00:00",
+  "hostname": "efisblackbox",
+  "boot_id": "75ea03d5-59b0-4da5-8e05-6f51f6eff482",
+  "mode": "PASSIVE_EXISTING_WORKLOAD_NO_STRESS",
+  "requested_duration_seconds": 30,
+  "samples": [
+    {
+      "uptime_seconds": 66.11,
+      "throttled": "throttled=0x50000",
+      "ext5v_volts": 5.01428
+    },
+    {
+      "uptime_seconds": 71.11,
+      "throttled": "throttled=0x50000",
+      "ext5v_volts": 5.0049
+    },
+    {
+      "uptime_seconds": 76.12,
+      "throttled": "throttled=0x50000",
+      "ext5v_volts": 5.0049
+    },
+    {
+      "uptime_seconds": 81.13,
+      "throttled": "throttled=0x50000",
+      "ext5v_volts": 4.99954
+    },
+    {
+      "uptime_seconds": 86.13,
+      "throttled": "throttled=0x50000",
+      "ext5v_volts": 5.00892
+    },
+    {
+      "uptime_seconds": 91.13,
+      "throttled": "throttled=0x50000",
+      "ext5v_volts": 4.95666
+    },
+    {
+      "uptime_seconds": 96.14,
+      "throttled": "throttled=0x50000",
+      "ext5v_volts": 5.04242
+    }
+  ],
+  "kernel_power_events_current_boot": [
+    "[    5.732040] efisblackbox kernel: hwmon hwmon4: Undervoltage detected!",
+    "[    7.748014] efisblackbox kernel: hwmon hwmon4: Voltage normalised",
+    "[   11.780014] efisblackbox kernel: hwmon hwmon4: Undervoltage detected!",
+    "[   13.796057] efisblackbox kernel: hwmon hwmon4: Voltage normalised"
+  ],
+  "qualified_power": false
+}

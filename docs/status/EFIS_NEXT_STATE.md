@@ -1431,3 +1431,32 @@ come dichiarazione operatore, non osservazione agente. Controllo pannello dopo
 reboot ancora da confermare; nessuna prova di sensori reali, power-loss,
 accuratezza ore o qualifica al volo dedotta. Flight approval rimane false.
 Nessun altro nodo, firmware, rete o sorgente avionico modificato.
+
+## 63. EMS acceptance operatore e nuovo controllo power — 2026-10-19
+
+PROD-005/PWR-001. Operatore conferma schermata e touch EMS funzionanti anche
+dopo reboot: chiusa la riconferma visiva di questo rollout SIM, distinta dalle
+misure automatiche già conservate. Non è una qualifica sensori o al volo.
+
+Preparato attivatore MFD nuovo standalone con pin e recovery armato soltanto
+prima dello stop; correzione atomica futura della ConditionPathExists legacy
+nel solo drop-in, ripristino originale in recovery. Test software ARM64 sul
+MFD 23/23 PASS, Windows 22 PASS/1 SKIP. Verificati realmente manifesti/binari
+candidato e precedente, unità, KMS e whitelist environment; servizio PID 1328
+invariato. --check-only bloccato come atteso: qualified power approval missing.
+Nessuna installazione root, sigillatura, attivazione o rollback reale MFD.
+Dettagli e gate in `docs/deployment/MFD_A0BE9A5_PREPARATION.md`.
+
+Nuova osservazione passiva power, sette campioni in 30 s per nodo:
+MFD 0x0, EXT5V PMIC 5.02902–5.18044 V, nessun evento undervoltage del boot;
+Blackbox 0x50000, EXT5V 4.95666–5.04242 V, due undervoltage nei primi 14 s
+del boot corrente seguiti da normalizzazione. Quindi il problema Blackbox
+non è soltanto lo storico del vecchio avvio; nessun nuovo evento nei 30 s.
+Timestamp kernel prima del sync NTP fuorviante, eventi confermati con uptime
+monotono. I nuovi boot sono stati osservati, non provocati dall'agente.
+
+Evidenze `evidence/power-20261019/`. Nessuna modifica a tensioni/soglie,
+override USB, firmware, rete o cablaggio; nessun carico sintetico aggiunto.
+0x0 MFD non è approvazione fisica: foto/modello PSU e cavo, prova rappresentativa
+ed approvazione documentata per boot rimangono necessari. PWR-001 VERIFY-HW
+invariato. La capacità 5 A dell'alimentatore non è attestata dai PDO osservati.
