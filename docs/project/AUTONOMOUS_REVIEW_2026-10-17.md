@@ -78,3 +78,27 @@ timeout e recovery dopo errore/morte del processo; 35 test PASS Linux serverha
 e 35 ARM64. Chiusa questa sola lacuna software fra writer cooperanti; non è
 power-loss o qualifica provider. Evidenza `weather-cache-lock-20261021/`.
 Le attivazioni restano bloccate e nessun servizio produttivo è stato aggiornato.
+
+## Modalità sviluppo prima della campagna integrata — 2026-10-21
+
+Richiesta del proprietario: avanzare sulle parti sviluppabili e concentrare
+successivamente i collaudi quando l'integrazione sarà più completa. Si rinviano
+prove hardware, campagne estese e acceptance; restano controlli minimi di
+sintassi/build pertinenti e piccoli controlli mirati. Non si disabilita la CI
+e non si trasformano sviluppi non collaudati in DONE.
+
+| Sequenza di sviluppo | Lavoro software autonomo | Dipendenze da non aggirare |
+|---|---|---|
+| WX-001/002 | Resolver per connessione e refresh multi-stazione implementati; poi adapter provider e cache radar persistente | Payload/licenze, tempi osservativi e georeferenziazione reali non approvati |
+| NAV-001/002/003 | Consolidare modello piano volo, source identity e annunci invalidi | Ricevitori e database correnti da qualificare; nearest non significa raggiungibile |
+| EMS-002/004, CFG-001 | Completare workflow setup, serializzazione mapping e calibrazioni, errori canale visibili | Nessun mapping, coefficiente o limite reale inventato; schede/sonde non approvate |
+| SV-001/002/003 | Manifest copertura e gap, preparazione pacchetti area/rotta, failure delle tile | Dataset/proiezione/ostacoli e soglie TAWS non qualificati; performance da misurare |
+| FPV-001/002/003 | Contratto viewer/health, simulazione stream e fallback prima del decoder reale | RPi4 VIDEO distinto da EMS, rete VIDEO separata, hardware/capacità da identificare |
+| VOICE/PAN-001 | Asset voce versionati, interfacce consultive, stato ack distinto da verifica | PTT, niente comandi radio/servi; procedure specifiche richiedono fonti approvate |
+| BBX/CORE/NET | Persistenza, gestione fault e diagnostica integrate con i moduli sviluppati | No nuove scritture Pixhawk, bus o bridging senza gate separato |
+
+Questa è una coda, non un'affermazione di implementazione di tutte le aree.
+Mantenere un blocco software attivo alla volta, pacchetti piccoli e review
+separate; dopo integrazione software fissare campagne core/replay, HMI,
+rete/storage e infine banco fisico su PSU qualificate. Attivazioni ancora
+bloccate: spostare i test non concede autorità hardware o approvazione al volo.

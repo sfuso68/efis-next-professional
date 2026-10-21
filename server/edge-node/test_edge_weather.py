@@ -49,7 +49,7 @@ class EdgeWeatherTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             self.write(directory, "LIPH", record())
             before = Path(directory, "LIPH.json").read_bytes()
-            with patch.object(edge_weather.urllib.request, "urlopen", side_effect=TimeoutError("fixture")):
+            with patch.object(edge_weather, "open_provider", side_effect=TimeoutError("fixture")):
                 with self.assertRaises(TimeoutError):
                     edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
             with edge_weather.station_lock(directory, "LIPH", timeout=0): pass
@@ -61,7 +61,7 @@ class EdgeWeatherTest(unittest.TestCase):
             self.write(directory, "LIPH", record())
             before = Path(directory, "LIPH.json").read_bytes()
             with edge_weather.station_lock(directory, "LIPH"), \
-                    patch.object(edge_weather.urllib.request, "urlopen") as request, \
+                    patch.object(edge_weather, "open_provider") as request, \
                     patch.object(edge_weather, "station_lock", side_effect=TimeoutError("busy")):
                 with self.assertRaises(TimeoutError):
                     edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
@@ -176,7 +176,7 @@ class EdgeWeatherTest(unittest.TestCase):
             with self.subTest(error=type(error)), tempfile.TemporaryDirectory() as directory:
                 self.write(directory, "LIPH", record())
                 before = Path(directory, "LIPH.json").read_bytes()
-                with patch.object(edge_weather.urllib.request, "urlopen", side_effect=error):
+                with patch.object(edge_weather, "open_provider", side_effect=error):
                     with self.assertRaises((URLError, TimeoutError)):
                         edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
                 self.assertEqual(Path(directory, "LIPH.json").read_bytes(), before)
@@ -184,7 +184,7 @@ class EdgeWeatherTest(unittest.TestCase):
             self.write(directory, "LIPH", record())
             before = Path(directory, "LIPH.json").read_bytes()
             for raw in (b'{"metar":', b" " * (edge_weather.MAX_RESPONSE_BYTES + 1)):
-                with patch.object(edge_weather.urllib.request, "urlopen", return_value=io.BytesIO(raw)):
+                with patch.object(edge_weather, "open_provider", return_value=io.BytesIO(raw)):
                     with self.assertRaises(ValueError): edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
                 self.assertEqual(Path(directory, "LIPH.json").read_bytes(), before)
 
@@ -261,7 +261,7 @@ class EdgeWeatherTest(unittest.TestCase):
             self.write(directory, "LIPH", record())
             target = Path(directory, "LIPH.json")
             before = target.read_bytes()
-            with patch.object(edge_weather.urllib.request, "urlopen", return_value=io.BytesIO(b'{"metar":true}')):
+            with patch.object(edge_weather, "open_provider", return_value=io.BytesIO(b'{"metar":true}')):
                 with self.assertRaises(ValueError):
                     edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
             self.assertEqual(target.read_bytes(), before)
@@ -362,10 +362,65 @@ class EdgeWeatherTest(unittest.TestCase):
 
     def test_pinned_resolver_preserves_named_host_policy(self):
         mapping = edge_weather.parse_resolve("mappe.casa.lan=192.168.1.6")
-        with edge_weather.temporary_resolver(mapping):
-            result = socket.getaddrinfo("mappe.casa.lan", 443, type=socket.SOCK_STREAM)
-        self.assertTrue(result)
-        self.assertEqual(result[0][4][0], "192.168.1.6")
+        resolver = socket.getaddrinfo
+        with patch.object(socket, "create_connection", return_value=object()) as connect:
+            connection = edge_weather.pinned_https_connection("mappe.casa.lan:443", resolve=mapping)
+            connection._create_connection(("mappe.casa.lan", 443), 5)
+        self.assertIs(socket.getaddrinfo, resolver)
+        self.assertEqual(connection.host, "mappe.casa.lan")
+        self.assertEqual(connect.call_args.args[0], ("192.168.1.6", 443))
+        self.assertTrue(connection._context.check_hostname)
+
+    def test_private_pins_do_not_interfere(self):
+        resolver = socket.getaddrinfo
+        with patch.object(socket, "create_connection", return_value=object()) as connect:
+            first = edge_weather.pinned_https_connection("one.example:443", resolve=("one.example", "192.0.2.1"))
+            second = edge_weather.pinned_https_connection("two.example:443", resolve=("two.example", "192.0.2.2"))
+            first._create_connection(("one.example", 443), 5)
+            second._create_connection(("two.example", 443), 5)
+            first._create_connection(("one.example", 443), 5)
+        self.assertEqual([call.args[0][0] for call in connect.call_args_list], ["192.0.2.1", "192.0.2.2", "192.0.2.1"])
+        self.assertIs(socket.getaddrinfo, resolver)
+
+    def test_mismatched_pin_insecure_tls_and_redirect_refused(self):
+        with self.assertRaises(ValueError):
+            edge_weather.pinned_https_connection("other.example", resolve=("one.example", "192.0.2.1"))
+        req = edge_weather.urllib.request.Request("https://one.example/api")
+        context = edge_weather.ssl.SSLContext(edge_weather.ssl.PROTOCOL_TLS_CLIENT)
+        context.check_hostname = False
+        with self.assertRaises(ValueError): edge_weather.open_provider(req, context=context)
+        with self.assertRaises(HTTPError):
+            edge_weather.NoProviderRedirects().redirect_request(req, None, 302, "redirect", {}, "https://other.example/")
+        with self.assertRaises(ValueError):
+            edge_weather.open_provider(req, resolve=("other.example", "192.0.2.2"))
+
+    def test_multi_station_failure_isolated_and_duplicates_normalized(self):
+        failure = TimeoutError("do not publish secret content")
+        with patch.object(edge_weather, "sync_one", side_effect=[failure, {}]) as sync:
+            report = edge_weather.sync_many("unused", "https://example.invalid", ["liph", "LIPZ", "LIPH"])
+        self.assertEqual([call.args[2] for call in sync.call_args_list], ["LIPH", "LIPZ"])
+        self.assertEqual(report["status"], "PARTIAL_FAILURE")
+        self.assertEqual(report["stations"]["LIPH"], {"status": "FAILED", "error_type": "TimeoutError"})
+        self.assertEqual(report["stations"]["LIPZ"]["status"], "UPDATED")
+        self.assertNotIn("secret", json.dumps(report))
+
+    def test_multi_station_invalid_input_prevents_all_downloads(self):
+        with patch.object(edge_weather, "sync_one") as sync:
+            with self.assertRaises(ValueError):
+                edge_weather.sync_many("unused", "https://example.invalid", ["LIPH", "../bad"])
+            sync.assert_not_called()
+
+    def test_cli_partial_sync_returns_nonzero_and_keeps_station_output(self):
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.object(sys, "argv", ["edge", "--cache", directory, "--sync-url", "https://example.invalid"]), \
+                patch.object(edge_weather, "sync_one", side_effect=[TimeoutError("secret"), {}]), \
+                contextlib.redirect_stdout(io.StringIO()) as output, \
+                contextlib.redirect_stderr(io.StringIO()) as errors:
+            result = edge_weather.main()
+            self.assertEqual(result, 2)
+            self.assertEqual(set(json.loads(output.getvalue())), {"LIPH", "LIDB"})
+            self.assertEqual(json.loads(errors.getvalue())["status"], "PARTIAL_FAILURE")
+            self.assertNotIn("secret", errors.getvalue())
 
     def test_invalid_resolver_is_rejected(self):
         with self.assertRaises(ValueError):

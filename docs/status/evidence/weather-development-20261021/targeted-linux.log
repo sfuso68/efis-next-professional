@@ -1,0 +1,12 @@
+test_pinned_resolver_preserves_named_host_policy (test_edge_weather.EdgeWeatherTest.test_pinned_resolver_preserves_named_host_policy) ... ok
+test_private_pins_do_not_interfere (test_edge_weather.EdgeWeatherTest.test_private_pins_do_not_interfere) ... ok
+test_mismatched_pin_insecure_tls_and_redirect_refused (test_edge_weather.EdgeWeatherTest.test_mismatched_pin_insecure_tls_and_redirect_refused) ... ok
+test_multi_station_failure_isolated_and_duplicates_normalized (test_edge_weather.EdgeWeatherTest.test_multi_station_failure_isolated_and_duplicates_normalized) ... ok
+test_multi_station_invalid_input_prevents_all_downloads (test_edge_weather.EdgeWeatherTest.test_multi_station_invalid_input_prevents_all_downloads) ... ok
+test_cli_partial_sync_returns_nonzero_and_keeps_station_output (test_edge_weather.EdgeWeatherTest.test_cli_partial_sync_returns_nonzero_and_keeps_station_output) ... ok
+test_loopback_http_sync_and_offline_reopen (test_edge_weather.EdgeWeatherTest.test_loopback_http_sync_and_offline_reopen) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.609s
+
+OK

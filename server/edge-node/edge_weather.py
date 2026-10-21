@@ -4,6 +4,7 @@
 import argparse
 import base64
 import contextlib
+import http.client
 try:
     import fcntl
 except ImportError:
@@ -15,9 +16,12 @@ import re
 import socket
 import ssl
 import stat
+import sys
 import tempfile
 import time
 import urllib.request
+import urllib.parse
+import urllib.error
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -53,24 +57,55 @@ def parse_resolve(value):
     return hostname.lower(), address
 
 
-@contextlib.contextmanager
-def temporary_resolver(resolve):
-    """Pin one hostname to an IP while preserving HTTPS SNI and Host."""
-    if not resolve:
-        yield
-        return
+class NoProviderRedirects(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(req.full_url, code, "weather redirect refused", headers, fp)
+
+
+def pinned_https_connection(host, *, resolve, **kwargs):
+    """Pin TCP only; retain the named TLS host, SNI and certificate validation."""
     expected_host, address = resolve
-    original = socket.getaddrinfo
+    connection = http.client.HTTPSConnection(host, **kwargs)
+    if connection.host.lower() != expected_host:
+        raise ValueError("HTTPS hostname does not match pinned hostname")
+    original_connect = connection._create_connection
 
-    def mapped(host, port, *args, **kwargs):
-        target = address if str(host).lower() == expected_host else host
-        return original(target, port, *args, **kwargs)
+    def connect(destination, *args, **kw):
+        if str(destination[0]).lower() != expected_host:
+            raise ValueError("unexpected connection destination")
+        return original_connect((address, destination[1]), *args, **kw)
 
-    socket.getaddrinfo = mapped
-    try:
-        yield
-    finally:
-        socket.getaddrinfo = original
+    # Per-connection hook; socket.getaddrinfo and global openers are untouched.
+    connection._create_connection = connect
+    return connection
+
+
+class PinnedHTTPSHandler(urllib.request.HTTPSHandler):
+    def __init__(self, resolve, context):
+        super().__init__(context=context)
+        self.resolve = resolve
+
+    def https_open(self, req):
+        def factory(host, **kwargs):
+            return pinned_https_connection(host, resolve=self.resolve, **kwargs)
+        return self.do_open(factory, req, context=self._context)
+
+
+def open_provider(request, *, timeout=20, context=None, resolve=None):
+    if context is not None and (context.verify_mode != ssl.CERT_REQUIRED or not context.check_hostname):
+        raise ValueError("weather TLS certificate and hostname verification required")
+    parsed = urllib.parse.urlsplit(request.full_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password:
+        raise ValueError("invalid weather provider URL")
+    handlers = [NoProviderRedirects()]
+    if resolve:
+        if parsed.scheme != "https" or parsed.hostname.lower() != resolve[0]:
+            raise ValueError("pinned weather URL must use the named HTTPS host")
+        # A pin requests a direct connection, never a global/environment proxy.
+        handlers.extend([urllib.request.ProxyHandler({}), PinnedHTTPSHandler(resolve, context)])
+    else:
+        handlers.append(urllib.request.HTTPSHandler(context=context))
+    return urllib.request.build_opener(*handlers).open(request, timeout=timeout)
 
 
 def atomic_json(path, payload):
@@ -309,9 +344,8 @@ def _sync_one_locked(cache, base_url, icao, username=None, password=None, ca_fil
         headers=headers,
     )
     context = ssl.create_default_context(cafile=ca_file) if ca_file else None
-    with temporary_resolver(resolve):
-        with urllib.request.urlopen(request, timeout=20, context=context) as response:
-            payload = limited_json(response, MAX_RESPONSE_BYTES)
+    with open_provider(request, timeout=20, context=context, resolve=resolve) as response:
+        payload = limited_json(response, MAX_RESPONSE_BYTES)
     validate_provider_payload(payload, station)
     cached_payload = {
         "schema": CACHE_SCHEMA,
@@ -322,6 +356,23 @@ def _sync_one_locked(cache, base_url, icao, username=None, password=None, ca_fil
     }
     atomic_json(Path(cache) / (station + ".json"), cached_payload)
     return cached_payload
+
+
+def sync_many(cache, base_url, stations, username=None, password=None, ca_file=None, resolve=None):
+    """Refresh every distinct station; failure never fabricates or clears reports."""
+    requested = list(dict.fromkeys(normalized_icao(station) for station in stations))
+    results = {}
+    for station in requested:
+        try:
+            sync_one(cache, base_url, station, username, password, ca_file, resolve)
+            results[station] = {"status": "UPDATED"}
+        except (OSError, ValueError, RuntimeError, RecursionError) as error:
+            # Never publish exception messages: URLs and network errors may
+            # contain credentials or internal host information.
+            results[station] = {"status": "FAILED", "error_type": type(error).__name__}
+    return {"schema": "efis-next.weather-sync.v1", "stations": results,
+            "status": "PARTIAL_FAILURE" if any(item["status"] == "FAILED" for item in results.values()) else "PASS",
+            "safety_use_allowed": False}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -364,23 +415,20 @@ def main():
     args = parser.parse_args()
     resolve = parse_resolve(args.resolve)
     stations = [normalized_icao(value) for value in (args.icao or ["LIPH", "LIDB"])]
+    sync_failed = False
     if args.sync_url:
-        for station in stations:
-            sync_one(
-                args.cache,
-                args.sync_url,
-                station,
-                os.getenv("EFIS_EDGE_USER"),
-                os.getenv("EFIS_EDGE_PASSWORD"),
-                args.ca_file,
-                resolve,
-            )
+        report = sync_many(args.cache, args.sync_url, stations,
+                           os.getenv("EFIS_EDGE_USER"), os.getenv("EFIS_EDGE_PASSWORD"),
+                           args.ca_file, resolve)
+        sync_failed = report["status"] != "PASS"
+        print(json.dumps(report), file=sys.stderr)
     if args.serve:
         Handler.cache = args.cache
         ThreadingHTTPServer((args.bind, args.port), Handler).serve_forever()
     else:
         print(json.dumps({station: cached(args.cache, station) for station in stations}))
+    return 2 if sync_failed else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

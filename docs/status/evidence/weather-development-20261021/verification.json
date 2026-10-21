@@ -1,0 +1,15 @@
+{
+  "schema": "efis-next.weather-development-checks.v1",
+  "date": "2026-10-21",
+  "source_sha256": "57844bab8d70f76bb7f7c1848ff9c163a5a9b0a8bcefadd927f8e009e32d2d4a",
+  "tests_sha256": "a1f830762bc4f9c0ecea1154f7d6cd0f211a70b471f9980102ab96708a151701",
+  "syntax": "PASS",
+  "targeted_linux_checks": {"status": "PASS", "count": 7, "log": "targeted-linux.log"},
+  "full_regression": "DEFERRED_OPERATOR_REQUEST",
+  "new_arm64_run": "NOT_RUN",
+  "real_provider_tls_handshake": "NOT_RUN",
+  "integrated_hardware_campaign": "DEFERRED_OPERATOR_REQUEST",
+  "deployment": "NOT_RUN",
+  "activation_authorized": false,
+  "flight_approval": false
+}

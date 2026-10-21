@@ -1512,3 +1512,26 @@ writer esterni, power-loss non provato. Sync threaded con mapping --resolve
 differenti nello stesso processo non qualificato (resolver globale esistente).
 Payload/tempi provider, TLS/CA/licenze e consumer reali restano aperti.
 PWR-001 e attivazioni MFD/PFD/Blackbox rimangono bloccati fino a verifica PSU.
+
+## 66. Sviluppo software, collaudi integrati differiti — 2026-10-21
+
+Richiesta: avanzare sulle parti sviluppabili e rimandare i test a integrazione
+più completa. Registrata coda per WX, NAV, EMS/setup, SV, FPV, voce/emergenze,
+BBX/core/rete in AUTONOMOUS_REVIEW_2026-10-17.md. Non è un DONE globale:
+campagne estese e hardware rinviate, controlli rapidi mirati mantenuti, CI
+non disattivata. Nessuna approvazione di dati, mapping o attuatori dedotta.
+
+WX-001 implementato: connessione HTTPS con pin TCP privato, hostname/SNI e
+verifica certificato mantenuti, nessuna modifica DNS/opener globale; proxy
+ambiente disabilitato solo per il pin esplicito e redirect provider rifiutati.
+Refresh multi-stazione normalizzato/deduplicato prosegue dopo errori e
+riporta PARTIAL_FAILURE senza testi potenzialmente riservati; CLI exit 2 per
+failure parziali, cache precedenti conservate e stdout ICAO compatibile.
+
+Verificato: sintassi e sette controlli mirati Linux in staging isolato su
+serverha, inclusa fixture HTTP loopback. Log weather-development-20261021.
+Regressione completa, nuovo ARM64, handshake TLS/provider reale e collaudo
+end-to-end NOT_RUN su questo incremento. I 35/35 precedenti appartengono alla
+versione precedente e non qualificano automaticamente questa modifica.
+WX-001 resta PARTIAL; nessun deploy, merge, reboot, servizio o timer modificato.
+Tutte le attivazioni rimangono bloccate fino alla verifica degli alimentatori.

@@ -75,10 +75,34 @@ creare la directory, mentre il percorso lettura/serving non richiede flock.
 Non copre writer esterni che ignorano il protocollo, NFS/filesystem distribuiti,
 power-loss o i crash durante ogni fase I/O. `--resolve` usa un override DNS
 process-global preesistente: più sync con mapping diversi nello stesso processo
-threaded restano fuori dal contratto; i worker operativi sono processi distinti.
+threaded erano fuori dal contratto; il successivo incremento elimina quel
+resolver globale, senza dichiarare qualificata la connessione provider reale.
 
 35/35 test PASS Linux serverha e 35/35 ARM64 in directory isolate: contesa,
 stazioni distinte, timeout, symlink rifiutato, recovery dopo errore e SIGKILL
 del solo processo fixture con cache precedente preservata. Nessun processo
 produttivo è stato terminato. Evidenze `weather-cache-lock-20261021/`.
 Nessuna attivazione, reboot, modifica ai timer o alla cache di produzione.
+
+## Sviluppo successivo: connessioni isolate e refresh multi-stazione
+
+L'override `--resolve` non modifica più socket.getaddrinfo: crea una connessione
+HTTPS privata che cambia solo l'indirizzo TCP. Host HTTP, SNI e verifica del
+certificato restano sul nome richiesto. Con pin esplicito la connessione è
+diretta e non usa proxy d'ambiente; un URL non HTTPS o hostname diverso viene
+rifiutato. L'opener non viene installato globalmente. I redirect HTTP sono
+sempre rifiutati; non si inoltra Basic Auth verso destinazioni redirette.
+Context TLS senza verifica certificato/hostname non ammesso.
+
+`sync_many` normalizza/deduplica le stazioni e continua sulle successive se un
+fetch fallisce. Mantiene i cache file precedenti e restituisce un rapporto
+PARTIAL_FAILURE con il solo tipo d'errore, non messaggi/URL potenzialmente
+riservati. La CLI conserva la mappa ICAO su stdout, scrive il rapporto sync su
+stderr e termina exit 2 se uno o più refresh falliscono. Non maschera quindi
+la failure al timer, pur aggiornando le stazioni funzionanti. Nessun timer
+o servizio installato viene modificato in questo blocco.
+
+Su richiesta del proprietario: campagne complete, collaudi integrati e ARM64
+del nuovo incremento rinviati. Eseguiti soltanto sintassi e sette controlli
+mirati Linux isolati, incluso HTTP loopback sintetico. Non è prova TLS con
+certificati/provider reali né regressione completa della nuova versione.
