@@ -1,4 +1,5 @@
 #pragma once
+#include "weather_reports.hpp"
 
 #include <QDateTime>
 #include <QNetworkAccessManager>
@@ -13,6 +14,7 @@ class WeatherService final : public QObject {
     Q_PROPERTY(QString radarSource READ radarSource NOTIFY changed)
     Q_PROPERTY(QString radarState READ radarState NOTIFY changed)
     Q_PROPERTY(int radarAgeMinutes READ radarAgeMinutes NOTIFY changed)
+    Q_PROPERTY(int radarCacheAgeMinutes READ radarCacheAgeMinutes NOTIFY changed)
     Q_PROPERTY(QString radarMessage READ radarMessage NOTIFY changed)
     Q_PROPERTY(QString radarProduct READ radarProduct NOTIFY changed)
     Q_PROPERTY(QString radarArea READ radarArea NOTIFY changed)
@@ -34,6 +36,10 @@ public:
     explicit WeatherService(QObject* parent = nullptr);
 #ifdef EFIS_WEATHER_TEST_HOOKS
     explicit WeatherService(const QUrl& controlled_radar_endpoint, QObject* parent = nullptr);
+    bool mergeReportForTest(bool taf, const QByteArray& payload, const QDateTime& received) {
+        return report_store_.merge(taf,payload,received);
+    }
+    QVariantList reportsAtForTest(const QDateTime& now) const { return report_store_.view(now); }
 #endif
     ~WeatherService() override;
     [[nodiscard]] static QString classifyRadarAgeSeconds(qint64 age_seconds);
@@ -43,6 +49,7 @@ public:
     [[nodiscard]] QString radarSource() const { return radar_source_; }
     [[nodiscard]] QString radarState() const { return radar_state_; }
     [[nodiscard]] int radarAgeMinutes() const;
+    [[nodiscard]] int radarCacheAgeMinutes() const;
     [[nodiscard]] QString radarMessage() const { return radar_message_; }
     [[nodiscard]] QString radarProduct() const { return radar_product_; }
     [[nodiscard]] QString radarArea() const { return radar_area_; }
@@ -59,7 +66,7 @@ public:
     [[nodiscard]] QString voiceAlert() const { return voice_alert_; }
     [[nodiscard]] bool alertAcknowledged() const { return alert_acknowledged_; }
     [[nodiscard]] bool audioEnabled() const { return audio_enabled_; }
-    [[nodiscard]] QVariantList airportWeather() const { return airport_weather_; }
+    [[nodiscard]] QVariantList airportWeather() const;
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void updatePosition(double latitude, double longitude, bool valid, bool simulated);
     Q_INVOKABLE void invalidatePosition();
@@ -86,6 +93,7 @@ private:
     void requestRadar();
     void requestMetar();
     void requestTaf();
+    void requestAviationReport(bool taf);
     void updateAgeState();
     bool loadCurrentRadarCache();
     void clearRadarFrame(const QString& message);
@@ -99,7 +107,14 @@ private:
     QString radar_state_{QStringLiteral("NO DATA")};
     QString radar_message_{QStringLiteral("Waiting for Radar-DPC")};
     QDateTime radar_time_;
+    // Download/file time is never an observational timestamp. The legacy WMS
+    // adapter supplies no verified observation identity; unknown is deliberate.
+    QDateTime radar_observation_time_;
     QVariantList airport_weather_;
+    weather_reports::Store report_store_;
+    quint64 weather_mode_generation_{};
+    quint64 metar_request_{};
+    quint64 taf_request_{};
     QString radar_product_{QStringLiteral("VMI")};
     QString radar_area_{QStringLiteral("NO VALID POSITION")};
     QString real_position_area_;

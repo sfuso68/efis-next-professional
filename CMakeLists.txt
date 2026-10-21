@@ -180,6 +180,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/SkyViewGoldenMain.qml
                 qml/GpuMapSurface.qml
                 qml/WeatherRadarOverlay.qml
+                qml/WeatherReportCard.qml
                 qml/ProfessionalTape.qml
                 qml/ProfessionalFma.qml
                 qml/ProfessionalVisionSurface.qml
@@ -215,6 +216,15 @@ if(EFIS_BUILD_QT_RENDERER)
                 Qt6::Core Qt6::Gui Qt6::Network)
             add_test(NAME efis_weather_service_tests
                      COMMAND efis_weather_service_tests)
+            find_program(EFIS_WEATHER_REPORT_QML_RUNNER NAMES qmltestrunner
+                HINTS "${Qt6_DIR}/../../../bin" REQUIRED)
+            add_test(NAME efis_weather_report_qml_tests
+                COMMAND "${EFIS_WEATHER_REPORT_QML_RUNNER}"
+                    -input "${CMAKE_CURRENT_SOURCE_DIR}/tests/qml-weather-reports"
+                    -o "-,txt")
+            set_tests_properties(efis_weather_report_qml_tests PROPERTIES
+                ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software"
+                TIMEOUT 60)
 
             qt_add_executable(efis_pfd_aircraft_profile_tests
                 tests/pfd_aircraft_profile_tests.cpp
