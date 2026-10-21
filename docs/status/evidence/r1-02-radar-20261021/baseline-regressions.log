@@ -1,0 +1,12 @@
+********* Start testing of qmltestrunner *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by MSVC 2022), windows 11
+PASS   : qmltestrunner::WeatherRadarPresentation::initTestCase()
+FAIL!  : qmltestrunner::WeatherRadarPresentation::test_expired_cache_is_hidden() Expired decoded cached image must not remain drawn
+   Actual   (): true
+   Expected (): false
+C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\output\weather-radar-baseline\tests\qml-weather\tst_weather_radar_overlay.qml(77) : failure location
+FAIL!  : qmltestrunner::WeatherRadarPresentation::test_stale_primary_colour_is_not_current() 'STALE needs a primary caution cue, not the CURRENT frame colour' returned FALSE. ()
+C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\output\weather-radar-baseline\tests\qml-weather\tst_weather_radar_overlay.qml(84) : failure location
+PASS   : qmltestrunner::WeatherRadarPresentation::cleanupTestCase()
+Totals: 2 passed, 2 failed, 0 skipped, 0 blacklisted, 57ms
+********* Finished testing of qmltestrunner *********

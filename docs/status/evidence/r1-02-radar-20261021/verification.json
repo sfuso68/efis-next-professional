@@ -1,0 +1,167 @@
+{
+  "schema": "efis-next.audit-correction-evidence.v1",
+  "date_utc": "2026-10-21",
+  "planning_block": "R1-02",
+  "findings": [
+    "N2",
+    "N6"
+  ],
+  "requirements": [
+    "WX-002",
+    "PRJ-004",
+    "VER-001"
+  ],
+  "status": "VERIFIED_SW_CANDIDATE",
+  "source_base": "4aea1e4edf8678c180e04171813d842ca6ff58a0",
+  "branch": "fix/weather-radar-presentation-v1",
+  "implementation": [
+    "Radar source loading requires ON and supported state/mode/age; drawing additionally requires Image.Ready. Decode alone cannot establish availability.",
+    "STALE retains permitted imagery but frame/title use caution colour rather than CURRENT cyan.",
+    "Expired, clock-skewed, unknown, missing provider/age, inconsistent simulation and invalid image fail closed.",
+    "OFF/unavailable hide simulation lightning/legend too; compact and regular badges retain failure cause.",
+    "Reported minutes are explicitly CACHE age, not observation age. No new QML age thresholds.",
+    "Runtime QML regression in CTest/Linux CI; functional binding-string checks replaced by actual component tests. Existing approved golden images/manifests unchanged."
+  ],
+  "software_checks": {
+    "baseline_regressions": {
+      "status": "PASS_EXPECTED_REPRODUCTION",
+      "original_component_commit": "4aea1e4edf8678c180e04171813d842ca6ff58a0",
+      "tests": "Final committed test file, two selected cases against isolated original component.",
+      "failures": 2,
+      "exit_code": 2,
+      "log": "baseline-regressions.log",
+      "guards": [
+        "TestCase visible=true",
+        "Fresh decoded fixture visibility asserted in init; a hidden test surface cannot produce a false pass."
+      ]
+    },
+    "qml_runtime": {
+      "status": "PASS",
+      "qt": "6.11.1",
+      "platform": "Windows x86-64 / offscreen / software",
+      "functional_cases": 25,
+      "passes_including_lifecycle": 27,
+      "exit_code": 0,
+      "log": "qml-windows.log",
+      "warning": "One intentional unsupported-image-format warning from corrupted PNG fault.",
+      "method": "Actual WeatherRadarOverlay.qml instantiated from source with injected provider and local generated opaque 16x16 PNG, not execution of the packaged PFD binary.",
+      "coverage": [
+        "Controlled state/age sequence: 0/600/601/1200/1201/-6 seconds and recovery, regular + compact layouts.",
+        "Unknown states, OFF/recovery, missing provider, negative/non-finite/non-numeric age, simulation provenance/decorations.",
+        "Decode error/recovery, primary STALE frame colour, rendered pixel removal on expiry."
+      ],
+      "not_covered": [
+        "Native weather clock/provider observation time",
+        "Persistent cache reload or real network",
+        "Slow asynchronous image loading under controlled network delay"
+      ]
+    },
+    "ctest": {
+      "status": "PASS",
+      "test": "efis_weather_radar_overlay_qml_tests",
+      "exit_code": 0,
+      "command": "ctest --test-dir build-ems-state-review --output-on-failure --timeout 60 -R ^efis_weather_radar_overlay_qml_tests$"
+    },
+    "python": {
+      "status": "PASS",
+      "tests": 27,
+      "modules": [
+        "tests.test_skyview_responsive",
+        "tests.test_avionix_hmi_contract",
+        "tests.test_project_status_control"
+      ]
+    },
+    "python_ast": {
+      "status": "PASS",
+      "file": "tools/ui/validate_skyview_responsive.py"
+    },
+    "yaml_syntax": {
+      "status": "PASS",
+      "method": "Existing MFD PyYAML parser, workflow supplied via stdin; no file/service change. Local Python/Node YAML parsers unavailable; no package installed.",
+      "actions_execution": false
+    },
+    "build": {
+      "status": "PASS",
+      "exit_code": 0,
+      "type": "Incremental Release",
+      "compiler": "MSVC 19.43.34810.0",
+      "qt": "6.11.1",
+      "targets": [
+        "efis-pfd-qt",
+        "efis-ems-qt",
+        "efis_pfd_aircraft_profile_tests"
+      ],
+      "directory": "build-ems-state-review",
+      "warnings": [
+        "Existing object-path-length configuration warning."
+      ],
+      "notes": [
+        "Existing separate build directory reused with Release compiler probe. No toolchain installation or security policy changes.",
+        "Python discovery selected WindowsApps alias; full golden CTest gate not registered in this local directory. CI gate unchanged and still required.",
+        "No packaged native renderer execution or native weather_service_tests execution claimed in this increment; source classifier unchanged and existing native tests remain in CI."
+      ]
+    },
+    "status_generator": {
+      "status": "PASS",
+      "command": "python tools/project_status/generate_status.py --check"
+    },
+    "dashboard_generator": {
+      "status": "PASS",
+      "command": "python -m tools.project_status.generate_dashboard --check"
+    },
+    "github_ci": {
+      "status": "NOT_RUN_AT_EVIDENCE_CREATION",
+      "required_before_merge": true
+    }
+  },
+  "artifacts": [
+    {
+      "path": "qml/WeatherRadarOverlay.qml",
+      "sha256_lf_text": "33e03d5860db36dbff647dcdeebe4a48da98ad932dad4b865eafcdaef907c8b7"
+    },
+    {
+      "path": "tests/qml-weather/tst_weather_radar_overlay.qml",
+      "sha256_lf_text": "b6c72ee3dce3708b3425c8779330a46695b4de4a7c1b8d034c9609a30fcfbce3"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "sha256_lf_text": "24e43ce8cd267e9880e052491a13d1b2c25cf54dbb31f340a41aeef2f058780a"
+    },
+    {
+      "path": ".github/workflows/efis-core-ci.yml",
+      "sha256_lf_text": "4b756a6d01aac407ef0d882d36a17e7a21f27f2b0dd9cb8919b6fc1b19182453"
+    },
+    {
+      "path": "tools/ui/validate_skyview_responsive.py",
+      "sha256_lf_text": "36945976b126f8419d702514ee3e463949acc674e8814fa9b32c26123235bae2"
+    },
+    {
+      "path": "docs/design/WEATHER_RADAR_CONNECTIVITY_V1.md",
+      "sha256_lf_text": "0c35698a38025b36fbacc87086f10ce480baf535e04cf99eae29ef89101d599f"
+    }
+  ],
+  "built_artifacts": [
+    {
+      "name": "efis-pfd-qt.exe",
+      "sha256": "b4e63d329107f0a4ce9358ee4e7a7163fa8ee1ebedf45ba811003be3e02addf7"
+    },
+    {
+      "name": "efis-ems-qt.exe",
+      "sha256": "1d612d67a641021850b5860f5003e842ee367218b406c27844889e4b56f9c1fc"
+    }
+  ],
+  "hardware_verification": "NOT_RUN",
+  "deployed": false,
+  "activated": false,
+  "rebooted": false,
+  "merged": false,
+  "flight_approval": false,
+  "limitations": [
+    "N3/R1-03 (position validity/default coordinates) remains open.",
+    "N10 (observation vs acquisition/cache age) remains open; availability follows the service's classified state, not an independent QML clock.",
+    "Native service cache reload is CURRENT/STALE/EXPIRED by age; no CACHED enum support invented.",
+    "No live provider, geographic alignment, licensing or panel/ARM64 acceptance.",
+    "N1/PR52 and N4/N5/PR53 remain separate candidate branches, not integrated here.",
+    "Activations blocked by power qualification. No authority inferred for other R1 blocks."
+  ]
+}

@@ -10,20 +10,47 @@ Item {
     property string regionName: "VENETO"
     property int refreshMinutes: 5
     property real badgeTopMargin: 6
-    property var weatherProvider: weather
-    readonly property bool trustedDisplayState: root.weatherProvider.radarState === "CURRENT"
-                                                || root.weatherProvider.radarState === "STALE"
-                                                || root.weatherProvider.radarState === "SIMULATED"
-    readonly property bool available: radar.status === Image.Ready && root.trustedDisplayState
-    readonly property bool loading: radar.status === Image.Loading
+    property var weatherProvider: typeof weather !== "undefined" ? weather : null
+    readonly property var provider: weatherProvider || ({})
+    readonly property string reportedState: String(provider.radarState || "NO DATA")
+    readonly property bool simulationActive: provider.simulation === true
+    readonly property bool ageKnown: typeof provider.radarAgeMinutes === "number"
+                                    && isFinite(provider.radarAgeMinutes) && provider.radarAgeMinutes >= 0
+    // The service owns freshness thresholds. Never substitute download/observation
+    // times here or infer a valid state from a decoded image alone.
+    readonly property bool trustedDisplayState: ((reportedState === "CURRENT" || reportedState === "STALE")
+                                                 && !simulationActive && ageKnown)
+                                                || (reportedState === "SIMULATED" && simulationActive)
+    readonly property bool available: radarEnabled && radar.status === Image.Ready && trustedDisplayState
+    readonly property bool loading: radarEnabled && trustedDisplayState && radar.status === Image.Loading
+    readonly property string failureState: {
+        if ((reportedState === "SIMULATED") !== simulationActive
+                && (reportedState === "SIMULATED" || reportedState === "CURRENT" || reportedState === "STALE"))
+            return "MODE MISMATCH"
+        if ((reportedState === "CURRENT" || reportedState === "STALE") && !ageKnown) return "AGE UNKNOWN"
+        if (reportedState === "CLOCK_SKEW") return "CLOCK SKEW"
+        return ["EXPIRED", "CLOCK SKEW", "NO DATA"].indexOf(reportedState) >= 0 ? reportedState : "INVALID"
+    }
+    readonly property string displayState: !radarEnabled ? "OFF" : !trustedDisplayState ? failureState
+                                            : loading ? "LOADING" : available ? reportedState
+                                            : radar.status === Image.Error ? "IMAGE ERROR" : "NO DATA"
+    readonly property color statusColor: !radarEnabled ? "#80939B"
+                                         : available && reportedState === "CURRENT" ? "#00D7E8" : "#E0A52B"
+    readonly property string statusLine: displayState === "OFF" || displayState === "LOADING" ? displayState
+        : available ? (simulationActive ? "SIMULATED • TRAINING"
+                                       : displayState+" • CACHE "+Math.floor(provider.radarAgeMinutes)+" MIN")
+        : displayState === "NO DATA" ? "NO DATA • CHECK SOURCE" : displayState+" • NO DATA"
+    readonly property string failureMessage: displayState === "EXPIRED" ? "WX EXPIRED\nREFRESH WEATHER"
+        : displayState === "CLOCK SKEW" ? "WX CLOCK SKEW\nCHECK CLOCK"
+        : "WX "+displayState+"\nCHECK WEATHER SOURCE"
 
     clip: true
 
     Image {
         id: radar
         anchors.fill: parent
-        visible: root.radarEnabled && status !== Image.Error
-        source: root.radarEnabled ? root.weatherProvider.radarSource : ""
+        visible: root.available
+        source: root.radarEnabled && root.trustedDisplayState ? (root.provider.radarSource || "") : ""
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: true
@@ -31,8 +58,8 @@ Item {
     }
 
     Repeater {
-        model: root.weatherProvider.simulation ? [{x:.48,y:.39},{x:.61,y:.52},{x:.24,y:.24}] : []
-        delegate: Text { required property var modelData; x:(modelData.x+((root.weatherProvider.simulationPhase%10)/250))*root.width; y:modelData.y*root.height; text:"ϟ"; color:"#FFF36A"; font.pixelSize:15*root.uiScale; font.bold:true; style:Text.Outline; styleColor:"#A0000000" }
+        model: root.available && root.simulationActive ? [{x:.48,y:.39},{x:.61,y:.52},{x:.24,y:.24}] : []
+        delegate: Text { required property var modelData; x:(modelData.x+((root.provider.simulationPhase%10)/250))*root.width; y:modelData.y*root.height; text:"ϟ"; color:"#FFF36A"; font.pixelSize:15*root.uiScale; font.bold:true; style:Text.Outline; styleColor:"#A0000000" }
     }
 
     Rectangle {
@@ -40,12 +67,12 @@ Item {
         anchors { left: parent.left; top: parent.top; leftMargin: 6*root.uiScale; topMargin: root.badgeTopMargin*root.uiScale }
         width: (root.compactLayout ? root.width/root.uiScale - 12 : 132)*root.uiScale
         height: (root.compactLayout ? 44 : 34)*root.uiScale; radius: 3*root.uiScale
-        color: "#D9040B11"; border.color: root.available ? "#00D7E8" : "#E0A52B"
+        color: "#D9040B11"; border.color: root.statusColor
         Column {
             anchors { fill: parent; margins: 5*root.uiScale }
             spacing: 1*root.uiScale
-            Text { text: "WX "+root.weatherProvider.radarProduct+" • "+(root.weatherProvider.simulation ? "SIM" : root.weatherProvider.radarArea); color: root.weatherProvider.simulation ? "#E8B84A" : (root.available ? "#00E5F2" : "#E8B84A"); font.pixelSize: 7*root.uiScale; font.bold: true }
-            Text { text: !root.radarEnabled ? "OFF" : root.loading ? "UPDATING" : (!root.available && root.compactLayout ? "NO DATA • CHECK HOTSPOT" : root.weatherProvider.radarState+" • "+(root.weatherProvider.radarAgeMinutes < 0 ? "—" : root.weatherProvider.radarAgeMinutes+" MIN")); color: root.weatherProvider.radarState === "CURRENT" ? "#E8F3F7" : "#E8B84A"; font.pixelSize: 6*root.uiScale; font.bold: true }
+            Text { text: "WX "+String(root.provider.radarProduct || "—")+" • "+(root.simulationActive ? "SIM" : String(root.provider.radarArea || "NO AREA")); color: root.statusColor; font.pixelSize: 7*root.uiScale; font.bold: true }
+            Text { text: root.statusLine; color: root.available && root.reportedState === "CURRENT" ? "#E8F3F7" : root.statusColor; font.pixelSize: 6*root.uiScale; font.bold: true }
         }
     }
 
@@ -54,7 +81,7 @@ Item {
         anchors { horizontalCenter: parent.horizontalCenter; top: statusBadge.bottom; topMargin: 6*root.uiScale }
         width: 154*root.uiScale; height: 34*root.uiScale; radius: 3*root.uiScale
         color: "#E8071118"; border.color: "#E0A52B"
-        Text { anchors.centerIn: parent; text: "WX NO DATA\nCHECK HOTSPOT"; horizontalAlignment: Text.AlignHCenter; color: "#E8B84A"; font.pixelSize: 7*root.uiScale; font.bold: true }
+        Text { anchors.centerIn: parent; text: root.failureMessage; horizontalAlignment: Text.AlignHCenter; color: "#E8B84A"; font.pixelSize: 7*root.uiScale; font.bold: true }
     }
 
     Text {
@@ -65,7 +92,7 @@ Item {
     }
 
     Rectangle {
-        visible: root.weatherProvider.simulation && !root.compactLayout && root.width > 300*root.uiScale
+        visible: root.available && root.simulationActive && !root.compactLayout && root.width > 300*root.uiScale
         anchors { left: parent.left; bottom: parent.bottom; leftMargin: 7*root.uiScale; bottomMargin: 7*root.uiScale }
         width: 226*root.uiScale; height: 29*root.uiScale; radius: 3*root.uiScale
         color: "#E9071118"; border.color: "#6A7D86"
@@ -82,5 +109,5 @@ Item {
         }
     }
 
-    TapHandler { enabled: root.interactive; onTapped: root.radarEnabled = !root.radarEnabled; onDoubleTapped: root.weatherProvider.cycleProduct() }
+    TapHandler { enabled: root.interactive; onTapped: root.radarEnabled = !root.radarEnabled; onDoubleTapped: if(typeof root.provider.cycleProduct === "function") root.provider.cycleProduct() }
 }

@@ -1,10 +1,36 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-18
+Aggiornamento: 2026-10-21, candidato R1-02/N2/N6; date hardware invariate
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `main` `a0be9a52494ea7ccb5a3890e94d03b671162383b` (PR #48)
+Baseline sorgente R1-02: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49), riconfermata con ls-remote
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## Candidato R1-02 — radar: visibilità e STALE
+
+Nel branch `fix/weather-radar-presentation-v1` corretti N2/N6: l'immagine
+radar viene caricata solo con ON e stato ammesso, disegnata solo dopo decode
+Ready. EXPIRED, CLOCK SKEW, stato ignoto, modalità SIM incoerente,
+età reale sconosciuta e immagine invalida non restano sullo sfondo mappa.
+STALE conserva immagine e annuncio, ma bordo e titolo primari sono ambra,
+non CURRENT-ciano. OFF e indisponibilità nascondono anche decorazioni SIM.
+Badge compatto/esteso conservano la causa; il tempo è indicato come CACHE,
+non come età dell'osservazione. Nessuna nuova soglia temporale in QML.
+
+Verifica software mirata: due regressioni falliscono sul componente originale
+realmente visibile; 27 esiti Qt (25 casi più init/cleanup) PASS sul candidato,
+inclusi pixel che ritornano al fondo dopo expiry, transizioni con input
+temporali controllati, recupero, OFF e immagine corrotta; 27 test Python PASS.
+Regressione registrata in CTest e CI Linux; dettagli, build ed eventuali limiti
+in `evidence/r1-02-radar-20261021/verification.json`. Golden approvate invariate.
+Non è una prova del clock/provider/cache persistente reali o dei pannelli ARM64.
+
+Verificato su hardware reale: nulla in questo incremento. Nessuna installazione,
+attivazione, reboot o merge. `WX-002`, `PRJ-004` e `VER-001` non promossi a DONE.
+N3/R1-03 (posizione valida), N10 (osservazione vs download), provider/licenze,
+georeferenziazione e acceptance sui display restano aperti. Attivazioni ancora
+bloccate dalla qualifica alimentatori. N1/PR #52 e N4/N5/PR #53 restano candidati
+separati: questo branch non li integra e non autorizza altri blocchi R1.
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
 al 2026-09-19 è preservato senza perdita in
