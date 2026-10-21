@@ -3,6 +3,9 @@ import QtQuick
 QtObject {
     property string dataSourceState:typeof hmiGoldenDataState!=="undefined"?hmiGoldenDataState:"SIM"
     property int dataAgeMs:typeof hmiGoldenDataAgeMs!=="undefined"?hmiGoldenDataAgeMs:0
+    // Independently writable in behavioral tests; golden input stays unchanged.
+    property string engineSourceState:typeof hmiGoldenDataState!=="undefined"?hmiGoldenDataState:"SIM"
+    property real engineDataAgeMs:typeof hmiGoldenDataAgeMs!=="undefined"?hmiGoldenDataAgeMs:0
     property int engineHealth:0
     property real engineRpm:5060
     property real manifoldPressure:24.3

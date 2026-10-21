@@ -663,6 +663,19 @@ if(EFIS_BUILD_TESTS)
     add_test(NAME efis_ems_link_presentation_tests
         COMMAND efis_ems_link_presentation_tests)
 
+    if(TARGET Qt6::Quick)
+        find_program(EFIS_QMLTESTRUNNER NAMES qmltestrunner
+            HINTS "${Qt6_DIR}/../../../bin" REQUIRED)
+        add_test(NAME efis_ems_engine_state_qml_tests
+            COMMAND "${EFIS_QMLTESTRUNNER}"
+                -input "${CMAKE_CURRENT_SOURCE_DIR}/tests/qml"
+                -import "${CMAKE_CURRENT_SOURCE_DIR}/qml"
+                -o "-,txt")
+        set_tests_properties(efis_ems_engine_state_qml_tests PROPERTIES
+            ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software"
+            TIMEOUT 60)
+    endif()
+
     add_executable(efis_engine_runtime_tests tests/engine_runtime_tests.cpp)
     target_link_libraries(efis_engine_runtime_tests PRIVATE efis_core)
     add_test(NAME efis_engine_runtime_tests COMMAND efis_engine_runtime_tests)

@@ -1,0 +1,19 @@
+********* Start testing of qmltestrunner *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by MSVC 2022), windows 11
+PASS   : qmltestrunner::EmsEngineStateIsolation::initTestCase()
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(flight-live-engine-lost)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(flight-live-engine-fail)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(flight-fail-engine-live)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(flight-lost-engine-sim)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(engine-stale)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(engine-degraded)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(engine-forced-sim)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(unknown-contract)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_independent_domains(empty-contract)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_invalid_age(negative)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_invalid_age(nan)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_invalid_age(infinite)
+PASS   : qmltestrunner::EmsEngineStateIsolation::test_missing_contract_fails_closed()
+PASS   : qmltestrunner::EmsEngineStateIsolation::cleanupTestCase()
+Totals: 15 passed, 0 failed, 0 skipped, 0 blacklisted, 95ms
+********* Finished testing of qmltestrunner *********

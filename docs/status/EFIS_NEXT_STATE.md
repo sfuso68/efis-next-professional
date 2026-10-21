@@ -1,10 +1,46 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-18
+Aggiornamento: 2026-10-21, fix candidato N4/N5; date hardware invariate
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `main` `a0be9a52494ea7ccb5a3890e94d03b671162383b` (PR #48)
+Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## Correzione candidata N4/N5 — isolamento stato EMS
+
+Nel branch `fix/ems-engine-state-isolation-v1`, `AdaptiveEmsView` consuma
+`engineSourceState` e `engineDataAgeMs`, mai stato/età del dominio di volo.
+Contratto esplicito nei controller PFD e EMS dedicato: sul primo lo stato
+proviene dal quadro motore e l'età dall'envelope motore; sul secondo stato
+e anzianità del collegamento EDP, preservando SIM e perdita del link.
+`engineDataState` resta compatibile: descrittivo nell'EMS, aggregato nel PFD;
+la pagina condivisa usa esclusivamente il nuovo contratto di validità.
+Stati assenti/sconosciuti diventano LOST; età assenti/non finite diventano -1.
+CAS, cinque quadranti, barre, carburante, elettrico e carrello/flap ricevono
+il medesimo stato motore. La validità per singolo canale resta aperta (N8).
+
+N5: rimossi due controlli testuali che imponevano proprio il binding errato.
+La nuova regressione istanzia la pagina QML reale, verifica domini discordanti,
+badge/strumenti, CAS e inibizione lean/checklist con dati persi; è registrata
+in CTest e nel job Linux Qt. Nessuna golden approvata è stata riscritta.
+Evidenze software e limiti: `evidence/audit-n4-n5-20261021/verification.json`.
+Build Release PFD/EMS PASS; 15 esiti Qt (13 casi più init/cleanup), mutazione
+del binding rifiutata con 10 FAIL attesi, 26 test Python HMI e 6 di controllo
+progetto PASS. Smoke nativo profili NON ESEGUITO: Windows non avvia il nuovo
+binario (BAD_COMMAND); build Debug preesistente ferma a C1902. CI Linux,
+ARM64 e rerender golden completo non eseguiti in questo incremento.
+Il router motore PFD registra ancora soltanto simulazione: N4 non aggiunge
+ricezione EDP né qualifica la catena sensori reale.
+Nessuna verifica hardware, installazione, attivazione o riavvio nuovi.
+Gli stati globali EMS-002/PRJ-004/VER-001 non vengono promossi a DONE.
+
+N1 resta nella PR #52 separata, non integrata da questo branch. Seguono
+N2/N6 (radar scaduto e colore stale), N3, N7/N8, N9/N10, N11–N13.
+Le attivazioni restano bloccate dalla qualifica alimentatori e le campagne
+complete/hardware sono rinviate, senza eliminare le verifiche mirate e CI.
+Nota repository: fetch ha indicato `1cc0a78`, mentre ls-remote ha riconfermato
+`4aea1e4`; questo branch nasce dall'oggetto locale di quest'ultimo commit,
+senza reset/rebase/force o modifiche a `main`.
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
 al 2026-09-19 è preservato senza perdita in

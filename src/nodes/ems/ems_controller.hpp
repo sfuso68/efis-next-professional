@@ -41,6 +41,9 @@ class EmsController : public QObject {
     Q_PROPERTY(int engineHealth READ engineHealth NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineFaultMode READ engineFaultMode NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineDataState READ engineDataState NOTIFY snapshotChanged)
+    // Shared EMS presentation contract. engineDataState remains a descriptive label.
+    Q_PROPERTY(QString engineSourceState READ dataSourceState NOTIFY snapshotChanged)
+    Q_PROPERTY(int engineDataAgeMs READ dataAgeMs NOTIFY snapshotChanged)
     Q_PROPERTY(QString dataSourceState READ dataSourceState NOTIFY snapshotChanged)
     Q_PROPERTY(int dataAgeMs READ dataAgeMs NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantMap engineLinkDiagnostics READ engineLinkDiagnostics NOTIFY snapshotChanged)

@@ -187,8 +187,8 @@ def validate_repository(root: Path = ROOT) -> list[str]:
             errors.append(f"HMI typography token missing: {marker}")
     if ems.count("HmiArcGaugeV4 {") != 5:
         errors.append("AdaptiveEmsView must use exactly five HmiArcGaugeV4 instances")
-    if "dataState: controller.dataSourceState" not in ems:
-        errors.append("EMS V4 gauges do not expose controller data state")
+    # State isolation is exercised against the real QML view by
+    # tests/qml/tst_ems_engine_state.qml, not by blessing a binding string.
     integrations = {
         "HmiCylinderMatrixV2 {": "cylinder matrix",
         "HmiAirframePanel {": "airframe panel",

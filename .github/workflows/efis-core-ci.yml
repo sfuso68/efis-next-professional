@@ -43,8 +43,13 @@ jobs:
           -DEFIS_REQUIRE_QT_RENDERER=ON
           -DEFIS_BUILD_TESTS=ON
 
-      - name: Build Qt renderer
-        run: cmake --build build/linux-qt --target efis-pfd-qt --parallel 4
+      - name: Build PFD and standalone EMS renderers
+        run: cmake --build build/linux-qt --target efis-pfd-qt efis-ems-qt --parallel 4
+
+      - name: Test actual EMS QML state isolation
+        run: >-
+          ctest --test-dir build/linux-qt --output-on-failure --timeout 60
+          -R '^efis_ems_engine_state_qml_tests$'
 
       - name: Build weather service tests
         run: cmake --build build/linux-qt --target efis_weather_service_tests --parallel 4
