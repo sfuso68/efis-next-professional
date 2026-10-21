@@ -7,6 +7,30 @@ NetworkManager must never affect primary flight, engine, recording or navigation
 Every weather presentation shows source, age and an explicit `NO DATA` state; stale imagery
 must not be presented as current.
 
+### R1-02 presentation correction (2026-10-21, candidate software)
+
+The radar image is drawn only when enabled, decoded (`Image.Ready`) and accepted
+by the service-state allowlist. Disabling radar, EXPIRED, CLOCK SKEW, unknown
+states, missing/invalid age for real imagery and decode errors hide the image.
+CURRENT and STALE require real-mode provenance; SIMULATED requires simulation
+provenance. Simulation lightning/legend follow image availability and OFF.
+STALE remains visible under the existing age policy, but its primary badge frame
+and product heading are caution-coloured, never the CURRENT cyan frame.
+Compact and regular badges retain the failure cause; clock/expiry failures are
+not reduced to a generic hotspot instruction. Invalid states fail closed.
+
+The badge explicitly labels the reported minutes as CACHE age: the current
+service derives radar time from acquisition/cache metadata, not an independently
+verified observation timestamp. This correction does not close audit N10.
+The current native service emits CURRENT, STALE, EXPIRED, CLOCK SKEW, NO DATA and
+SIMULATED. A cache reload is classified by that same service; no new CACHED enum
+is inferred or accepted by the renderer. Supporting another state requires a
+service contract and tests. QML introduces no new age thresholds.
+
+Runtime QML tests use controlled provider state/age and a real decoded local PNG,
+including a rendered-pixel check. They do not qualify the live provider, persistent
+cache, actual observation age, geographic alignment or Raspberry Pi display.
+
 ## Public sources
 
 - Primary precipitation product: Italian Civil Protection Radar-DPC `radar:vmi`, WMS/WMTS,
@@ -25,7 +49,8 @@ WMS bounding boxes are rejected by that service. Moving-map integration will req
 set of aligned tiles intersecting the current viewport.
 
 The production service will own downloads outside the render loop, retain the last valid frame
-atomically, enforce age thresholds (CURRENT <= 10 min, STALE 11-20 min, EXPIRED > 20 min), and
+atomically, enforce age thresholds (CURRENT <= 600 s, STALE > 600 s and <= 1200 s,
+EXPIRED > 1200 s; the badge truncates CACHE age to whole minutes), and
 publish a small immutable snapshot to every display. The edge text cache now applies the same
 thresholds to METAR/TAF, derives age from the cache record's `fetched_utc` rather than mutable
 file mtime, rejects future timestamps as `CLOCK_SKEW`, rejects malformed schema and confines

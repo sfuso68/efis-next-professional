@@ -1,0 +1,32 @@
+********* Start testing of qmltestrunner *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by MSVC 2022), windows 11
+PASS   : qmltestrunner::WeatherRadarPresentation::initTestCase()
+PASS   : qmltestrunner::WeatherRadarPresentation::test_cache_age_transitions(regular)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_cache_age_transitions(compact)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(EXPIRED)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(CLOCK SKEW)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(CLOCK_SKEW)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(NO DATA)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(ERROR)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(INVALID)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(empty)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(UNKNOWN)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(current)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_disallowed_states(CACHED)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_expired_cache_is_hidden()
+QWARN  : qmltestrunner::WeatherRadarPresentation::test_image_error_and_recovery() file:///C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/qml/WeatherRadarOverlay.qml:49:5: QML Image: Error decoding: data:image/png;base64,AAAA: Unsupported image format
+PASS   : qmltestrunner::WeatherRadarPresentation::test_image_error_and_recovery()
+PASS   : qmltestrunner::WeatherRadarPresentation::test_invalid_age(negative)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_invalid_age(nan)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_invalid_age(infinite)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_invalid_age(string)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_invalid_age(null)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_invalid_age(missing)
+PASS   : qmltestrunner::WeatherRadarPresentation::test_missing_provider()
+PASS   : qmltestrunner::WeatherRadarPresentation::test_off_and_recovery()
+PASS   : qmltestrunner::WeatherRadarPresentation::test_rendered_pixels_removed_on_expiry()
+PASS   : qmltestrunner::WeatherRadarPresentation::test_simulation_and_decorations()
+PASS   : qmltestrunner::WeatherRadarPresentation::test_stale_primary_colour_is_not_current()
+PASS   : qmltestrunner::WeatherRadarPresentation::cleanupTestCase()
+Totals: 27 passed, 0 failed, 0 skipped, 0 blacklisted, 226ms
+********* Finished testing of qmltestrunner *********

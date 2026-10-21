@@ -216,6 +216,16 @@ if(EFIS_BUILD_QT_RENDERER)
             add_test(NAME efis_weather_service_tests
                      COMMAND efis_weather_service_tests)
 
+            find_program(EFIS_WEATHER_QMLTESTRUNNER NAMES qmltestrunner
+                HINTS "${Qt6_DIR}/../../../bin" REQUIRED)
+            add_test(NAME efis_weather_radar_overlay_qml_tests
+                COMMAND "${EFIS_WEATHER_QMLTESTRUNNER}"
+                    -input "${CMAKE_CURRENT_SOURCE_DIR}/tests/qml-weather"
+                    -o "-,txt")
+            set_tests_properties(efis_weather_radar_overlay_qml_tests PROPERTIES
+                ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software"
+                TIMEOUT 60)
+
             qt_add_executable(efis_pfd_aircraft_profile_tests
                 tests/pfd_aircraft_profile_tests.cpp
                 src/renderers/qt/pfd_controller.cpp

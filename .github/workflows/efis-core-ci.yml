@@ -54,6 +54,11 @@ jobs:
           ctest --test-dir build/linux-qt --output-on-failure --timeout 60
           -R '^efis_weather_service_tests$'
 
+      - name: Test actual radar QML visibility and freshness presentation
+        run: >-
+          ctest --test-dir build/linux-qt --output-on-failure --timeout 60
+          -R '^efis_weather_radar_overlay_qml_tests$'
+
       - name: Capture PFD SkyView review candidate
         run: >-
           python3 tools/ui/capture_hmi_golden.py
