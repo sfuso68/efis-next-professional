@@ -212,8 +212,10 @@ void EmsController::loadFuelComputer() {
                        QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
     fuel_used_gallons_ = qMax(0.0, settings.value(QStringLiteral("real/used_gallons"), 0.0).toDouble());
     fuel_reserve_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/reserve_gallons"), 5.0).toDouble(), 100.0);
-    fuel_on_board_initialized_ = settings.contains(QStringLiteral("pilot/on_board_gallons"));
-    fuel_on_board_gallons_ = qBound(0.0, settings.value(QStringLiteral("pilot/on_board_gallons"), 0.0).toDouble(), 100.0);
+    bool validOnBoard = false;
+    const double savedOnBoard = settings.value(QStringLiteral("pilot/on_board_gallons")).toDouble(&validOnBoard);
+    fuel_on_board_initialized_ = validOnBoard && std::isfinite(savedOnBoard) && savedOnBoard >= 0.0 && savedOnBoard <= 100.0;
+    fuel_on_board_gallons_ = fuel_on_board_initialized_ ? savedOnBoard : 0.0;
     fuel_calibration_left_ = settings.value(QStringLiteral("calibration/left_points")).toList();
     fuel_calibration_right_ = settings.value(QStringLiteral("calibration/right_points")).toList();
 }
@@ -223,7 +225,8 @@ void EmsController::persistFuelComputer() {
                        QStringLiteral("EFIS-NEXT"), QStringLiteral("ems-fuel-computer")};
     settings.setValue(QStringLiteral("real/used_gallons"), fuel_used_gallons_);
     settings.setValue(QStringLiteral("pilot/reserve_gallons"), fuel_reserve_gallons_);
-    settings.setValue(QStringLiteral("pilot/on_board_gallons"), fuel_on_board_gallons_);
+    if (fuel_on_board_initialized_ && !fuel_on_board_simulated_)
+        settings.setValue(QStringLiteral("pilot/on_board_gallons"), fuel_on_board_gallons_);
     settings.setValue(QStringLiteral("calibration/left_points"), fuel_calibration_left_);
     settings.setValue(QStringLiteral("calibration/right_points"), fuel_calibration_right_);
     settings.sync();
@@ -239,6 +242,7 @@ bool EmsController::setFuelOnBoardGallons(double gallons) {
     if (!std::isfinite(gallons)) return false;
     fuel_on_board_gallons_ = qBound(0.0, gallons, 100.0);
     fuel_on_board_initialized_ = true;
+    fuel_on_board_simulated_ = engine_snapshot_.fuel_left_gal.is_simulated() || engine_snapshot_.fuel_right_gal.is_simulated();
     fuel_used_gallons_ = 0.0;
     simulated_fuel_used_gallons_ = 0.0;
     persistFuelComputer(); emit fuelComputerChanged(); return true;
@@ -247,6 +251,7 @@ bool EmsController::setFuelOnBoardGallons(double gallons) {
 bool EmsController::captureFuelCalibrationPoint(const QString& tank) {
     const bool left=tank.trimmed().toUpper()==QStringLiteral("LEFT");
     const bool right=tank.trimmed().toUpper()==QStringLiteral("RIGHT"); if(!left&&!right)return false;
+    if (!(left ? fuelLeftValid() : fuelRightValid()) || !fuelOnBoardValid()) return false;
     auto& curve=left?fuel_calibration_left_:fuel_calibration_right_; if(curve.size()>=5)return false;
     const double raw=left?engine_snapshot_.fuel_left_gal.value:engine_snapshot_.fuel_right_gal.value;
     if(!curve.isEmpty()&&std::abs(raw-curve.constLast().toMap().value(QStringLiteral("raw")).toDouble())<0.01)return false;
@@ -288,6 +293,13 @@ bool EmsController::requestCentralBlackBoxAction(const QString& action) {
 void EmsController::updateFuelLeakMonitor(efis::MonoTime now) {
     const double measured=fuelLeft()+fuelRight();
     auto setState=[this](const QString& state){if(fuel_leak_state_==state)return;fuel_leak_state_=state;recordFuelEvent(state);qInfo().noquote()<<"event=fuel_leak_monitor state="<<state<<"excess_gph="<<fuel_leak_excess_gph_;emit fuelComputerChanged();};
+    if (!fuelLeftValid() || !fuelRightValid() || !engineRpmValid() || !fuelFlowValid() || !std::isfinite(measured)) {
+        fuel_leak_last_update_ = {};
+        fuel_leak_alarm_since_ = {};
+        fuel_leak_excess_gph_ = 0;
+        setState(QStringLiteral("SENSOR DATA UNAVAILABLE"));
+        return;
+    }
     if(fuel_leak_last_update_==efis::MonoTime{}){fuel_leak_last_update_=now;fuel_leak_last_measured_=measured;setState(QStringLiteral("INITIALIZING"));return;}
     const double seconds=std::chrono::duration<double>(now-fuel_leak_last_update_).count(); if(seconds<1.0)return;
     const double actualDrop=fuel_leak_last_measured_-measured;
@@ -620,26 +632,26 @@ QString EmsController::gearState() const {
         ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("GEAR UNSAFE");
 }
 
-double EmsController::engineRpm() const { return engine_snapshot_.rpm.value; }
-double EmsController::manifoldPressure() const { return engine_snapshot_.manifold_pressure_inhg.value; }
-double EmsController::oilPressure() const { return engine_snapshot_.oil_pressure_psi.value; }
-double EmsController::oilTemperature() const { return engine_snapshot_.oil_temperature_c.value; }
-double EmsController::fuelPressure() const { return engine_snapshot_.fuel_pressure_psi.value; }
-double EmsController::fuelFlow() const { return engine_snapshot_.fuel_flow_gph.value; }
-double EmsController::fuelLeft() const { return calibratedFuel(engine_snapshot_.fuel_left_gal.value,fuel_calibration_left_); }
-double EmsController::fuelRight() const { return calibratedFuel(engine_snapshot_.fuel_right_gal.value,fuel_calibration_right_); }
-double EmsController::busVoltage() const { return engine_snapshot_.bus_voltage_v.value; }
-double EmsController::alternatorCurrent() const { return engine_snapshot_.alternator_current_a.value; }
+double EmsController::engineRpm() const { return efis::engine_display_value(engine_snapshot_.rpm); }
+double EmsController::manifoldPressure() const { return efis::engine_display_value(engine_snapshot_.manifold_pressure_inhg); }
+double EmsController::oilPressure() const { return efis::engine_display_value(engine_snapshot_.oil_pressure_psi); }
+double EmsController::oilTemperature() const { return efis::engine_display_value(engine_snapshot_.oil_temperature_c); }
+double EmsController::fuelPressure() const { return efis::engine_display_value(engine_snapshot_.fuel_pressure_psi); }
+double EmsController::fuelFlow() const { return efis::engine_display_value(engine_snapshot_.fuel_flow_gph); }
+double EmsController::fuelLeft() const { return fuelLeftValid() ? calibratedFuel(engine_snapshot_.fuel_left_gal.value,fuel_calibration_left_) : std::numeric_limits<double>::quiet_NaN(); }
+double EmsController::fuelRight() const { return fuelRightValid() ? calibratedFuel(engine_snapshot_.fuel_right_gal.value,fuel_calibration_right_) : std::numeric_limits<double>::quiet_NaN(); }
+double EmsController::busVoltage() const { return efis::engine_display_value(engine_snapshot_.bus_voltage_v); }
+double EmsController::alternatorCurrent() const { return efis::engine_display_value(engine_snapshot_.alternator_current_a); }
 
 QVariantList EmsController::chtValues() const {
     QVariantList values;
-    for (const auto& sample : engine_snapshot_.cht_c) values << sample.value;
+    for (const auto& sample : engine_snapshot_.cht_c) values << efis::engine_display_value(sample);
     return values;
 }
 
 QVariantList EmsController::egtValues() const {
     QVariantList values;
-    for (const auto& sample : engine_snapshot_.egt_c) values << sample.value;
+    for (const auto& sample : engine_snapshot_.egt_c) values << efis::engine_display_value(sample);
     return values;
 }
 
@@ -753,9 +765,20 @@ void EmsController::updateSnapshot() {
                           << "last_rejection=" << diagnostics.value("lastRejection").toString()
                           << "node=" << sensor_node_state_;
     }
-    if (!fuel_on_board_initialized_) {
-        fuel_on_board_gallons_ = fuelLeft() + fuelRight();
-        fuel_on_board_initialized_ = true;
+    if (fuel_on_board_simulated_ && !(engine_snapshot_.fuel_left_gal.is_simulated()
+        && engine_snapshot_.fuel_right_gal.is_simulated())) {
+        fuel_on_board_initialized_ = false;
+        fuel_on_board_simulated_ = false;
+        emit fuelComputerChanged();
+    }
+    if (efis::initialize_fuel_on_board(engine_snapshot_.fuel_left_gal, engine_snapshot_.fuel_right_gal,
+            fuelLeft(), fuelRight(), fuel_on_board_gallons_, fuel_on_board_initialized_)) {
+        fuel_on_board_simulated_ = engine_snapshot_.fuel_left_gal.is_simulated();
+        // This measurement is the new remaining-fuel baseline, not the
+        // quantity at boot minus fuel already consumed before this fix.
+        if (fuel_on_board_simulated_) simulated_fuel_used_gallons_ = 0.0;
+        else fuel_used_gallons_ = 0.0;
+        last_fuel_update_ = now;
         persistFuelComputer(); emit fuelComputerChanged();
     }
     if (last_fuel_update_ != efis::MonoTime{}) {

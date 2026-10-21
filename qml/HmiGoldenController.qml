@@ -1,6 +1,17 @@
 import QtQuick
 
 QtObject {
+    property bool engineRpmValid:true
+    property bool manifoldPressureValid:true
+    property bool oilPressureValid:true
+    property bool oilTemperatureValid:true
+    property bool fuelPressureValid:true
+    property bool fuelFlowValid:true
+    property bool fuelLeftValid:true
+    property bool fuelRightValid:true
+    property bool busVoltageValid:true
+    property bool alternatorCurrentValid:true
+    property bool fuelOnBoardValid:true
     property string dataSourceState:typeof hmiGoldenDataState!=="undefined"?hmiGoldenDataState:"SIM"
     property int dataAgeMs:typeof hmiGoldenDataAgeMs!=="undefined"?hmiGoldenDataAgeMs:0
     // Independently writable in behavioral tests; golden input stays unchanged.

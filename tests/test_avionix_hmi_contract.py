@@ -115,7 +115,8 @@ class AvionixHmiContractTests(unittest.TestCase):
         ems = (ROOT / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
         self.assertIn('readonly property bool dataUsable:', ems)
         self.assertIn('!dataUsable ? "WARNING"', ems)
-        self.assertIn('if(!dataUsable)return; resetLean()', ems)
+        # Lean gating is exercised on instantiated QML controls by
+        # tst_engine_channel_validity.qml, not frozen to one JS spelling.
         self.assertIn('if(!root.dataUsable){root.leanActive=false;root.updateCasEvents();return}', ems)
         self.assertIn('checklistEngineOk: dataUsable &&', ems)
 

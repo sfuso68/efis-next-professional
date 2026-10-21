@@ -5,6 +5,20 @@
 
 namespace efis {
 
+bool initialize_fuel_on_board(const Sample<double>& left, const Sample<double>& right,
+                              double calibrated_left, double calibrated_right,
+                              double& gallons, bool& initialized) noexcept {
+    if (initialized || !engine_channel_usable(left) || !engine_channel_usable(right)
+        || left.is_simulated() != right.is_simulated()
+        || left.value < 0.0 || right.value < 0.0
+        || !std::isfinite(calibrated_left) || !std::isfinite(calibrated_right)
+        || calibrated_left < 0.0 || calibrated_right < 0.0
+        || !std::isfinite(calibrated_left + calibrated_right)) return false;
+    gallons = calibrated_left + calibrated_right;
+    initialized = true;
+    return true;
+}
+
 EngineIntegrationInput engine_integration_input(
     const Sample<double>& rpm, const Sample<double>& fuel_flow_gph,
     double elapsed_seconds) noexcept {

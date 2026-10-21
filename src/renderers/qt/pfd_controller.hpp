@@ -80,16 +80,27 @@ class PfdController final : public QObject {
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong blackBoxRecords READ blackBoxRecords NOTIFY snapshotChanged)
     Q_PROPERTY(double engineRpm READ engineRpm NOTIFY snapshotChanged)
+    Q_PROPERTY(bool engineRpmValid READ engineRpmValid NOTIFY snapshotChanged)
     Q_PROPERTY(double manifoldPressure READ manifoldPressure NOTIFY snapshotChanged)
+    Q_PROPERTY(bool manifoldPressureValid READ manifoldPressureValid NOTIFY snapshotChanged)
     Q_PROPERTY(double oilPressure READ oilPressure NOTIFY snapshotChanged)
+    Q_PROPERTY(bool oilPressureValid READ oilPressureValid NOTIFY snapshotChanged)
     Q_PROPERTY(double oilTemperature READ oilTemperature NOTIFY snapshotChanged)
+    Q_PROPERTY(bool oilTemperatureValid READ oilTemperatureValid NOTIFY snapshotChanged)
     Q_PROPERTY(double fuelPressure READ fuelPressure NOTIFY snapshotChanged)
+    Q_PROPERTY(bool fuelPressureValid READ fuelPressureValid NOTIFY snapshotChanged)
     Q_PROPERTY(double fuelFlow READ fuelFlow NOTIFY snapshotChanged)
+    Q_PROPERTY(bool fuelFlowValid READ fuelFlowValid NOTIFY snapshotChanged)
     Q_PROPERTY(double fuelLeft READ fuelLeft NOTIFY snapshotChanged)
+    Q_PROPERTY(bool fuelLeftValid READ fuelLeftValid NOTIFY snapshotChanged)
     Q_PROPERTY(double fuelRight READ fuelRight NOTIFY snapshotChanged)
+    Q_PROPERTY(bool fuelRightValid READ fuelRightValid NOTIFY snapshotChanged)
     Q_PROPERTY(double busVoltage READ busVoltage NOTIFY snapshotChanged)
+    Q_PROPERTY(bool busVoltageValid READ busVoltageValid NOTIFY snapshotChanged)
     Q_PROPERTY(double alternatorCurrent READ alternatorCurrent NOTIFY snapshotChanged)
+    Q_PROPERTY(bool alternatorCurrentValid READ alternatorCurrentValid NOTIFY snapshotChanged)
     Q_PROPERTY(QVariantList chtValues READ chtValues NOTIFY snapshotChanged)
+    Q_PROPERTY(bool fuelOnBoardValid READ fuelOnBoardValid NOTIFY fuelComputerChanged)
     Q_PROPERTY(QVariantList egtValues READ egtValues NOTIFY snapshotChanged)
     Q_PROPERTY(int engineHealth READ engineHealth NOTIFY snapshotChanged)
     Q_PROPERTY(QString engineFaultMode READ engineFaultMode NOTIFY snapshotChanged)
@@ -271,15 +282,25 @@ public:
     [[nodiscard]] QString blackBoxState() const;
     [[nodiscard]] qulonglong blackBoxRecords() const;
     [[nodiscard]] double engineRpm() const;
+    [[nodiscard]] bool engineRpmValid() const { return efis::engine_channel_usable(engine_snapshot_.rpm); }
     [[nodiscard]] double manifoldPressure() const;
+    [[nodiscard]] bool manifoldPressureValid() const { return efis::engine_channel_usable(engine_snapshot_.manifold_pressure_inhg); }
     [[nodiscard]] double oilPressure() const;
+    [[nodiscard]] bool oilPressureValid() const { return efis::engine_channel_usable(engine_snapshot_.oil_pressure_psi); }
     [[nodiscard]] double oilTemperature() const;
+    [[nodiscard]] bool oilTemperatureValid() const { return efis::engine_channel_usable(engine_snapshot_.oil_temperature_c); }
     [[nodiscard]] double fuelPressure() const;
+    [[nodiscard]] bool fuelPressureValid() const { return efis::engine_channel_usable(engine_snapshot_.fuel_pressure_psi); }
     [[nodiscard]] double fuelFlow() const;
+    [[nodiscard]] bool fuelFlowValid() const { return efis::engine_channel_usable(engine_snapshot_.fuel_flow_gph); }
     [[nodiscard]] double fuelLeft() const;
+    [[nodiscard]] bool fuelLeftValid() const { return efis::engine_channel_usable(engine_snapshot_.fuel_left_gal); }
     [[nodiscard]] double fuelRight() const;
+    [[nodiscard]] bool fuelRightValid() const { return efis::engine_channel_usable(engine_snapshot_.fuel_right_gal); }
     [[nodiscard]] double busVoltage() const;
+    [[nodiscard]] bool busVoltageValid() const { return efis::engine_channel_usable(engine_snapshot_.bus_voltage_v); }
     [[nodiscard]] double alternatorCurrent() const;
+    [[nodiscard]] bool alternatorCurrentValid() const { return efis::engine_channel_usable(engine_snapshot_.alternator_current_a); }
     [[nodiscard]] QVariantList chtValues() const;
     [[nodiscard]] QVariantList egtValues() const;
     [[nodiscard]] int engineHealth() const;
@@ -409,8 +430,9 @@ public:
     [[nodiscard]] QString unitSystem() const { return unit_system_; }
     [[nodiscard]] double fuelUsedGallons() const { return engine_snapshot_.fuel_flow_gph.is_simulated() ? simulated_fuel_used_gallons_ : fuel_used_gallons_; }
     [[nodiscard]] double fuelReserveGallons() const { return fuel_reserve_gallons_; }
-    [[nodiscard]] double fuelOnBoardGallons() const { return fuel_on_board_gallons_; }
-    [[nodiscard]] double fuelRemainingGallons() const { return qMax(0.0, fuel_on_board_gallons_ - fuelUsedGallons()); }
+    [[nodiscard]] double fuelOnBoardGallons() const { return fuelOnBoardValid() ? fuel_on_board_gallons_ : std::numeric_limits<double>::quiet_NaN(); }
+    [[nodiscard]] bool fuelOnBoardValid() const { return fuel_on_board_initialized_; }
+    [[nodiscard]] double fuelRemainingGallons() const { return fuelOnBoardValid() ? qMax(0.0, fuel_on_board_gallons_ - fuelUsedGallons()) : std::numeric_limits<double>::quiet_NaN(); }
     [[nodiscard]] QVariantList fuelCalibrationLeft() const { return fuel_calibration_left_; }
     [[nodiscard]] QVariantList fuelCalibrationRight() const { return fuel_calibration_right_; }
     [[nodiscard]] QString fuelLeakState() const { return fuel_leak_state_; }
@@ -596,6 +618,7 @@ private:
     double fuel_reserve_gallons_{5.0};
     double fuel_on_board_gallons_{};
     bool fuel_on_board_initialized_{};
+    bool fuel_on_board_simulated_{};
     bool fuel_persistence_dirty_{};
     QVariantList fuel_calibration_left_;
     QVariantList fuel_calibration_right_;

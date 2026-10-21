@@ -1,10 +1,40 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-21, fix candidato N4/N5; date hardware invariate
+Aggiornamento: 2026-10-21, candidati N4/N5 e R1-04/N7/N8; date hardware invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-04 candidato — validità motore e baseline carburante
+
+Branch `fix/engine-channel-validity-v1`, basato sul commit PR #53
+`3004218d8ed3e6bc9edc9c3b0c4aa3aad5adc12a`, non assunto integrato. Nessuna
+inclusione implicita dei candidati meteo PR #54/#55.
+
+Implementato: dieci flag scalari di validità e masking dei dieci valori più
+ogni elemento CHT/EGT in entrambi i controller. Valori inutilizzabili o non
+finiti diventano indisponibili, con trattini e aghi/barre nascosti, non numeri
+residui attenuati. Baseline fuel solo da due serbatoi validi/calibrati e con
+provenance coerente; avvio invalido riprovato, consumo azzerato rispetto alla
+nuova misura. Quantità SIM non persistita come reale e invalidata all'uscita
+dal dominio SIM. Leak, lean, checklist, trend e autonomia controllano i dati
+di ingresso; un canale guasto non nasconde gli altri sani.
+
+Verificato solo software: test core nativo GCC14 Linux PASS e due mutazioni
+negative respinte; 29 esiti runtime Qt Quick PASS (inclusi init/cleanup e la
+regressione N4/N5), 27 test Python PASS. Build MSVC Release verificata
+separatamente nell'evidenza; nessuna esecuzione dei nuovi binari nativi Windows
+o rerender golden completo implicita. Evidenze e limiti:
+`evidence/r1-04-engine-20261021/verification.json` e
+`../design/ENGINE_CHANNEL_VALIDITY_R1_04.md`.
+
+Verificato hardware reale in questo incremento: NULLA. Nessun deployment,
+restart, attivazione, modifica sensori o rete. Restano aperti CI/review dello
+stack, test integrato dei controller/persistenza e migrazione dei dati fuel
+storici, verticale sensore-EDP-display, acceptance pannello/ARM64 e power gate.
+Stati della matrice non promossi. Prossimo blocco autonomo: R1-05, freschezza
+METAR/TAF e distinzione fra età osservazione radar ed età cache (N9/N10).
 
 ## Correzione candidata N4/N5 — isolamento stato EMS
 
@@ -17,7 +47,8 @@ e anzianità del collegamento EDP, preservando SIM e perdita del link.
 la pagina condivisa usa esclusivamente il nuovo contratto di validità.
 Stati assenti/sconosciuti diventano LOST; età assenti/non finite diventano -1.
 CAS, cinque quadranti, barre, carburante, elettrico e carrello/flap ricevono
-il medesimo stato motore. La validità per singolo canale resta aperta (N8).
+il medesimo stato motore. Il candidato R1-04 sotto aggiunge validità per canale;
+non è ancora integrato né qualificato sulla catena reale.
 
 N5: rimossi due controlli testuali che imponevano proprio il binding errato.
 La nuova regressione istanzia la pagina QML reale, verifica domini discordanti,

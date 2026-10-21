@@ -4,8 +4,25 @@
 
 #include <chrono>
 #include <cstdint>
+#include <cmath>
+#include <limits>
 
 namespace efis {
+
+// A renderer must never turn an unusable residual into a plausible reading.
+[[nodiscard]] inline bool engine_channel_usable(const Sample<double>& sample) noexcept {
+    return sample.usable() && std::isfinite(sample.value);
+}
+[[nodiscard]] inline double engine_display_value(const Sample<double>& sample) noexcept {
+    return engine_channel_usable(sample) ? sample.value : std::numeric_limits<double>::quiet_NaN();
+}
+
+// Initial quantity is a measurement, not an implicit zero or a raw fallback.
+// Calibrated quantities are supplied by the existing display calibration layer.
+[[nodiscard]] bool initialize_fuel_on_board(
+    const Sample<double>& left, const Sample<double>& right,
+    double calibrated_left, double calibrated_right,
+    double& gallons, bool& initialized) noexcept;
 
 struct EngineIntegrationInput final {
     double accountable_rpm{};

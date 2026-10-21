@@ -18,7 +18,8 @@ Item {
     property string dataState: "LIVE"
     property int dataAgeMs: -1
     property bool limitsVerified: true
-    readonly property bool usable: dataState !== "LOST" && dataState !== "FAIL"
+    property bool valueValid: true
+    readonly property bool usable: ["LIVE", "SIM", "SIM FORCED", "DEGRADED"].indexOf(dataState) >= 0 && valueValid && isFinite(value)
     readonly property bool degraded: dataState === "STALE" || dataState === "DEGRADED"
 
     HmiTokens { id: tokens }
@@ -26,6 +27,7 @@ Item {
         anchors.fill: parent
         label: gauge.label
         value: gauge.value
+        valueValid: gauge.usable
         unit: gauge.unit
         minimum: gauge.minimum
         maximum: gauge.maximum

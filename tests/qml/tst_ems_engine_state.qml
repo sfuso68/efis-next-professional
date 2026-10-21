@@ -61,7 +61,7 @@ TestCase {
                 compare(consumers[i].ageMs, 2400)
             if (consumers[i].usable !== undefined && consumers[i].label !== undefined) {
                 ++gauges
-                compare(consumers[i].usable, row.usable)
+                compare(consumers[i].usable, row.usable && row.expected!=="STALE")
             }
         }
         compare(gauges, 5)
