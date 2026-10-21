@@ -27,6 +27,7 @@
 #include <cmath>
 #include <algorithm>
 #include <vector>
+#include <limits>
 
 using namespace std::chrono_literals;
 
@@ -1277,6 +1278,18 @@ QString PfdController::systemProfile() const {
 // Serve perche' il banco motore ha diciotto canali su sorgenti diverse: dire
 // "SIM" a prescindere, come faceva l'etichetta scritta a mano, nasconde sia il
 // caso in cui i canali sono veri sia quello in cui non c'e' alcun dato.
+int PfdController::engineDataAgeMs() const {
+    // Engine snapshot age, never the flight/DDP age. This is not a per-channel
+    // freshness claim; channel validity remains the responsibility of the model.
+    const auto now = efis::MonoClock::now();
+    if (engine_snapshot_.timestamp == efis::MonoTime{} ||
+        engine_snapshot_.timestamp > now) return -1;
+    const auto age = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now - engine_snapshot_.timestamp).count();
+    return static_cast<int>(std::min<std::int64_t>(
+        age, std::numeric_limits<int>::max()));
+}
+
 QString PfdController::engineDataState() const {
     if (!engine_snapshot_.rpm.usable() &&
         !engine_snapshot_.oil_pressure_psi.usable() &&

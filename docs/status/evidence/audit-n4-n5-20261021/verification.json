@@ -1,0 +1,180 @@
+{
+  "schema": "efis-next.audit-correction-evidence.v1",
+  "date_utc": "2026-10-21",
+  "findings": [
+    "N4",
+    "N5"
+  ],
+  "requirements": [
+    "EMS-002",
+    "PRJ-004",
+    "VER-001"
+  ],
+  "status": "VERIFIED_SW_CANDIDATE",
+  "source_base": "4aea1e4edf8678c180e04171813d842ca6ff58a0",
+  "branch": "fix/ems-engine-state-isolation-v1",
+  "implementation": [
+    "Explicit engineSourceState and engineDataAgeMs properties on both production controllers.",
+    "AdaptiveEmsView does not consume flight dataSourceState/dataAgeMs for engine presentation.",
+    "Unknown/missing engine state fails closed to LOST; invalid/missing engine age becomes -1.",
+    "Five gauges, CAS, cylinder matrix, fuel, electrical and airframe use engine presentation state.",
+    "Two validators no longer require the incorrect flight binding; actual QML regression registered in CTest and Linux Qt CI.",
+    "Golden controller exposes independent engine properties; approved golden images/manifests unchanged."
+  ],
+  "software_checks": {
+    "qml_runtime_windows": {
+      "status": "PASS",
+      "qt": "6.11.1",
+      "functional_cases": 13,
+      "qt_report_passes_including_init_cleanup": 15,
+      "exit_code": 0,
+      "log": "qml-windows.log",
+      "command": "qmltestrunner -input tests/qml -o output/ems-engine-state-qml.txt,txt",
+      "environment": {
+        "QT_QPA_PLATFORM": "offscreen",
+        "QT_QUICK_BACKEND": "software"
+      }
+    },
+    "binding_mutation": {
+      "status": "PASS_EXPECTED_REJECTION",
+      "mutation": "In an isolated output/ copy, only RPM dataState was changed back to controller.dataSourceState.",
+      "baseline_passes": 15,
+      "mutant_failures": 10,
+      "mutant_exit_code": 10,
+      "log": "mutation-windows.log",
+      "production_source_mutated": false
+    },
+    "ctest_qml": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "ctest --test-dir build-ems-state-review --output-on-failure -R ^efis_ems_engine_state_qml_tests$"
+    },
+    "python_hmi": {
+      "status": "PASS",
+      "tests": 26,
+      "modules": [
+        "tests.test_avionix_hmi_contract",
+        "tests.test_ems_state_presentation",
+        "tests.test_ems_responsive_state_matrix"
+      ]
+    },
+    "python_project_control": {
+      "status": "PASS",
+      "tests": 6,
+      "module": "tests.test_project_status_control"
+    },
+    "python_syntax": {
+      "status": "PASS",
+      "files": [
+        "tools/ui/validate_hmi_contract.py",
+        "tools/ui/validate_ems_state_presentation.py"
+      ]
+    },
+    "workflow_yaml": {
+      "status": "PASS",
+      "method": "PyYAML safe_load via stdin on MFD; no files or services changed. Syntax only, not a GitHub Actions execution."
+    },
+    "build_release": {
+      "status": "PASS",
+      "exit_code": 0,
+      "compiler": "MSVC 19.43.34810.0",
+      "qt": "6.11.1",
+      "targets": [
+        "efis-pfd-qt",
+        "efis-ems-qt",
+        "efis_pfd_aircraft_profile_tests"
+      ],
+      "build_type": "Release",
+      "try_compile_configuration": "Release",
+      "notes": [
+        "Fresh isolated build directory; no installation or runtime replacement.",
+        "Initial existing Debug build failed with C1902; initial new build compiler probe also used Debug and failed. Release probe and Release build succeeded without changing toolchain installation or host security.",
+        "Existing getenv deprecation and object-path-length configuration warnings observed; no claim of warning-free build.",
+        "Python discovery selected WindowsApps alias; full golden CTest gate not registered in this fresh directory. Full regression/golden rerender NOT_RUN locally; CI remains required."
+      ]
+    },
+    "native_profile_smoke": {
+      "status": "NOT_RUN",
+      "ctest_exit_code": 8,
+      "reason": "Process not started / BAD_COMMAND on Windows. No security-policy changes or executable replacement workaround."
+    },
+    "status_generator": {
+      "status": "PASS",
+      "command": "python tools/project_status/generate_status.py --check"
+    },
+    "dashboard_generator": {
+      "status": "PASS",
+      "command": "python -m tools.project_status.generate_dashboard --check"
+    },
+    "github_ci": {
+      "status": "NOT_RUN_AT_EVIDENCE_CREATION",
+      "required_before_merge": true
+    }
+  },
+  "built_artifacts": [
+    {
+      "path": "build-ems-state-review/efis-pfd-qt.exe",
+      "sha256": "5d378f09f03e1c326f65375dde3c2957ae7177c9acd542fb3c76da29a6f7bc05"
+    },
+    {
+      "path": "build-ems-state-review/efis-ems-qt.exe",
+      "sha256": "96d6f7e12628fc01debe0bc699a9b46da014910ef993e5ec1c0e82073ecd076b"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "qml/AdaptiveEmsView.qml",
+      "sha256_lf_text": "b354d9f18ceabf792f37298d5ffedb15d30f958626164d4e5c0f3223488b6a73"
+    },
+    {
+      "path": "qml/HmiGoldenController.qml",
+      "sha256_lf_text": "cd111e7e4b643a0b772f0dbad079194405f381f38cb0d748bb1696bbf55852e5"
+    },
+    {
+      "path": "tests/qml/tst_ems_engine_state.qml",
+      "sha256_lf_text": "862913b666ebeac141716188d3f32e288134f5523b4fa4b013a9bf31b7433491"
+    },
+    {
+      "path": "src/nodes/ems/ems_controller.hpp",
+      "sha256_lf_text": "0d809f3bc5c241f6a9989231880bb338e08865f856c3fde4b12ba32894205a9f"
+    },
+    {
+      "path": "src/renderers/qt/pfd_controller.hpp",
+      "sha256_lf_text": "0b58c04780e707a6adb0e066c6ff645162bda34617b0c259f9c77077e263e54d"
+    },
+    {
+      "path": "src/renderers/qt/pfd_controller.cpp",
+      "sha256_lf_text": "ba1752f43ebf29285a032876675837cd5267f11471f3625f84409176f49f20ed"
+    },
+    {
+      "path": "tools/ui/validate_hmi_contract.py",
+      "sha256_lf_text": "4bf1fc809e1afb8c86d0ce20de16026fe00fd89273ae1b17d89df18a305a9f05"
+    },
+    {
+      "path": "tools/ui/validate_ems_state_presentation.py",
+      "sha256_lf_text": "2e4bbeee41459266894ba3de0fc43df5508c6b7e8ab3e2b5c8043c1533d18ebd"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "sha256_lf_text": "e3e4026dfb2b252d97356de7b744bdb20ea07b0af68a646063da71131429afcd"
+    },
+    {
+      "path": ".github/workflows/efis-core-ci.yml",
+      "sha256_lf_text": "506caa73135e586658cc08695f4b4c28695fcbcef7be450d4020ecc3d1cb327d"
+    }
+  ],
+  "hardware_verification": "NOT_RUN",
+  "deployed": false,
+  "activated": false,
+  "rebooted": false,
+  "flight_approval": false,
+  "limitations": [
+    "PFD engine source router currently registers simulation only. This fix does not add an EDP receiver to the PFD.",
+    "PFD age is engine snapshot envelope age; standalone EMS age is EDP link age. Neither is per-channel sample freshness.",
+    "Per-channel validity/partial channel loss (N8) remains open; no claim that aggregate LIVE validates every channel.",
+    "No RPi4/RPi5 visual/touch acceptance or real EDP fault injection.",
+    "No full native regression, ARM64 compilation, Linux Qt 6.8 runtime or golden rerender run in this increment.",
+    "Activations remain blocked pending power qualification.",
+    "N1 PR52 remains separate; no merge, rebase, reset, force push or hardware changes."
+  ]
+}

@@ -74,6 +74,8 @@ class PfdController final : public QObject {
     Q_PROPERTY(QString nodeRole READ nodeRole CONSTANT)
     Q_PROPERTY(QString systemProfile READ systemProfile CONSTANT)
     Q_PROPERTY(QString engineDataState READ engineDataState NOTIFY snapshotChanged)
+    Q_PROPERTY(QString engineSourceState READ engineDataState NOTIFY snapshotChanged)
+    Q_PROPERTY(int engineDataAgeMs READ engineDataAgeMs NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong sequence READ sequence NOTIFY snapshotChanged)
     Q_PROPERTY(QString blackBoxState READ blackBoxState NOTIFY snapshotChanged)
     Q_PROPERTY(qulonglong blackBoxRecords READ blackBoxRecords NOTIFY snapshotChanged)
@@ -263,6 +265,7 @@ public:
     [[nodiscard]] QString nodeRole() const;
     [[nodiscard]] QString systemProfile() const;
     [[nodiscard]] QString engineDataState() const;
+    [[nodiscard]] int engineDataAgeMs() const;
     Q_INVOKABLE void cycleSimulationRole();
     [[nodiscard]] qulonglong sequence() const;
     [[nodiscard]] QString blackBoxState() const;

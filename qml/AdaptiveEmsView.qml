@@ -8,8 +8,16 @@ Item {
     property real uiScale: Math.min(width/1024, height/600)
     readonly property bool compactLayout: width <= 820 || height <= 500
     readonly property real textScale: compactLayout ? Math.max(1.0, uiScale) : uiScale
-    readonly property int dataAgeMs: controller.dataAgeMs === undefined ? -1 : Number(controller.dataAgeMs)
-    readonly property string normalizedDataState: String(controller.dataSourceState||"LOST").toUpperCase()
+    readonly property int dataAgeMs: {
+        var age = controller.engineDataAgeMs
+        return typeof age === "number" && isFinite(age) && age >= 0
+                ? Math.min(2147483647, Math.floor(age)) : -1
+    }
+    readonly property string normalizedDataState: {
+        var state = String(controller.engineSourceState || "").toUpperCase()
+        return ["LIVE", "SIM", "SIM FORCED", "STALE", "DEGRADED", "LOST", "FAIL"].indexOf(state) >= 0
+                ? state : "LOST"
+    }
     readonly property bool dataUsable: normalizedDataState!=="LOST"&&normalizedDataState!=="FAIL"
     readonly property bool dataDegraded: normalizedDataState==="STALE"||normalizedDataState==="DEGRADED"
     HmiTokens { id: hmiTokens }
@@ -71,8 +79,8 @@ Item {
     readonly property string fuelLeakState: String(controller.fuelLeakState||"INITIALIZING")
     readonly property bool fuelLeakAlarm: fuelLeakState==="POSSIBLE LEAK"||fuelLeakState==="FUEL LEAK WARNING"
     // centralBlackBoxState describes the replicated maintenance/log cache.  The
-    // live engine transport is dataSourceState and must never be inferred from
-    // the cache, otherwise a healthy EDP link is announced as lost.
+    // live engine transport is engineSourceState and must never be inferred
+    // from the cache or the PFD flight/DDP state.
     readonly property bool centralLogSyncOffline: String(controller.centralBlackBoxState||"OFFLINE")!=="ONLINE"
     function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
@@ -185,7 +193,7 @@ Item {
         Text { x: 129*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EMS"; color: root.cyan; font.pixelSize: hmiTokens.legibleText(15,root.textScale,12) }
         Text { anchors.centerIn: parent; text: "ENGINE"; color: "white"; font.pixelSize: hmiTokens.legibleText(20,root.textScale,16); font.bold: true; font.letterSpacing: 1.2 }
         HmiDataStateBadge { anchors { verticalCenter:parent.verticalCenter; right:clock.left; rightMargin:24*root.uiScale }
-            dataState:controller.dataSourceState; ageMs:root.dataAgeMs; uiScale:root.textScale; showLive:true }
+            dataState:root.normalizedDataState; ageMs:root.dataAgeMs; uiScale:root.textScale; showLive:true }
         Text { id: clock; anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 18*root.uiScale }
         text: (root.clockOverride.length?root.clockOverride:Qt.formatTime(new Date(),"hh:mm:ss"))+(root.compactLayout?"   OAT 24°C":"   LOCAL     24 °C  OAT     1013 HPA  QNH"); color: "#E8ECEE"; font.pixelSize: hmiTokens.legibleText(11,root.textScale,9); font.bold: true }
         Timer { interval: 1000; running: root.clockOverride.length===0; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+(root.compactLayout?"   OAT 24°C":"   LOCAL     24 °C  OAT     1013 HPA  QNH") }
@@ -213,14 +221,14 @@ Item {
         width: body.width*.63 }
     Row { id: primary; anchors { left: gauges.left; right: gauges.right; top: gauges.top }
         height: gauges.height*.59; spacing: 7*root.uiScale
-        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: root.rpmMaximum; greenStart: root.rpmMaximum*.24; greenEnd: root.rpmMaximum*.95; majorStep: root.rpmMaximum>4000?1000:500; minorStep: root.rpmMaximum>4000?200:100; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
-        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: root.rpmMaximum; greenStart: root.rpmMaximum*.24; greenEnd: root.rpmMaximum*.95; majorStep: root.rpmMaximum>4000?1000:500; minorStep: root.rpmMaximum>4000?200:100; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
     }
     Row { anchors { left: gauges.left; right: gauges.right; top: primary.bottom; bottom: gauges.bottom; topMargin: -3*root.uiScale }
         spacing: 5*root.uiScale
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.pressure(root.oilPressureMaximum); greenStart:root.pressure(root.oilPressureMinimum); greenEnd:root.pressure(root.oilPressureMaximum*.85); majorStep:root.pressure(root.oilPressureMaximum)/5; minorStep:root.pressure(root.oilPressureMaximum)/25; decimals:root.metricUnits?1:0; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.temp(20); maximum:root.temp(root.oilTemperatureMaximum*1.1); greenStart:root.temp(50); greenEnd:root.temp(root.oilTemperatureMaximum*.92); majorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/5; minorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/25; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1; dataState: controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.pressure(root.oilPressureMaximum); greenStart:root.pressure(root.oilPressureMinimum); greenEnd:root.pressure(root.oilPressureMaximum*.85); majorStep:root.pressure(root.oilPressureMaximum)/5; minorStep:root.pressure(root.oilPressureMaximum)/25; decimals:root.metricUnits?1:0; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.temp(20); maximum:root.temp(root.oilTemperatureMaximum*1.1); greenStart:root.temp(50); greenEnd:root.temp(root.oilTemperatureMaximum*.92); majorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/5; minorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/25; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
     }
 
     Item { id: rightColumn; anchors { left: gauges.right; right: body.right; top: body.top; bottom: body.bottom; leftMargin: 8*root.uiScale } }
@@ -243,21 +251,21 @@ Item {
             uiScale:root.uiScale; compact:root.compactLayout; gearInstalled:controller.landingGearInstalled; noseLocked:controller.gearNoseLocked
             leftLocked:controller.gearLeftLocked; rightLocked:controller.gearRightLocked; gearState:controller.gearState
             flapsInstalled:controller.flapsInstalled; flapDetents:controller.flapDetents; flapAngle:controller.flapAngle
-            flapCommandedAngle:controller.flapCommandedAngle; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs
+            flapCommandedAngle:controller.flapCommandedAngle; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs
         }
     }
 
-    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:root.compactLayout; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs; limitsVerified:root.engineLimitsVerified }
+    HmiCylinderMatrixV2 { anchors { left:rightColumn.left; right:rightColumn.right; top:cas.bottom; bottom:rightColumn.bottom; topMargin:7*root.uiScale } uiScale:root.uiScale; compact:root.compactLayout; chtValues:controller.chtValues; egtValues:controller.egtValues; temperatureUnit:root.tempUnit; chtMaximumC:root.chtMaximum; egtMaximumC:root.egtMaximum; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified:root.engineLimitsVerified }
 
     Rectangle { id: summary; anchors { left: nav.right; right: parent.right; bottom: actions.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
         height: root.compactLayout ? 62 : 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale
         Row { anchors { fill:parent; margins:8*root.uiScale } spacing:10*root.uiScale
-            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs }
+            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs }
             Item { width:parent.width*.18; height:parent.height
                 Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"ENDURANCE"; color:root.cyan; font.pixelSize:hmiTokens.legibleText(8,root.textScale,8); font.bold:true }
                 Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.dataUsable?root.fuelEnduranceHours.toFixed(1)+" HR":"—"; color:!root.dataUsable?hmiTokens.invalid:root.dataDegraded?root.amber:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:hmiTokens.legibleText(17,root.textScale,15); font.bold:true }
             }
-            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:controller.dataSourceState; dataAgeMs:root.dataAgeMs }
+            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs }
         } }
     Row { id: actions; anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: root.compactLayout?4:10*root.uiScale }
         height: Math.max(hmiTokens.minimumTouch,48*root.uiScale); spacing: root.compactLayout?6:12*root.uiScale

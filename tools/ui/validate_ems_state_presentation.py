@@ -114,8 +114,9 @@ def validate_repository(root: Path, data: dict | None = None) -> list[str]:
         "qml/HmiElectricalSynoptic.qml": ["root.dataDegraded?root.caution"],
         "qml/HmiAirframePanel.qml": ["root.dataDegraded?root.caution"],
         "qml/HmiCylinderMatrixV2.qml": ["root.dataDegraded?root.caution", '"CHT UNAVAILABLE"', '"EGT UNAVAILABLE"'],
-        "qml/AdaptiveEmsView.qml": ['controller.dataSourceState||"LOST"', 'controller.dataSourceState; ageMs:root.dataAgeMs',
-                                    "text:root.dataUsable?root.fuelEnduranceHours"],
+        # Domain isolation is tested with an instantiated AdaptiveEmsView by
+        # tst_ems_engine_state.qml; do not freeze controller binding spellings.
+        "qml/AdaptiveEmsView.qml": ["text:root.dataUsable?root.fuelEnduranceHours"],
     }
     missing = []
     for relative, required in snippets.items():
