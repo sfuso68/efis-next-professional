@@ -1,5 +1,6 @@
 #include "weather_service.hpp"
 #include "weather_position_binding.hpp"
+#include "weather_freshness_cases.hpp"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -140,6 +141,26 @@ int main(int argc, char** argv) {
     QDir(weatherCacheRoot).removeRecursively();
 
     try {
+        weatherFreshnessCases();
+        std::cout << "weather_observation_freshness: PASS\n";
+        {
+            WeatherService reports(QUrl(QStringLiteral("http://127.0.0.1:1/unused")));
+            const auto now=QDateTime::currentDateTimeUtc();
+            const QJsonObject item{{QStringLiteral("icaoId"),QStringLiteral("LIPH")},
+                {QStringLiteral("rawOb"),QStringLiteral("LIPH TEST METAR")},
+                {QStringLiteral("obsTime"),now.toSecsSinceEpoch()}};
+            require(reports.mergeReportForTest(false,QJsonDocument(QJsonArray{item}).toJson(),now),
+                    "WeatherService must use the report store");
+            require(reports.airportWeather().front().toMap().value("metarState")=="CURRENT",
+                    "WeatherService getter must expose classified report state");
+            reports.setSimulation(true);
+            require(reports.reportsAtForTest(now).isEmpty(),"mode switch must discard real report store");
+            require(reports.airportWeather().front().toMap().value("metarState")=="SIMULATED",
+                    "training reports must be explicitly simulated");
+            reports.setSimulation(false);
+            require(reports.airportWeather().isEmpty(),"training reports must not leak into real mode");
+            std::cout << "weather_service_report_composition: PASS\n";
+        }
         {
             PositionController controller;
             PositionSink sink;
@@ -218,16 +239,22 @@ int main(int argc, char** argv) {
                 + WeatherService::radarCacheFileName(QStringLiteral("SRI"), 6, 34, 22);
             require(waitUntil([&] { return QFileInfo::exists(vmiCache) && QFileInfo::exists(sriCache); }, 3000),
                     "controlled responses were not committed to their isolated cache entries");
-            require(waitUntil([&] { return weather.radarState() == QStringLiteral("CURRENT"); }, 1000),
-                    "current SRI response was not published");
-            require(weather.radarSource().contains(QStringLiteral("radar-sri-z6-")),
-                    "current SRI response did not own the visible frame");
-            require(!weather.radarSource().contains(QStringLiteral("radar-vmi-z6-")),
-                    "superseded VMI response replaced the visible SRI frame");
+            require(waitUntil([&] { return weather.radarState() == QStringLiteral("UNKNOWN TIME"); }, 1000),
+                    "current SRI receipt must expose unknown observation time");
+            require(weather.radarMessage().contains(QStringLiteral("SRI")) && weather.radarSource().isEmpty(),
+                    "current product receipt must be identified without exposing unqualified pixels");
+            require(weather.radarAgeMinutes() == -1 && weather.radarCacheAgeMinutes() >= 0,
+                    "download time must not become radar observation age");
             require(QFileInfo::exists(vmiCache),
                     "superseded VMI response was not isolated in its own cache entry");
             require(QFileInfo::exists(sriCache),
                     "current SRI response was not cached");
+            WeatherService cached(server.endpoint());
+            cached.updatePosition(45.648,12.194,true,false);
+            require(cached.radarAgeMinutes()==-1 && cached.radarState()==QStringLiteral("UNKNOWN TIME")
+                        && cached.radarSource().isEmpty(),
+                    "cached file modification time must not become radar observation time");
+            std::cout << "radar_download_and_cache_not_observations: PASS\n";
         }
         {
             QDir(weatherCacheRoot).removeRecursively();
@@ -273,8 +300,8 @@ int main(int argc, char** argv) {
             require(weather.radarSource().isEmpty() && QDir(weatherCacheRoot).entryList({"radar-*.png"}, QDir::Files).isEmpty(),
                     "old epoch reply after same-tile recovery must not publish or poison cache");
             server.respondTo(2, 'C');
-            require(waitUntil([&] { return !weather.radarSource().isEmpty(); }, 1000), "new epoch must publish");
-            require(weather.radarState() == QStringLiteral("CURRENT") && weather.radarArea().startsWith("GPS "),
+            require(waitUntil([&] { return weather.radarCacheAgeMinutes() >= 0; }, 1000), "new epoch must register receipt without claiming observational freshness");
+            require(weather.radarState() == QStringLiteral("UNKNOWN TIME") && weather.radarArea().startsWith("GPS "),
                     "recovered real frame must carry real position area");
             std::cout << "same_tile_recovery_epoch: PASS\n";
             weather.updatePosition(45.648, 12.194, false, false);

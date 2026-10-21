@@ -1,10 +1,36 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-21 (candidato R1-03, non distribuito)
+Aggiornamento: 2026-10-21 (candidati R1-03/R1-05, non distribuiti)
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline integrata esaminata: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-05 — blocco autonomo di dieci passi, candidato
+
+Registro completo: `../project/R1_05_TEN_STEP_WEATHER_2026-10-21.md`.
+Su base PR #55, METAR/TAF separati per stazione/prodotto, timestamp osservazione
+e validità TAF indipendenti dal download, aging senza ringiovanimento dopo
+fallimenti, limiti parser e card QML con tipo/stato/età. Una stazione diversa
+dall'aeroporto scelto non viene mostrata come meteo locale. Policy temporale
+DEVELOPMENT, non validità operativa certificata.
+
+Radar: età osservazione distinta da cache. Legacy WMS senza timestamp
+verificato diventa UNKNOWN TIME, età osservazione -1 e pixel reali non esposti;
+SIM resta esplicita. Ripristino live rinviato ad adattatore prodotto+timestamp
+qualificato R1-05b: questo blocco NON chiude disponibilità radar reale.
+
+Verifiche solo software: suite nativa Qt Linux isolata PASS, due mutazioni
+download→osservazione respinte, 14 esiti Qt del nuovo riquadro e CTest PASS,
+49 test Python PASS; build MSVC PFD/EMS PASS. Dettagli e limitazioni in
+`evidence/r1-05-weather-20261021/verification.json`. Nessuna nuova qualifica
+hardware/ARM64, provider live, georeferenziazione o golden completa locale.
+
+CI: #55 Core/Project Control PASS. Sullo stack separato #56 corretto marker
+obsoleto (commit 306d145, Project Control PASS); Core/sanitizer/Qt funzionali
+PASS, golden Linux FAIL per drift STALE/LOST/FAIL: baseline NON sostituita e
+gate aperto per revisione immagini. Nuovo candidato meteo CI da verificare.
+WX-001/WX-002/VER-001 non promossi. Nessun merge, deploy o cambio servizi.
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
 al 2026-09-19 è preservato senza perdita in

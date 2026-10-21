@@ -1,0 +1,18 @@
+********* Start testing of qmltestrunner *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by MSVC 2022), windows 11
+PASS   : qmltestrunner::WeatherReportFreshness::initTestCase()
+PASS   : qmltestrunner::WeatherReportFreshness::test_expired_record_keeps_cause_not_residual_text()
+PASS   : qmltestrunner::WeatherReportFreshness::test_independent_taf_and_metar()
+PASS   : qmltestrunner::WeatherReportFreshness::test_missing_contract_is_unavailable()
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(current)
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(stale)
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(expired)
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(unknown-time)
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(future)
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(not-started)
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(unknown-state)
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(training)
+PASS   : qmltestrunner::WeatherReportFreshness::test_states(sim-mismatch)
+PASS   : qmltestrunner::WeatherReportFreshness::cleanupTestCase()
+Totals: 14 passed, 0 failed, 0 skipped, 0 blacklisted, 6ms
+********* Finished testing of qmltestrunner *********

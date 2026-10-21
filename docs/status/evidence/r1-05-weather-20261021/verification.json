@@ -1,0 +1,158 @@
+{
+  "schema": "efis-next.scoped-verification.v1",
+  "date": "2026-10-21",
+  "block": "R1-05",
+  "requested_steps": 10,
+  "branch": "fix/weather-observation-freshness-v1",
+  "base": "14b93268218ee60f21067ecdd70ad746abfb62fb",
+  "dependency_pr": 55,
+  "requirements": [
+    "WX-001",
+    "WX-002",
+    "VER-001"
+  ],
+  "status": "VERIFIED-SW-CANDIDATE",
+  "flight_approval": false,
+  "steps": [
+    {
+      "id": 1,
+      "scope": "Inspect CI",
+      "result": "COMPLETE",
+      "evidence": "PR55 Core and Project Control success; PR56 initial Project Control failure traced to obsolete marker"
+    },
+    {
+      "id": 2,
+      "scope": "Repair prior PR56 gate",
+      "result": "SOFTWARE-COMPLETE-GOLDEN-OPEN",
+      "commit": "306d145491a71406516832e23377f1f4f31ff447",
+      "project_control_run": 39671281723,
+      "project_control": "PASS",
+      "core_run": 39671281524,
+      "core": "FAIL",
+      "detail": "core/sanitizers/Qt functional/build PASS; golden nine STALE/LOST/FAIL frames drift; not rebaselined or waived"
+    },
+    {
+      "id": 3,
+      "scope": "Verify provider timestamp contracts",
+      "result": "DOCUMENTED-NOT-QUALIFIED",
+      "sources": [
+        "https://aviationweather.gov/data/schema/openapi.yaml",
+        "https://aviationweather.gov/data/api/",
+        "https://dpc-radar.readthedocs.io/it/latest/api.html",
+        "https://dpc-radar.readthedocs.io/it/latest/"
+      ]
+    },
+    {
+      "id": 4,
+      "scope": "METAR observation age",
+      "result": "PASS",
+      "policy": "DEVELOPMENT 3600/7200 seconds, future tolerance 5 seconds, millisecond boundary checks"
+    },
+    {
+      "id": 5,
+      "scope": "TAF issue and valid window",
+      "result": "PASS",
+      "policy": "DEVELOPMENT 21600/43200 seconds, window [from,to), unknown/future/end rejected for current display"
+    },
+    {
+      "id": 6,
+      "scope": "Independent bounded merge",
+      "result": "PASS",
+      "detail": "separate station/product records; malformed/old payload does not erase newer independent report; two pre-existing supported stations"
+    },
+    {
+      "id": 7,
+      "scope": "Aging after failures and mode separation",
+      "result": "PASS",
+      "detail": "deterministic clock fixtures; failed fetch retains observation age, WeatherService composition tests real/SIM store reset"
+    },
+    {
+      "id": 8,
+      "scope": "Qt report card and selected station",
+      "result": "PASS",
+      "qt_outcomes": 14,
+      "log": "qml.txt",
+      "qualification": "card runtime tested; full NAV rendering only compiled, physical panel not tested"
+    },
+    {
+      "id": 9,
+      "scope": "Radar download time is not observation time",
+      "result": "PASS-FAIL-CLOSED",
+      "detail": "legacy WMS/cache has no qualified observation identity: radar age -1, UNKNOWN TIME, pixels withheld. Cache age independent. Real provider adapter/availability OPEN R1-05b"
+    },
+    {
+      "id": 10,
+      "scope": "Regression/CI registration/documentation",
+      "result": "PASS-SCOPED-CI-PENDING",
+      "python_tests": 49,
+      "native_qt_suite": "PASS",
+      "negative_mutations": 2,
+      "ctest_qml": "PASS",
+      "yaml_syntax": "PASS",
+      "build": "MSVC Release PFD/EMS/profile target PASS"
+    }
+  ],
+  "logs": {
+    "native": "native-qt.txt",
+    "qml": "qml.txt",
+    "python": "python.txt",
+    "ctest": "ctest-qml.txt"
+  },
+  "isolation": "native Linux tests in existing Docker image on serverha, --network none, read-only source, ephemeral /tmp and executable /build; only test loopback; no production caches touched",
+  "initial_notes": [
+    "Legacy Make/noexec issues already resolved in earlier block; Ninja and /build:exec used here.",
+    "Initial new parser Qt deprecated time-spec overload replaced with QTimeZone::utc and final native run compiled without that warning.",
+    "Intentional malformed PNG and slow simulation-worker fixtures produce diagnostics.",
+    "Existing Windows long object path warning and unregistered full golden rerender gate are retained."
+  ],
+  "open": [
+    "R1-05b qualified DPC2026 product timestamp+image/manifest adapter; real radar intentionally unavailable in candidate",
+    "live provider payloads, coverage, color scale and georeferencing",
+    "ARM64 and actual NAV/display/canary/power acceptance",
+    "full async text reply integration transport tests beyond store/composition and generation guard compilation",
+    "review of PR56 changed golden images; no baseline approval inferred",
+    "full CI of new candidate; no merge or deployment"
+  ],
+  "artifacts": [
+    {
+      "path": "src/renderers/qt/weather_service.cpp",
+      "sha256_lf_text": "fa1a43d2763cd5d40292c3c946d73a8038629947f97accbf422d750b80447e33"
+    },
+    {
+      "path": "src/renderers/qt/weather_service.hpp",
+      "sha256_lf_text": "898fa9d8ee8a7bf0830d94ae992931358c280d7fa35a643ac1e2e9571a529b5f"
+    },
+    {
+      "path": "src/renderers/qt/weather_reports.hpp",
+      "sha256_lf_text": "0fb262520db99e79beabca45aec851248d50d332df507164c94a9e054244a6a7"
+    },
+    {
+      "path": "qml/WeatherReportCard.qml",
+      "sha256_lf_text": "1f183332927517e812637341c5bb4262f5655ae3815370497851d7333d9349cf"
+    },
+    {
+      "path": "qml/AdaptiveNavigationView.qml",
+      "sha256_lf_text": "9a4c72f7c2aa0b6d332ca1c5e81d0e20c4072c1a365429caac5d11a6bce1b0c8"
+    },
+    {
+      "path": "tests/weather_service_tests.cpp",
+      "sha256_lf_text": "4f1652732220d827a604f4f014c70797c8f6ea772dfd4e4fae58b74944bd7ec5"
+    },
+    {
+      "path": "tests/weather_freshness_cases.hpp",
+      "sha256_lf_text": "0a74e08c292e74b5776a090750558b89ab8a2a0bb2b1b695c53291f61f705f0f"
+    },
+    {
+      "path": "tests/qml-weather-reports/tst_weather_report_card.qml",
+      "sha256_lf_text": "dc6ac53b27d435cfed5b8706c73bed599497b7a7a0a2ee68df1d2e9a612c1dbf"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "sha256_lf_text": "b81a82b77f7ea7dcd79190bda57e58ec3099536155e2ca1aa99abffb776db2a9"
+    },
+    {
+      "path": ".github/workflows/efis-core-ci.yml",
+      "sha256_lf_text": "00b14815faaa59b5ea09d5ef6d2e08df616f0709c2b846ceb4eeb08669966d65"
+    }
+  ]
+}

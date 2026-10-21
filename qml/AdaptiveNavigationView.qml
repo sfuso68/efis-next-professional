@@ -12,7 +12,11 @@ Rectangle {
     property string nav2Standby: "---.--"
     readonly property var airport: controller.selectedAirport || ({})
     readonly property string ident: airport.icao || "----"
-    readonly property var localWx: weather.airportWeather.length ? weather.airportWeather[0] : ({})
+    readonly property var localWx: {
+        var rows=weather.airportWeather
+        for(var i=0;i<rows.length;i++)if(rows[i].icao===ident)return rows[i]
+        return ({icao:ident})
+    }
     readonly property var activeSigmet: weather.sigmets.length > 0 ? weather.sigmets[0] : null
     readonly property var primaryAlternate: weather.alternates.length > 0 ? weather.alternates[0] : null
     readonly property var secondaryAlternate: weather.alternates.length > 1 ? weather.alternates[1] : null
@@ -58,7 +62,7 @@ Rectangle {
         Text { x: 14*root.uiScale; y: 10*root.uiScale; text: root.source+" • HSI"; color: theme.cyan; font.pixelSize: 9*root.uiScale; font.bold: true }
         Rectangle { z:3; anchors { right:parent.right; top:parent.top; margins:10*root.uiScale } width:190*root.uiScale; height:66*root.uiScale; radius:3*root.uiScale; color:"#E907121A"; border.color:theme.borderBright
             Text { x:7*root.uiScale; y:5*root.uiScale; text:(weather.simulation?"SIM WX • ":"")+(root.showTaf?"TAF • ":"METAR • ")+(root.localWx.icao || "LIPH"); color:weather.simulation?theme.amber:theme.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
-            Text { x:7*root.uiScale; y:20*root.uiScale; width:176*root.uiScale; height:28*root.uiScale; text:(root.showTaf?root.localWx.taf:root.localWx.metar) || "NO AVIATION WEATHER DATA"; color:theme.primary; font.pixelSize:6*root.uiScale; wrapMode:Text.Wrap; elide:Text.ElideRight; maximumLineCount:2 }
+            WeatherReportCard { x:7*root.uiScale; y:20*root.uiScale; width:176*root.uiScale; height:40*root.uiScale; report:root.localWx; taf:root.showTaf; uiScale:root.uiScale*.8 }
             Text { x:7*root.uiScale; y:51*root.uiScale; text:(root.localWx.category || "—")+" • "+(root.showTaf?"FORECAST":"OBS")+" • TRAINING"; color:root.localWx.category === "VFR" ? theme.green : theme.amber; font.pixelSize:6*root.uiScale; font.bold:true }
             TapHandler { onTapped:root.weatherDetailVisible=true }
         }
@@ -134,9 +138,8 @@ Rectangle {
     Rectangle { visible:root.weatherDetailVisible; z:20; anchors { left:sources.right; right:dataPanel.left; top:rail.bottom; bottom:parent.bottom; margins:10*root.uiScale } color:"#FC061118"; border.color:theme.cyan; radius:4*root.uiScale
         Text { x:18*root.uiScale; y:15*root.uiScale; text:"AVIATION WEATHER • "+(weather.simulation?"TRAINING SIMULATION":"SUPPLEMENTARY"); color:weather.simulation?theme.amber:theme.cyan; font.pixelSize:15*root.uiScale; font.bold:true }
         Repeater { model:weather.airportWeather; delegate:Rectangle { required property var modelData; required property int index; x:18*root.uiScale; y:(58+index*175)*root.uiScale; width:parent.width-36*root.uiScale; height:160*root.uiScale; color:"#0B1B25"; border.color:theme.borderBright
-                Text{x:12*root.uiScale;y:10*root.uiScale;text:modelData.icao+" • "+modelData.category;color:modelData.category==="VFR"?theme.green:theme.amber;font.pixelSize:13*root.uiScale;font.bold:true}
-                Text{x:12*root.uiScale;y:39*root.uiScale;width:parent.width-24*root.uiScale;text:"METAR  "+modelData.metar;color:theme.primary;font.pixelSize:8*root.uiScale;wrapMode:Text.WordWrap}
-                Text{x:12*root.uiScale;y:88*root.uiScale;width:parent.width-24*root.uiScale;text:"TAF  "+modelData.taf;color:theme.cyan;font.pixelSize:8*root.uiScale;wrapMode:Text.WordWrap}
+                WeatherReportCard{x:12*root.uiScale;y:8*root.uiScale;width:parent.width-24*root.uiScale;height:69*root.uiScale;report:modelData;uiScale:root.uiScale}
+                WeatherReportCard{x:12*root.uiScale;y:84*root.uiScale;width:parent.width-24*root.uiScale;height:69*root.uiScale;report:modelData;taf:true;uiScale:root.uiScale}
             } }
         Rectangle { visible:root.activeSigmet !== null; x:18*root.uiScale; anchors.bottom:parent.bottom; anchors.bottomMargin:16*root.uiScale; width:(parent.width-42*root.uiScale)*.62; height:55*root.uiScale; color:"#391017"; border.color:theme.warning
             Text{x:12*root.uiScale;y:8*root.uiScale;text:root.activeSigmet ? "SIM SIGMET • "+root.activeSigmet.phenomenon+" • "+root.activeSigmet.area : "";color:theme.warning;font.pixelSize:9*root.uiScale;font.bold:true}

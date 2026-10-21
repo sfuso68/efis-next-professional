@@ -91,10 +91,34 @@ QString WeatherService::cachePath(const QString& name) const {
 }
 
 int WeatherService::radarAgeMinutes() const {
+    if (simulation_) return radarCacheAgeMinutes();
+    if (!radar_observation_time_.isValid()) return -1;
+    const auto ageSeconds = radar_observation_time_.secsTo(QDateTime::currentDateTimeUtc());
+    if (ageSeconds < -5) return -1;
+    return static_cast<int>(qMax<qint64>(0, ageSeconds) / 60);
+}
+
+int WeatherService::radarCacheAgeMinutes() const {
     if (!radar_time_.isValid()) return -1;
     const auto ageSeconds = radar_time_.secsTo(QDateTime::currentDateTimeUtc());
     if (ageSeconds < -5) return -1;
     return static_cast<int>(qMax<qint64>(0, ageSeconds) / 60);
+}
+
+QVariantList WeatherService::airportWeather() const {
+    if (!simulation_) return report_store_.view(QDateTime::currentDateTimeUtc());
+    QVariantList result;
+    for (const auto& value : airport_weather_) {
+        auto row=value.toMap();
+        row[QStringLiteral("metarState")]=QStringLiteral("SIMULATED");
+        row[QStringLiteral("tafState")]=QStringLiteral("SIMULATED");
+        row[QStringLiteral("metarAgeMinutes")]=-1;
+        row[QStringLiteral("tafAgeMinutes")]=-1;
+        row[QStringLiteral("simulated")]=true;
+        row[QStringLiteral("safetyAuthority")]=false;
+        result << row;
+    }
+    return result;
 }
 
 QString WeatherService::classifyRadarAgeSeconds(qint64 age_seconds) {
@@ -139,6 +163,7 @@ QString WeatherService::radarCacheFileName(const QString& product, int zoom, int
 void WeatherService::clearRadarFrame(const QString& message) {
     radar_source_.clear();
     radar_time_ = {};
+    radar_observation_time_ = {};
     radar_state_ = QStringLiteral("NO DATA");
     radar_message_ = message;
 }
@@ -165,18 +190,19 @@ bool WeatherService::loadCurrentRadarCache() {
         return false;
     }
     radar_time_ = cached.lastModified().toUTC();
-    radar_source_ = QUrl::fromLocalFile(cached.absoluteFilePath()).toString()
-        + QStringLiteral("?v=") + QString::number(cached.lastModified().toMSecsSinceEpoch());
-    radar_message_ = QStringLiteral("Loaded matching Radar-DPC cache");
+    radar_source_.clear();
+    radar_observation_time_ = {};
+    radar_message_ = QStringLiteral("Cached radar has no verified observation time");
     updateAgeState();
     return true;
 }
 
 void WeatherService::updateAgeState() {
     if (simulation_) { radar_state_ = QStringLiteral("SIMULATED"); emit changed(); return; }
-    radar_state_ = radar_time_.isValid()
-        ? classifyRadarAgeSeconds(radar_time_.secsTo(QDateTime::currentDateTimeUtc()))
-        : QStringLiteral("NO DATA");
+    radar_state_ = radar_time_.isValid() ? QStringLiteral("UNKNOWN TIME") : QStringLiteral("NO DATA");
+    // Legacy WMS/file timestamps cannot qualify the product as CURRENT.
+    // Do not expose pixels until a provider adapter binds image and observation.
+    radar_source_.clear();
     emit changed();
 }
 
@@ -193,6 +219,8 @@ void WeatherService::refresh() {
 void WeatherService::setSimulation(bool enabled) {
     if (simulation_ == enabled) return;
     simulation_ = enabled;
+    ++weather_mode_generation_;
+    report_store_.clear();
     ++radar_context_;
     clearRadarFrame(QStringLiteral("Waiting for weather in selected mode"));
     if (simulation_) {
@@ -485,8 +513,9 @@ void WeatherService::requestRadar() {
             if (file.open(QIODevice::WriteOnly) && file.write(data) == data.size() && file.commit()) {
                 if (requestIsCurrent) {
                     radar_time_ = QDateTime::currentDateTimeUtc();
-                    radar_source_ = QUrl::fromLocalFile(cachePath(filename)).toString()+QStringLiteral("?v=")+QString::number(radar_time_.toMSecsSinceEpoch());
-                    radar_message_ = QStringLiteral("Radar-DPC %1 received").arg(requestProduct);
+                    radar_observation_time_ = {};
+                    radar_source_.clear();
+                    radar_message_ = QStringLiteral("%1 downloaded • observation time unverified").arg(requestProduct);
                 }
             }
         } else if (requestIsCurrent) {
@@ -497,52 +526,27 @@ void WeatherService::requestRadar() {
     });
 }
 
-void WeatherService::requestMetar() {
-    auto* reply = network_.get(weatherRequest(QUrl(QStringLiteral("https://aviationweather.gov/api/data/metar?ids=LIPH,LIPZ&format=json"))));
-    connect(reply, &QNetworkReply::finished, this, [this, reply] {
-        if (reply->error() == QNetworkReply::NoError) {
-            const auto document = QJsonDocument::fromJson(reply->readAll());
-            if (document.isArray()) {
-                QVariantList result;
-                for (const auto& value : document.array()) {
-                    const auto item = value.toObject();
-                    result.push_back(QVariantMap{{QStringLiteral("icao"), item.value(QStringLiteral("icaoId")).toString()},
-                        {QStringLiteral("metar"), item.value(QStringLiteral("rawOb")).toString()},
-                        {QStringLiteral("category"), item.value(QStringLiteral("fltCat")).toString()},
-                        {QStringLiteral("observed"), item.value(QStringLiteral("reportTime")).toString()},
-                        {QStringLiteral("taf"), QString()}});
-                }
-                if (!result.isEmpty()) airport_weather_ = result;
-            }
-        }
-        emit changed(); reply->deleteLater();
-    });
-}
+void WeatherService::requestMetar() { requestAviationReport(false); }
+void WeatherService::requestTaf() { requestAviationReport(true); }
 
-void WeatherService::requestTaf() {
-    auto* reply = network_.get(weatherRequest(QUrl(QStringLiteral("https://aviationweather.gov/api/data/taf?ids=LIPH,LIPZ&format=json"))));
-    connect(reply, &QNetworkReply::finished, this, [this, reply] {
-        if (reply->error() == QNetworkReply::NoError) {
-            const auto document = QJsonDocument::fromJson(reply->readAll());
-            if (document.isArray()) {
-                for (const auto& value : document.array()) {
-                    const auto item = value.toObject();
-                    const auto icao = item.value(QStringLiteral("icaoId")).toString();
-                    bool merged = false;
-                    for (int i=0; i<airport_weather_.size(); ++i) {
-                        auto row = airport_weather_.at(i).toMap();
-                        if (row.value(QStringLiteral("icao")).toString() == icao) {
-                            row[QStringLiteral("taf")] = item.value(QStringLiteral("rawTAF")).toString();
-                            airport_weather_[i] = row;
-                            merged = true;
-                        }
-                    }
-                    if (!merged) airport_weather_.push_back(QVariantMap{{QStringLiteral("icao"), icao},
-                        {QStringLiteral("metar"), QString()}, {QStringLiteral("category"), QString()},
-                        {QStringLiteral("observed"), QString()}, {QStringLiteral("taf"), item.value(QStringLiteral("rawTAF")).toString()}});
-                }
-            }
-        }
-        emit changed(); reply->deleteLater();
+void WeatherService::requestAviationReport(bool taf) {
+    const auto mode = weather_mode_generation_;
+    const auto request = taf ? ++taf_request_ : ++metar_request_;
+    const auto url = taf
+        ? QStringLiteral("https://aviationweather.gov/api/data/taf?ids=LIPH,LIPZ&format=json")
+        : QStringLiteral("https://aviationweather.gov/api/data/metar?ids=LIPH,LIPZ&format=json");
+    auto* reply = network_.get(weatherRequest(QUrl(url)));
+    reply->setReadBufferSize(512*1024+1);
+    connect(reply, &QNetworkReply::readyRead, this, [reply] {
+        if (reply->bytesAvailable()>512*1024) reply->abort();
+    });
+    connect(reply, &QNetworkReply::finished, this, [this,reply,taf,mode,request] {
+        const bool current = !simulation_ && mode==weather_mode_generation_
+            && request==(taf?taf_request_:metar_request_);
+        if (current && reply->error()==QNetworkReply::NoError)
+            report_store_.merge(taf,reply->readAll(),QDateTime::currentDateTimeUtc());
+        // Failed/malformed/empty responses retain observation identity, not age zero.
+        if (current) emit changed();
+        reply->deleteLater();
     });
 }
