@@ -224,6 +224,7 @@ public:
     [[nodiscard]] double latitude() const;
     [[nodiscard]] double longitude() const;
     [[nodiscard]] bool positionValid() const;
+    [[nodiscard]] bool positionSimulated() const;
     [[nodiscard]] bool groundSpeedValid() const;
     [[nodiscard]] double commandedRoll() const;
     [[nodiscard]] double commandedPitch() const;

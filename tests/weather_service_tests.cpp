@@ -1,4 +1,5 @@
 #include "weather_service.hpp"
+#include "weather_position_binding.hpp"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -21,6 +22,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 
 namespace {
@@ -41,7 +43,7 @@ QByteArray radarPayload(char marker) {
 
 class ControlledRadarServer final : public QObject {
 public:
-    explicit ControlledRadarServer(QObject* parent = nullptr) : QObject(parent) {
+    explicit ControlledRadarServer(bool automatic = true) : automatic_(automatic) {
         QObject::connect(&server_, &QTcpServer::newConnection, this, [this] {
             while (auto* socket = server_.nextPendingConnection()) {
                 buffers_.insert(socket, {});
@@ -49,10 +51,13 @@ public:
                     auto& buffer = buffers_[socket];
                     buffer += socket->readAll();
                     if (!buffer.contains("\r\n\r\n")) return;
+                    if (buffer.startsWith("HANDLED")) return;
                     const auto firstLine = buffer.left(buffer.indexOf("\r\n"));
+                    buffer = "HANDLED";
+                    requests_.push_back(socket);
                     if (firstLine.contains("layers=radar%3Avmi") || firstLine.contains("layers=radar:vmi")) vmi_ = socket;
                     if (firstLine.contains("layers=radar%3Asri") || firstLine.contains("layers=radar:sri")) sri_ = socket;
-                    if (vmi_ && sri_ && !responses_scheduled_) {
+                    if (automatic_ && vmi_ && sri_ && !responses_scheduled_) {
                         responses_scheduled_ = true;
                         QTimer::singleShot(0, this, [this] { respond(sri_, radarPayload('S')); });
                         QTimer::singleShot(150, this, [this] { respond(vmi_, radarPayload('V')); });
@@ -68,6 +73,8 @@ public:
         return QUrl(QStringLiteral("http://127.0.0.1:%1/service/wms").arg(server_.serverPort()));
     }
     int responsesSent() const { return responses_sent_; }
+    int requestsReceived() const { return static_cast<int>(requests_.size()); }
+    void respondTo(int index, char marker) { respond(requests_.at(index), radarPayload(marker)); }
 
 private:
     void respond(QTcpSocket* socket, const QByteArray& payload) {
@@ -83,6 +90,8 @@ private:
     QHash<QTcpSocket*, QByteArray> buffers_;
     QPointer<QTcpSocket> vmi_;
     QPointer<QTcpSocket> sri_;
+    QList<QPointer<QTcpSocket>> requests_;
+    bool automatic_{};
     bool responses_scheduled_{};
     int responses_sent_{};
 };
@@ -95,6 +104,27 @@ bool waitUntil(const std::function<bool()>& predicate, int timeoutMilliseconds) 
     }
     return predicate();
 }
+
+struct PositionController {
+    bool valid{};
+    bool simulated{};
+    mutable int reads{};
+    bool positionValid() const { return valid; }
+    bool positionSimulated() const { ++reads; return simulated; }
+    double latitude() const { ++reads; return 45.648; }
+    double longitude() const { ++reads; return 12.194; }
+};
+struct PositionSink {
+    int invalidations{};
+    int updates{};
+    bool simulated{};
+    void invalidatePosition() { ++invalidations; }
+    void updatePosition(double lat, double lon, bool valid, bool sim) {
+        require(lat == 45.648 && lon == 12.194 && valid, "binding must forward valid coordinates");
+        ++updates;
+        simulated = sim;
+    }
+};
 } // namespace
 
 int main(int argc, char** argv) {
@@ -110,6 +140,19 @@ int main(int argc, char** argv) {
     QDir(weatherCacheRoot).removeRecursively();
 
     try {
+        {
+            PositionController controller;
+            PositionSink sink;
+            updateWeatherPosition(controller, sink);
+            require(controller.reads == 0 && sink.invalidations == 1 && sink.updates == 0,
+                    "invalid fix must not read coordinates or provenance");
+            controller.valid = true;
+            controller.simulated = true;
+            updateWeatherPosition(controller, sink);
+            require(controller.reads == 3 && sink.updates == 1 && sink.simulated,
+                    "binding must forward position-specific simulation provenance");
+            std::cout << "position_binding: PASS\n";
+        }
         const auto png = radarPayload('T');
         require(WeatherService::validRadarPayload(png), "real 256x256 PNG must validate");
         require(!WeatherService::validRadarPayload(QByteArray("\x89PNG\r\n\x1a\n", 8) + QByteArray(600, 'x')),
@@ -162,7 +205,7 @@ int main(int argc, char** argv) {
             require(invalidCache.open(QIODevice::WriteOnly), "invalid cache fixture must open");
             invalidCache.write("not a PNG");
             invalidCache.close();
-            weather.updatePosition(45.648, 12.194);
+            weather.updatePosition(45.648, 12.194, true, false);
             require(weather.radarSource().isEmpty(), "corrupt cached image must not become available");
             weather.cycleProduct();
             require(weather.radarProduct() == QStringLiteral("SRI"),
@@ -187,8 +230,68 @@ int main(int argc, char** argv) {
                     "current SRI response was not cached");
         }
         {
+            QDir(weatherCacheRoot).removeRecursively();
             QSettings().setValue(QStringLiteral("weather/product"), QStringLiteral("VMI"));
-            WeatherService weather;
+            ControlledRadarServer server(false);
+            require(server.listen(), "position test server must listen");
+            WeatherService weather(server.endpoint());
+            weather.refresh();
+            weather.cycleProduct();
+            weather.cycleProduct();
+            weather.updatePosition(45.648, 12.194, false, false);
+            weather.updatePosition(45.648, 12.194, true, true);
+            weather.updatePosition(std::numeric_limits<double>::quiet_NaN(), 12.194, true, false);
+            weather.updatePosition(45.648, std::numeric_limits<double>::infinity(), true, false);
+            weather.updatePosition(49, 12, true, false);
+            weather.updatePosition(45, 22, true, false);
+            waitUntil([] { return false; }, 100);
+            require(server.requestsReceived() == 0 && weather.radarSource().isEmpty()
+                        && weather.radarState() == QStringLiteral("NO DATA")
+                        && weather.radarAgeMinutes() == -1
+                        && weather.radarArea() == QStringLiteral("NO VALID POSITION"),
+                    "startup, invalid, simulated and out-of-coverage positions must not request real radar");
+            std::cout << "no_fix_no_fallback: PASS\n";
+
+            weather.updatePosition(45.648, 12.194, true, false);
+            require(waitUntil([&] { return server.requestsReceived() == 1; }, 1000),
+                    "valid position must request radar");
+            weather.invalidatePosition();
+            server.respondTo(0, 'A');
+            require(waitUntil([&] { return server.responsesSent() == 1; }, 1000), "lost-fix reply must complete");
+            waitUntil([] { return false; }, 100);
+            require(weather.radarSource().isEmpty() && QDir(weatherCacheRoot).entryList({"radar-*.png"}, QDir::Files).isEmpty(),
+                    "reply arriving without fix must neither publish nor populate cache");
+            std::cout << "late_reply_while_lost: PASS\n";
+
+            weather.updatePosition(45.648, 12.194, true, false);
+            require(waitUntil([&] { return server.requestsReceived() == 2; }, 1000), "first recovery must request");
+            weather.invalidatePosition();
+            weather.updatePosition(45.648, 12.194, true, false);
+            require(waitUntil([&] { return server.requestsReceived() == 3; }, 1000), "same-tile recovery must request");
+            server.respondTo(1, 'B');
+            waitUntil([] { return false; }, 100);
+            require(weather.radarSource().isEmpty() && QDir(weatherCacheRoot).entryList({"radar-*.png"}, QDir::Files).isEmpty(),
+                    "old epoch reply after same-tile recovery must not publish or poison cache");
+            server.respondTo(2, 'C');
+            require(waitUntil([&] { return !weather.radarSource().isEmpty(); }, 1000), "new epoch must publish");
+            require(weather.radarState() == QStringLiteral("CURRENT") && weather.radarArea().startsWith("GPS "),
+                    "recovered real frame must carry real position area");
+            std::cout << "same_tile_recovery_epoch: PASS\n";
+            weather.updatePosition(45.648, 12.194, false, false);
+            require(weather.radarSource().isEmpty() && weather.radarAgeMinutes() == -1
+                        && weather.radarState() == QStringLiteral("NO DATA")
+                        && weather.radarArea() == QStringLiteral("NO VALID POSITION"),
+                    "fix loss must immediately clear visible frame, age and GPS area");
+            weather.refresh();
+            waitUntil([] { return false; }, 100);
+            require(server.requestsReceived() == 3, "refresh without fix must not reuse old tile");
+            std::cout << "loss_clears_visible_context: PASS\n";
+        }
+        {
+            QSettings().setValue(QStringLiteral("weather/product"), QStringLiteral("VMI"));
+            ControlledRadarServer server(false);
+            require(server.listen(), "simulation test server must listen");
+            WeatherService weather(server.endpoint());
             QElapsedTimer callback;
             callback.start();
             weather.setSimulation(true);
@@ -216,6 +319,8 @@ int main(int argc, char** argv) {
                     "unexpected simulation frame path");
             require(weather.radarState() == QStringLiteral("SIMULATED"),
                     "simulation frame did not publish SIMULATED state");
+            require(weather.radarArea() == QStringLiteral("SIMULATION AREA") && server.requestsReceived() == 0,
+                    "explicit training must not claim a GPS area or request real radar");
             require(weather.simulationPhase() >= 1, "simulation phase did not advance");
             weather.cycleProduct();
             weather.cycleProduct();
@@ -224,6 +329,11 @@ int main(int argc, char** argv) {
             weather.setSimulation(false);
             require(weather.radarProduct() == QStringLiteral("VMI"),
                     "leaving simulation must reject the simulation-only CAPPI product");
+            waitUntil([] { return false; }, 100);
+            require(weather.radarSource().isEmpty() && weather.radarState() == QStringLiteral("NO DATA")
+                        && weather.radarArea() == QStringLiteral("NO VALID POSITION") && server.requestsReceived() == 0,
+                    "leaving simulation without fix must not resurrect cached/default radar");
+            std::cout << "explicit_training_without_fix: PASS\n";
         }
         QDir(outputRoot).removeRecursively();
         QDir(weatherCacheRoot).removeRecursively();
