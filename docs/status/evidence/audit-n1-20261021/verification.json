@@ -9,6 +9,8 @@
   "windows_behavior_tests": {"status": "PASS", "count": 7},
   "linux_behavior_tests": {"status": "PASS", "count": 7, "log": "linux-targeted.log"},
   "syntax": "PASS",
+  "workflow_yaml_serverha": "BLOCKED_MISSING_PYYAML",
+  "workflow_yaml_existing_arm64_parser": "PASS",
   "project_status_check": "PASS",
   "hardware_connection": "NOT_RUN",
   "installed_copy_inventory": "NOT_RUN",
