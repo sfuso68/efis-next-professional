@@ -1,0 +1,6 @@
+Engine channel masking and fuel baseline: PASS
+Derived state tests passed
+FAILED: unusable residual engine values must not remain numeric
+CHANNEL_MUTATION=REJECTED
+FAILED: one invalid tank must not latch an initial fuel quantity
+FUEL_MUTATION=REJECTED

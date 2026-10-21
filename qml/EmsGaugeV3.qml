@@ -16,8 +16,10 @@ Item {
     property bool dominant: false
     property bool compact: false
     property bool normalRangesVisible: true
+    property bool valueValid: true
+    readonly property bool readingValid: valueValid && isFinite(value)
     readonly property real span: Math.max(0.001, maximum-minimum)
-    readonly property real fraction: Math.max(0, Math.min(1, (value-minimum)/span))
+    readonly property real fraction: readingValid ? Math.max(0, Math.min(1, (value-minimum)/span)) : 0
     readonly property real cx: width/2
     readonly property real cy: height*0.51
     readonly property real radius: Math.min(width*0.47, height*0.45)
@@ -137,6 +139,8 @@ Item {
 
     Item {
         id: needle
+        objectName: "engineGaugeNeedle"
+        visible: gauge.readingValid
         x: gauge.cx; y: gauge.cy
         rotation: -130 + gauge.fraction*260
         Behavior on rotation { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
@@ -156,7 +160,8 @@ Item {
         Rectangle { anchors.centerIn: parent; width: parent.width*.20; height: width; radius: width/2; color: "#79868B" }
     }
     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: dominant ? 20*uiScale : 14*uiScale }
-        text: Number(gauge.value).toFixed(gauge.decimals); color: "#F5F8F9"; font.pixelSize: Math.max(dominant?38:26,(dominant?45:31)*gauge.uiScale); font.bold: true }
+        objectName: "engineGaugeReading"
+        text: gauge.readingValid ? Number(gauge.value).toFixed(gauge.decimals) : "—"; color: gauge.readingValid ? "#F5F8F9" : "#8A96A3"; font.pixelSize: Math.max(dominant?38:26,(dominant?45:31)*gauge.uiScale); font.bold: true }
     Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 4*uiScale }
         text: gauge.unit; color: "#D2DCE0"; font.pixelSize: Math.max(9,(dominant?12:10)*gauge.uiScale); font.bold: true }
 }

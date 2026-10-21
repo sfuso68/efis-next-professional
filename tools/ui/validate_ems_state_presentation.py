@@ -116,7 +116,9 @@ def validate_repository(root: Path, data: dict | None = None) -> list[str]:
         "qml/HmiCylinderMatrixV2.qml": ["root.dataDegraded?root.caution", '"CHT UNAVAILABLE"', '"EGT UNAVAILABLE"'],
         # Domain isolation is tested with an instantiated AdaptiveEmsView by
         # tst_ems_engine_state.qml; do not freeze controller binding spellings.
-        "qml/AdaptiveEmsView.qml": ["text:root.dataUsable?root.fuelEnduranceHours"],
+        # Registry check only: behavior is executed by the Qt Quick CTest.
+        # Do not freeze the old global-state-only endurance expression.
+        "tests/qml/tst_engine_channel_validity.qml": ["function test_partial_fuel()"],
     }
     missing = []
     for relative, required in snippets.items():

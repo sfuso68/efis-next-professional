@@ -1,0 +1,181 @@
+{
+  "schema": "efis-next.scoped-verification.v1",
+  "date": "2026-10-21",
+  "block": "R1-04",
+  "findings": [
+    "N7",
+    "N8"
+  ],
+  "requirements": [
+    "CORE-002",
+    "EMS-001",
+    "EMS-003",
+    "VER-001"
+  ],
+  "branch": "fix/engine-channel-validity-v1",
+  "stack_base": "3004218d8ed3e6bc9edc9c3b0c4aa3aad5adc12a",
+  "pull_request_dependency": 53,
+  "status": "VERIFIED-SW-CANDIDATE",
+  "flight_approval": false,
+  "checks": [
+    {
+      "scope": "Native core",
+      "result": "PASS",
+      "compiler": "GCC14.2 Linux x86-64",
+      "command": "g++ -std=c++20 -Wall -Wextra -Wpedantic -Wconversion -I/source/include /source/src/core/derived_state.cpp /source/tests/derived_state_tests.cpp -o /build/core-test; /build/core-test",
+      "isolation": "existing avionix-profile-verification:20261017 image, --network none --read-only --tmpfs /tmp --tmpfs /build:exec; sources read-only; no production caches or services",
+      "cases": [
+        "four unusable validity states mask residuals",
+        "zero valid/degraded/SIM remains usable",
+        "NaN/infinity rejected",
+        "one invalid tank never initializes baseline",
+        "nonfinite calibration/mixed provenance/negative raw tank rejected",
+        "valid pair after invalid startup initializes calibrated total",
+        "existing baseline never overwritten"
+      ],
+      "log": "core.txt"
+    },
+    {
+      "scope": "Negative mutations",
+      "result": "PASS",
+      "mutations": [
+        "remove sample.usable() from display helper: rejected",
+        "remove left tank validity from initializer: rejected"
+      ],
+      "log": "core.txt"
+    },
+    {
+      "scope": "Qt Quick instantiated EMS and PFD deck",
+      "result": "PASS",
+      "qt": "6.11.1 MSVC Windows offscreen/software",
+      "reported_outcomes": 29,
+      "qualification": "Includes init/cleanup and existing N4/N5 cases, not 29 independent requirements",
+      "command": "qmltestrunner -input tests/qml -o output/r104-qml-final.txt,txt",
+      "log": "qml.txt",
+      "cases": [
+        "five separate scalar failures mask text/needle without hiding healthy peer",
+        "left tank unavailable but right readable and total masked",
+        "electrical channels independent",
+        "one missing CHT leaves seven temperature readings",
+        "PFD deck uses flags",
+        "stale gauges remove needles and values",
+        "lean rejects incomplete or stale EGT",
+        "valid RPM zero stays numeric"
+      ]
+    },
+    {
+      "scope": "Python targeted regression",
+      "result": "PASS",
+      "count": 27,
+      "log": "python.txt"
+    },
+    {
+      "scope": "MSVC Release compilation/link",
+      "result": "PASS",
+      "targets": [
+        "efis-pfd-qt",
+        "efis-ems-qt",
+        "efis_pfd_aircraft_profile_tests"
+      ],
+      "confirmation": "Final incremental build exits 0: ninja: no work to do.",
+      "qualification": "Not native Windows runtime execution. Full golden rerender gate not registered locally; existing long object path warning retained."
+    },
+    {
+      "scope": "Status generators/dashboard",
+      "result": "PASS",
+      "requirements_count": 71,
+      "status_promotions": false
+    },
+    {
+      "scope": "CI full / ARM64 / real sensor / installed release",
+      "result": "NOT_VERIFIED"
+    }
+  ],
+  "initial_failures_resolved": [
+    "QML fixture insertion outside QtObject corrected; rerun passed.",
+    "EMS controller used PFD-only dirty field in initial edit; corrected to its existing persistence model and final build passed.",
+    "Obsolete text assertion freezing startLean JS spelling replaced by actual runtime lean test; 27 Python cases passed."
+  ],
+  "open": [
+    "real controller end-to-end/persistent-state tests including SIM-to-real migration",
+    "pilot reconfirmation of legacy saved fuel settings without provenance metadata",
+    "full golden rerender and CI integration review",
+    "real sensor/CAN/EDP vertical; PFD real engine consumer still absent",
+    "actual display acceptance, power qualification and canary rollout"
+  ],
+  "artifacts": [
+    {
+      "path": "include/efis/core/derived_state.hpp",
+      "sha256_lf_text": "2744288464e8a3a2fd509efd538a3aee511839f5b2c857e014aa2a96d43c0bd8"
+    },
+    {
+      "path": "src/core/derived_state.cpp",
+      "sha256_lf_text": "dee4f4d6180ada8ff1503c9096d78b8e0d3a7a31784d97e413b5101afbf488fc"
+    },
+    {
+      "path": "src/renderers/qt/pfd_controller.cpp",
+      "sha256_lf_text": "e4ec5a320d5a7190451d33520b5539064ff27ca3d18d0acd3178daf24be79223"
+    },
+    {
+      "path": "src/renderers/qt/pfd_controller.hpp",
+      "sha256_lf_text": "3043d485f2bd17e54fcbeca25e228513241c38768c7ae4761c90ad8cc84f01c2"
+    },
+    {
+      "path": "src/nodes/ems/ems_controller.cpp",
+      "sha256_lf_text": "b67c6692f8bb542ccae02a4e4ee16dfbf9155c0bcba73b59457e8a4053adf4f5"
+    },
+    {
+      "path": "src/nodes/ems/ems_controller.hpp",
+      "sha256_lf_text": "8df7d5046af69e515d75e5c4ed9177365f45375fb1e3c666b4d34f51b70423b4"
+    },
+    {
+      "path": "qml/AdaptiveEmsView.qml",
+      "sha256_lf_text": "4fca0812eece70b16a71dc406ee6c2d38536a8ed1918a095840cc4664e95ce12"
+    },
+    {
+      "path": "qml/ProfessionalSystemsDeck.qml",
+      "sha256_lf_text": "736dd2d7762eb81caa130a2a915c5bdce12b7e6b9a964e6b049878da6295c738"
+    },
+    {
+      "path": "qml/EmsGaugeV3.qml",
+      "sha256_lf_text": "b881cdbc4600cbf557ac66b1232193976c5ee01c155dda5db9764705a4ea7a6f"
+    },
+    {
+      "path": "qml/HmiArcGaugeV4.qml",
+      "sha256_lf_text": "bf6ea7f946012d66bf2cd90ef8c19feeaafb9b0c3e70552c0b4e6bddbb201e47"
+    },
+    {
+      "path": "qml/HmiFuelStatus.qml",
+      "sha256_lf_text": "86556f31dd85cf9d48be8ea0974b7674a1ce7c6385af38520efd86b2075fa5e0"
+    },
+    {
+      "path": "qml/HmiElectricalSynoptic.qml",
+      "sha256_lf_text": "a58d76c6cc7d3e9d9933eb6f9d4c112cc23408d7487a30ff0d51c53e66a890b4"
+    },
+    {
+      "path": "qml/HmiCylinderMatrixV2.qml",
+      "sha256_lf_text": "f1dd476b640959633a831bcf387415d0732363c6956b0d03c00de21b573df7b4"
+    },
+    {
+      "path": "qml/EngineTemperatureBars.qml",
+      "sha256_lf_text": "dd4855d0afbeebaa529f09753604959378240eb2ac11326fd70a465bf5e70f7d"
+    },
+    {
+      "path": "tests/derived_state_tests.cpp",
+      "sha256_lf_text": "d2a2323063ed86be086d4892bb137692fb656548e0516adac076a27fe21c9c80"
+    },
+    {
+      "path": "tests/qml/tst_engine_channel_validity.qml",
+      "sha256_lf_text": "728c5f96643fa9222d9430025f65e711bc631bb3b0708aa9df4148a80cbcc712"
+    }
+  ],
+  "ci_followup": {
+    "failed_run": 39670643622,
+    "cause": "Obsolete source marker freezing global-state-only endurance expression",
+    "fix": "Registry points to executed partial-fuel QML test; no exemption or behavior weakening",
+    "local_python_hmi_tests": 43,
+    "local_qml_reported_outcomes": 29,
+    "remote_after_push": "PENDING",
+    "date": "2026-10-21"
+  }
+}

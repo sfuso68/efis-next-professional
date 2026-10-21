@@ -15,7 +15,7 @@ Rectangle {
     property int dataAgeMs: -1
     function stateLabel() { return dataState+((dataState==="STALE"||dataState==="LOST")&&dataAgeMs>=0?" "+(dataAgeMs/1000).toFixed(1)+"s":"") }
     property bool limitsVerified: false
-    readonly property bool dataUsable:dataState!=="LOST"&&dataState!=="FAIL"
+    readonly property bool dataUsable:["LIVE","SIM","SIM FORCED","DEGRADED"].indexOf(dataState)>=0
     readonly property bool dataDegraded:dataState==="STALE"||dataState==="DEGRADED"
     readonly property color cyan: "#28D7E8"
     readonly property color normal: "#39D353"
@@ -23,7 +23,7 @@ Rectangle {
     readonly property color warning: "#FF3B30"
     readonly property color invalid: "#8A96A3"
     function displayTemperature(celsius) { return temperatureUnit === "°F" ? celsius*9/5+32 : celsius }
-    function valid(values, index) { return index < values.length && isFinite(Number(values[index])) }
+    function valid(values, index) { return root.dataUsable && index < values.length && typeof values[index] === "number" && isFinite(values[index]) }
     function hottest(values) {
         var result=-1; var hottestIndex=-1
         for (var i=0;i<values.length;i++) if (valid(values,i) && Number(values[i])>result) { result=Number(values[i]); hottestIndex=i }
@@ -66,18 +66,18 @@ Rectangle {
                         delegate:Item {
                             id:channel; required property var modelData
                             width:(channelRow.width-channelRow.spacing)/2; height:channelRow.height
-                            readonly property bool channelValid:isFinite(modelData.value) && root.dataState!=="LOST" && root.dataState!=="FAIL"
+                            readonly property bool channelValid:root.dataUsable && isFinite(modelData.value)
                             readonly property real fraction:channelValid?Math.max(0,Math.min(1,modelData.value/modelData.high)):0
                             readonly property color channelColor:!channelValid?root.invalid:root.dataDegraded?root.caution:modelData.value>=modelData.warning?root.warning:modelData.value>=modelData.caution?root.caution:root.normal
                             Text { anchors.horizontalCenter:parent.horizontalCenter; text:channel.modelData.name; color:root.cyan; font.pixelSize:root.textSize(5.5,8); font.bold:true }
                             Rectangle { id:track; anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:10*root.uiScale; bottom:reading.top; bottomMargin:2*root.uiScale }
                                 width:10*root.uiScale; color:"#14242D"; border.color:"#64757E"
                                 Rectangle { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; margins:1 }
-                                    height:Math.max(1,(parent.height-2)*channel.fraction); color:channel.channelColor }
+                                    visible:channel.channelValid; height:Math.max(1,(parent.height-2)*channel.fraction); color:channel.channelColor }
                                 Repeater { model:5; delegate:Rectangle { required property int index; x:-3*root.uiScale; y:index*(track.height-1)/4; width:16*root.uiScale; height:1; color:"#BDCAD0" } }
                             }
                             Text { id:reading; anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom }
-                                text:channel.channelValid?Math.round(channel.modelData.value):"—"; color:channel.channelColor; font.pixelSize:root.textSize(7,8); font.bold:true }
+                                objectName:"cylinderTemperatureReading"; text:channel.channelValid?Math.round(channel.modelData.value):"—"; color:channel.channelColor; font.pixelSize:root.textSize(7,8); font.bold:true }
                         }
                     }
                 }
@@ -85,7 +85,7 @@ Rectangle {
         }
     }
     Item { id:footer; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:16*root.uiScale
-        Text { x:8*root.uiScale; text:root.dataUsable?"HOT CHT  "+(root.hottestCht>=0?"CYL "+(root.hottestCht+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.chtValues)))+root.temperatureUnit:"CHT UNAVAILABLE"; color:root.dataUsable?root.caution:root.invalid; font.pixelSize:root.textSize(6,8); font.bold:true }
-        Text { anchors.right:parent.right; anchors.rightMargin:8*root.uiScale; text:root.dataUsable?"HOT EGT  "+(root.hottestEgt>=0?"CYL "+(root.hottestEgt+1):"—")+"   Δ "+Math.round(root.displayTemperature(root.spread(root.egtValues)))+root.temperatureUnit:"EGT UNAVAILABLE"; color:root.dataUsable?root.caution:root.invalid; font.pixelSize:root.textSize(6,8); font.bold:true }
+        Text { x:8*root.uiScale; text:root.dataUsable&&root.hottestCht>=0?"HOT CHT  "+(root.hottestCht>=0?"CYL "+(root.hottestCht+1):"—")+"   Δ "+Math.round(root.spread(root.chtValues)*(root.temperatureUnit==="°F"?1.8:1))+root.temperatureUnit:"CHT UNAVAILABLE"; color:root.dataUsable?root.caution:root.invalid; font.pixelSize:root.textSize(6,8); font.bold:true }
+        Text { anchors.right:parent.right; anchors.rightMargin:8*root.uiScale; text:root.dataUsable&&root.hottestEgt>=0?"HOT EGT  "+(root.hottestEgt>=0?"CYL "+(root.hottestEgt+1):"—")+"   Δ "+Math.round(root.spread(root.egtValues)*(root.temperatureUnit==="°F"?1.8:1))+root.temperatureUnit:"EGT UNAVAILABLE"; color:root.dataUsable?root.caution:root.invalid; font.pixelSize:root.textSize(6,8); font.bold:true }
     }
 }

@@ -20,6 +20,10 @@ Item {
     }
     readonly property bool dataUsable: normalizedDataState!=="LOST"&&normalizedDataState!=="FAIL"
     readonly property bool dataDegraded: normalizedDataState==="STALE"||normalizedDataState==="DEGRADED"
+    function channelValid(name) { return dataUsable && normalizedDataState!=="STALE" && controller[name+"Valid"]===true && typeof controller[name]==="number" && isFinite(controller[name]) }
+    function reading(value, decimals) { return dataUsable && normalizedDataState!=="STALE" && typeof value==="number" && isFinite(value) ? value.toFixed(decimals) : "—" }
+    readonly property bool engineChannelsAvailable: ["engineRpm","manifoldPressure","oilPressure","oilTemperature","fuelFlow","fuelLeft","fuelRight","busVoltage","alternatorCurrent"].every(function(name){return channelValid(name)}) && allTemperaturesValid(controller.chtValues) && allTemperaturesValid(controller.egtValues)
+    function allTemperaturesValid(values) { return values && values.length>0 && values.every(function(v){return typeof v==="number"&&isFinite(v)}) }
     HmiTokens { id: hmiTokens }
     readonly property color cyan: "#28D9F4"
     readonly property color green: "#52DE36"
@@ -66,12 +70,12 @@ Item {
     property int leanFirstCylinder: -1
     readonly property real fuelUsedGallons: Number(controller.fuelUsedGallons)
     readonly property real fuelReserveGallons: Number(controller.fuelReserveGallons)
-    readonly property real fuelMeasuredGallons: Math.max(0,controller.fuelLeft+controller.fuelRight)
-    readonly property real fuelTotalGallons: Math.max(0,Number(controller.fuelRemainingGallons))
+    readonly property real fuelMeasuredGallons: channelValid("fuelLeft")&&channelValid("fuelRight")?Math.max(0,controller.fuelLeft+controller.fuelRight):NaN
+    readonly property real fuelTotalGallons: controller.fuelOnBoardValid===true&&channelValid("fuelFlow")?Math.max(0,Number(controller.fuelRemainingGallons)):NaN
     readonly property real fuelUsableGallons: Math.max(0,fuelTotalGallons-fuelReserveGallons)
-    readonly property real fuelEnduranceHours: fuelUsableGallons/Math.max(.1,controller.fuelFlow)
-    readonly property real fuelReserveMinutes: fuelReserveGallons/Math.max(.1,controller.fuelFlow)*60
-    readonly property real fuelImbalanceGallons: Math.abs(controller.fuelLeft-controller.fuelRight)
+    readonly property real fuelEnduranceHours: channelValid("fuelFlow")&&controller.fuelFlow>0?fuelUsableGallons/controller.fuelFlow:NaN
+    readonly property real fuelReserveMinutes: channelValid("fuelFlow")&&controller.fuelFlow>0?fuelReserveGallons/controller.fuelFlow*60:NaN
+    readonly property real fuelImbalanceGallons: isFinite(fuelMeasuredGallons)?Math.abs(controller.fuelLeft-controller.fuelRight):NaN
     readonly property int fuelCalibrationLeftCount: (controller.fuelCalibrationLeft||[]).length
     readonly property int fuelCalibrationRightCount: (controller.fuelCalibrationRight||[]).length
     readonly property bool fuelCalibrationReady: fuelCalibrationLeftCount===5&&fuelCalibrationRightCount===5
@@ -82,36 +86,39 @@ Item {
     // live engine transport is engineSourceState and must never be inferred
     // from the cache or the PFD flight/DDP state.
     readonly property bool centralLogSyncOffline: String(controller.centralBlackBoxState||"OFFLINE")!=="ONLINE"
-    function maximumValue(values) { var result=0; for(var i=0;i<values.length;i++)result=Math.max(result,Number(values[i])); return result }
+    function maximumValue(values) { var result=NaN; for(var i=0;i<values.length;i++)if(typeof values[i]==="number"&&isFinite(values[i]))result=isFinite(result)?Math.max(result,values[i]):values[i]; return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
     readonly property string casLevel: !dataUsable ? "WARNING" : dataDegraded ? "CAUTION" :
-                                       controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
-                                       maximumCht>chtMaximum || controller.oilTemperature>oilTemperatureMaximum ? "WARNING" :
+                                       channelValid("engineRpm") && channelValid("oilPressure") && controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
+                                       maximumCht>chtMaximum || (channelValid("oilTemperature") && controller.oilTemperature>oilTemperatureMaximum) ? "WARNING" :
                                        fuelTotalGallons<=fuelReserveGallons*.5 || fuelLeakAlarm || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
-                                       controller.busVoltage<12.5 || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
+                                       (channelValid("busVoltage") && controller.busVoltage<12.5) || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
+                                       !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "CAUTION" :
                                        fuelImbalanceGallons>3 || centralLogSyncOffline ? "ADVISORY" : "NORMAL"
     readonly property string casHeadline: !dataUsable ? "ENGINE DATA "+normalizedDataState :
                                           dataDegraded ? "ENGINE DATA "+normalizedDataState :
-                                          controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
+                                          channelValid("engineRpm") && channelValid("oilPressure") && controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "OIL PRESSURE LOW" :
                                           maximumCht>chtMaximum ? "CHT HIGH" :
-                                          controller.oilTemperature>oilTemperatureMaximum ? "OIL TEMPERATURE HIGH" :
-                                          controller.busVoltage<12.5 ? "BUS VOLTAGE LOW" :
+                                          (channelValid("oilTemperature") && controller.oilTemperature>oilTemperatureMaximum) ? "OIL TEMPERATURE HIGH" :
+                                          (channelValid("busVoltage") && controller.busVoltage<12.5) ? "BUS VOLTAGE LOW" :
                                           fuelTotalGallons<=fuelReserveGallons*.5 ? "FUEL QUANTITY CRITICAL" :
                                           fuelLeakAlarm ? fuelLeakState :
                                           fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "FUEL QUANTITY DISAGREE" :
                                           fuelTotalGallons<=fuelReserveGallons ? "FINAL RESERVE" :
+                                          !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "ENGINE CHANNEL UNAVAILABLE" :
                                           fuelImbalanceGallons>3 ? "FUEL IMBALANCE" :
                                           centralLogSyncOffline ? "CENTRAL LOG SYNC OFFLINE" : "SYSTEM NORMAL"
     readonly property string casAction: !dataUsable ? "USE STANDBY INDICATIONS • CHECK EMS LINK" :
                                         dataDegraded ? "VALUES MAY BE DELAYED • VERIFY SOURCE" :
-                                        controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
+                                        channelValid("engineRpm") && channelValid("oilPressure") && controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "REDUCE POWER • LAND AS SOON AS PRACTICABLE" :
                                         maximumCht>chtMaximum ? "INCREASE COOLING • REDUCE POWER" :
-                                        controller.oilTemperature>oilTemperatureMaximum ? "REDUCE POWER • MONITOR PRESSURE" :
-                                        controller.busVoltage<12.5 ? "CHECK ALTERNATOR AND ELECTRICAL LOAD" :
+                                        (channelValid("oilTemperature") && controller.oilTemperature>oilTemperatureMaximum) ? "REDUCE POWER • MONITOR PRESSURE" :
+                                        (channelValid("busVoltage") && controller.busVoltage<12.5) ? "CHECK ALTERNATOR AND ELECTRICAL LOAD" :
                                         fuelTotalGallons<=fuelReserveGallons*.5 ? "LAND AS SOON AS POSSIBLE" :
                                         fuelLeakAlarm ? "CHECK TANKS • SELECT FUEL • LAND SOON" :
                                         fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "CHECK FOR LEAK OR SENSOR FAULT" :
                                         fuelTotalGallons<=fuelReserveGallons ? "VERIFY ENDURANCE AND DIVERT" :
+                                        !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "CHECK SENSOR VALIDITY • USE VALID INDICATIONS" :
                                         fuelImbalanceGallons>3 ? "SELECT FULLER TANK" :
                                         centralLogSyncOffline ? "ENGINE DATA LINK UNAFFECTED • CHECK CACHE SYNC" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
     readonly property color casColor: casLevel==="WARNING" ? "#FF3933" : casLevel==="CAUTION" ? amber : casLevel==="ADVISORY" ? cyan : green
@@ -137,9 +144,9 @@ Item {
         for(var i=0;i<values.length;i++){peaks.push(Number(values[i]));detected.push(false)}
         leanPeakValues=peaks; leanPeakDetected=detected; leanFirstCylinder=-1
     }
-    function startLean() { if(!dataUsable)return; resetLean(); leanActive=true }
+    function startLean() { if(!dataUsable||normalizedDataState==="STALE"||!allTemperaturesValid(controller.egtValues))return; resetLean(); leanActive=true }
     function updateLean() {
-        if(!dataUsable){leanActive=false;return}
+        if(!dataUsable||normalizedDataState==="STALE"||!allTemperaturesValid(controller.egtValues)){leanActive=false;return}
         if(!leanActive)return
         var values=controller.egtValues||[]; var peaks=leanPeakValues.slice(0); var detected=leanPeakDetected.slice(0)
         for(var i=0;i<values.length;i++){
@@ -149,9 +156,9 @@ Item {
         }
         leanPeakValues=peaks; leanPeakDetected=detected
     }
-    readonly property bool checklistEngineOk: dataUsable && (controller.engineRpm < 400 || (controller.oilPressure >= oilPressureMinimum && controller.oilPressure <= oilPressureMaximum && controller.oilTemperature >= 50 && controller.oilTemperature <= oilTemperatureMaximum))
-    readonly property bool checklistFuelOk: dataUsable && checklistFuelConfirmed && (controller.fuelLeft + controller.fuelRight) >= 8
-    readonly property bool checklistElectricalOk: dataUsable && controller.busVoltage >= 13.2 && controller.busVoltage <= 14.8 && controller.alternatorCurrent >= 0
+    readonly property bool checklistEngineOk: dataUsable && channelValid("engineRpm") && channelValid("oilPressure") && channelValid("oilTemperature") && (controller.engineRpm < 400 || (controller.oilPressure >= oilPressureMinimum && controller.oilPressure <= oilPressureMaximum && controller.oilTemperature >= 50 && controller.oilTemperature <= oilTemperatureMaximum))
+    readonly property bool checklistFuelOk: dataUsable && channelValid("fuelLeft") && channelValid("fuelRight") && checklistFuelConfirmed && (controller.fuelLeft + controller.fuelRight) >= 8
+    readonly property bool checklistElectricalOk: dataUsable && channelValid("busVoltage") && channelValid("alternatorCurrent") && controller.busVoltage >= 13.2 && controller.busVoltage <= 14.8 && controller.alternatorCurrent >= 0
     readonly property bool checklistAirframeOk: dataUsable && checklistAirframeConfirmed && (!controller.landingGearInstalled || controller.gearState === "DOWN & LOCKED")
     readonly property bool checklistComplete: checklistEngineOk && checklistFuelOk && checklistElectricalOk && checklistAirframeOk
     function appendTrend(series,value) { var copy=series.slice(0); copy.push(value); if(copy.length>120)copy.shift(); return copy }
@@ -170,10 +177,11 @@ Item {
     readonly property string mapUnit: metricUnits ? "HPA" : "IN HG"
     Timer { interval:1000; running:true; repeat:true; onTriggered:{
             if(!root.dataUsable){root.leanActive=false;root.updateCasEvents();return}
-            root.rpmTrend=root.appendTrend(root.rpmTrend,Number(controller.engineRpm||0)/3000)
-            root.oilTrend=root.appendTrend(root.oilTrend,Number(controller.oilPressure||0)/100)
-            var maximum=0; var values=controller.chtValues||[]; for(var i=0;i<values.length;i++)maximum=Math.max(maximum,Number(values[i])); root.chtTrend=root.appendTrend(root.chtTrend,maximum/250)
-            root.busTrend=root.appendTrend(root.busTrend,Number(controller.busVoltage||0)/16)
+            if(!root.allTemperaturesValid(controller.egtValues))root.leanActive=false
+            root.rpmTrend=root.appendTrend(root.rpmTrend,Number(controller.engineRpm)/3000)
+            root.oilTrend=root.appendTrend(root.oilTrend,Number(controller.oilPressure)/100)
+            var maximum=root.maximumCht; root.chtTrend=root.appendTrend(root.chtTrend,maximum/250)
+            root.busTrend=root.appendTrend(root.busTrend,Number(controller.busVoltage)/16)
             root.updateLean()
             root.updateCasEvents()
             trendCanvas.requestPaint()
@@ -221,14 +229,14 @@ Item {
         width: body.width*.63 }
     Row { id: primary; anchors { left: gauges.left; right: gauges.right; top: gauges.top }
         height: gauges.height*.59; spacing: 7*root.uiScale
-        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: root.rpmMaximum; greenStart: root.rpmMaximum*.24; greenEnd: root.rpmMaximum*.95; majorStep: root.rpmMaximum>4000?1000:500; minorStep: root.rpmMaximum>4000?200:100; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
-        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; valueValid:root.channelValid("engineRpm"); label: "RPM"; value: controller.engineRpm; unit: "RPM"; minimum: 0; maximum: root.rpmMaximum; greenStart: root.rpmMaximum*.24; greenEnd: root.rpmMaximum*.95; majorStep: root.rpmMaximum>4000?1000:500; minorStep: root.rpmMaximum>4000?200:100; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-parent.spacing)/2; height: parent.height; uiScale: root.uiScale; dominant: true; compact:root.compactLayout; valueValid:root.channelValid("manifoldPressure"); label: "MAP"; value: root.mapValue(controller.manifoldPressure); unit: root.mapUnit; minimum: 0; maximum: root.metricUnits?1350:40; greenStart: root.metricUnits?170:5; greenEnd: root.metricUnits?1150:34; majorStep: root.metricUnits?200:5; minorStep:root.metricUnits?40:1; decimals: root.metricUnits?0:1; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
     }
     Row { anchors { left: gauges.left; right: gauges.right; top: primary.bottom; bottom: gauges.bottom; topMargin: -3*root.uiScale }
         spacing: 5*root.uiScale
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.pressure(root.oilPressureMaximum); greenStart:root.pressure(root.oilPressureMinimum); greenEnd:root.pressure(root.oilPressureMaximum*.85); majorStep:root.pressure(root.oilPressureMaximum)/5; minorStep:root.pressure(root.oilPressureMaximum)/25; decimals:root.metricUnits?1:0; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.temp(20); maximum:root.temp(root.oilTemperatureMaximum*1.1); greenStart:root.temp(50); greenEnd:root.temp(root.oilTemperatureMaximum*.92); majorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/5; minorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/25; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
-        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; valueValid:root.channelValid("oilPressure"); label: "OIL PRESS"; value:root.pressure(controller.oilPressure); unit:root.pressureUnit; minimum:0; maximum:root.pressure(root.oilPressureMaximum); greenStart:root.pressure(root.oilPressureMinimum); greenEnd:root.pressure(root.oilPressureMaximum*.85); majorStep:root.pressure(root.oilPressureMaximum)/5; minorStep:root.pressure(root.oilPressureMaximum)/25; decimals:root.metricUnits?1:0; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; valueValid:root.channelValid("oilTemperature"); label: "OIL TEMP"; value:root.temp(controller.oilTemperature); unit:root.tempUnit; minimum:root.temp(20); maximum:root.temp(root.oilTemperatureMaximum*1.1); greenStart:root.temp(50); greenEnd:root.temp(root.oilTemperatureMaximum*.92); majorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/5; minorStep:(root.temp(root.oilTemperatureMaximum*1.1)-root.temp(20))/25; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
+        HmiArcGaugeV4 { width: (parent.width-2*parent.spacing)/3; height: parent.height; uiScale: root.uiScale; compact:root.compactLayout; valueValid:root.channelValid("fuelFlow"); label: "FUEL FLOW"; value:root.flow(controller.fuelFlow); unit:root.flowUnit; minimum:0; maximum:root.metricUnits?115:30; greenStart:root.metricUnits?11:3; greenEnd:root.metricUnits?87:23; majorStep:root.metricUnits?20:5; minorStep:root.metricUnits?4:1; decimals:1; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs; limitsVerified: root.engineLimitsVerified }
     }
 
     Item { id: rightColumn; anchors { left: gauges.right; right: body.right; top: body.top; bottom: body.bottom; leftMargin: 8*root.uiScale } }
@@ -260,12 +268,12 @@ Item {
     Rectangle { id: summary; anchors { left: nav.right; right: parent.right; bottom: actions.top; leftMargin: 8*root.uiScale; rightMargin: 8*root.uiScale; bottomMargin: 7*root.uiScale }
         height: root.compactLayout ? 62 : 72*root.uiScale; color: root.panel; border.color: root.line; radius: 5*root.uiScale
         Row { anchors { fill:parent; margins:8*root.uiScale } spacing:10*root.uiScale
-            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs }
+            HmiFuelStatus { width:parent.width*.36; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; leftQuantity:root.fuel(controller.fuelLeft); rightQuantity:root.fuel(controller.fuelRight); leftValid:root.channelValid("fuelLeft"); rightValid:root.channelValid("fuelRight"); tankCapacity:root.fuel(20); reserve:root.fuel(root.fuelReserveGallons); unit:root.fuelUnit; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs }
             Item { width:parent.width*.18; height:parent.height
                 Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top } text:"ENDURANCE"; color:root.cyan; font.pixelSize:hmiTokens.legibleText(8,root.textScale,8); font.bold:true }
-                Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.dataUsable?root.fuelEnduranceHours.toFixed(1)+" HR":"—"; color:!root.dataUsable?hmiTokens.invalid:root.dataDegraded?root.amber:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:hmiTokens.legibleText(17,root.textScale,15); font.bold:true }
+                Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:5*root.uiScale } text:root.reading(root.fuelEnduranceHours,1)+" HR"; color:!root.dataUsable?hmiTokens.invalid:root.dataDegraded?root.amber:root.fuelEnduranceHours<.75?root.amber:root.cyan; font.pixelSize:hmiTokens.legibleText(17,root.textScale,15); font.bold:true }
             }
-            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs }
+            HmiElectricalSynoptic { width:parent.width*.42; height:parent.height; uiScale:root.uiScale; compact:root.compactLayout; busVoltage:controller.busVoltage; alternatorCurrent:controller.alternatorCurrent; busVoltageValid:root.channelValid("busVoltage"); alternatorCurrentValid:root.channelValid("alternatorCurrent"); dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs }
         } }
     Row { id: actions; anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: root.compactLayout?4:10*root.uiScale }
         height: Math.max(hmiTokens.minimumTouch,48*root.uiScale); spacing: root.compactLayout?6:12*root.uiScale
@@ -288,7 +296,7 @@ Item {
             Rectangle { x: 20*root.uiScale; y: 55*root.uiScale; width: parent.width-40*root.uiScale; height: 1; color: root.line }
             Text { visible:root.selectedPanel !== "SYSTEM" && root.selectedPanel !== "TREND" && root.selectedPanel !== "CHECKLIST" && root.selectedPanel !== "LEAN" && root.selectedPanel !== "FUEL" && root.selectedPanel !== "CAS"; x: 25*root.uiScale; y: 76*root.uiScale; width: parent.width-50*root.uiScale; wrapMode: Text.WordWrap
                 text: root.selectedPanel === "LEAN" ? "LEAN ASSIST\nMonitoraggio comparato EGT per cilindro. Identificazione automatica del primo cilindro al picco e memorizzazione della variazione dal picco." :
-                      root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+"\nFlusso: "+root.flow(controller.fuelFlow).toFixed(1)+" "+root.flowUnit+"\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
+                      root.selectedPanel === "FUEL" ? "FUEL COMPUTER\nCarburante misurato: "+root.reading(root.fuel(controller.fuelLeft+controller.fuelRight),1)+" "+root.fuelUnit+"\nFlusso: "+root.reading(root.flow(controller.fuelFlow),1)+" "+root.flowUnit+"\nAutonomia stimata: "+((controller.fuelLeft+controller.fuelRight)/Math.max(.1,controller.fuelFlow)).toFixed(1)+" HR" :
                       root.selectedPanel === "TREND" ? "ENGINE TREND\nRPM, pressioni, temperature e parametri elettrici saranno rappresentati su finestre selezionabili da 1, 5, 15 e 60 minuti." :
                       "ENGINE CHECKLIST\n□ Parametri motore nel campo verde\n□ Carburante e autonomia verificati\n□ Alternatore e tensione verificati\n□ Carrello e flap configurati"
                 color: "#E8EEF0"; font.pixelSize: 15*root.uiScale; lineHeight: 1.5 }
@@ -321,11 +329,11 @@ Item {
                 Rectangle { x:0; y:28*root.uiScale; width:parent.width; height:166*root.uiScale; color:"#07141C"; border.color:root.line
                     Repeater { model:5; delegate:Rectangle { required property int index; x:0; y:index*parent.height/4; width:parent.width; height:1; color:"#263944" } }
                     Canvas { id:trendCanvas; anchors.fill:parent
-                        function drawSeries(ctx,series,color){if(series.length<2)return;ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2*root.uiScale;for(var i=0;i<series.length;i++){var x=i*(width/(119));var y=height-Math.max(0,Math.min(1,series[i]))*height;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.stroke()}
+                        function drawSeries(ctx,series,color){if(series.length<2)return;ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2*root.uiScale;var connected=false;for(var i=0;i<series.length;i++){if(!isFinite(series[i])){connected=false;continue}var x=i*(width/(119));var y=height-Math.max(0,Math.min(1,series[i]))*height;if(!connected)ctx.moveTo(x,y);else ctx.lineTo(x,y);connected=true}ctx.stroke()}
                         onPaint:{var ctx=getContext("2d");ctx.clearRect(0,0,width,height);drawSeries(ctx,root.rpmTrend,"#28D9F4");drawSeries(ctx,root.oilTrend,"#52DE36");drawSeries(ctx,root.chtTrend,"#FFC72B");drawSeries(ctx,root.busTrend,"#D36BFF")}
                     }
                 }
-                Text { y:201*root.uiScale; text:"NOW  RPM "+Math.round(controller.engineRpm)+"  •  OIL "+Number(controller.oilPressure).toFixed(1)+" PSI  •  BUS "+Number(controller.busVoltage).toFixed(1)+" V"; color:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
+                Text { y:201*root.uiScale; text:"NOW  RPM "+root.reading(controller.engineRpm,0)+"  •  OIL "+root.reading(Number(controller.oilPressure),1)+" PSI  •  BUS "+root.reading(Number(controller.busVoltage),1)+" V"; color:root.cyan; font.pixelSize:8*root.uiScale; font.bold:true }
             }
             Item { visible:root.selectedPanel === "CHECKLIST"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale
                 Text { text:"ENGINE / BEFORE TAKE-OFF"; color:"white"; font.pixelSize:12*root.uiScale; font.bold:true }
@@ -335,8 +343,8 @@ Item {
                 Column { y:34*root.uiScale; width:parent.width; spacing:5*root.uiScale
                     Repeater { model:[
                         {title:"ENGINE PARAMETERS",detail:"Oil pressure / temperature within operating range",ok:root.checklistEngineOk,manual:false},
-                        {title:"FUEL QUANTITY",detail:root.fuel(controller.fuelLeft+controller.fuelRight).toFixed(1)+" "+root.fuelUnit+" aboard • touch to confirm",ok:root.checklistFuelOk,manual:true,key:"fuel"},
-                        {title:"ELECTRICAL SYSTEM",detail:Number(controller.busVoltage).toFixed(1)+" V • alternator "+Number(controller.alternatorCurrent).toFixed(0)+" A",ok:root.checklistElectricalOk,manual:false},
+                        {title:"FUEL QUANTITY",detail:root.reading(root.fuel(controller.fuelLeft+controller.fuelRight),1)+" "+root.fuelUnit+" aboard • touch to confirm",ok:root.checklistFuelOk,manual:true,key:"fuel"},
+                        {title:"ELECTRICAL SYSTEM",detail:root.reading(Number(controller.busVoltage),1)+" V • alternator "+root.reading(Number(controller.alternatorCurrent),0)+" A",ok:root.checklistElectricalOk,manual:false},
                         {title:"GEAR / FLAPS / AIRFRAME",detail:"Configuration visually verified • touch to confirm",ok:root.checklistAirframeOk,manual:true,key:"airframe"}]
                         delegate:Rectangle { required property var modelData; width:parent.width; height:38*root.uiScale; radius:4*root.uiScale; color:modelData.ok?"#0C2918":"#17232A"; border.color:modelData.ok?root.green:(modelData.manual?root.amber:root.line)
                             Rectangle { x:9*root.uiScale; anchors.verticalCenter:parent.verticalCenter; width:20*root.uiScale; height:width; radius:width/2; color:modelData.ok?root.green:"transparent"; border.width:2; border.color:modelData.ok?root.green:(modelData.manual?root.amber:"#788890")
@@ -393,10 +401,10 @@ Item {
                 Text { anchors { right:parent.right; top:parent.top } text:root.fuelLeakAlarm?"⚠ "+root.fuelLeakState:!root.fuelCalibrationReady?"CALIBRATION REQUIRED":root.fuelDiscrepancyGallons>3?"⚠ FUEL DISAGREE":root.fuelImbalanceGallons>3?"⚠ TANK IMBALANCE":"LEAK MONITOR "+root.fuelLeakState; color:(root.fuelLeakAlarm||!root.fuelCalibrationReady||root.fuelDiscrepancyGallons>3||root.fuelImbalanceGallons>3)?root.amber:root.green; font.pixelSize:8*root.uiScale; font.bold:true }
                 Row { x:0; y:35*root.uiScale; width:parent.width; height:86*root.uiScale; spacing:7*root.uiScale
                     Repeater { model:[
-                        {h:"REMAINING",v:root.fuel(root.fuelTotalGallons).toFixed(1),u:root.fuelUnit,c:root.fuelTotalGallons<=root.fuelReserveGallons?root.amber:"white"},
-                        {h:"FLOW",v:root.flow(controller.fuelFlow).toFixed(1),u:root.flowUnit,c:root.cyan},
-                        {h:"TO RESERVE",v:controller.fuelFlow>.1?root.fuelEnduranceHours.toFixed(1):"--",u:"HOURS",c:controller.fuelFlow>.1?(root.fuelEnduranceHours<.75?root.amber:root.green):"#899BA3"},
-                        {h:"RESERVE TIME",v:controller.fuelFlow>.1?Math.round(root.fuelReserveMinutes):"--",u:"MIN",c:root.amber}]
+                        {h:"REMAINING",v:root.reading(root.fuel(root.fuelTotalGallons),1),u:root.fuelUnit,c:root.fuelTotalGallons<=root.fuelReserveGallons?root.amber:"white"},
+                        {h:"FLOW",v:root.reading(root.flow(controller.fuelFlow),1),u:root.flowUnit,c:root.cyan},
+                        {h:"TO RESERVE",v:controller.fuelFlow>.1?root.reading(root.fuelEnduranceHours,1):"--",u:"HOURS",c:controller.fuelFlow>.1?(root.fuelEnduranceHours<.75?root.amber:root.green):"#899BA3"},
+                        {h:"RESERVE TIME",v:root.reading(root.fuelReserveMinutes,0),u:"MIN",c:root.amber}]
                         delegate:Rectangle { required property var modelData; width:(parent.width-3*parent.spacing)/4; height:parent.height; radius:4*root.uiScale; color:"#091821"; border.color:root.line
                             Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:9*root.uiScale } text:modelData.h; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
                             Text { anchors.centerIn:parent; anchors.verticalCenterOffset:3*root.uiScale; text:modelData.v; color:modelData.c; font.pixelSize:21*root.uiScale; font.bold:true }
@@ -406,16 +414,16 @@ Item {
                 }
                 Rectangle { x:0; y:130*root.uiScale; width:parent.width*.55; height:68*root.uiScale; radius:4*root.uiScale; color:"#091821"; border.color:root.line
                     Text { x:12*root.uiScale; y:8*root.uiScale; text:"TANK QUANTITY"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
-                    Text { anchors { right:parent.right; top:parent.top; rightMargin:10*root.uiScale; topMargin:7*root.uiScale } text:"SET FOB "+root.fuel(root.fuelMeasuredGallons).toFixed(1); color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:controller.setFuelOnBoardGallons(root.fuelMeasuredGallons) } }
+                    Text { anchors { right:parent.right; top:parent.top; rightMargin:10*root.uiScale; topMargin:7*root.uiScale } text:"SET FOB "+root.reading(root.fuel(root.fuelMeasuredGallons),1); color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:{if(isFinite(root.fuelMeasuredGallons))controller.setFuelOnBoardGallons(root.fuelMeasuredGallons)} } }
                     Repeater { model:[{n:"LEFT",v:controller.fuelLeft},{n:"RIGHT",v:controller.fuelRight}]
                         delegate:Item { required property var modelData; required property int index; x:12*root.uiScale; y:(index+1)*22*root.uiScale; width:parent.width-24*root.uiScale; height:14*root.uiScale
                             readonly property int calibrationCount:index===0?root.fuelCalibrationLeftCount:root.fuelCalibrationRightCount
                             Text { width:62*root.uiScale; text:parent.calibrationCount===5?modelData.n+" CAL OK":modelData.n+" "+(parent.calibrationCount*25)+"%"; color:parent.calibrationCount===5?root.green:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true
                                 TapHandler { onTapped:if(parent.parent.calibrationCount<5)controller.captureFuelCalibrationPoint(parent.parent.modelData.n); onLongPressed:controller.clearFuelCalibration(parent.parent.modelData.n) } }
                             Rectangle { x:67*root.uiScale; width:parent.width-124*root.uiScale; height:8*root.uiScale; color:"#1A2A31"; border.color:"#53656D"
-                                Rectangle { anchors { left:parent.left; top:parent.top; bottom:parent.bottom; margins:1 } width:(parent.width-2)*Math.max(0,Math.min(1,modelData.v/20)); color:modelData.v<4?"#FF3933":modelData.v<7?root.amber:root.green }
+                                Rectangle { anchors { left:parent.left; top:parent.top; bottom:parent.bottom; margins:1 } visible:root.dataUsable&&root.normalizedDataState!=="STALE"&&isFinite(modelData.v); width:visible?(parent.width-2)*Math.max(0,Math.min(1,modelData.v/20)):0; color:modelData.v<4?"#FF3933":modelData.v<7?root.amber:root.green }
                             }
-                            Text { anchors.right:parent.right; text:root.fuel(modelData.v).toFixed(1)+" "+root.fuelUnit; color:"white"; font.pixelSize:7*root.uiScale; font.bold:true }
+                            Text { anchors.right:parent.right; text:root.reading(root.fuel(modelData.v),1)+" "+root.fuelUnit; color:"white"; font.pixelSize:7*root.uiScale; font.bold:true }
                         }
                     }
                 }
@@ -425,7 +433,7 @@ Item {
                     Rectangle { anchors { left:parent.left; verticalCenter:parent.verticalCenter; leftMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"−"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:controller.setFuelReserveGallons(Math.max(0,root.fuelReserveGallons-1)) } }
                     Rectangle { anchors { right:parent.right; verticalCenter:parent.verticalCenter; rightMargin:10*root.uiScale } width:30*root.uiScale; height:26*root.uiScale; radius:3*root.uiScale; color:"#182932"; border.color:root.line; Text { anchors.centerIn:parent; text:"+"; color:"white"; font.pixelSize:16*root.uiScale } TapHandler { onTapped:controller.setFuelReserveGallons(Math.min(root.fuelTotalGallons,root.fuelReserveGallons+1)) } }
                 }
-                Text { x:0; y:207*root.uiScale; text:"FOB "+root.fuel(controller.fuelOnBoardGallons).toFixed(1)+" • USED "+root.fuel(root.fuelUsedGallons).toFixed(1)+" • LEAK Δ "+Number(controller.fuelLeakExcessGph||0).toFixed(1)+" GPH"; color:root.fuelLeakAlarm?root.amber:"#7F929A"; font.pixelSize:7*root.uiScale }
+                Text { x:0; y:207*root.uiScale; text:"FOB "+root.reading(root.fuel(controller.fuelOnBoardGallons),1)+" • USED "+root.fuel(root.fuelUsedGallons).toFixed(1)+" • LEAK Δ "+Number(controller.fuelLeakExcessGph||0).toFixed(1)+" GPH"; color:root.fuelLeakAlarm?root.amber:"#7F929A"; font.pixelSize:7*root.uiScale }
                 Text { anchors { right:parent.right; bottom:parent.bottom } text:"RESET USED"; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true; TapHandler { onTapped:controller.resetFuelUsed() } }
             }
             Item { visible:root.selectedPanel === "CAS"; x:22*root.uiScale; y:67*root.uiScale; width:parent.width-44*root.uiScale; height:225*root.uiScale

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 
 namespace {
 void require(bool condition, const char* message) {
@@ -26,6 +27,43 @@ efis::Sample<double> sample(double value, efis::Validity validity,
 int main() {
     using namespace std::chrono_literals;
     const auto epoch = efis::MonoTime{};
+
+    for (const auto validity : {efis::Validity::stale, efis::Validity::unavailable,
+                               efis::Validity::out_of_range, efis::Validity::disagree}) {
+        const auto residual = sample(58.0, validity);
+        require(!efis::engine_channel_usable(residual) && std::isnan(efis::engine_display_value(residual)),
+                "unusable residual engine values must not remain numeric");
+        double gallons = 99.0;
+        bool baseline = false;
+        require(!efis::initialize_fuel_on_board(residual, sample(10, efis::Validity::valid),
+                    58, 10, gallons, baseline) && !baseline && gallons == 99,
+                "one invalid tank must not latch an initial fuel quantity");
+    }
+    for (const auto validity : {efis::Validity::valid, efis::Validity::degraded, efis::Validity::simulated}) {
+        require(efis::engine_channel_usable(sample(0, validity)) && efis::engine_display_value(sample(0, validity)) == 0,
+                "usable zero is a real reading, not missing data");
+    }
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    for (const double value : {nan, std::numeric_limits<double>::infinity()}) {
+        require(std::isnan(efis::engine_display_value(sample(value, efis::Validity::valid))),
+                "nonfinite engine values must fail closed even with valid flag");
+    }
+    double gallons = 99.0;
+    bool baseline = false;
+    const auto left = sample(10, efis::Validity::valid);
+    const auto right = sample(12, efis::Validity::valid);
+    require(!efis::initialize_fuel_on_board(left, right, nan, 12, gallons, baseline),
+            "invalid calibration output must not initialize fuel");
+    require(!efis::initialize_fuel_on_board(left, sample(12, efis::Validity::simulated), 10, 12, gallons, baseline),
+            "mixed SIM/real tanks must not initialize fuel");
+    require(!efis::initialize_fuel_on_board(sample(-1, efis::Validity::valid), right, 0, 12, gallons, baseline),
+            "negative raw tank must not be hidden by a clamped calibrated value");
+    require(efis::initialize_fuel_on_board(left, right, 11, 13, gallons, baseline)
+                && baseline && gallons == 24,
+            "first usable pair after invalid startup must initialize calibrated fuel");
+    require(!efis::initialize_fuel_on_board(left, right, 1, 1, gallons, baseline) && gallons == 24,
+            "later samples must not overwrite an initialized or pilot-entered baseline");
+    std::cout << "Engine channel masking and fuel baseline: PASS\n";
 
     const auto invalid = efis::engine_integration_input(
         sample(5200.0, efis::Validity::unavailable),
