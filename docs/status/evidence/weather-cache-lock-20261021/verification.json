@@ -1,0 +1,18 @@
+{
+  "schema": "efis-next.weather-cache-lock-verification.v1",
+  "date": "2026-10-21",
+  "requirement": "WX-001",
+  "source_sha256": "594fe146ab1db866dbe95fd24952b98edf72f8b9fc9f17e8ccad56925d7e9564",
+  "tests_sha256": "ff70c2ff37d291fbad26a6a7fe73a47aff09a3deeafb916978c7acca80c12bcc",
+  "archive_sha256": "7fddb646f426c0e0638eaf644ca085d62e02c019b860e66a9502f27d17d4b198",
+  "serverha": {"status": "PASS", "tests": 35, "log": "serverha.log"},
+  "arm64": {"status": "PASS", "tests": 35, "log": "arm64.log"},
+  "scope": "SOFTWARE_TESTS_IN_ISOLATED_DIRECTORIES",
+  "terminated_process": "OWN_FIXTURE_CHILD_ONLY",
+  "production_cache_modified": false,
+  "service_activation": "NOT_RUN",
+  "power_loss_test": "NOT_RUN",
+  "provider_qualification": "NOT_RUN",
+  "activation_authorized": false,
+  "flight_approval": false
+}

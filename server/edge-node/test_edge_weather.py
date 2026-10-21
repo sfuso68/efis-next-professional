@@ -3,6 +3,7 @@ import io
 import contextlib
 import subprocess
 import sys
+import time
 import threading
 import socket
 import tempfile
@@ -31,6 +32,95 @@ def record(age_seconds=0, *, metar="TEST METAR", taf=None, fetched_utc=None):
 
 
 class EdgeWeatherTest(unittest.TestCase):
+    @unittest.skipIf(edge_weather.fcntl is None, "POSIX writer lock required")
+    def test_same_station_has_bounded_contention_and_other_station_is_independent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with edge_weather.station_lock(directory, "LIPH"):
+                started = time.monotonic()
+                with self.assertRaises(TimeoutError):
+                    with edge_weather.station_lock(directory, "LIPH", timeout=0.02): pass
+                self.assertLess(time.monotonic() - started, 1.0)
+                with edge_weather.station_lock(directory, "LIPZ", timeout=0): pass
+            with edge_weather.station_lock(directory, "LIPH", timeout=0): pass
+            self.assertEqual(Path(directory, ".LIPH.sync.lock").read_bytes(), b"")
+
+    @unittest.skipIf(edge_weather.fcntl is None, "POSIX writer lock required")
+    def test_failed_sync_releases_lock_and_preserves_previous_generation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.write(directory, "LIPH", record())
+            before = Path(directory, "LIPH.json").read_bytes()
+            with patch.object(edge_weather.urllib.request, "urlopen", side_effect=TimeoutError("fixture")):
+                with self.assertRaises(TimeoutError):
+                    edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
+            with edge_weather.station_lock(directory, "LIPH", timeout=0): pass
+            self.assertEqual(Path(directory, "LIPH.json").read_bytes(), before)
+
+    @unittest.skipIf(edge_weather.fcntl is None, "POSIX writer lock required")
+    def test_busy_sync_never_downloads_or_changes_cached_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.write(directory, "LIPH", record())
+            before = Path(directory, "LIPH.json").read_bytes()
+            with edge_weather.station_lock(directory, "LIPH"), \
+                    patch.object(edge_weather.urllib.request, "urlopen") as request, \
+                    patch.object(edge_weather, "station_lock", side_effect=TimeoutError("busy")):
+                with self.assertRaises(TimeoutError):
+                    edge_weather.sync_one(directory, "https://example.invalid", "LIPH")
+                request.assert_not_called()
+            self.assertEqual(Path(directory, "LIPH.json").read_bytes(), before)
+
+    @unittest.skipIf(edge_weather.fcntl is None, "POSIX writer lock required")
+    def test_lock_released_after_real_child_is_killed(self):
+        import select
+        with tempfile.TemporaryDirectory() as directory:
+            self.write(directory, "LIPH", record())
+            before = Path(directory, "LIPH.json").read_bytes()
+            code = ("import sys;sys.path.insert(0,sys.argv[1]);import edge_weather;"
+                    "lock=edge_weather.station_lock(sys.argv[2],'LIPH');lock.__enter__();"
+                    "print('LOCKED',flush=True);sys.stdin.readline()")
+            process = subprocess.Popen([sys.executable, "-I", "-c", code,
+                                        str(Path(edge_weather.__file__).parent), directory],
+                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            try:
+                ready, _, _ = select.select([process.stdout], [], [], 10)
+                self.assertTrue(ready, "child did not announce lock acquisition")
+                self.assertEqual(process.stdout.readline().strip(), b"LOCKED")
+                with self.assertRaises(TimeoutError):
+                    with edge_weather.station_lock(directory, "LIPH", timeout=0): pass
+                process.kill(); process.wait(timeout=5)
+                self.assertLess(process.returncode, 0)
+                with edge_weather.station_lock(directory, "LIPH", timeout=0): pass
+                self.assertEqual(Path(directory, "LIPH.json").read_bytes(), before)
+            finally:
+                if process.poll() is None: process.kill()
+                process.communicate(timeout=5)
+
+    @unittest.skipIf(edge_weather.fcntl is None, "POSIX writer lock required")
+    def test_lock_symlink_does_not_modify_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory, "keep"); target.write_bytes(b"preserve")
+            Path(directory, ".LIPH.sync.lock").symlink_to(target)
+            with self.assertRaises(OSError):
+                with edge_weather.station_lock(directory, "LIPH"): pass
+            self.assertEqual(target.read_bytes(), b"preserve")
+
+    def test_unsupported_lock_backend_refuses_sync_without_creating_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            missing = Path(directory, "absent")
+            with patch.object(edge_weather, "fcntl", None):
+                with self.assertRaises(RuntimeError):
+                    with edge_weather.station_lock(missing, "LIPH"): pass
+            self.assertFalse(missing.exists())
+
+    def test_invalid_lock_parameters_and_partial_credentials_do_not_write_cache(self):
+        with tempfile.TemporaryDirectory() as directory:
+            missing = Path(directory, "absent")
+            for timeout in (-1, float("nan"), float("inf")):
+                with self.assertRaises(ValueError):
+                    with edge_weather.station_lock(missing, "LIPH", timeout=timeout): pass
+            with self.assertRaises(ValueError):
+                edge_weather.sync_one(missing, "https://example.invalid", "LIPH", username="only")
+            self.assertFalse(missing.exists())
+
     def test_blank_bulletins_are_no_report(self):
         with tempfile.TemporaryDirectory() as directory:
             self.write(directory, "LIPH", record(metar=" \n ", taf="\t"))

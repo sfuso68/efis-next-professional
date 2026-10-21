@@ -1489,3 +1489,26 @@ WX-001 resta PARTIAL. Nessun servizio/cache di produzione, release, rete,
 firmware, timer o soglia power modificati; nessuna attivazione o reboot.
 Rimangono aperti qualifica provider/CA/licenza, adapter del payload reale e
 prove end-to-end; power e gli altri gate hardware restano bloccanti invariati.
+
+## 65. A5/WX-001: contesa writer e recovery del processo — 2026-10-21
+
+Proseguito autonomamente sulla PR #51, senza merge o deployment e mantenendo
+il blocco esplicito di tutte le attivazioni. Implementato lock POSIX per stazione
+su tutto il fetch/commit, attesa massima 2 s, rilascio tramite descriptor e
+kernel su morte processo. Cache e lettori restano disponibili; non si elimina
+il file lock persistente, non si usano timestamp civili/TTL per forzarlo.
+Lock non regolare, symlink, proprietà/permessi non sicuri rifiutati. Senza
+backend POSIX sync rifiutata senza creare cache, lettura indipendente dal lock.
+
+SOLO SOFTWARE: 35/35 test Linux serverha e 35/35 ARM64 MFD in nuove directory
+isolate. Verificati contesa stessa stazione, indipendenza stazioni, timeout
+senza download o sostituzione, recovery dopo errore e dopo SIGKILL del solo
+processo fixture; generazione precedente byte-identica e lock riacquisibile.
+Nessun processo o cache di produzione modificato. Log in
+`evidence/weather-cache-lock-20261021/`; nessun nuovo PASS hardware.
+
+WX-001 resta PARTIAL: protocollo dei writer cooperanti locale, non NFS o
+writer esterni, power-loss non provato. Sync threaded con mapping --resolve
+differenti nello stesso processo non qualificato (resolver globale esistente).
+Payload/tempi provider, TLS/CA/licenze e consumer reali restano aperti.
+PWR-001 e attivazioni MFD/PFD/Blackbox rimangono bloccati fino a verifica PSU.

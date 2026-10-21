@@ -72,3 +72,9 @@ Tutte le attivazioni restano bloccate su richiesta del proprietario fino alla
 verifica alimentatori. Prossimo gap A5: payload/TLS e tempi effettivi provider,
 licenze/georeferenziazione e cache radar persistente, senza attribuire al fetch
 l'autorità temporale di un'osservazione meteorologica.
+
+Aggiornamento 2026-10-21: writer per stazione serializzati con flock locale,
+timeout e recovery dopo errore/morte del processo; 35 test PASS Linux serverha
+e 35 ARM64. Chiusa questa sola lacuna software fra writer cooperanti; non è
+power-loss o qualifica provider. Evidenza `weather-cache-lock-20261021/`.
+Le attivazioni restano bloccate e nessun servizio produttivo è stato aggiornato.

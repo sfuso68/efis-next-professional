@@ -4,12 +4,17 @@
 import argparse
 import base64
 import contextlib
+try:
+    import fcntl
+except ImportError:
+    fcntl = None  # Serving/reading remains portable; synchronization targets Linux.
 import json
 import math
 import os
 import re
 import socket
 import ssl
+import stat
 import tempfile
 import time
 import urllib.request
@@ -248,7 +253,50 @@ def cache_status(cache, now=None):
     }
 
 
+@contextlib.contextmanager
+def station_lock(cache, icao, timeout=2.0):
+    """Serialize one station through fetch+commit, not all stations or readers.
+
+    A persistent empty lock file is intentional: unlinking it can split the
+    lock domain. The kernel releases flock when the owning process exits.
+    """
+    station = normalized_icao(icao)
+    if fcntl is None:
+        raise RuntimeError("weather synchronization requires POSIX flock")
+    if not math.isfinite(timeout) or timeout < 0:
+        raise ValueError("invalid lock timeout")
+    directory = Path(cache)
+    directory.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(directory / ("." + station + ".sync.lock"),
+                         os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid() or info.st_mode & 0o022:
+            raise ValueError("unsafe station lock file")
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("weather station synchronization busy")
+                time.sleep(min(0.05, remaining))
+        yield
+    finally:
+        os.close(descriptor)
+
+
 def sync_one(cache, base_url, icao, username=None, password=None, ca_file=None, resolve=None):
+    station = normalized_icao(icao)
+    if bool(username) != bool(password):
+        raise ValueError("both EDGE weather credentials are required")
+    with station_lock(cache, station):
+        return _sync_one_locked(cache, base_url, station, username, password, ca_file, resolve)
+
+
+def _sync_one_locked(cache, base_url, icao, username=None, password=None, ca_file=None, resolve=None):
     station = normalized_icao(icao)
     headers = {"User-Agent": "EFIS-EDGE-V2/0.2"}
     if username or password:
