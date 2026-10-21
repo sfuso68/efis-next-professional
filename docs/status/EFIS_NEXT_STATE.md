@@ -36,6 +36,13 @@ storici, verticale sensore-EDP-display, acceptance pannello/ARM64 e power gate.
 Stati della matrice non promossi. Prossimo blocco autonomo: R1-05, freschezza
 METAR/TAF e distinzione fra età osservazione radar ed età cache (N9/N10).
 
+Follow-up CI R1-04: run Project Control `39670643622` FAIL per marker testuale
+obsoleto dell'autonomia, non per mismatch degli output generati. Il registro
+ora richiede il test runtime per il fuel, non la vecchia espressione JS basata
+sul solo stato globale; prova Qt ampliata con autonomia sana/invalidata e
+assenza di falsi allarmi quantità critica/riserva quando la baseline è ignota.
+Il run remoto successivo va riconfermato; nessun gate hardware viene rimosso.
+
 ## Correzione candidata N4/N5 — isolamento stato EMS
 
 Nel branch `fix/ems-engine-state-isolation-v1`, `AdaptiveEmsView` consuma

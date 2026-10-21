@@ -59,6 +59,7 @@ TestCase {
         compare(gauge("RPM").readingValid,true)
     }
     function test_partial_fuel() {
+        verify(isFinite(view.fuelEnduranceHours))
         fixture.fuelLeftValid=false
         compare(findChild(view,"fuelTankReadingLEFT").text,"LEFT  —")
         verify(findChild(view,"fuelTankReadingRIGHT").text.indexOf("—")<0)
@@ -67,6 +68,8 @@ TestCase {
         verify(!isFinite(view.fuelEnduranceHours))
         fixture.fuelOnBoardValid=false
         verify(!isFinite(view.fuelTotalGallons))
+        verify(view.casHeadline!=="FUEL QUANTITY CRITICAL")
+        verify(view.casHeadline!=="FINAL RESERVE")
     }
     function test_partial_electrical() {
         fixture.busVoltageValid=false

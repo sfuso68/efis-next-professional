@@ -166,7 +166,16 @@
     },
     {
       "path": "tests/qml/tst_engine_channel_validity.qml",
-      "sha256_lf_text": "39481db05759cac2c533dca23ae6c00cf4a9ed81dc92964fbd51ea1d1e17837b"
+      "sha256_lf_text": "728c5f96643fa9222d9430025f65e711bc631bb3b0708aa9df4148a80cbcc712"
     }
-  ]
+  ],
+  "ci_followup": {
+    "failed_run": 39670643622,
+    "cause": "Obsolete source marker freezing global-state-only endurance expression",
+    "fix": "Registry points to executed partial-fuel QML test; no exemption or behavior weakening",
+    "local_python_hmi_tests": 43,
+    "local_qml_reported_outcomes": 29,
+    "remote_after_push": "PENDING",
+    "date": "2026-10-21"
+  }
 }
