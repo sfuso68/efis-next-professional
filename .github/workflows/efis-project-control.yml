@@ -32,6 +32,7 @@ jobs:
         run: |
           python -m unittest tests.test_project_status_control -v
           python -m unittest tests.test_git_restore_drill -v
+          python -m unittest tests.test_mavlink_write_quarantine -v
           python tools/project_status/generate_status.py --check
 
       - name: Validate G1 sensor-node discovery contract

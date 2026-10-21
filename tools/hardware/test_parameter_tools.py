@@ -1,19 +1,10 @@
 #!/usr/bin/env python3
-"""Prove automatiche degli strumenti di lettura e scrittura parametri.
+"""Parameter-tool checks; legacy writer quarantined under ADR-015.
 
-Ogni prova avvia il banco di prova MAVLink con un guasto scelto, esegue lo
-strumento come processo separato e verifica il documento JSON che produce.
-Nessuna prova tocca una seriale: il banco parla soltanto su UDP locale.
-
-Le prove interessanti non sono quelle in cui la scrittura riesce. Sono quelle in
-cui l'autopilota risponde di aver obbedito e non ha obbedito, in cui non
-risponde affatto, e in cui il parametro chiesto non e' quello che si crede. Su
-hardware vero quei casi o non si producono, o si producono lasciando il Pixhawk
-in uno stato che nessuno voleva.
-
-Uso:
-
-    .../venv/bin/python tools/hardware/test_parameter_tools.py
+Writer behavior is verified without serial, sockets or pymavlink.
+The remaining historical backup fixtures use only a local UDP simulator;
+their request-generating behavior is not a passive observer qualification.
+No real Pixhawk is accessed by this harness.
 """
 
 from __future__ import annotations
@@ -28,7 +19,6 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PYTHON = sys.executable
 STUB = HERE / "mavlink_parameter_stub.py"
-SETTER = HERE / "set_mavlink_parameter.py"
 BACKUP = HERE / "backup_parameters.py"
 
 results: list[tuple[bool, str]] = []
@@ -37,17 +27,6 @@ results: list[tuple[bool, str]] = []
 def check(condition: bool, description: str) -> None:
     results.append((bool(condition), description))
     print(f"  {'ok  ' if condition else 'FALLITA'} {description}")
-
-
-def parse_json(text: str):
-    start = text.find("{")
-    if start < 0:
-        return None
-    try:
-        value, _ = json.JSONDecoder().raw_decode(text[start:])
-        return value
-    except json.JSONDecodeError:
-        return None
 
 
 class Stub:
@@ -83,146 +62,12 @@ class Stub:
             self.process.kill()
 
 
-def run_setter(port: int, *args: str, timeout: float = 60):
-    completed = subprocess.run(
-        [PYTHON, str(SETTER), "--device", f"udpin:127.0.0.1:{port}", *args],
-        capture_output=True, text=True, timeout=timeout)
-    return completed, parse_json(completed.stdout)
-
-
 def main() -> int:
-    print("Prove degli strumenti parametri ArduPilot\n")
-
-    print("0. Recupero dal difetto pymavlink multi-istanza")
-    sys.path.insert(0, str(HERE))
-    from set_mavlink_parameter import receive_match  # noqa: E402
-
-    class IntermittentLink:
-        def __init__(self):
-            self.calls = 0
-
-        def recv_match(self, **_):
-            self.calls += 1
-            if self.calls == 1:
-                raise TypeError("'NoneType' object does not support item assignment")
-            return "heartbeat"
-
-    intermittent = IntermittentLink()
-    check(receive_match(intermittent, message_type="HEARTBEAT", timeout=1) == "heartbeat",
-          "il frame multi-istanza difettoso viene scartato entro lo stesso timeout")
-    check(intermittent.calls == 2, "la ricezione prosegue dopo il solo errore noto")
-
-    class UnexpectedFailureLink:
-        def recv_match(self, **_):
-            raise TypeError("errore differente")
-
-    try:
-        receive_match(UnexpectedFailureLink(), message_type="HEARTBEAT", timeout=1)
-    except TypeError:
-        unexpected_visible = True
-    else:
-        unexpected_visible = False
-    check(unexpected_visible, "gli altri TypeError non vengono nascosti")
-
-    print("1. Prova a vuoto: legge, verifica la guardia, non scrive")
-    with Stub(14551):
-        completed, record = run_setter(
-            14551, "--name", "SCR_HEAP_SIZE", "--expected", "102400", "--value", "204800")
-        check(record is not None and record["outcome"] == "dry_run",
-              "senza --commit l'esito e' una prova a vuoto")
-        check(completed.returncode == 0, "la prova a vuoto non e' un errore")
-        check("204800" in completed.stdout, "dichiara il valore che scriverebbe")
-
-    print("\n2. Scrittura verificata su un parametro innocuo")
-    with Stub(14552):
-        _, record = run_setter(14552, "--name", "SCR_HEAP_SIZE", "--expected", "102400",
-                               "--value", "204800", "--commit")
-        check(record is not None and record["outcome"] == "verified",
-              "la scrittura riletta con successo risulta verificata")
-        check(record and record["value_before"] == 102400.0, "registra il valore di partenza")
-        check(record and record["value_after"] == 204800.0, "registra il valore riletto")
-
-    print("\n3. Guardia: il valore attuale non e' quello dichiarato")
-    with Stub(14553):
-        completed, record = run_setter(14553, "--name", "SCR_HEAP_SIZE", "--expected", "999",
-                                       "--value", "204800", "--commit")
-        check(record is not None and record["outcome"] == "guard_failed",
-              "una guardia non soddisfatta impedisce la scrittura")
-        check(completed.returncode != 0, "il fallimento della guardia e' un errore")
-        check(record and "value_after" not in record,
-              "non essendo stato scritto nulla, non c'e' alcun valore finale")
-
-    print("\n4. Parametro protetto: ARSPD_USE non si abilita per distrazione")
-    with Stub(14554):
-        completed, record = run_setter(14554, "--name", "ARSPD_USE", "--expected", "0",
-                                       "--value", "1", "--commit")
-        check(record is not None and record["outcome"] == "refused_protected",
-              "un parametro protetto viene rifiutato")
-        check(completed.returncode != 0, "il rifiuto e' un errore, non un successo silenzioso")
-        check("--allow-protected" in completed.stderr + completed.stdout,
-              "spiega come procedere se la modifica e' davvero voluta")
-
-    print("\n5. L'autopilota conferma ma non applica: il caso peggiore")
-    with Stub(14555, "--ignore-writes"):
-        completed, record = run_setter(14555, "--name", "SCR_HEAP_SIZE", "--expected", "102400",
-                                       "--value", "204800", "--commit")
-        check(record is not None and record["outcome"] == "readback_mismatch",
-              "la riletta indipendente smaschera la conferma non mantenuta")
-        check(record and record.get("echoed_value") == 204800.0,
-              "l'eco riportava il valore nuovo, e non bastava")
-        check(record and record.get("value_after") == 102400.0,
-              "il valore reale era rimasto quello di prima")
-        check(completed.returncode != 0, "una scrittura non applicata e' un errore")
-
-    print("\n6. Nessuna risposta alla scrittura, ma il valore cambia")
-    with Stub(14556, "--silent-writes"):
-        _, record = run_setter(14556, "--name", "SCR_HEAP_SIZE", "--expected", "102400",
-                               "--value", "204800", "--commit", "--timeout", "2")
-        check(record is not None and record["outcome"] == "verified",
-              "senza eco, ma con riletta concorde, la scrittura e' comunque verificata")
-        check(record and record.get("echoed_value") is None,
-              "l'assenza di eco viene registrata come tale")
-
-    print("\n7. La scrittura non arriva affatto: si ripristina e si verifica")
-    with Stub(14557, "--refuse-writes"):
-        completed, record = run_setter(14557, "--name", "SCR_HEAP_SIZE", "--expected", "102400",
-                                       "--value", "204800", "--commit", "--timeout", "2")
-        check(record is not None and record["outcome"] == "readback_mismatch",
-              "una scrittura rifiutata non passa per riuscita")
-        check(record and record.get("rollback") == "verified",
-              "il ripristino viene verificato, non soltanto tentato")
-        check(record and record.get("value_restored") == 102400.0,
-              "il valore ripristinato e' quello di partenza")
-        check(completed.returncode != 0, "l'esito resta un errore")
-
-    print("\n8. Letture perse: la richiesta viene ripetuta")
-    with Stub(14558, "--drop-reads", "2"):
-        _, record = run_setter(14558, "--name", "SCR_HEAP_SIZE", "--expected", "102400",
-                               "--value", "204800", "--timeout", "2", "--retries", "4")
-        check(record is not None and record["outcome"] == "dry_run",
-              "due risposte perse non impediscono la lettura")
-        check(record and record.get("read_attempts", 0) >= 3,
-              "i tentativi effettuati vengono contati e dichiarati")
-
-    print("\n9. Valore gia' impostato: non si riscrive")
-    with Stub(14559):
-        completed, record = run_setter(14559, "--name", "ARSPD_TYPE", "--expected", "8",
-                                       "--value", "8", "--commit")
-        check(record is not None and record["outcome"] == "already_set",
-              "un parametro gia' al valore voluto non viene riscritto")
-        check(completed.returncode == 0, "non essendoci nulla da fare, non e' un errore")
-
-    print("\n10. Traccia di controllo")
-    with tempfile.TemporaryDirectory() as directory:
-        with Stub(14560):
-            run_setter(14560, "--name", "SCR_HEAP_SIZE", "--expected", "102400",
-                       "--value", "204800", "--commit", "--audit-dir", directory)
-        files = list(Path(directory).glob("param-SCR_HEAP_SIZE-*.json"))
-        check(len(files) == 1, "ogni esecuzione lascia un documento di controllo")
-        if files:
-            saved = json.loads(files[0].read_text(encoding="utf-8"))
-            check(saved.get("outcome") == "verified", "il documento riporta l'esito")
-            check("started_utc" in saved, "il documento riporta quando e' avvenuto")
+    import unittest
+    suite = unittest.defaultTestLoader.discover(
+        str(HERE.parents[1] / "tests"), pattern="test_mavlink_write_quarantine.py")
+    if not unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful():
+        return 1
 
     print("\n11. Copia di sicurezza dei parametri")
     with tempfile.TemporaryDirectory() as directory:

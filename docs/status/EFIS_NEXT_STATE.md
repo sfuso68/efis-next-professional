@@ -1,10 +1,26 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-09-30
+Aggiornamento: 2026-10-21, limitato al fix N1; le osservazioni hardware conservano le proprie date
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `origin/main` `ff75b242db0aa4075e19cecc07d5cfa779397e07`
+Baseline integrata esaminata all'ingresso del fix N1: `origin/main` `1cc0a78682741872e19082ae84dae936370e3d7e`
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## Priorità correttiva: rianalisi 2026-10-21
+
+PIX-002/N1: nel branch safety/mavlink-write-quarantine-v1 ritirato il writer
+parametri non autorizzato: CLI e API rifiutano senza connessioni, query o
+PARAM_SET; nessuna importazione pymavlink o override. ADR-015 invariata.
+Sette test comportamentali Windows e sette Linux isolati PASS, log in
+evidence/audit-n1-20261021. Nessun test Pixhawk, deploy o verifica copie remote;
+la correzione è candidata, non attestazione di ritiro su tutti i nodi.
+Stati globali invariati. N11 sugli altri tool attivi resta aperto.
+Ordine successivo: N4/N5, N2/N6, N3, N7/N8, N9/N10, N11–N13; dettagli in
+[RIANALISI_2026-10-21_TRACKING.md](RIANALISI_2026-10-21_TRACKING.md).
+Le campagne complete/hardware restano rinviate; verifiche mirate ai fix
+mantenute. Nessun merge, reboot, modifica ADR, bus, rete o hardware eseguito.
+Attivazioni bloccate fino a verifica alimentatori. I lavori dei branch delle
+PR #50/#51 chiuse senza merge restano separati: non sono stati reintegrati.
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino
 al 2026-09-19 è preservato senza perdita in

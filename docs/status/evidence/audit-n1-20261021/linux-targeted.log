@@ -1,0 +1,12 @@
+test_audit_argument_cannot_enable_io_or_leak_device_credentials (test_mavlink_write_quarantine.QuarantineTests.test_audit_argument_cannot_enable_io_or_leak_device_credentials) ... ok
+test_cli_refusal_never_constructs_connection_or_opens_files (test_mavlink_write_quarantine.QuarantineTests.test_cli_refusal_never_constructs_connection_or_opens_files) ... ok
+test_cli_refuses_every_legacy_write_override_without_dependencies (test_mavlink_write_quarantine.QuarantineTests.test_cli_refuses_every_legacy_write_override_without_dependencies) ... ok
+test_direct_api_does_not_touch_armed_or_unarmed_link (test_mavlink_write_quarantine.QuarantineTests.test_direct_api_does_not_touch_armed_or_unarmed_link) ... ok
+test_dry_run_is_also_inert_not_a_parameter_query (test_mavlink_write_quarantine.QuarantineTests.test_dry_run_is_also_inert_not_a_parameter_query) ... ok
+test_help_has_no_network_dependency (test_mavlink_write_quarantine.QuarantineTests.test_help_has_no_network_dependency) ... ok
+test_import_never_loads_pymavlink (test_mavlink_write_quarantine.QuarantineTests.test_import_never_loads_pymavlink) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.269s
+
+OK

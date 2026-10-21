@@ -1,0 +1,20 @@
+{
+  "schema": "efis-next.audit-n1-verification.v1",
+  "date": "2026-10-21",
+  "baseline": "1cc0a78682741872e19082ae84dae936370e3d7e",
+  "requirement": "PIX-002",
+  "finding": "N1",
+  "writer_sha256": "e4e3d9671597d9775388abaa3ae24d8d8cadd3cd256573fc1d1ba8740fe69f4f",
+  "tests_sha256": "95dd5fc282a3d5167c46547c8f4e32c09e1302cdba1749ef3031841c73bf6e45",
+  "windows_behavior_tests": {"status": "PASS", "count": 7},
+  "linux_behavior_tests": {"status": "PASS", "count": 7, "log": "linux-targeted.log"},
+  "syntax": "PASS",
+  "project_status_check": "PASS",
+  "hardware_connection": "NOT_RUN",
+  "installed_copy_inventory": "NOT_RUN",
+  "historical_backup_harness": "NOT_RUN",
+  "full_regression": "NOT_RUN",
+  "deployment": "NOT_RUN",
+  "maintenance_write_authorized": false,
+  "flight_approval": false
+}
