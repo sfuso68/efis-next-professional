@@ -61,7 +61,8 @@ public:
     [[nodiscard]] bool audioEnabled() const { return audio_enabled_; }
     [[nodiscard]] QVariantList airportWeather() const { return airport_weather_; }
     Q_INVOKABLE void refresh();
-    Q_INVOKABLE void updatePosition(double latitude, double longitude);
+    Q_INVOKABLE void updatePosition(double latitude, double longitude, bool valid, bool simulated);
+    Q_INVOKABLE void invalidatePosition();
     Q_INVOKABLE void cycleProduct();
     Q_INVOKABLE void setSimulation(bool enabled);
     Q_INVOKABLE void toggleAnimation();
@@ -76,6 +77,7 @@ private:
         QString path;
         QString product;
         quint64 phase{};
+        quint64 context{};
         qint64 worker_milliseconds{};
         bool saved{};
         QString error;
@@ -90,6 +92,7 @@ private:
     [[nodiscard]] QString cachePath(const QString& name) const;
     QNetworkAccessManager network_;
     QUrl radar_endpoint_;
+    bool external_text_requests_{};
     QTimer refresh_timer_;
     QTimer age_timer_;
     QString radar_source_;
@@ -98,9 +101,10 @@ private:
     QDateTime radar_time_;
     QVariantList airport_weather_;
     QString radar_product_{QStringLiteral("VMI")};
-    QString radar_area_{QStringLiteral("GPS AREA")};
-    double latitude_{45.648};
-    double longitude_{12.194};
+    QString radar_area_{QStringLiteral("NO VALID POSITION")};
+    QString real_position_area_;
+    bool position_valid_{};
+    quint64 radar_context_{};
     int tile_x_{-1};
     int tile_y_{-1};
     bool simulation_{};

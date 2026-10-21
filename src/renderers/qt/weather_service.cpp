@@ -55,7 +55,7 @@ WeatherService::WeatherService(const QUrl& controlled_radar_endpoint, QObject* p
 #endif
 
 WeatherService::WeatherService(const QUrl& radar_endpoint, bool auto_refresh, QObject* parent)
-    : QObject(parent), radar_endpoint_(radar_endpoint) {
+    : QObject(parent), radar_endpoint_(radar_endpoint), external_text_requests_(auto_refresh) {
     QSettings settings;
     radar_product_ = normalizedRadarProduct(
         settings.value(QStringLiteral("weather/product"), QStringLiteral("VMI")).toString());
@@ -145,7 +145,7 @@ void WeatherService::clearRadarFrame(const QString& message) {
 
 bool WeatherService::loadCurrentRadarCache() {
     constexpr int zoom = 6;
-    if (tile_x_ < 0 || tile_y_ < 0) {
+    if (!position_valid_ || tile_x_ < 0 || tile_y_ < 0) {
         clearRadarFrame(QStringLiteral("Radar unavailable • position unknown"));
         return false;
     }
@@ -183,14 +183,20 @@ void WeatherService::updateAgeState() {
 void WeatherService::refresh() {
     if (simulation_) { generateSimulation(); return; }
     requestRadar();
-    requestMetar();
-    requestTaf();
+    // Controlled-endpoint tests must never contact external text providers.
+    if (external_text_requests_) {
+        requestMetar();
+        requestTaf();
+    }
 }
 
 void WeatherService::setSimulation(bool enabled) {
     if (simulation_ == enabled) return;
     simulation_ = enabled;
+    ++radar_context_;
+    clearRadarFrame(QStringLiteral("Waiting for weather in selected mode"));
     if (simulation_) {
+        radar_area_ = QStringLiteral("SIMULATION AREA");
         simulation_timer_.start();
         generateSimulation();
     } else {
@@ -200,9 +206,9 @@ void WeatherService::setSimulation(bool enabled) {
             radar_product_ = QStringLiteral("VMI");
             QSettings().setValue(QStringLiteral("weather/product"), radar_product_);
         }
-        radar_source_.clear();
-        radar_time_ = {};
+        radar_area_ = position_valid_ ? real_position_area_ : QStringLiteral("NO VALID POSITION");
         airport_weather_.clear();
+        if (position_valid_) loadCurrentRadarCache();
         refresh();
     }
     emit changed();
@@ -303,12 +309,13 @@ void WeatherService::generateSimulation() {
 
         const auto product = radar_product_;
         const auto phase = static_cast<quint64>(simulation_phase_);
+        const auto context = radar_context_;
         const auto framePath = simulationPath(QStringLiteral("radar-sim-%1.png").arg(product.toLower()));
         const int diagnosticDelay = qBound(0, qEnvironmentVariableIntValue("EFIS_WEATHER_SIMULATION_IO_DELAY_MS"), 5000);
         simulation_frame_in_flight_ = true;
         QPointer<WeatherService> service(this);
         const bool queued = QMetaObject::invokeMethod(simulation_worker_context_,
-            [service, image = std::move(image), framePath, product, phase, diagnosticDelay]() mutable {
+            [service, image = std::move(image), framePath, product, phase, context, diagnosticDelay]() mutable {
                 QElapsedTimer workerElapsed;
                 workerElapsed.start();
                 if (diagnosticDelay > 0) QThread::msleep(static_cast<unsigned long>(diagnosticDelay));
@@ -328,7 +335,7 @@ void WeatherService::generateSimulation() {
                         saved = true;
                     }
                 }
-                const SimulationFrameResult result{framePath, product, phase, workerElapsed.elapsed(), saved, error};
+                const SimulationFrameResult result{framePath, product, phase, context, workerElapsed.elapsed(), saved, error};
                 if (service) QMetaObject::invokeMethod(service,
                     [service, result] { if (service) service->finishSimulationFrame(result); },
                     Qt::QueuedConnection);
@@ -352,13 +359,13 @@ void WeatherService::finishSimulationFrame(const SimulationFrameResult& result) 
     simulation_frame_in_flight_ = false;
     if (result.worker_milliseconds >= 100)
         qWarning().noquote() << "event=weather_simulation_worker_slow duration_ms=" << result.worker_milliseconds << "phase=" << result.phase;
-    if (simulation_ && result.saved && result.product == radar_product_) {
+    if (simulation_ && result.context == radar_context_ && result.saved && result.product == radar_product_) {
         radar_time_ = QDateTime::currentDateTimeUtc();
         radar_source_ = QUrl::fromLocalFile(result.path).toString()+QStringLiteral("?v=")+QString::number(result.phase);
         radar_state_ = QStringLiteral("SIMULATED");
         radar_message_ = QStringLiteral("Animated training weather • not observed data");
         emit changed();
-    } else if (!result.saved) {
+    } else if (simulation_ && result.context == radar_context_ && !result.saved) {
         radar_message_ = QStringLiteral("Simulation frame write failed: %1").arg(result.error);
         qWarning().noquote() << "event=weather_simulation_frame_write_failed phase=" << result.phase << "error=" << result.error;
         emit changed();
@@ -369,10 +376,27 @@ void WeatherService::finishSimulationFrame(const SimulationFrameResult& result) 
     }
 }
 
-void WeatherService::updatePosition(double latitude, double longitude) {
-    if (!qIsFinite(latitude) || !qIsFinite(longitude) || latitude < 35.0 || latitude > 48.0 || longitude < 4.0 || longitude > 21.0) return;
-    latitude_ = latitude;
-    longitude_ = longitude;
+void WeatherService::invalidatePosition() {
+    const bool hadPosition = position_valid_;
+    position_valid_ = false;
+    tile_x_ = tile_y_ = -1;
+    real_position_area_.clear();
+    if (simulation_) return; // Explicit training has no dependency on a GNSS fix.
+    if (hadPosition) ++radar_context_;
+    const bool changedFrame = !radar_source_.isEmpty()
+        || radar_area_ != QStringLiteral("NO VALID POSITION")
+        || radar_message_ != QStringLiteral("Radar unavailable • position unknown");
+    radar_area_ = QStringLiteral("NO VALID POSITION");
+    clearRadarFrame(QStringLiteral("Radar unavailable • position unknown"));
+    if (changedFrame) emit changed();
+}
+
+void WeatherService::updatePosition(double latitude, double longitude, bool valid, bool simulated) {
+    if (!valid || simulated || !qIsFinite(latitude) || !qIsFinite(longitude)
+        || latitude < 35.0 || latitude > 48.0 || longitude < 4.0 || longitude > 21.0) {
+        invalidatePosition();
+        return;
+    }
     constexpr int zoom = 6;
     constexpr int count = 1 << zoom;
     const int x = qBound(0, static_cast<int>(qFloor((longitude+180.0)/360.0*count)), count-1);
@@ -380,12 +404,15 @@ void WeatherService::updatePosition(double latitude, double longitude) {
     const int y = qBound(0, static_cast<int>(qFloor((1.0-qLn(qTan(latitudeRad)+1.0/qCos(latitudeRad))/M_PI)/2.0*count)), count-1);
     const auto area = QStringLiteral("GPS %1° %2°").arg(latitude, 0, 'f', 1).arg(longitude, 0, 'f', 1);
     const bool tileChanged = x != tile_x_ || y != tile_y_;
-    const bool labelChanged = area != radar_area_;
-    radar_area_ = area;
+    const bool labelChanged = area != real_position_area_;
+    position_valid_ = true;
+    real_position_area_ = area;
+    if (!simulation_) radar_area_ = area;
     if (tileChanged) {
         tile_x_ = x;
         tile_y_ = y;
         if (!simulation_) {
+            ++radar_context_;
             loadCurrentRadarCache();
             requestRadar();
         }
@@ -412,7 +439,8 @@ void WeatherService::requestRadar() {
     constexpr int zoom = 6;
     constexpr int count = 1 << zoom;
     constexpr double extent = 20037508.342789244;
-    if (tile_x_ < 0 || tile_y_ < 0) { updatePosition(latitude_, longitude_); return; }
+    if (simulation_ || !position_valid_ || tile_x_ < 0 || tile_y_ < 0) return;
+    const auto requestContext = radar_context_;
     const int requestX = tile_x_;
     const int requestY = tile_y_;
     const auto requestProduct = radar_product_;
@@ -441,8 +469,14 @@ void WeatherService::requestRadar() {
     connect(reply, &QNetworkReply::readyRead, this, [reply] {
         if (reply->bytesAvailable() > maximumRadarPayloadBytes) reply->abort();
     });
-    connect(reply, &QNetworkReply::finished, this, [this, reply, requestProduct, requestX, requestY] {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, requestProduct, requestX, requestY, requestContext] {
         const auto data = reply->readAll();
+        // Loss/recovery on the same tile is a new context too. Do not poison
+        // its cache with a late response from an invalidated position or mode.
+        if (!position_valid_ || simulation_ || requestContext != radar_context_) {
+            reply->deleteLater();
+            return;
+        }
         const bool requestIsCurrent = requestProduct == radar_product_
             && requestX == tile_x_ && requestY == tile_y_ && !simulation_;
         if (reply->error() == QNetworkReply::NoError && validRadarPayload(data)) {

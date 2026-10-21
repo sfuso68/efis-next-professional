@@ -1,8 +1,8 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-18
+Aggiornamento: 2026-10-21 (candidato R1-03, non distribuito)
 Repository autorevole: `sfuso68/efis-next-professional`
-Baseline integrata esaminata: `main` `a0be9a52494ea7ccb5a3890e94d03b671162383b` (PR #48)
+Baseline integrata esaminata: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
@@ -13,6 +13,10 @@ Il registro operativo riga-per-riga resta
 [`EFIS_NEXT_MASTER_MATRIX.md`](EFIS_NEXT_MASTER_MATRIX.md); la release dei nodi
 è governata esclusivamente da
 [`EFIS_NEXT_ACTIVE_RELEASES.md`](EFIS_NEXT_ACTIVE_RELEASES.md).
+L'incremento candidato R1-03 è descritto in
+[`RADAR_POSITION_VALIDITY_R1_03.md`](../design/RADAR_POSITION_VALIDITY_R1_03.md):
+non costituisce aggiornamento del software attivo sui nodi. I checkpoint
+2026-10-18 sottostanti restano evidenze storiche, non nuove osservazioni.
 Il quadro direzionale corrente con pianificazione R0, gate, workstream,
 problemi e attività interattive è in
 [`AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md`](../project/AVIONIX_NEXT_PROJECT_STATE_AND_PLAN_2026-09-22.md).
@@ -1323,3 +1327,27 @@ ogni nuova release. Nessuna interazione CAN/Pixhawk, modifica rete o potatura.
 Non chiusi provider radar/georeferenziazione, calibrazione o motori reali.
 Gli stati globali e l'avanzamento rimangono invariati; staging e test software
 sui Raspberry non equivalgono a collaudo avionico o autorizzazione al volo.
+
+## 59. Candidato R1-03 / N3 — posizione radar — 2026-10-21
+
+Implementato sul branch `fix/weather-position-validity-v1`: controllo validità
+prima della lettura coordinate PFD, provenance specifica latitudine/longitudine,
+eliminazione posizione predefinita, cancellazione immediata di frame/età/area
+GPS alla perdita del fix e generazione contesto contro risposte tardive anche
+dopo recupero sulla stessa tile. Training esplicito senza fix con area SIM,
+senza richieste radar reali; completamenti SIM di modalità precedente scartati.
+
+Verificato solo software: suite nativa Qt Linux con HTTP loopback e PNG reali
+PASS in container senza rete; mutazione del controllo generazione respinta
+dal test; 27 test Python PASS; build Release MSVC di PFD/EMS e test profili
+PASS (compilazione/link, non esecuzione dei nuovi binari Windows). Gate golden
+completo locale non registrato; CI GitHub da verificare. Evidenze e limiti in
+`evidence/r1-03-position-20261021/verification.json` e contratto in
+`../design/RADAR_POSITION_VALIDITY_R1_03.md`.
+
+Verificato su hardware avionico reale in questo incremento: NULLA. Non eseguiti
+deploy, attivazioni, reboot o cambi ai servizi. WX-002 e VER-001 restano PARTIAL.
+PR #53 e #54 sono candidati separati, non assunti integrati. Restano N9/N10,
+provider/georeferenziazione, integrazione CI, prove ARM64/GNSS/pannello e gate
+alimentazione. Prossimo blocco autonomo: R1-04, validità per canale motore/fuel
+(N7/N8), prima di attivazioni o acceptance hardware.

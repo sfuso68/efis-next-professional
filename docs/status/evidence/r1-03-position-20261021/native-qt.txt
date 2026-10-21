@@ -1,0 +1,33 @@
+[4/5] Building CXX object CMakeFiles/weather_service_tests.dir/source/src/renderers/qt/weather_service.cpp.o
+[5/5] Linking CXX executable weather_service_tests
+UpdateCTestConfiguration  from :/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/build/DartConfiguration.tcl
+Test project /build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: weather_service_tests
+
+1: Test command: /build/weather_service_tests
+1: Working Directory: /build
+1: Test timeout computed to be: 10000000
+1: libpng error: xxxx: bad header (invalid type)
+1: libpng error: Read Error
+1: event=weather_simulation_worker_slow duration_ms= 415 phase= 1
+1: event=weather_simulation_frame_deferred reason=encoder_busy phase= 3
+1: position_binding: PASS
+1: no_fix_no_fallback: PASS
+1: late_reply_while_lost: PASS
+1: same_tile_recovery_epoch: PASS
+1: loss_clears_visible_context: PASS
+1: explicit_training_without_fix: PASS
+1: weather_service_tests: PASS
+1/1 Test #1: weather_service_tests ............   Passed    1.52 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   1.52 sec

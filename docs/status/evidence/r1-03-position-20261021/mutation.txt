@@ -1,0 +1,11 @@
+[2/5] Building CXX object CMakeFiles/weather_service_tests.dir/weather_service_tests_autogen/mocs_compilation.cpp.o
+[3/5] Building CXX object CMakeFiles/weather_service_tests.dir/tmp/mutant/tests/weather_service_tests.cpp.o
+[4/5] Building CXX object CMakeFiles/weather_service_tests.dir/tmp/mutant/src/renderers/qt/weather_service.cpp.o
+[5/5] Linking CXX executable weather_service_tests
+libpng error: xxxx: bad header (invalid type)
+libpng error: Read Error
+position_binding: PASS
+no_fix_no_fallback: PASS
+late_reply_while_lost: PASS
+weather_service_tests: old epoch reply after same-tile recovery must not publish or poison cache
+CONTEXT_GENERATION_MUTATION=REJECTED

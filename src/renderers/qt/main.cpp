@@ -5,6 +5,7 @@
 #include "circular_gauge_item.hpp"
 #include "connectivity_service.hpp"
 #include "weather_service.hpp"
+#include "weather_position_binding.hpp"
 #include "sensor_bench_controller.hpp"
 
 #include <QGuiApplication>
@@ -39,9 +40,9 @@ int main(int argc, char* argv[]) {
     ConnectivityService connectivity;
     WeatherService weather;
     weather.setSimulation(controller.aircraftProfileState() == QStringLiteral("SIMULATION"));
-    weather.updatePosition(controller.latitude(), controller.longitude());
+    updateWeatherPosition(controller, weather);
     QObject::connect(&controller, &PfdController::snapshotChanged, &weather, [&controller, &weather] {
-        weather.updatePosition(controller.latitude(), controller.longitude());
+        updateWeatherPosition(controller, weather);
     });
     // Tutti gli oggetti esposti al QML devono vivere piu' a lungo dell'engine.
     // In particolare il pannello bench puo' essere ancora valutato durante lo

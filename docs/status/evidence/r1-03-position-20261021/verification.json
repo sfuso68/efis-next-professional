@@ -1,0 +1,115 @@
+{
+  "schema": "efis-next.scoped-verification.v1",
+  "date": "2026-10-21",
+  "block": "R1-03",
+  "finding": "N3",
+  "branch": "fix/weather-position-validity-v1",
+  "source_base": "4aea1e4edf8678c180e04171813d842ca6ff58a0",
+  "requirements": [
+    "WX-002",
+    "VER-001"
+  ],
+  "status": "VERIFIED-SW-CANDIDATE",
+  "flight_approval": false,
+  "verification": [
+    {
+      "scope": "Qt WeatherService native functional suite",
+      "result": "PASS",
+      "platform": "Linux x86-64 GCC 14.2, existing avionix-profile-verification:20261017 Docker image on serverha",
+      "isolation": "--network none --read-only --tmpfs /tmp --tmpfs /build:exec; source read-only; only loopback test server",
+      "ctest_targets": 1,
+      "checks": [
+        "invalid binding does not read coordinates",
+        "startup/invalid/nonfinite/outside-coverage/SIM positions request no real radar",
+        "late reply while lost cannot publish/cache",
+        "same-tile recovery rejects old epoch and accepts new",
+        "loss clears source/age/state/area",
+        "explicit training without fix never claims GPS and exit cannot fall back",
+        "existing product race/payload/age checks retained"
+      ],
+      "log": "native-qt.txt"
+    },
+    {
+      "scope": "Context-generation negative mutation",
+      "result": "PASS",
+      "meaning": "Mutation rejected: replacing requestContext != radar_context_ by false causes native suite exit nonzero with same-tile old-epoch assertion",
+      "log": "mutation.txt"
+    },
+    {
+      "scope": "MSVC Release Qt build",
+      "result": "PASS",
+      "targets": [
+        "efis-pfd-qt",
+        "efis-ems-qt",
+        "efis_pfd_aircraft_profile_tests"
+      ],
+      "command": "cmd /c output\\build-ems-state-release-review.cmd",
+      "qualification": "compile/link only, native executables not run; golden rerender gate NOT REGISTERED locally; existing long object-path warning retained"
+    },
+    {
+      "scope": "Python targeted regression",
+      "result": "PASS",
+      "tests": 27,
+      "command": "python -B -m unittest tests.test_skyview_responsive tests.test_avionix_hmi_contract tests.test_project_status_control",
+      "log": "python.txt"
+    },
+    {
+      "scope": "Generator/dashboard checks",
+      "result": "PASS",
+      "requirements_count": 71,
+      "status_changes": false
+    },
+    {
+      "scope": "ARM64/physical GNSS/display/deployment",
+      "result": "NOT_RUN"
+    },
+    {
+      "scope": "GitHub full CI",
+      "result": "PENDING"
+    }
+  ],
+  "environment_notes": [
+    "Initial Docker configure used unavailable Make; repeated with installed Ninja.",
+    "Initial Docker /tmp build linked but could not execute on noexec tmpfs; isolated /build:exec used, without changing host or Windows policy.",
+    "Initial Python run had one TemporaryDirectory permission error under sandbox temp; repeated all 27 with TMP/TEMP inside workspace and passed.",
+    "PNG errors and injected slow-worker warnings in native log are intentional negative/delay fixtures."
+  ],
+  "open": [
+    "N9 METAR/TAF freshness",
+    "N10 observation age versus cache/receipt time",
+    "real provider georeferencing and coverage",
+    "physical GNSS loss/recovery and actual panel acceptance",
+    "integration with independent PR53 and PR54",
+    "power qualification before any activation"
+  ],
+  "artifacts": [
+    {
+      "path": "src/renderers/qt/main.cpp",
+      "sha256_lf_text": "c0acde4ff579ba537146f68bc8d127a68fd53fce7124d12bcb72d3dcd12dd61e"
+    },
+    {
+      "path": "src/renderers/qt/pfd_controller.cpp",
+      "sha256_lf_text": "625018920aec4183ab3625ed69286877f2901406f1940cc76d75b1655ca8b82e"
+    },
+    {
+      "path": "src/renderers/qt/pfd_controller.hpp",
+      "sha256_lf_text": "eca8bef1be56fd6bb0d07bc564a21b5dc42eb0161efb3f672bb697a884dfee00"
+    },
+    {
+      "path": "src/renderers/qt/weather_service.cpp",
+      "sha256_lf_text": "0c6380d6240f1510f1dd94d04c8e11bf63e76be27dc0497a75a2a3605560e320"
+    },
+    {
+      "path": "src/renderers/qt/weather_service.hpp",
+      "sha256_lf_text": "7998caf9c7fb02762bec732a82d053507a6e85537dc961b928ea547c00862db9"
+    },
+    {
+      "path": "src/renderers/qt/weather_position_binding.hpp",
+      "sha256_lf_text": "f66faac536a862e242f39cbb46a850009d6636a7135a5bdbf9001c69f14f1a2f"
+    },
+    {
+      "path": "tests/weather_service_tests.cpp",
+      "sha256_lf_text": "ea7d70d77f945e8aa62e3608a0b0ad82bce84e3ad9c1b13b234d78037a0e632d"
+    }
+  ]
+}

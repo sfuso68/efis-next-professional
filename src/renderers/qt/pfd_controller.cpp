@@ -1101,6 +1101,10 @@ bool PfdController::positionValid() const {
     return snapshot_.position.latitude_deg.usable() &&
            snapshot_.position.longitude_deg.usable();
 }
+bool PfdController::positionSimulated() const {
+    return snapshot_.position.latitude_deg.is_simulated() ||
+           snapshot_.position.longitude_deg.is_simulated();
+}
 bool PfdController::groundSpeedValid() const {
     return snapshot_.position.ground_speed_kt.usable();
 }
