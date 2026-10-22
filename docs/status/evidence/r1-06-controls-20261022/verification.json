@@ -1,0 +1,139 @@
+{
+  "schema": "avionix-next.r1-06-verification.v1",
+  "date": "2026-10-22",
+  "status": "VERIFIED_SOFTWARE_CANDIDATE",
+  "base_commit": "71732b5a8232cc7e5e3cab2757f079beb785426c",
+  "branch": "work/project-control-audit-r106-v1",
+  "flight_approval": false,
+  "execution_authorized": false,
+  "requirements": [
+    "PRJ-001",
+    "PIX-002",
+    "PRJ-004",
+    "VER-001"
+  ],
+  "hardware_verification": "NOT_RUN",
+  "deployment": "NOT_RUN",
+  "merge": "NOT_RUN",
+  "tests": {
+    "windows": {
+      "run": 53,
+      "passed": 52,
+      "skipped": 1,
+      "skip": "symlink privilege unavailable",
+      "log": "windows-tests.txt"
+    },
+    "linux": {
+      "run": 53,
+      "passed": 53,
+      "skipped": 0,
+      "log": "linux-tests.txt",
+      "environment": "serverha isolated existing container, source read-only, --network none, /build tmpfs for executable-bit validation"
+    },
+    "control_regressions": {
+      "run": 20,
+      "passed": 20,
+      "overlap": "Includes five autonomous-check tests already counted in the 53-test suite; do not sum as unique tests.",
+      "log": "control-regressions.txt"
+    },
+    "exec_condition": {
+      "roles": 5,
+      "scenarios_per_role": 6,
+      "invocations": 30,
+      "executed": "validator CLI only",
+      "not_executed": [
+        "ExecStart",
+        "systemd activation",
+        "ARM64 application",
+        "hardware link"
+      ]
+    }
+  },
+  "workflow_syntax": {
+    "status": "PASS",
+    "method": "existing PyYAML BaseLoader, in-memory read-only via MFD; no files/services modified; not hardware validation"
+  },
+  "ci_pr57": {
+    "commit": "71732b5a8232cc7e5e3cab2757f079beb785426c",
+    "core": {
+      "run": 39672841039,
+      "conclusion": "success"
+    },
+    "project_control": {
+      "run": 39672840988,
+      "conclusion": "success"
+    }
+  },
+  "ems_pr56_review": {
+    "commit": "306d145491a71406516832e23377f1f4f31ff447",
+    "run": 39671281524,
+    "artifact_id": 12380062640,
+    "zip_sha256": "aa26d31779358a33b3a944efe9f710fab055e35fcbfae7719b82c0046bf3bd0d",
+    "selected_images_inspected": [
+      "ems-800x480-stale.png",
+      "ems-800x480-lost.png",
+      "ems-1280x800-stale.png",
+      "ems-1024x600-fail.png"
+    ],
+    "baseline_compared": "ems-800x480-stale.png",
+    "finding": "Invalid-value masking explains observed drift; 800x480 logo overlap exists in baseline too.",
+    "all_18_images_reviewed": false,
+    "baseline_approved": false,
+    "tolerances_changed": false,
+    "gate": "OPEN_FAIL"
+  },
+  "limitations": [
+    "pymavlink replaced with fake; no library/driver/hardware traffic qualification",
+    "Backup remains active maintenance, not observer RX-only; explicit flag is not hardware authorization",
+    "Writer quarantine belongs to separate PR52, not integrated here",
+    "CLI check does not prove systemd restart semantics, root ownership or TOCTOU exclusion",
+    "N13 remains partial: golden platform references, responsive defect and full review open",
+    "Real radar availability, EDP vertical, power and panel acceptance remain open"
+  ],
+  "artifacts": [
+    {
+      "path": "tools/hardware/audit_pixhawk.py",
+      "sha256_lf_text": "15601b57a33c041044aa615dce7c35e4d315ce1b347f2afa9be8b214323383f5"
+    },
+    {
+      "path": "tools/hardware/audit_gnss.py",
+      "sha256_lf_text": "44905b058a9b548257b63a8071ae6036a8985d0612cd118bedcd1e8523ee7c22"
+    },
+    {
+      "path": "tools/hardware/audit_airspeed.py",
+      "sha256_lf_text": "80cfdd1a4e7aa158e55f3374d2ef0fc7492e0fe5b6e88fc22cb5b69f0b2ab053"
+    },
+    {
+      "path": "tools/hardware/backup_parameters.py",
+      "sha256_lf_text": "5506adddee500ca994436cc4f0c04a66d1d5785e9a2970f91077cde12d53461c"
+    },
+    {
+      "path": "tools/project_status/check_status_update.py",
+      "sha256_lf_text": "d38ad6ef51c2f689f48ac88986007d6937b3a5d1db033fff80aac2e5c18dc204"
+    },
+    {
+      "path": "tools/project_status/run_autonomous_checks.py",
+      "sha256_lf_text": "9a54fd6276062f1c8667d374d297e84f68e992f8743db8df4a26dc461bc44bf9"
+    },
+    {
+      "path": "tests/test_mavlink_maintenance_boundary.py",
+      "sha256_lf_text": "3c05c0a63a5e695e80bad3058c5e5ef9ef84aaed0969c7e0323f3b0529196e7d"
+    },
+    {
+      "path": "tests/test_release_exec_condition.py",
+      "sha256_lf_text": "4e8bff54335a202f9ac8e2687ef1448ae87d097cd4cd640214021efe50f94827"
+    },
+    {
+      "path": "tests/test_project_status_control.py",
+      "sha256_lf_text": "463fead2fb1172fca6659ccebc42be2bbec0f67a0c223fb02635ea3440bd6eaf"
+    },
+    {
+      "path": "tests/test_autonomous_checks.py",
+      "sha256_lf_text": "7bdc1811fcb3fbe5cf094814076bb07a1fcffdef00cf58821cb7f75a0459cb3f"
+    },
+    {
+      "path": ".github/workflows/efis-project-control.yml",
+      "sha256_lf_text": "a683f4d3995749537389add9a96c683ff3610185a3e13435b71e7183cbfe83bd"
+    }
+  ]
+}

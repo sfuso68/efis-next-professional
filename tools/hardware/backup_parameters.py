@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Copia di sicurezza completa dei parametri dell'autopilota. Sola lettura.
+"""Backup parametri: strumento ATTIVO di manutenzione, non osservatore RX-only.
 
 Punto 3 delle priorita' P0 dell'handoff: creare un backup aggiornato dei
 parametri del Pixhawk dopo gli interventi su GNSS, CAN e sensore aria. I backup
 esistenti risalgono al 20 agosto 2026 e precedono quelle modifiche, quindi
 oggi non descrivono piu' la configurazione reale.
 
-Lo strumento chiede l'elenco dei parametri e lo scrive. Non ne modifica nessuno,
-non invia comandi e non tocca il firmware.
+Invia PARAM_REQUEST_LIST soltanto con --allow-parameter-request. Non invia
+COMMAND_LONG, PARAM_SET o richieste stream e non tocca il firmware. Non usare
+nel gateway osservatori ADR-015; il flag NON autorizza una sessione hardware.
+La versione firmware viene soltanto ascoltata e puo' rimanere ignota.
 
 Produce due file, non uno.
 
@@ -33,6 +35,7 @@ import hashlib
 import json
 import struct
 import time
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -77,13 +80,15 @@ def decode_name(raw) -> str:
     return str(raw).rstrip("\x00")
 
 
-def collect(link, timeout: float, quiet_after: float):
+def collect(link, timeout: float, quiet_after: float, *, allow_request=False):
     """Raccoglie i parametri fino al conto dichiarato o al silenzio.
 
     Due criteri di uscita, perche' nessuno dei due basta da solo: il conto
     dichiarato non arriva se il primo messaggio si perde, e il silenzio da solo
     scambierebbe una pausa per la fine dell'elenco.
     """
+    if not allow_request:
+        raise PermissionError("active PARAM_REQUEST_LIST requires explicit consent")
     link.mav.param_request_list_send(link.target_system, link.target_component)
 
     values: dict[str, float] = {}
@@ -112,10 +117,7 @@ def collect(link, timeout: float, quiet_after: float):
 
 
 def firmware_of(link, timeout: float):
-    link.mav.command_long_send(
-        link.target_system, link.target_component,
-        mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE, 0,
-        mavutil.mavlink.MAVLINK_MSG_ID_AUTOPILOT_VERSION, 0, 0, 0, 0, 0, 0)
+    """Listen only; a missing unsolicited version is not a backup failure."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         message = link.recv_match(type="AUTOPILOT_VERSION", blocking=True, timeout=0.5)
@@ -142,14 +144,25 @@ def main() -> int:
                         help="etichetta che compare nel nome della sottocartella")
     parser.add_argument("--timeout", type=float, default=120.0)
     parser.add_argument("--quiet-after", type=float, default=4.0)
+    parser.add_argument("--allow-parameter-request", action="store_true",
+                        help="explicitly permit active maintenance PARAM_REQUEST_LIST; "
+                             "not permission to operate hardware")
     args = parser.parse_args()
+    if not args.allow_parameter_request:
+        parser.error("active maintenance requires --allow-parameter-request; no connection opened")
+    if any(not math.isfinite(value) or value <= 0
+           for value in (args.timeout, args.quiet_after)):
+        parser.error("timeouts must be finite and positive")
 
     link = mavutil.mavlink_connection(args.device, baud=args.baud, source_system=254)
-    if link.wait_heartbeat(timeout=15) is None:
-        raise SystemExit("nessun battito MAVLink: autopilota non raggiungibile")
-
-    firmware = firmware_of(link, 5.0)
-    values, indices, declared = collect(link, args.timeout, args.quiet_after)
+    try:
+        if link.wait_heartbeat(timeout=15) is None:
+            raise SystemExit("nessun battito MAVLink: autopilota non raggiungibile")
+        firmware = firmware_of(link, 5.0)
+        values, indices, declared = collect(
+            link, args.timeout, args.quiet_after, allow_request=True)
+    finally:
+        link.close()
     if not values:
         raise SystemExit("nessun parametro ricevuto: copia non effettuata")
 
@@ -173,6 +186,9 @@ def main() -> int:
 
     manifest = {
         "schema": "efis-next.parameter-backup.v1",
+        "capture_mode": "ACTIVE_MAINTENANCE_PARAMETER_REQUEST",
+        "transmitted_messages": ["PARAM_REQUEST_LIST"],
+        "firmware_status": "OBSERVED" if firmware else "NOT_OBSERVED",
         "captured_utc": datetime.now(timezone.utc).isoformat(),
         "device": args.device,
         "target_system": link.target_system,

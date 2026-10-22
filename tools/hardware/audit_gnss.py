@@ -3,26 +3,21 @@
 import argparse
 import json
 import time
+import math
 
 from pymavlink import mavutil
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--device", required=True)
-    parser.add_argument("--timeout", type=float, default=25)
-    args = parser.parse_args()
-    link = mavutil.mavlink_connection(args.device, baud=115200, source_system=254)
+def collect(link, timeout):
+    def reject_transmission(*_args, **_kwargs):
+        raise PermissionError("passive GNSS audit forbids MAVLink transmission")
+    link.write = reject_transmission
     heartbeat = link.wait_heartbeat(timeout=10)
     if heartbeat is None:
         raise SystemExit("no heartbeat")
-    link.mav.request_data_stream_send(
-        link.target_system, link.target_component,
-        mavutil.mavlink.MAV_DATA_STREAM_ALL, 4, 1,
-    )
     latest = {}
     texts = []
-    deadline = time.monotonic() + args.timeout
+    deadline = time.monotonic() + timeout
     wanted = {
         "GPS_RAW_INT", "GPS2_RAW", "GPS_STATUS", "GLOBAL_POSITION_INT",
         "SCALED_PRESSURE", "SCALED_PRESSURE2", "SCALED_PRESSURE3",
@@ -40,12 +35,28 @@ def main():
             text = message.text.rstrip("\x00")
             if text and text not in texts:
                 texts.append(text)
-    print(json.dumps({
+    return {
         "schema": "efis-next.gnss-audit.v1",
-        "device": args.device,
+        "capture_mode": "PASSIVE_RX_ONLY",
         "messages": latest,
         "status_text": texts,
-    }, indent=2, sort_keys=True))
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--device", required=True)
+    parser.add_argument("--timeout", type=float, default=25)
+    args = parser.parse_args()
+    if not math.isfinite(args.timeout) or args.timeout <= 0:
+        parser.error("--timeout must be finite and positive")
+    link = mavutil.mavlink_connection(args.device, baud=115200, source_system=254)
+    try:
+        result = collect(link, args.timeout)
+        result["device"] = args.device
+    finally:
+        link.close()
+    print(json.dumps(result, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

@@ -230,6 +230,7 @@ def main() -> int:
             completed = subprocess.run(
                 [PYTHON, str(BACKUP), "--device", "udpin:127.0.0.1:14561",
                  "--output-dir", directory, "--label", "prova",
+                 "--allow-parameter-request",
                  "--timeout", "20", "--quiet-after", "2"],
                 capture_output=True, text=True, timeout=60)
         manifest_files = list(Path(directory).glob("prova-*/manifest.json"))
