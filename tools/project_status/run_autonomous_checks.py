@@ -18,6 +18,8 @@ GROUPS = {
     'project-control': ['tests.test_project_status_control', 'tests.test_project_dashboard',
                          'tests.test_dashboard_refresh', 'tests.test_backup_guards',
                          'tests.test_dashboard_package', 'tests.test_dashboard_activation'],
+    'maintenance-release-boundary': ['tests.test_mavlink_maintenance_boundary',
+                                      'tests.test_release_exec_condition'],
 }
 NATIVE_REGEX = '^efis_(freshness_budget|arbitration|ddp_v2|edp_v1|avionix_icd_vector|engine|engine_runtime|engine_runtime_store|operational_profile_model|pfd_aircraft_profile)_tests$'
 

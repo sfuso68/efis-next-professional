@@ -71,6 +71,36 @@ class ProjectStatusControlTests(unittest.TestCase):
         self.assertIn("'ci/**'", project_control)
         self.assertIn("'ci/**'", core_ci)
 
+    def test_project_control_cannot_exempt_itself_or_workflows(self):
+        for path in ("tools/project_status/check_status_update.py",
+                     "tools/project_status/activate_dashboard.py",
+                     "tools/project_status/generate_dashboard.py",
+                     ".github/workflows/efis-project-control.yml"):
+            with self.subTest(path=path):
+                result = self.run_python(str(CHECKER), path)
+                self.assertEqual(result.returncode, 2, result.stdout)
+                accepted = self.run_python(str(CHECKER), path,
+                    "docs/status/EFIS_NEXT_MASTER_MATRIX.md")
+                self.assertEqual(accepted.returncode, 0, accepted.stdout)
+
+    def test_normalized_relative_and_windows_paths_are_watched(self):
+        for path in ("./tools/project_status/example.py",
+                     r"tools\project_status\example.py",
+                     "docs/../tools/project_status/example.py"):
+            with self.subTest(path=path):
+                self.assertEqual(self.run_python(str(CHECKER), path).returncode, 2)
+
+    def test_generated_document_only_changes_do_not_recurse(self):
+        result = self.run_python(str(CHECKER),
+            "docs/status/PROJECT_DASHBOARD.html", "docs/status/efis-next-status.json")
+        self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_generated_docs_cannot_cover_executable_tool_change(self):
+        result = self.run_python(str(CHECKER),
+            "tools/project_status/dashboard_server.py",
+            "docs/status/PROJECT_DASHBOARD.html")
+        self.assertEqual(result.returncode, 2, result.stdout)
+
     def test_core_sanitizer_job_is_blocking(self):
         workflow = (ROOT / ".github/workflows/efis-core-ci.yml").read_text(
             encoding="utf-8")

@@ -3,6 +3,7 @@
 import argparse
 import json
 import time
+import math
 
 from pymavlink import mavutil
 
@@ -16,30 +17,22 @@ def enum_name(group, value):
     return item.name if item else str(value)
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--device", default="/dev/ttyACM0")
-    parser.add_argument("--baud", type=int, default=115200)
-    parser.add_argument("--timeout", type=float, default=12)
-    args = parser.parse_args()
+def collect(connection, timeout):
+    """Observe unsolicited traffic only; never request version or streams."""
+    def reject_transmission(*_args, **_kwargs):
+        raise PermissionError("passive audit forbids MAVLink transmission")
 
-    connection = mavutil.mavlink_connection(args.device, baud=args.baud, source_system=254)
-    heartbeat = connection.wait_heartbeat(timeout=args.timeout)
+    # pymavlink serializers write through their connection object. Fail closed
+    # if a future receive-side helper attempts an implicit protocol response.
+    connection.write = reject_transmission
+    heartbeat = connection.wait_heartbeat(timeout=timeout)
     if heartbeat is None:
-        raise SystemExit("no MAVLink heartbeat received")
-
-    connection.mav.command_long_send(
-        connection.target_system,
-        connection.target_component,
-        mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE,
-        0,
-        mavutil.mavlink.MAVLINK_MSG_ID_AUTOPILOT_VERSION,
-        0, 0, 0, 0, 0, 0,
-    )
+        raise RuntimeError("no MAVLink heartbeat received")
 
     result = {
         "schema": "efis-next.pixhawk-audit.v1",
-        "device": args.device,
+        "capture_mode": "PASSIVE_RX_ONLY",
+        "version_status": "NOT_OBSERVED",
         "target_system": connection.target_system,
         "target_component": connection.target_component,
         "heartbeat": {
@@ -51,13 +44,13 @@ def main():
         },
         "status_text": [],
     }
-
-    deadline = time.monotonic() + args.timeout
+    deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         message = connection.recv_match(blocking=True, timeout=0.5)
         if message is None or message.get_type() == "BAD_DATA":
             continue
         if message.get_type() == "AUTOPILOT_VERSION":
+            result["version_status"] = "OBSERVED"
             result["version"] = {
                 "flight": version_string(message.flight_sw_version),
                 "middleware": version_string(message.middleware_sw_version),
@@ -76,7 +69,25 @@ def main():
                 result["status_text"].append(text)
         if "version" in result and len(result["status_text"]) >= 2:
             break
+    return result
 
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--device", default="/dev/ttyACM0")
+    parser.add_argument("--baud", type=int, default=115200)
+    parser.add_argument("--timeout", type=float, default=12)
+    args = parser.parse_args()
+
+    if not math.isfinite(args.timeout) or args.timeout <= 0:
+        parser.error("--timeout must be finite and positive")
+
+    connection = mavutil.mavlink_connection(args.device, baud=args.baud, source_system=254)
+    try:
+        result = collect(connection, args.timeout)
+        result["device"] = args.device
+    finally:
+        connection.close()
     print(json.dumps(result, indent=2, sort_keys=True))
 
 

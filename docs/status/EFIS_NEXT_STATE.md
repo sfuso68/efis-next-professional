@@ -1,10 +1,34 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-21 (candidati R1-03/R1-05, non distribuiti)
+Aggiornamento: 2026-10-22 (candidati R1-03/R1-05/R1-06, non distribuiti)
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline integrata esaminata: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-06 — confini manutenzione e controllo, candidato
+
+Registro: `../project/R1_06_TEN_STEP_CONTROL_2026-10-22.md`, branch
+`work/project-control-audit-r106-v1` su #57, non main né stack EMS #56.
+Implementati: tre audit MAVLink passivi con guardia write, backup parametri
+riclassificato ACTIVE e rifiutato prima della connessione senza flag esplicito,
+nessuna richiesta COMMAND_LONG/versione; rimosse auto-esenzioni Project Control,
+workflow sorvegliati e test CLI reali delle cinque ExecCondition versionate.
+
+Verificato solo software: 53 test Linux PASS in container isolato su serverha,
+Windows 52 PASS/1 SKIP symlink; trenta scenari ruolo×mutazione ExecCondition,
+nessun ExecStart/systemd eseguito. Dipendenza pymavlink sostituita da fake nei
+test: non prova zero traffico su un dispositivo reale o ogni libreria/driver.
+Evidenza: `evidence/r1-06-controls-20261022/verification.json`.
+
+Verificato su hardware avionico reale: NULLA. Non modificati release, servizi,
+reti, bus, firmware o alimentazione. Nessun merge/deploy/reboot. PRJ-001,
+PIX-002, PRJ-004 e VER-001 non promossi. Writer #52 distinto e non integrato.
+
+CI #57 Core e Project Control SUCCESS; artifact #56 acquisito con digest
+verificato e quattro viste esaminate. Masking spiega il drift; logo 800×480
+sovrapposto già in baseline. Review completa e correzione grafica aperte:
+golden NON approvate/sostituite, gate #56 resta FAIL. N13 parzialmente aperto.
 
 ## R1-05 — blocco autonomo di dieci passi, candidato
 
@@ -29,7 +53,8 @@ hardware/ARM64, provider live, georeferenziazione o golden completa locale.
 CI: #55 Core/Project Control PASS. Sullo stack separato #56 corretto marker
 obsoleto (commit 306d145, Project Control PASS); Core/sanitizer/Qt funzionali
 PASS, golden Linux FAIL per drift STALE/LOST/FAIL: baseline NON sostituita e
-gate aperto per revisione immagini. Nuovo candidato meteo CI da verificare.
+gate aperto per revisione immagini. #57 Core 39672841039 e Project Control
+39672840988 SUCCESS riconfermati il 2026-10-22, non integrati né distribuiti.
 WX-001/WX-002/VER-001 non promossi. Nessun merge, deploy o cambio servizi.
 
 Questo documento contiene soltanto lo stato corrente. Lo storico completo fino

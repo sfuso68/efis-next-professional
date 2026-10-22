@@ -88,6 +88,8 @@ jobs:
         run: |
           python -m unittest tests.test_release_manifest -v
           python -m unittest tests.test_release_supervision_assets -v
+          python -m unittest tests.test_release_exec_condition -v
+          python -m unittest tests.test_mavlink_maintenance_boundary -v
           python -m unittest tests.test_release_preparation -v
           python -m unittest tests.test_paired_display_release -v
           python tools/navigation/validate_bbxnav_supervision.py

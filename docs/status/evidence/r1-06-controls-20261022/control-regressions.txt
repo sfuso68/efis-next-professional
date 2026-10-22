@@ -1,0 +1,25 @@
+test_deterministic_and_safe_embedding (tests.test_project_dashboard.DashboardTests.test_deterministic_and_safe_embedding) ... ok
+test_rejects_incomplete_columns (tests.test_project_dashboard.DashboardTests.test_rejects_incomplete_columns) ... ok
+test_success_and_failure_preserve_snapshot (tests.test_dashboard_refresh.RefreshTests.test_success_and_failure_preserve_snapshot) ... ok
+test_changed_branch_rejected (tests.test_backup_guards.BackupGuardTests.test_changed_branch_rejected) ... ok
+test_deleted_branch_rejected (tests.test_backup_guards.BackupGuardTests.test_deleted_branch_rejected) ... ok
+test_main_can_advance_without_changing_legacy (tests.test_backup_guards.BackupGuardTests.test_main_can_advance_without_changing_legacy) ... ok
+test_nas_tag_conflict (tests.test_backup_guards.BackupGuardTests.test_nas_tag_conflict) ... ok
+test_server_tag_conflict (tests.test_backup_guards.BackupGuardTests.test_server_tag_conflict) ... ok
+test_unchanged_tags_allowed (tests.test_backup_guards.BackupGuardTests.test_unchanged_tags_allowed) ... ok
+test_wrong_main_rejected (tests.test_backup_guards.BackupGuardTests.test_wrong_main_rejected) ... ok
+test_extra_file_and_manifest_escape_rejected (tests.test_dashboard_package.PackageTests.test_extra_file_and_manifest_escape_rejected) ... ok
+test_reproducible_install_and_tamper (tests.test_dashboard_package.PackageTests.test_reproducible_install_and_tamper) ... ok
+test_activation_and_rollback_restore_exact_dropins (tests.test_dashboard_activation.ActivationTests.test_activation_and_rollback_restore_exact_dropins) ... ok
+test_first_activation_failure_removes_only_created_dropins (tests.test_dashboard_activation.ActivationTests.test_first_activation_failure_removes_only_created_dropins) ... ok
+test_outside_release_rejected_before_mutation (tests.test_dashboard_activation.ActivationTests.test_outside_release_rejected_before_mutation) ... ok
+test_boundary_regressions_are_in_autonomous_checks (tests.test_autonomous_checks.AutonomousTests.test_boundary_regressions_are_in_autonomous_checks) ... ok
+test_missing_runtime_is_blocked (tests.test_autonomous_checks.AutonomousTests.test_missing_runtime_is_blocked) ... ok
+test_native_selection_excludes_live_tools (tests.test_autonomous_checks.AutonomousTests.test_native_selection_excludes_live_tools) ... ok
+test_nonzero_exit_cannot_be_pass (tests.test_autonomous_checks.AutonomousTests.test_nonzero_exit_cannot_be_pass) ... ok
+test_timeout_is_blocked (tests.test_autonomous_checks.AutonomousTests.test_timeout_is_blocked) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.449s
+
+OK

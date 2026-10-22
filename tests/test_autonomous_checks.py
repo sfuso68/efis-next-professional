@@ -1,6 +1,6 @@
 import subprocess
 import unittest
-from tools.project_status.run_autonomous_checks import execute, NATIVE_REGEX
+from tools.project_status.run_autonomous_checks import execute, NATIVE_REGEX, GROUPS
 
 
 class AutonomousTests(unittest.TestCase):
@@ -22,3 +22,8 @@ class AutonomousTests(unittest.TestCase):
         import re
         self.assertIsNotNone(re.fullmatch(NATIVE_REGEX, 'efis_freshness_budget_tests'))
         self.assertIsNone(re.fullmatch(NATIVE_REGEX, 'efis_recorder'))
+
+    def test_boundary_regressions_are_in_autonomous_checks(self):
+        self.assertEqual(GROUPS['maintenance-release-boundary'],
+                         ['tests.test_mavlink_maintenance_boundary',
+                          'tests.test_release_exec_condition'])
