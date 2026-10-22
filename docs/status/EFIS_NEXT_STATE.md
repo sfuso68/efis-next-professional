@@ -1,10 +1,37 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-21, candidati N4/N5 e R1-04/N7/N8; date hardware invariate
+Aggiornamento: 2026-10-22, stack EMS R1-04/R1-08 candidato; date hardware invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-08 candidato — intestazione EMS responsive e dati non inventati
+
+Registro dieci passi: `../project/R1_08_TEN_STEP_EMS_HEADER_2026-10-22.md`.
+Branch `fix/ems-responsive-header-r108-v1` su #56 `306d145`, distinto dallo
+stack meteo/controllo #55→#57→#58. #58 riconfermata Core/Project Control
+SUCCESS sul commit `2f1251a4ce05cd412a9066cce10679fe86d50d63`; non integrata.
+R1-07 verticale EDP reale non è completato né anticipato da questa numerazione.
+
+Implementato: EmsStatusHeader con dimensioni del testo misurate, logo senza
+coordinate x fisse, titolo/badge/clock separati, target setup >=44 px, long
+press 1,2 s e clock LOCAL con binding persistente. Rimossi OAT 24°C e QNH
+1013 codificati: nessun valore di sostituzione; serve futuro adapter valido.
+Componente incluso nei moduli QML PFD/EMS, non è redesign della banda PFD.
+
+Verificato solo software: build/link Release MSVC e QML AOT PFD+EMS PASS,
+54 esiti Qt Quick (18 combinazioni header più input/clock e regressioni) e
+37 Python PASS. 18 catture Windows/software generate, tre allegate; font
+offscreen espliciti per escludere quadratini/font condensato del primo
+tentativo. Evidenza `evidence/r1-08-ems-header-20261022/verification.json`.
+Non eseguiti nuovi binari Windows nativi; gate golden locale non registrato.
+
+Verificato su hardware reale: NULLA. Nessun nodo contattato, deploy, reboot,
+rete o firmware modificato. Golden Linux #56 NON aggiornata né approvata:
+nuovo rerender/review necessari, nessuna soglia allargata. CI di questo nuovo
+candidato da verificare. PRJ-004, EMS-002 e VER-001 restano invariati; power,
+leggibilità fisica, touch, font ARM64, input reali e acceptance aperti.
 
 ## R1-04 candidato — validità motore e baseline carburante
 

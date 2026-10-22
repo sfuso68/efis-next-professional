@@ -193,21 +193,13 @@ Item {
             GradientStop { position: .55; color: "#020B11" }
             GradientStop { position: 1; color: "#071723" } } }
 
-    Rectangle { id: header; anchors { left: parent.left; right: parent.right; top: parent.top }
-        height: root.compactLayout ? 40 : 44*root.uiScale; color: "#D0061119"; border.color: root.line
-        Text { x: 13*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EFIS"; color: "white"; font.pixelSize: hmiTokens.legibleText(17,root.textScale,13); font.bold: true }
-        Text { x: 54*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "NEXT"; color: root.cyan; font.pixelSize: hmiTokens.legibleText(17,root.textScale,13); font.bold: true }
-        Rectangle { x: 112*root.uiScale; y: 8*root.uiScale; width: 1; height: 28*root.uiScale; color: root.line }
-        Text { x: 129*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EMS"; color: root.cyan; font.pixelSize: hmiTokens.legibleText(15,root.textScale,12) }
-        Text { anchors.centerIn: parent; text: "ENGINE"; color: "white"; font.pixelSize: hmiTokens.legibleText(20,root.textScale,16); font.bold: true; font.letterSpacing: 1.2 }
-        HmiDataStateBadge { anchors { verticalCenter:parent.verticalCenter; right:clock.left; rightMargin:24*root.uiScale }
-            dataState:root.normalizedDataState; ageMs:root.dataAgeMs; uiScale:root.textScale; showLive:true }
-        Text { id: clock; anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 18*root.uiScale }
-        text: (root.clockOverride.length?root.clockOverride:Qt.formatTime(new Date(),"hh:mm:ss"))+(root.compactLayout?"   OAT 24°C":"   LOCAL     24 °C  OAT     1013 HPA  QNH"); color: "#E8ECEE"; font.pixelSize: hmiTokens.legibleText(11,root.textScale,9); font.bold: true }
-        Timer { interval: 1000; running: root.clockOverride.length===0; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+(root.compactLayout?"   OAT 24°C":"   LOCAL     24 °C  OAT     1013 HPA  QNH") }
-        Item { x:0; y:0; width:105*root.uiScale; height:parent.height
-            TapHandler { longPressThreshold:1.2; onLongPressed:root.openSetup(0) }
-        }
+    EmsStatusHeader { id: header; objectName: "emsStatusHeader"
+        anchors { left: parent.left; right: parent.right; top: parent.top }
+        height: implicitHeight
+        uiScale: root.uiScale; textScale: root.textScale
+        dataState: root.normalizedDataState; dataAgeMs: root.dataAgeMs
+        clockOverride: root.clockOverride
+        onSetupRequested: root.openSetup(0)
     }
 
     Rectangle { id: nav; anchors { left: parent.left; top: header.bottom; bottom: actions.top }

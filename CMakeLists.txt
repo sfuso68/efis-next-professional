@@ -162,6 +162,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/AdaptiveFpvView.qml
                 qml/AdaptiveShell.qml
                 qml/AdaptiveEmsView.qml
+        qml/EmsStatusHeader.qml
                 qml/EmsSetupOverlay.qml
                 qml/OperationalProfileSetup.qml
                 qml/EfisTouchKeyboard.qml
@@ -617,6 +618,7 @@ if(EFIS_BUILD_EMS_NODE)
             QML_FILES
                 qml/EmsMain.qml
                 qml/AdaptiveEmsView.qml
+                qml/EmsStatusHeader.qml
                 qml/CommandRail.qml
                 qml/ProfessionalCircularGauge.qml
                 qml/EmsGaugeV3.qml
