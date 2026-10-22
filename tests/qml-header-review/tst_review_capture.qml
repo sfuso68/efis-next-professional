@@ -12,7 +12,7 @@ TestCase {
     function test_capture_data() {
         var rows=[];var sizes=[[800,480],[1024,600],[1280,800]]
         var states=["LIVE","SIM","STALE","DEGRADED","LOST","FAIL"]
-        var ages=[0,0,600,500,1500,0]
+        var ages=[0,0,600,600,1500,0]
         for(var s=0;s<sizes.length;s++)for(var i=0;i<states.length;i++)
             rows.push({tag:sizes[s][0]+"-"+states[i],w:sizes[s][0],h:sizes[s][1],state:states[i],age:ages[i]})
         return rows

@@ -234,20 +234,29 @@ Item {
     Item { id: rightColumn; anchors { left: gauges.right; right: body.right; top: body.top; bottom: body.bottom; leftMargin: 8*root.uiScale } }
     Rectangle { id: cas; anchors { left: rightColumn.left; right: rightColumn.right; top: rightColumn.top }
         height: rightColumn.height*.42; color: root.panel; border.color: root.line; radius: 5*root.uiScale
-        Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 5*root.uiScale }
-        text: "CAS MESSAGES"; color: "#E7ECEE"; font.pixelSize:hmiTokens.legibleText(10,root.textScale,9) }
-        Rectangle { visible:!root.engineLimitsVerified; anchors { right:parent.right; top:parent.top; rightMargin:6*root.uiScale; topMargin:4*root.uiScale }
-            width:limitsStatusText.implicitWidth+10*root.uiScale; height:16*root.uiScale; radius:2*root.uiScale; color:"#301F1700"; border.color:root.amber
-            Text { id:limitsStatusText; anchors.centerIn:parent; text:"LIMITS INDICATIVE"; color:root.amber; font.pixelSize:hmiTokens.legibleText(6,root.textScale,8); font.bold:true }
+        Item { id: casHeader; objectName: "emsCasHeader"; width: parent.width
+            height: Math.max(22, 25*root.uiScale)
+            Text { objectName: "emsCasTitle"
+                anchors { left:parent.left; right:limitsNotice.visible?limitsNotice.left:parent.right
+                    leftMargin:6*root.uiScale; rightMargin:6*root.uiScale; verticalCenter:parent.verticalCenter }
+                text: "CAS MESSAGES"; horizontalAlignment:Text.AlignHCenter; elide:Text.ElideRight
+                color: "#E7ECEE"; font.pixelSize:hmiTokens.legibleText(10,root.textScale,9) }
+            Rectangle { id: limitsNotice; objectName: "emsLimitsNotice"; visible:!root.engineLimitsVerified
+                anchors { right:parent.right; rightMargin:6*root.uiScale; verticalCenter:parent.verticalCenter }
+                width:limitsStatusText.implicitWidth+10*root.uiScale; height:Math.max(16,16*root.uiScale)
+                radius:2*root.uiScale; color:"#301F1700"; border.color:root.amber
+                Text { id:limitsStatusText; anchors.centerIn:parent; text:"LIMITS INDICATIVE"; color:root.amber; font.pixelSize:hmiTokens.legibleText(6,root.textScale,8); font.bold:true }
+            }
         }
-        Rectangle { id:casBanner; x: 1; y: 25*root.uiScale; width: parent.width-2; height: 34*root.uiScale; color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
+        Rectangle { id:casBanner; objectName:"emsCasBanner"; x:1; y:casHeader.height; width:parent.width-2; height:Math.max(32,34*root.uiScale); color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
             SequentialAnimation on opacity { running:!root.goldenMode&&root.casLevel==="WARNING"&&!root.casAcknowledged; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
             Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:(root.casLevel==="NORMAL"?"✓   ":"⚠   ")+root.casHeadline; color:root.casColor; font.pixelSize:hmiTokens.legibleText(11,root.textScale,10); font.bold:true }
             Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:root.casAction; color:"#D9E3E6"; font.pixelSize:hmiTokens.legibleText(5.5,root.textScale,8); font.bold:root.casLevel!=="NORMAL" }
             TapHandler { onTapped:{root.selectedPanel="CAS";root.activeNavigation="INDICATIONS"} }
         }
         HmiAirframePanel {
-            anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; topMargin:62*root.uiScale; margins:5*root.uiScale }
+            objectName:"emsAirframePanel"
+            anchors { left:parent.left; right:parent.right; top:casBanner.bottom; bottom:parent.bottom; margins:5*root.uiScale }
             uiScale:root.uiScale; compact:root.compactLayout; gearInstalled:controller.landingGearInstalled; noseLocked:controller.gearNoseLocked
             leftLocked:controller.gearLeftLocked; rightLocked:controller.gearRightLocked; gearState:controller.gearState
             flapsInstalled:controller.flapsInstalled; flapDetents:controller.flapDetents; flapAngle:controller.flapAngle

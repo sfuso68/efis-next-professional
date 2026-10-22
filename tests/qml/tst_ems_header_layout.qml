@@ -24,6 +24,7 @@ TestCase {
         view.clockOverride = "12:45:30"
         fixture.engineSourceState = "LIVE"
         fixture.engineDataAgeMs = 0
+        fixture.engineLimits = {status:"INDICATIVE_UNVERIFIED"}
         wait(0)
     }
     function test_responsive_header_data() {
@@ -106,5 +107,26 @@ TestCase {
         mouseRelease(target,target.width/2,target.height/2)
         tryCompare(view,"setupVisible",true)
         compare(view.setupSection,0)
+    }
+    function test_cas_labels_do_not_collide_data() {
+        return [{tag:"800-indicative",w:800,h:480,verified:false},
+                {tag:"1024-indicative",w:1024,h:600,verified:false},
+                {tag:"1280-indicative",w:1280,h:800,verified:false},
+                {tag:"800-verified-fixture",w:800,h:480,verified:true},
+                {tag:"1024-verified-fixture",w:1024,h:600,verified:true},
+                {tag:"1280-verified-fixture",w:1280,h:800,verified:true}]
+    }
+    function test_cas_labels_do_not_collide(row) {
+        view.width=row.w;view.height=row.h
+        fixture.engineLimits={status:row.verified?"VERIFIED":"INDICATIVE_UNVERIFIED"}
+        wait(0)
+        var title=findChild(view,"emsCasTitle"), notice=findChild(view,"emsLimitsNotice")
+        compare(notice.visible,!row.verified)
+        compare(title.truncated,false)
+        if(notice.visible)verify(title.x+title.width<notice.x)
+        var banner=findChild(view,"emsCasBanner"), airframe=findChild(view,"emsAirframePanel")
+        verify(banner.y>=findChild(view,"emsCasHeader").height)
+        verify(airframe.y>=banner.y+banner.height)
+        verify(airframe.height>0)
     }
 }

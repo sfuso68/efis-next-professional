@@ -1,10 +1,39 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-22, stack EMS R1-04/R1-08 candidato; date hardware invariate
+Aggiornamento: 2026-10-22, stack EMS R1-04/R1-08/R1-09 candidato; date hardware invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-09 — consolidamento nella stessa PR #59
+
+Registro unico: `../project/R1_09_CONSOLIDATION_2026-10-22.md`. Snapshot di
+otto PR #52–59 con SHA, CI e dipendenze in `evidence/r1-09-consolidation-20261022/`.
+Nessun merge: stack EMS #53→#56→#59 e meteo #55→#57→#58 ancora distinti;
+#54 indipendente, #52 senza run restituito dalla query. Main e release sui
+nodi non sono aggiornati da questo blocco. Il viewer serverha segue main.
+
+CI #59 su 0c83113: core/sanitizer/build/test Qt PASS, Project Control PASS,
+solo confronto golden FAIL. Artifact Linux 12411617225 verificato con SHA
+esterno; review di 800 LIVE/LOST rileva collisione CAS MESSAGES/LIMITS INDICATIVE.
+Due CHANGES_REQUIRED, altre 16 NOT_REVIEWED: NON revisione completa approvata.
+Follow-up corregge il CAS e aggiunge sei test geometrici. Nuovo rerender Linux
+necessario; le vecchie immagini non provano la correzione successiva.
+
+Implementato: preparatore offline che lega ZIP, commit/render source, run,
+artifact, riferimento e pixel; report non sovrascrivibile e fuori dal riferimento,
+18 decisioni esplicite. Anche ACCEPT totale non autorizza una baseline.
+Decoder PNG con limiti codificato/pixel/espansione, CRC e rifiuto APNG/corruzione;
+nessun PNG golden/manifesto/tolleranza modificato. Fixture DEGRADED a 600 ms.
+
+Verificato solo software: 60 esiti Qt PASS, 47 test Python PASS e sottoinsieme
+18 test Linux PASS in container isolato source read-only/rete disabilitata,
+build/link PFD+EMS/AOT MSVC PASS. 18 nuove catture Windows; due allegate CAS.
+Nessun nodo avionico contattato o modificato, nessun nuovo test hardware.
+Restano CI follow-up, artifact Linux aggiornato, review completa, font/touch
+ARM64, power, radar live qualificato ed EDP reale. ID PRJ-001/004, EMS-002,
+VER-001 invariati. Commit e push sulla stessa PR, non un'altra integrazione.
 
 ## R1-08 candidato — intestazione EMS responsive e dati non inventati
 
