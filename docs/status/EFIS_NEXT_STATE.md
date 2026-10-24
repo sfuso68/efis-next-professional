@@ -1,10 +1,44 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-25, preflight collegamento SIL R1-15 e consumer canonici verificati; nessuna commutazione dei nodi
+Aggiornamento: 2026-10-25, R1-16 mondo meteo/NAV offline con JSBSim verificato; nessuna commutazione dei nodi
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-16 — mondo meteo/NAV offline implementato, integrazione display APERTA
+
+Requisito proprietario consolidato in AVX-G5-02: la stessa sessione serverha
+deve simulare ambiente meteorologico, prodotti informativi meteo e navigazione
+GNSS/VOR/DME/NDB/ILS, piano di volo e indicazioni coerenti sui veri EFIS NEXT.
+Piano dettagliato nel backlog, sezione «SIL-WX/NAV». Non basta animare radar,
+CDI o numeri: vento/atmosfera influenzano il modello fisico; segnali NAV sono
+calcolati rispetto alle stazioni, con copertura/guasti/validità espliciti.
+Implementato tools/simulation/sil_world.py e --world opzionale nella sessione
+JSBSim: vento per quota/raffiche armoniche e pressione/temperatura applicati al
+FDM, sensori aria/compasso espliciti, geometria VOR/TO-FROM/CDI/DME obliquo,
+NDB/ADF, ILS front-course/GS con inviluppo didattico, GNSS con offset/perdita,
+route leg/XTK/DTK/direct-to/ETA verso waypoint e nearest dei soli punti rotta.
+Radiofari SIM fittizi, nessun database operativo di frequenze approvato.
+Prodotti METAR e TAF sintetici (TAF solo persistenza, NON FM/TEMPO/BECMG),
+radar analitico georeferenziato/PNG, stati current/stale/expired/offline/skew;
+mondo fisico e osservazioni ritardate separati. Nessuna nuova UI esterna.
+
+Verificato SOLO SOFTWARE: 66 test Windows (29 mondo + 18 sessione + 19 MSFS),
+53 serverha (29 mondo + 18 sessione + 6 JSBSim reali), CTest mirato 4/4 PASS.
+Vento cambia davvero GS/traiettoria; ripetizione byte-identica nello stesso
+runtime e replay NAV mutato respinto anche ricalcolando hash dei frame.
+Sorgente isolata serverha world-source-v6 e sessioni nuove con manifesti,
+hash/config e radar, copie precedenti preservate. Evidenza in
+evidence/r1-16-sil-world-20261025/verification.json.
+
+NON completo: publisher e adapter dei renderer per questi nuovi gruppi,
+cache/prodotti attraverso consumer reali, TAF evoluti, terrain masking/RF,
+ghiaccio/stocastica meteo, database/procedure reali, nearest aeroporti/alternati,
+approccio/RNAV completo, guida missione e catalogo/NAS. Il C172P resta modello
+reference non validato per Asso/Pioneer/Rotax. Nessuna nuova verifica hardware,
+emissione RF, comando attuatori, servizio o attivazione; power/golden invariati.
+NAV-001/002/003, WX-001/002 e VER-001 restano PARTIAL, nessun nuovo DONE.
 
 ## R1-15 — collegamento SIL: adapter/consumer verificati, pannelli NON commutati
 

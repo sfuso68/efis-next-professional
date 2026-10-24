@@ -11,6 +11,8 @@ import re
 import time
 import uuid
 
+from tools.simulation.sil_world import World, config_digest, radar_png
+
 SCHEMA = "fuso-avionics.physics-sil.v1"
 VERSION = "1.3.3"
 DT = 0.01
@@ -74,7 +76,7 @@ def model_tree_digest(root):
 
 
 class Backend:
-    def __init__(self):
+    def __init__(self, world_config=None):
         import jsbsim  # isolated runtime dependency, never imported by offline unit tests
         if jsbsim.__version__ != VERSION:
             raise ValueError("JSBSim version mismatch")
@@ -88,12 +90,15 @@ class Backend:
         self.f.disable_output()
         self.catalog = {s.rsplit(" (", 1)[0] for s in self.f.get_property_catalog()}
         self.f.set_dt(DT)
+        self.world = World(world_config) if world_config is not None else None
         # Set position before velocity, because JSBSim initial-condition setters interact.
         for key, value in (("ic/lat-geod-deg", 45.648399), ("ic/long-gc-deg", 12.1944),
                            ("ic/h-sl-ft", 5000), ("ic/psi-true-deg", 5),
                            ("ic/gamma-deg", 0), ("ic/vc-kts", 90),
                            ("propulsion/set-running", -1)):
             self.f[key] = value
+        if self.world is not None:
+            self.world.apply_fdm(self, 0)
         if not self.f.run_ic():
             raise ValueError("initial conditions failed")
         self.f.do_trim(0)
@@ -117,6 +122,8 @@ class Backend:
         if scenario not in SCENARIOS:
             raise ValueError("unknown scenario")
         t = self.ticks * DT
+        if getattr(self, "world", None) is not None:
+            self.world.apply_fdm(self, self.ticks * 10)
         failed = scenario == "engine-out" and t >= 20
         target_roll = 20 if scenario == "turn" and 20 <= t < 40 else 0
         # Bench-only pilot. These are FDM inputs, NOT position/attitude setters.
@@ -158,7 +165,7 @@ class Backend:
             mass, density = self.read(tank+"/contents-lbs"), self.read(tank+"/density-lbs_per_gal")
             value = mass / density if mass is not None and density is not None and density > 0 else None
             engine[name] = sample(value, "USgal", tank+":mass/density")
-        return {"schema": SCHEMA, "session_id": session_id, "sequence": self.ticks // 5,
+        result = {"schema": SCHEMA, "session_id": session_id, "sequence": self.ticks // 5,
                 "sim_time_ms": t_ms, "simulated": True, "flight_approval": False,
                 "backend": "JSBSim-"+VERSION, "model": "c172p", "profile_status": "REFERENCE_UNVALIDATED",
                 "scenario": scenario, "flight": flight, "engine": engine,
@@ -170,6 +177,17 @@ class Backend:
                 "events": ["ENGINE_MIXTURE_CUTOFF"] if scenario == "engine-out" and t_ms >= 20000 else [],
                 "conventions": {"heading": "TRUE_NOT_MAGNETIC", "altitude": "GEOMETRIC_MSL_NOT_QNH_INDICATED",
                                 "airspeed": "CALIBRATED_NOT_RAW_PITOT", "clock": "INTEGER_SIMULATION_MS"}}
+        if getattr(self, "world", None) is not None:
+            actual = {"pressure_hpa": self.read("atmosphere/P-psf"),
+                      "temperature_c": self.read("atmosphere/T-R"),
+                      "density_kg_m3": self.read("atmosphere/rho-slugs_ft3")}
+            if any(v is None for v in actual.values()):
+                raise ValueError("FDM atmosphere output missing")
+            actual = {"pressure_hpa": actual["pressure_hpa"]*47.88025898/100,
+                      "temperature_c": actual["temperature_c"]*5/9-273.15,
+                      "density_kg_m3": actual["density_kg_m3"]*515.378818}
+            result["world"] = self.world.frame(flight, t_ms, actual)
+        return result
 
 
 def write_json(path, value):
@@ -178,16 +196,18 @@ def write_json(path, value):
         stream.write("\n")
 
 
-def run_session(directory, scenario="cruise", seconds=60, session_id=None, realtime=False):
+def run_session(directory, scenario="cruise", seconds=60, session_id=None, realtime=False, world_config=None):
     if scenario not in SCENARIOS or not isinstance(seconds, int) or not 1 <= seconds <= 3600:
         raise ValueError("scenario/duration invalid")
     session_id = session_id or uuid.uuid4().hex
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", session_id):
         raise ValueError("session identifier invalid")
+    if world_config is not None:
+        config_digest(world_config)  # validate before creating output
     directory = Path(directory)
     directory.mkdir(parents=False, exist_ok=False)  # never replace a prior session
     try:
-        backend = Backend()
+        backend = Backend(world_config) if world_config is not None else Backend()
         start = time.monotonic()
         frames = 0
         digest = hashlib.sha256()
@@ -215,6 +235,17 @@ def run_session(directory, scenario="cruise", seconds=60, session_id=None, realt
                     "frames_sha256": digest.hexdigest(), "model_tree": backend.model_digest,
                     "initial_trim": backend.initial, "network_publisher": False,
                     "efis_nodes_connected": False}
+        if world_config is not None:
+            manifest["world_config"] = world_config
+            manifest["world_config_sha256"] = config_digest(world_config)
+            # Distinct SIM-only image and georeferencing sidecar; never operational cache.
+            radar = backend.world.radar(0)
+            image = radar_png(radar)
+            with (directory / "sim-radar.png").open("xb") as stream:
+                stream.write(image)
+            write_json(directory / "sim-radar.json", {k: v for k, v in radar.items() if k != "values"})
+            manifest["radar_png_sha256"] = hashlib.sha256(image).hexdigest()
+            manifest["radar_metadata_sha256"] = hashlib.sha256((directory / "sim-radar.json").read_bytes()).hexdigest()
         write_json(directory / "manifest.json", manifest)
         return manifest
     except BaseException as exc:
@@ -257,6 +288,15 @@ def verify_session(directory):
             or not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", manifest["session_id"])):
         raise ValueError("manifest contract")
     digest, count = hashlib.sha256(), 0
+    world = None
+    if "world_config" in manifest:
+        if config_digest(manifest["world_config"]) != manifest.get("world_config_sha256"):
+            raise ValueError("world configuration digest")
+        world = World(manifest["world_config"])
+        for filename, key in (("sim-radar.png", "radar_png_sha256"), ("sim-radar.json", "radar_metadata_sha256")):
+            path = directory / filename
+            if path.is_symlink() or not path.is_file() or path.stat().st_size > 1048576 or hashlib.sha256(path.read_bytes()).hexdigest() != manifest.get(key):
+                raise ValueError("world radar artifact digest")
     with (directory / "frames.jsonl").open("rb") as stream:
         while True:
             line = stream.readline(65537)
@@ -295,6 +335,12 @@ def verify_session(directory):
                             raise ValueError("nonfinite raw sample")
                     elif datum.get("validity") != "UNAVAILABLE" or value is not None:
                         raise ValueError("unavailable sample not masked")
+            if world is not None:
+                value = frame.get("world")
+                if not isinstance(value, dict) or not isinstance(value.get("fdm_atmosphere"), dict) or value != world.frame(frame["flight"], frame["sim_time_ms"], value["fdm_atmosphere"]):
+                    raise ValueError("world navigation/weather replay mismatch")
+            elif "world" in frame:
+                raise ValueError("world frame without bound configuration")
             count += 1
             if count > 72001:
                 raise ValueError("too many frames")
@@ -322,10 +368,14 @@ def main():
     parser.add_argument("--session-id")
     parser.add_argument("--realtime", action="store_true")
     parser.add_argument("--verify", action="store_true")
+    parser.add_argument("--world", type=Path, help="Explicit offline SIM weather/navigation configuration")
     args = parser.parse_args()
     try:
+        if args.world and (args.verify or args.world.stat().st_size > 65536):
+            raise ValueError("world is bounded generation input only; replay uses bound manifest")
+        config = strict_json(args.world.read_text(encoding="utf-8")) if args.world else None
         result = verify_session(args.directory) if args.verify else run_session(
-            args.directory, args.scenario, args.seconds, args.session_id, args.realtime)
+            args.directory, args.scenario, args.seconds, args.session_id, args.realtime, config)
     except (ValueError, OSError, RuntimeError, ImportError) as exc:
         parser.exit(2, f"SIL: {exc}\n")
     print(json.dumps(result, sort_keys=True, allow_nan=False))

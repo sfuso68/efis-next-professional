@@ -428,3 +428,66 @@ qualifica PWR-001/release/golden e prova contemporanea sui renderer REALI.
 Non attivare due publisher sulle porte operative, non impersonare source47,
 non cambiare firewall o bridge fra LAN servizio e FLIGHT-DATA. Runbook:
 `../development/SIL_CANONICAL_LINK_PREFLIGHT_V1.md`. AVX-G5-02 IN_PROGRESS.
+
+### SIL-WX/NAV — estensione obbligatoria richiesta il 2026-10-25
+
+Stato PIANIFICATO, non nuova capacità verificata. Riferimenti NAV-001/002/003,
+WX-001/002, VER-001 e AVX-G5-02; stati correnti invariati. Un unico scenario
+serverha, clock, seed e identificativo di sessione per volo, EMS, ambiente,
+prodotti meteo e navigazione. Grafica esclusivamente EFIS NEXT reale.
+
+| Blocco | Perimetro da sviluppare | Criterio di accettazione software |
+|---|---|---|
+| WX-A ambiente fisico | pressione/QNH, temperatura/densità, vento per quota, raffiche, turbolenza e shear; visibilità, nubi e precipitazioni come campi di scenario; ghiaccio solo con modello dedicato | vento influenza davvero TAS/GS/TRK/deriva e dinamica; QNH/quote/unità/convenzioni controllati; effetti non modellati dichiarati, mai simulati come validati |
+| WX-B prodotti | METAR/TAF sintetici e radar georeferenziato evolutivo, osservazioni/previsioni distinte, stazioni/tempi/lead-time/provenienza | stessi parser/cache/consumer del prodotto; legenda e SIM sempre, coordinate e valid time coerenti, CURRENT/STALE/EXPIRED/OFFLINE/clock-skew, mai cache operativa contaminata |
+| NAV-A geometria radio | VOR radiali e TO/FROM/OBS/CDI, DME distanza obliqua, NDB/ADF bearing, ILS localizer/glideslope; convenzioni TRUE/MAG e declinazione esplicite | casi geometrici indipendenti, passaggio stazione e ambiguità/cone-of-confusion, fronte/retro e limiti ILS, copertura e terrain masking solo se modellati; assenza segnale non centratura fittizia |
+| NAV-B GNSS e rotta | posizione/GS/TRK, disponibilità/accuratezza/degrado GNSS; aeroporti/piste/stazioni/frequenze versionati; piano di volo, leg, direct-to, nearest, XTK/DTK, distanza, ETA/ETE e alternati | sequenziamento leg e selezione sorgente coerenti, intercetti e crosswind, errori/fault/recovery, dataset dichiarato e ripetibile; procedure pubblicate solo con dataset idoneo e diritti verificati |
+| NAV-C impianti e HMI | selezione/frequenze NAV e identificativo stazione simulati, annunci CDI e source/age sui renderer reali; eventuali cue autopilota solo nel FDM | confronto numerico PFD/MFD con stessa sessione; nessun controllo Pixhawk/servi o trasmettitore RF; perdita fonte chiaramente annunciata |
+| DATA/TEST | catalogo serverha di scenari, dataset/licenze/versioni e registrazioni con hash; replica NAS da implementare senza sovrascrivere archivio operativo | replay deterministico, stop/pause/seek/restart, separazione SIM/LIVE, test analitici/unitari/fault e infine acceptance end-to-end sui nodi dopo gate |
+
+Distinzione obbligatoria: la verità fisica del mondo, il sensore simulato e
+il bollettino ricevuto sono livelli diversi. Un radar ritardato può essere
+coerentemente diverso dal tempo attuale; un TAF è una previsione, non copia
+del presente. QNH e modello altimetro devono usare la stessa atmosfera, senza
+alias geometrico→indicato. Non inventare integrità GNSS certificata o precisione
+radio/ostacoli che non sia modellata e verificata. DME non è distanza al suolo.
+
+Scenari minimi: Treviso–Belluno nominale con vento e variazione QNH; intercetto
+radiale VOR e passaggio stazione; rotta NDB; intercetto ILS con fuori copertura;
+GNSS perso con navigazione radio ancora disponibile; stazione guasta o
+identificativo errato; bollettino/radar scaduto e perdita hotspot; shear/raffiche
+e recovery. Profili addestrativi NON sono procedure operative approvate.
+
+Ordine: 1) contratto scenario/clock e test di riferimento; 2) atmosfera e
+sensori aria/compasso; 3) geometria VOR/DME/GNSS e piano di volo; 4) NDB/ILS,
+copertura e fault; 5) METAR/TAF/radar sintetici tramite cache reale separata;
+6) publisher comune isolato, registrazione/catalogo e prove renderer end-to-end.
+Possibile sviluppo offline mentre PWR-001 blocca attivazioni; non equivale a
+collaudo fisico o completamento «navigazione completa». Sviluppi RNAV avanzati,
+procedure e funzioni di guida vanno censiti separatamente prima di dichiararli
+coperti. Nessun nuovo codice runtime o hardware modificato da questa nota.
+
+### R1-16 — implementazione prima base SIL-WX/NAV, ancora PARZIALE
+
+2026-10-25: implementato mondo offline deterministico e integrato nel backend
+JSBSim tramite --world. Vento/raffiche per quota e temperatura/QNH influenzano
+il FDM; pressione reale letta per il modello altimetro. Geometria VOR/DME,
+NDB/ILS, GNSS con fault, rotta/direct-to/XTK/DTK/ETA verso WP; prodotti METAR,
+TAF di persistenza e radar PNG/dBZ con riferimenti, date/age e fault
+offline/delay/skew. Configurazione e radiofari SIM fittizi espliciti,
+manifest/hash, nuova sessione soltanto, replay semantico fail-closed.
+
+Evidenza software: 66 test Windows, 53 serverha (6 fisici JSBSim), CTest 4/4;
+vento modifica GS/posizione, ripetizione byte-identica, GNSS perso con VOR
+disponibile, frame NAV mutato respinto con hash ricalcolato. Sorgenti serverha
+isolate world-source-v6 e vecchie copie conservate. Runbook aggiornato
+../development/SERVERHA_HEADLESS_SIL_V1.md, evidence r1-16-sil-world-20261025.
+
+NON chiusi WX-A..DATA/TEST: non sono simulazioni complete di meteo/RF e non
+ci sono nuovi consumer delle applicazioni reali. Prossima implementazione:
+adapter tipizzati del nuovo gruppo world e namespace cache SIM per prodotti,
+test dei parser effettivi/raw TAF evoluti e radar dinamico sui renderer,
+dataset NAV/licenze/versioni e aeroporti/alternati, poi publisher isolato con
+rollback. Terrain masking/RNAV/procedure/missione completa/catalogo-NAS e
+qualifica dei due motori restano distinti. Gate power/golden e rete operativa
+invariati, nessun nodo o attuatore modificato, nessun avanzamento a DONE.

@@ -1,0 +1,46 @@
+{
+  "schema": "fuso-avionics.sil-world.v1",
+  "dataset_id": "treviso-belluno-FICTIONAL-RADIO-reference-v1",
+  "epoch_utc": "2026-10-25T10:00:00Z",
+  "seed": 42,
+  "atmosphere": {
+    "qnh_hpa": 1005,
+    "temperature_sl_c": 18,
+    "wind_layers": [
+      {"altitude_ft": 0, "north_kt": -4, "east_kt": 2},
+      {"altitude_ft": 5000, "north_kt": -12, "east_kt": 10},
+      {"altitude_ft": 30000, "north_kt": -30, "east_kt": 20}
+    ],
+    "gust_kt": 2,
+    "gust_period_s": 12,
+    "vertical_gust_kt": 0.3,
+    "visibility_m": 8000,
+    "cloud_base_ft": 6500,
+    "rain_rate_mmh": 2
+  },
+  "stations": [
+    {"id": "SIMVOR", "kind": "VOR", "lat": 45.9, "lon": 12.22, "elevation_ft": 400, "frequency": 113.5, "variation_east_deg": 3, "range_nm": 80, "course_true_deg": 0, "gs_deg": 3},
+    {"id": "SIMNDB", "kind": "NDB", "lat": 46.1, "lon": 12.24, "elevation_ft": 600, "frequency": 350, "variation_east_deg": 3, "range_nm": 50, "course_true_deg": 0, "gs_deg": 3},
+    {"id": "SIMILS", "kind": "ILS", "lat": 46.166549, "lon": 12.250389, "elevation_ft": 1240, "frequency": 110.3, "variation_east_deg": 3, "range_nm": 18, "course_true_deg": 5, "gs_deg": 3}
+  ],
+  "route": [
+    {"id": "LIPH_REF", "lat": 45.648399, "lon": 12.1944},
+    {"id": "SIMWP", "lat": 45.9, "lon": 12.22},
+    {"id": "LIDB_REF", "lat": 46.166549, "lon": 12.250389}
+  ],
+  "receiver": {
+    "obs_deg": 2, "variation_east_deg": 3, "altimeter_hpa": 1005,
+    "ias_bias_kt": -1, "selected_id": "SIMVOR",
+    "gnss_error_north_m": 2, "gnss_error_east_m": -1, "direct_to": null
+  },
+  "faults": [
+    {"kind": "gnss_loss", "start_ms": 20000, "end_ms": 30000, "target": "ALL"},
+    {"kind": "radio_ident_mismatch", "start_ms": 35000, "end_ms": 40000, "target": "SIMVOR"},
+    {"kind": "wx_delay", "start_ms": 40000, "end_ms": 45000, "target": "ALL"},
+    {"kind": "wx_offline", "start_ms": 45000, "end_ms": 55000, "target": "ALL"}
+  ],
+  "radar": {
+    "bbox": [11.9, 45.5, 12.6, 46.4], "cell_lat": 45.95, "cell_lon": 12.28,
+    "velocity_north_kt": 12, "velocity_east_kt": 6, "radius_nm": 8, "peak_dbz": 45
+  }
+}

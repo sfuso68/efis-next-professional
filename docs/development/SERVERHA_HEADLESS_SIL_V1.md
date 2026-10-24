@@ -14,7 +14,83 @@ un solo identificativo di run; normalizzazione/registrazione e distribuzione
 attraverso una Blackbox di TEST, consumer reali con SIM visibile e perdita dati
 esplicita. Non tre simulatori indipendenti, né una nuova UI dimostrativa.
 
-## Implementato e realmente eseguito
+## R1-16 — estensione meteo/radio/NAV offline (2026-10-25)
+
+Implementati `sil_world.py`, fixture versionata
+`config/simulation/treviso-belluno-world-reference.json`, suite offline e
+suite fisica esplicita `tests.jsbsim_world_integration` (senza backend FALLISCE,
+non salta i test). La configurazione è stretta, bounded, senza chiavi ignote,
+con unità e identità SIM, epoch UTC/seed e finestre fault semiaperte.
+Nessun file nav/prodotto operativo viene scritto o sostituito.
+
+`jsbsim_session --world FILE` applica soltanto proprietà atmosferiche presenti
+nel catalogo FDM: pressione SL in psf, delta-T Rankine, vento NED in ft/s.
+Il primo tentativo usava la proprietà documentata storicamente T-sl-dev-F,
+assente nel runtime: ha fallito chiuso senza crearla. Corretto usando il
+catalogo reale 1.3.3 e delta-T. Pressione/temperatura/densità effettive FDM
+sono registrate e la pressione effettiva alimenta il modello altimetro.
+Nessuna modifica XML aeromobile, controllo hardware o pacchetto globale.
+
+Il nuovo gruppo `world` condivide frame/tempo/sessione del volo/EMS:
+
+- atmosfera secca troposferica di riferimento, vento interpolato per quota,
+  perturbazioni armoniche deterministiche, nubi/visibilità/pioggia di scenario;
+- IAS ideale da CAS con bias installazione ESPRESSO, pressione/altitudine
+  standard e indicata distinte, prua magnetica con declinazione configurata;
+- VOR radiale MAG con declinazione della stazione (non quella dell'aereo),
+  CDI a fondo scala 10°, TO/FROM e cono/ambiguità; DME obliquo separato;
+- NDB bearing TRUE/relativo; ILS corso frontale con LOC ±2.5° fondo scala,
+  GS ±0.7°, inviluppo di addestramento dichiarato, nessun back-course valido;
+- GNSS con bias configurato, perdita/recovery senza spegnere VOR; route a
+  cerchio massimo sferico, sequenziamento, XTK positivo a destra, DTK TRUE,
+  direct-to da origine acquisita, ETA verso WP con closure attuale;
+- METAR ZZZZ e TAF con RMK SIM TRAINING, nessun dewpoint inventato;
+  previsione SOLO PERSISTENZA. Osservazione/validità distinte dal presente,
+  fault ritardo/offline/clock-skew; niente presentazione di EXPIRED/SKEW;
+- cella radar gaussiana traslante dBZ, bbox EPSG:4326 e righe nord→sud,
+  PNG RGBA separato con sidecar. Immagine iniziale archiviata; l'overlay
+  dinamico dei renderer NON è collegato dal presente blocco.
+
+Queste sono approssimazioni DIDATTICHE, non modelli radio certificati o meteo
+predittivo. La copertura usa raggio configurato e semplice orizzonte geometrico,
+senza terreno, rifrazione, multipath, interferenze o diagrammi antenna. Gli
+impianti LOC/GS sono co-localizzati nella fixture: non un aeroporto pubblicato.
+Le coordinate LIPH/LIDB sono riferimenti; radiofari/frequenze sono FITTIZI.
+Nearest restituisce punti rotta, NON tutti gli aeroporti; ETA non è quella di
+tutto il piano e non assume vento futuro noto. Il pilota di banco NON vola
+automaticamente gli intercetti NAV. Stato GNSS NON equivale a RAIM/SBAS.
+
+Configurazione completa e SHA nel manifesto; world ricalcolato nel verificatore
+replay, PNG/sidecar legati agli hash. Si verifica integrità/riproducibilità,
+non firma/autenticazione né taratura reale. Replay fra piattaforme con libm
+diversa non qualificato: confronto numerico attuale esatto/fail-closed.
+Nessun collegamento nuovo dei gruppi world ai codec DDP/EDP: il tool R1-15
+continua a verificare il suo sottoinsieme precedente, non questo nuovo NAV.
+
+Comando serverha, con nome nuovo e directory sorgente verificata:
+
+```sh
+sh /home/sfuso/avionix-sil-r114-20261025/world-source-v6/tools/simulation/run_serverha_world_sil.sh cruise world-prova-nuova-001 60
+```
+
+Il runner è finito, senza rete/porte o demoni; non ha cambiato il runner R1-14.
+Test registrato nel CTest ordinario: `efis_sil_world_tests`. Verifiche: 66 test
+Windows, 53 serverha (6 di integrazione fisica), CTest mirato 4/4 PASS; stesso
+runtime produce byte identici, vento/calmo cambia fisica e mutazione NAV con
+frame hash aggiornato viene respinta. Non una nuova acceptance QML/ARM64.
+
+Restano integrazione mondo→snapshot/consumer HMI e prodotti→cache reale SIM
+separata, publisher/rollback isolati, TAF FM/TEMPO/BECMG, dataset reali con
+licenze/cicli, nearest aeroporti/alternati e RNAV/procedure, terrain masking,
+ghiaccio e meteo stocastico, missione completa, catalogo/replica NAS e test
+end-to-end/endurance. Attivazioni power/golden sempre bloccate, nessun DONE.
+
+Riferimenti primari consultati (non evidenza di conformità del modello):
+[JSBSim atmosfera e binding delta-T](https://jsbsim-team.github.io/jsbsim/classJSBSim_1_1FGStandardAtmosphere.html),
+[JSBSim vento NED](https://github.com/JSBSim-Team/jsbsim/discussions/1099),
+[FAA AIM navigation aids](https://www.faa.gov/air_traffic/publications/atpubs/aim_html/chap1_section_1.html).
+
+## R1-14 storico — implementato e realmente eseguito
 
 Runtime isolato su `sfuso@serverha` / `192.168.1.6`:
 
