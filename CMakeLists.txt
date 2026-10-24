@@ -731,13 +731,19 @@ if(EFIS_BUILD_TESTS)
 endif()
 
 if(EFIS_BUILD_SIL_WIRE_CHECK)
-    find_package(Qt6 REQUIRED COMPONENTS Core)
+    find_package(Qt6 REQUIRED COMPONENTS Core Network)
     add_executable(efis-sil-wire-check tools/simulation/jsbsim_wire_check.cpp)
     target_link_libraries(efis-sil-wire-check PRIVATE efis_core Qt6::Core)
+    add_executable(efis-sil-panel-replay tools/simulation/sil_panel_replay.cpp)
+    target_link_libraries(efis-sil-panel-replay PRIVATE efis_core Qt6::Core Qt6::Network)
     if(EFIS_BUILD_TESTS AND Python3_Interpreter_FOUND)
         add_test(NAME efis_jsbsim_wire_check_tests
             COMMAND ${Python3_EXECUTABLE} -m tests.jsbsim_wire_check_tests $<TARGET_FILE:efis-sil-wire-check>)
         set_tests_properties(efis_jsbsim_wire_check_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_panel_replay_tests
+            COMMAND ${Python3_EXECUTABLE} -m tests.sil_panel_replay_tests $<TARGET_FILE:efis-sil-panel-replay>)
+        set_tests_properties(efis_sil_panel_replay_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
     endif()
 endif()

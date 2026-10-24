@@ -491,3 +491,23 @@ dataset NAV/licenze/versioni e aeroporti/alternati, poi publisher isolato con
 rollback. Terrain masking/RNAV/procedure/missione completa/catalogo-NAS e
 qualifica dei due motori restano distinti. Gate power/golden e rete operativa
 invariati, nessun nodo o attuatore modificato, nessun avanzamento a DONE.
+
+### R1-17 — primo pannello collegato, lease banco e limiti osservati
+
+PFD.45 con0x0, binario installato7051a47 invariato, temporary screen/feed in
+namespace privato condiviso (solo loopback), clock di emissione/instance
+separati dal replay. Nominale60s senzafault ciclico900s, source65000/port49152.
+Trasferimento file da serverha, NON stream live. Stato/settings/cache isolati;
+recorder1419 invariato; ritorno automatico allo stopfeed e restore service
+eseguiti con successo. Timer930s/RuntimeMax900 predisposti, scadenza completa
+non osservata. Tool ARM64+6test PASS; MSVC+CTest5/5 PASS. Schermo reale SIM,
+terreno locale e20Hz/0reject/0gap osservati, power sempre0x0.
+
+Non chiuso AVX-G5-02: nuova integrazione parziale di IAS/quote/MAG/GNSS/OBS/CDI,
+non intera NAV UI, EMS/meteo/airframe/VS indipendente. UI7051 legacy espone
+ancora label/impianti dimostrativi e zeri sottoFAIL; V-speeds reference non
+inventate, indicazioneUNAVAILABLE. Startup stalls fino1.6s e27gap imagery
+rimangono difetti. Prima della nuova release servono consumer world/HMI e
+profilo modello approvato, review golden/ARM64, cache meteo SIM, ident NAV,
+runtime supportato e acceptance touch/loop/stop. Nessun waiver MFD/Blackbox
+power; nessun writer/attuatore, rete operativa o main modificati.

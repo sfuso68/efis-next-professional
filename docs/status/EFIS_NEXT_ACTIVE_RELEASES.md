@@ -20,6 +20,15 @@ non possono sovrascrivere questo registro.
 
 ## Registro corrente
 
+Osservazione R1-17 del2026-10-25: PFD.45 ha eseguito la STESSA release
+7051a47 in una sessione temporanea PrivateNetwork/SIM node65000 da unità
+transitoria, con l'unità utente normale sospesa per la durata del banco.
+Pointer e hash renderer invariati; ripristino originale verificato nel drill.
+Sessione finale riarmata a UTC24T23:28:36Z, vista23:28:46Z, lease900s: non dedurre che sia ancora
+attiva leggendo questa nota più tardi. Recorder PID1419 invariato,0x0.
+Non è un rollout di R1-16/R1-17 sui renderer. Dettagli/evidenze nel registro
+stato corrente R1-17; MFD/EMS/Blackbox non modificati.
+
 | Nodo | Ruolo | Indirizzo noto | Ultima release osservata | Data evidenza | Stato canonico corrente | Evidenza | Prossima verifica |
 |---|---|---:|---|---|---|---|---|
 | `efis-pfd-01` | PFD + recorder RPi5 | `192.168.1.45` | `pfdrec-7051a47-retention-v1` (`7051a47839389f739f2d1e0ad22b385173299f61`) | 2026-09-30 activation + reboot | ATTIVA IMMUTABILE / RETENTION VERIFY-HW | archivio pre-potatura serverha 9.208 file/33.777.901.735 byte con secondo `rsync -aHnc --delete` a zero differenze; build ARM64 e test mirati PASS; prima potatura 2.222 segmenti/8.008.825.406 byte, rollback drill e reboot PASS; una seconda potatura post-reboot ha rimosso 12 segmenti/43.890.672 byte; PFD/recorder attivi dai binari canonici, status V3 crescente, DDP LIVE e `get_throttled=0x0`; root 71% con 17,4 GB disponibili; candidata meteo `pfdrec-3c7bb4d-weather-async-v1` preparata soltanto a livello software e non attivata | eseguire sul PFD build/test ARM64, attivazione con rollback, prova I/O meteo e reboot acceptance della candidata; completare soak >=24 h; indagare startup retry; visuale/touch/terrain e 27 gap tile restano aperti |

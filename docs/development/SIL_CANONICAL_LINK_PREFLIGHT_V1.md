@@ -1,7 +1,84 @@
 # Collegamento SIL — preflight e consumer canonici R1-15
 
 2026-10-25. Richiesta: collegare la sessione serverha ai veri EFIS NEXT.
-Stato: PARZIALE, collegamento dei pannelli NON attivato.
+Stato R1-15 storico: PARZIALE, nessun pannello attivato in quel blocco.
+
+## R1-17 — prova PFD .45 isolata e reversibile
+
+Su richiesta esplicita del proprietario, verificato il collegamento parziale
+su PFD .45 con alimentazione 0x0. Non utilizza MFD/Blackbox, non supera i
+loro gate e non cambia la rete operativa. Nessun nuovo renderer: binario
+installato 7051a47, stesso SHA e puntatore di release, nuova istanza soltanto.
+Il tool diagnostico e i file replay sono sotto /home/efis/efis-sil-panel-r117.
+
+`efis-sil-panel-replay` accetta un replay world già verificato e il suo SHA;
+--check non apre socket. --loopback-900s ha destinazione/porta fisse
+127.0.0.1:49152, node65000, rifiuto implicito dei consumer production47,
+instance casuale, emissione reale 20 Hz, massimo 900 secondi, fail su ritardo
+oltre100 ms senza burst di recupero. Replay 60 s ripetuto intenzionalmente:
+non una sessione fisica live e non un modello guidabile con joystick.
+Metadati SIM sempre, flight_approval=false. La verifica SHA non è firma o
+autenticazione; il caricatore nativo si affida alla verifica semantica Python
+originaria e al SHA atteso fissato nel launcher di banco, non è ingress remoto.
+
+Launcher **specifico del nodo/inventario verificato**, non deploy universale:
+`deploy/scripts/run_pfd_sil_bench_r117.sh`. Controlla utente/hostname, power0x0,
+SHA del renderer e del tool, pointer/Wayland e preflight. Unità systemd ROOT
+transitorie, User=efis, PrivateNetwork=yes e namespace condiviso con solo lo;
+QSettings/cache/stato sotto work-v1 separati. Nessun IP forwarding/NAT/ACL.
+La grafica può leggere i file terrain/texture già installati; HTTP esterno
+non può raggiungere Internet. Non usare setup rete/attivazione profili per
+questo test; limitarsi alle pagine e ai controlli di consultazione.
+
+Timer root 930 s indipendente da credenziali sudo future, screen e feed con
+RuntimeMaxSec900, stop del feed chiude la finestra e riavvia l'unità utente
+originale. Recorder separato senza PartOf/BindsTo, PID1419 osservato invariato.
+La copia guard.sh del timer è root:root0500 in /run/efis-sil-r117 root:root0700;
+il timer non esegue in differita un sorgente rimasto scrivibile dall'utente.
+Ripristino manuale e stop-feed end-to-end verificati; servizio del timer
+esplicitamente invocato e risultato success. Non attesa tutta la lease per
+qualificare la sua scadenza naturale. Nessun timer ricorrente o installazione
+persistente: dopo la finestra si torna alla configurazione precedente.
+
+Sul terminale PFD, utente efis:
+
+```sh
+bash /home/efis/efis-sil-panel-r117/run_pfd_sil_bench_r117.sh --activate
+bash /home/efis/efis-sil-panel-r117/run_pfd_sil_bench_r117.sh --restore
+```
+
+Per ripristino locale con password sudo, se necessario:
+
+```sh
+sudo bash /home/efis/efis-sil-panel-r117/run_pfd_sil_bench_r117.sh --root-restore
+```
+
+Tool ARM64 SHA81bc503f6063e07ec57415a6fe8a4f383f5966411aaf5a994198f79a8f440d37;
+renderer SHAa64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854.
+Replay nominal-v1, generato su serverha da world-source-v6 togliendo soltanto
+i fault e cambiando dataset_id in panel-nominal-WX-NAV-REFERENCE-v1:
+frames SHA697ffb68a76d0b20c448e4d3b05194f1d3016f5615a95247f4589c900d4d8b80,
+config SHA85cd161536b57be42ca19aa75ab0ce0df595bdb477cc017c277cf7766913bc7f.
+Verificatore serverha PASS prima di trasferimento, hash nativo uguale.
+
+Mapping: campioni di assetto/IAS ideale/quote/prua MAG/GNSS/OBS e CDI scelto;
+normalizzazione altimetro del renderer e regolazione del pilota rimangono
+quelle esistenti: non forzare il QNH del pilota fingendo un sensore. 10° VOR
+e 2.5° LOC = cinque dot come convenzione di banco, non taratura HMI approvata.
+VS baro/GNSS indipendenti assenti, EMS e airframe non trasportati. Metar/radar
+del nuovo mondo NON collegati al consumer grafico; namespace impedisce live
+meteo Internet e cache bench è separata. La grafica installata mostra ancora
+label GPS1/impianti dimostrativi e valori0 sotto ENGINE FAIL: difetti legacy
+OPEN, non validare quei blocchi né dichiarare acceptance completa. Profilo
+C172P volutamente privo di V-speeds non validate: UI rifiuta il profilo per
+limiti mancanti e mostra V-SPEEDS UNAVAILABLE anziché bande Asso/Rotax errate.
+
+Cattura reale SIM e terreno con1326 tile/27 gap locali; avvio osserva stalli
+fino a1.6 s, poi finestre a60 Hz con DDP20 Hz/reject0/gap0. Questi dati non
+qualificano frametime worst-case o endurance. Touch da confermare umanamente.
+Build ARM64/sei test nativi PASS; MSVC e CTest mirato5/5 PASS, CI candidata
+ancora da verificare. Nessun golden modificato, main/renderer non aggiornati.
+Evidenza: ../status/evidence/r1-17-pfd-sil-bench-20261025/verification.json.
 
 ## Verifica diretta dei nodi (sola lettura)
 

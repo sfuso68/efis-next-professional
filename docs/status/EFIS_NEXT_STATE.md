@@ -1,10 +1,51 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-25, R1-16 mondo meteo/NAV offline con JSBSim verificato; nessuna commutazione dei nodi
+Aggiornamento: 2026-10-25, R1-17 prova temporanea SIL sul PFD .45 con ripristino; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-17 — PFD reale collegato al replay, SOLO banco temporaneo e parziale
+
+Richiesta proprietario: collegare il pannello disponibile e iniziare a operare.
+PFD .45 read-only riconfermato 0x0/48.3°C; MFD/Blackbox esclusi per power gate.
+Scelta: NON distribuire un nuovo renderer/golden non approvato. Binario PFD
+immutabile 7051a47/SHA a64edcf2... invariato, temporaneamente eseguito da unità
+di banco con stato/settings/cache separati e simulatore locale DISABLED.
+Unità utente normale fermata soltanto durante la finestra, recorder PID 1419
+invariato. Nessuna modifica a symlink, unità permanenti, firmware o firewall.
+
+Implementato mittente Qt Core/Network efis-sil-panel-replay: soltanto
+127.0.0.1:49152/node65000, SHA atteso/preflight, nuova instance casuale e
+clock/sequenza di emissione, arresto su ritardo >100 ms e limite 900 s.
+Frame fisici verificati su serverha, copiati via file e riemessi: NON streaming
+live dal server e NON pilotaggio manuale. Replay nominale 60 s/1201 frame
+ciclico, senza fault, modello C172P REFERENCE_UNVALIDATED. Mapping esplicito
+di IAS ideale, quote, prua MAG, GNSS, OBS e CDI; VS indipendenti, EMS, meteo
+e airframe NON collegati. Etichetta NAV GPS1 rimane legacy, non prova ident VOR.
+
+Verificato: build ARM64 e sei test black-box PASS; MSVC build e CTest mirato
+5/5 PASS. PFD reale riceve 20 Hz, accepted crescente, reject/gaps/socket_errors
+zero nelle finestre osservate, marker SIM e cattura reale 1024x600. Terreno e
+texture locali riletti dai path già presenti, imagery 1326 tile/27 gap noti.
+Schermo/feed condividono un namespace di rete diverso dall'host, solo lo:
+nessun meteo Internet o accesso IP a Pixhawk/Blackbox. Root unità transitorie
+User=efis, timer 930 s e RuntimeMax 900 s; stop del feed ha ripristinato davvero
+l'unità utente originale. Servizio timer invocato nel drill con successo;
+scadenza naturale completa dei 900 s NON osservata in questo blocco.
+
+Sessione finale riarmata e osservata a UTC 2026-10-24T23:28:46Z (25 locale),
+screen PID 1618223, feed 1618228, 0x0; è una LEASE, non stato permanente.
+Guardia del timer copiata root:root0500 sotto /run/efis-sil-r117 root:root0700,
+non esecuzione differita come root di uno script rimasto scrivibile dall'utente.
+Evidenza evidence/r1-17-pfd-sil-bench-20261025/verification.json. Touch/MENU:
+chiesta conferma umana, NON ancora verificati in questa nuova sessione.
+Difetti OPEN: startup/callback stall fino a circa 1.6 s, UI installata legacy
+mostra ancora impianti dimostrativi e zeri EMS sotto FAIL, sorgenti NAV non
+complete, limiti C172P assenti volutamente/V-SPEEDS UNAVAILABLE. Non usare
+quei dati come prova di integrazione. Golden/nuova release e gate di volo
+restano aperti; nessun nuovo DONE. Runbook SIL aggiornato con comandi.
 
 ## R1-16 — mondo meteo/NAV offline implementato, integrazione display APERTA
 
