@@ -1,6 +1,6 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
-Aggiornamento: 2026-09-21
+Aggiornamento: 2026-10-24 (aggiunta requisito simulatore realistico; storico conservato)
 Stato: controllato da WS0/G0; nessuna attività hardware autorizzata da questo documento.
 
 Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
@@ -25,6 +25,7 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | AVX-G3-04 | G3 | Congelare contratto HMI SkyView/EMS | concept approvato e design esistente | manifesto macchina, 10 gate, 20 controlli fail-closed e test | G0 | medio | stessa semantica a tutte le risoluzioni | config/ui, docs/design, tools/ui | validator/golden/CI/HW | M | IN_PROGRESS |
 | AVX-G4-01 | G4 | PSU, harness, enclosure e schema filo-per-filo | inventario finale | prototipo installabile | G1/G3 | alto | design review e brownout test | hardware docs | electrical/environmental | XL | PROPOSED |
 | AVX-G5-01 | G5 | HIL e fault injection integrati | G3/G4 | matrice prove ripetibile | gate precedenti | molto alto | fault obbligatori con evidenza | tests/evidence | HIL | XL | PROPOSED |
+| AVX-G5-02 | G5 | Simulatore realistico integrato e archivio dati sul server | richiesta proprietario 2026-10-24, modelli e dataset tracciabili | ambiente SIL ripetibile per tutte le applicazioni, bridge simulatori opzionale e pacchetti offline | contratti DDP/EDP/airframe, fonti/licenze, profili validati | alto: coerenza fisica, falsi dati normali, licenze, carico | scenari nominali/fault end-to-end, correlazioni e tolleranze per modello verificate, riproducibilità, nessun comando hardware | simulator/providers, strumenti ingestione, server/catalogo, tests/evidence; design prima del codice | SIL/replay/contract e confronto con riferimenti, HIL separato | XL | OPEN |
 | AVX-G6-01 | G6 | Congelare baseline EFIS Next | G0–G5 | release/config/recovery controllati | tutti i gate | alto | configuration index e rollback | release docs | acceptance completa | L | PROPOSED |
 | AVX-G7-01 | G7 | Porting CM/Next Plus | baseline G6 | parità funzionale su hardware industriale | G6 | alto | replay e benchmark equivalenti | nuovo profilo HW | benchmark/replay | XL | PROPOSED |
 
@@ -117,3 +118,79 @@ Il readiness batch R100 rende espliciti e verificabili i cinque confini che
 precedono l'integrazione: inventario, 18 segnali, calibrazione, trasporto ed
 evidence. I 49 controlli software in PASS non promuovono i 51 controlli
 PREPARED/BLOCKED e non autorizzano probing o deployment.
+
+## Nota vincolante di planning — simulazione realistica e archivio server
+
+Richiesta del proprietario del 2026-10-24, AVX-G5-02. **OPEN / NON IMPLEMENTATO**
+da questa nota. La simulazione deve diventare un ambiente coerente di prova
+dell'intero sistema, non una collezione di numeri animati indipendenti. Si mira
+a utilizzare le applicazioni come durante una missione, senza dichiarare che
+un simulatore equivalga a un aeroplano reale o sostituisca la qualifica hardware.
+
+### Fedeltà richiesta
+
+- Un unico tempo di simulazione e uno scenario comune per PFD, MFD/Canvas,
+  EMS, navigazione, meteo, allarmi/emergenze, voce, FPV dove pertinente e blackbox.
+  Assetto, traiettoria, accelerazioni, IAS/TAS/GS, vento, pressione/QNH, quota,
+  VS, GNSS e sensori devono essere correlati, non generati separatamente.
+- Modello configurabile per aeromobile/motore: massa e centraggio, aerodinamica
+  e prestazioni, inviluppo e limiti, motore/termica, consumi/serbatoi,
+  elettrico/utenze, carrello e flap con comando distinto da feedback. I limiti
+  devono riferirsi alla variante effettiva, non ereditati da un modello simile.
+- Fault ripetibili: open/short, pitot/statico, bias/stasi/disaccordo sensori,
+  GNSS perso, degrado EDP/DDP, perdita/ritardo/reordine rete, guasti motore,
+  elettrico e airframe. Conservare validità, età e provenienza per segnale.
+- Scenari seedati/versionati, avvio/pausa/seek coerenti e replay deterministico;
+  stessi ingressi alle interfacce di produzione, catture e log confrontabili.
+  Tutto rimane marcato SIM; rete di test isolata e nessuna autorità su servi,
+  Pixhawk o altri attuatori reali. Un bridge esterno non può mascherarsi LIVE.
+
+### Modelli e fonti da acquisire, non ancora acquisiti
+
+Valutare Microsoft Flight Simulator 2024, altri simulatori e modelli aperti
+come possibili sorgenti/bridge di stato e dati prestazionali. Verificare prima
+SDK/interfacce ufficiali, disponibilità dei campi, unità, frequenze, licenze e
+diritti di esportazione/archiviazione per ciascun contenuto. Non assumere che
+scenari, modelli commerciali, navdata o streaming del simulatore siano copiabili
+nel nostro server. Se non esportabili, usare il bridge autorizzato o dati
+alternativi con licenza compatibile: niente estrazione non autorizzata.
+
+Priorità ai manuali POH/AFM e del costruttore motore per limiti e prestazioni;
+dati del simulatore sono supplementari, non automaticamente validati o
+certificati. Catalogare fonte/revisione/variante/unità/licenza, confidenza e
+campi mancanti; nessun valore inventato classificato come dato verificato.
+
+### Archivio geografico e operativo comune
+
+Serverha ospita catalogo, ingestione controllata e pacchetti versionati; NAS
+conserva le copie secondo la pipeline di backup/restore prevista. Archiviare
+modelli, configurazioni, scenari e dataset consentiti: DEM/terreno, ortofoto e
+texture, ostacoli, aeroporti/piste, radioassistenze/frequenze, spazi aerei,
+cartografia, meteo storico/scenari e piani di volo. Priorità Nord Italia,
+Treviso–Belluno e Dolomiti, senza limitare il formato a questa regione.
+
+Ogni pacchetto deve dichiarare copertura geografica, livello di dettaglio,
+CRS/datum verticale, unità, data di osservazione/validità e aggiornamento,
+fonte/licenza, dimensioni, checksum e compatibilità. Mappe e terreno devono
+allinearsi a coordinate, pista, ostacoli e quota dello scenario. Un inventario
+scaricato non dimostra completezza, attualità o idoneità aeronautica.
+
+Distribuzione ai nodi per zona e corridoio di piano di volo, con livelli di
+dettaglio, quote/cache, ripresa download, verifica integrità, aggiornamento
+atomico e rollback; funzionamento offline e segnalazione esplicita dei gap.
+Non modificare oggi percorsi server, retention o copie esistenti e non avviare
+download massivi senza stima di spazio, banda, licenze e piano di acquisizione.
+
+### Ordine di esecuzione e chiusura
+
+1. Inventario simulatore e dataset già presenti; specifica del modello comune,
+   contratti/versioni, clock e budget di fedeltà con tolleranze per segnale.
+2. Catalogo fonti/licenze e profili aeromobile/motore con validazione distinta
+   da dati dimostrativi. Decisione motivata modello interno/bridge/ibrido.
+3. Verticale SIL completa di una missione Treviso–Belluno: tutti i consumer
+   dallo stesso scenario e dalle stesse interfacce, registrazione e replay.
+4. Ingestione e pacchetti server/NAS, prove checksum/restore/offline/gap;
+   estensione scenari e fault a tutte le applicazioni censite, matrice copertura.
+5. Confronto con riferimenti indipendenti per ogni modello e tolleranze, prove
+   integrazione, prestazioni e recovery con evidenze. Solo dopo, sessioni HIL
+   autorizzate e hardware: nessuna promozione a DONE per la sola nota o SIL.

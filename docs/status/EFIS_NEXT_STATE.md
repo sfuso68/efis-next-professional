@@ -6,6 +6,18 @@ Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
+## Requisito aperto — simulatore realistico e archivio dati server
+
+Richiesta proprietario 2026-10-24 registrata in
+`../project/AVIONIX_NEXT_EXECUTION_BACKLOG.md`, AVX-G5-02: ambiente SIL coerente
+per tutte le applicazioni, profili aeromobile/motore tracciabili, fault/replay
+e dataset geografici/operativi versionati su serverha con backup NAS e cache
+offline ai nodi per zona/piano di volo. Valutare bridge/fonti FS2024 e altri
+simulatori solo previa verifica tecnica e dei diritti d'uso/archiviazione;
+manuali dei costruttori prioritari per limiti. Stato OPEN: nota e pianificazione,
+nessun nuovo modello/dataset acquisito o servizio implementato. SIM sempre
+esplicito, nessun comando ad attuatori e nessuna equivalenza con prove reali.
+
 ## R1-10 — validità airframe, dieci passi software nella PR #59
 
 Registro: `../project/R1_10_AIRFRAME_2026-10-24.md`. ID PRJ-004, EMS-002,
