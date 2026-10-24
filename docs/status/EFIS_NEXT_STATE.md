@@ -8,6 +8,17 @@ Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 ## R1-13 — acquisizione locale MSFS, non ancora publisher verso EFIS
 
+Ripetizione interattiva del 2026-10-24 dopo «FS aperto», sorgente 634d3d5:
+la chiamata Open del nuovo client riesce, ma segue FAULT/MALFORMED_PACKET,
+zero frame dati accettati, exit 1 e summary FAIL. File originale preservato
+in evidence/r1-13-msfs-live-attempt-20261024/runtime.jsonl. Non è una sessione
+positiva; non è provato che FS abbia inviato dati corrotti: può essere un
+disallineamento del parser. Nei controlli immediatamente successivi FS non
+è più osservato fra i processi e la sonda C++ restituisce open 0x80004005.
+Nessun crash diagnosticato e nessun filtro del parser allentato. Richiesta
+nuova sessione FS mantenuta aperta per acquisire header/size e confrontarli
+con l'ABI SDK prima di correggere il decoder. Nessun nodo/servizio modificato.
+
 PC Windows WIN-9MB3K78GSR2, LAN servizio 192.168.1.33, Steam e SDK in
 `D:\MSFS 2024 SDK` confermati. Sonda C++ locale preliminare: SimConnect OPEN,
 12 frame PASS, posizione/IAS/quota/assetto/RPM del volo dichiarato C172.
