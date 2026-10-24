@@ -122,7 +122,7 @@ PREPARED/BLOCKED e non autorizzano probing o deployment.
 ## Nota vincolante di planning — simulazione realistica e archivio server
 
 Richiesta del proprietario del 2026-10-24, AVX-G5-02. **IN_PROGRESS / PARZIALE**:
-prima correzione del consumo R1-11 verificata solo software, non simulatore
+correzione consumo R1-11 e base autonoma R1-12 verificate solo software, non simulatore
 realistico completato. La simulazione deve diventare un ambiente coerente di prova
 dell'intero sistema, non una collezione di numeri animati indipendenti. Si mira
 a utilizzare le applicazioni come durante una missione, senza dichiarare che
@@ -229,3 +229,109 @@ valori arbitrari come prestazioni reali. Priorità successiva: specifica di
 clock/frame comune e catalogo profili/dataset tracciabili, poi verticale SIL.
 FS2024/altre fonti non ancora investigati o acquisiti, nessun nuovo archivio
 geografico pubblicato su serverha/NAS e nessun download massivo eseguito.
+
+### R1-12 — motore autonomo cinematico/impiantistico (2026-10-24)
+
+AVX-G5-02 resta IN_PROGRESS. Il proprietario installerà MSFS 2024 più avanti:
+non è una dipendenza del banco autonomo. ID correlati PRJ-004, EMS-002,
+VER-001 invariati; NON un completamento del simulatore realistico integrato.
+
+Implementato nel Core C++20 senza Qt: MissionProfile, MissionSimulator,
+SimulationClock. Il vecchio SystemSimulator resta disponibile come demo;
+le nuove missioni sono una modalità esplicita `mission-*` nella console PFD.
+
+- Missione parametrica: grande cerchio tra due coordinate, distanza integrata
+  dalla GS, segmento cruise dimensionato dalla distanza residua, nessun moto
+  prima del taxi; quota e VS provengono dagli stessi segmenti. Durata calcolata,
+  non più compressa a 600 s. QNH standard e quota indicata/pressione coerenti
+  nella sola atmosfera di riferimento sintetica.
+- Vento costante nord/est, velocità relativa aria, crab, pitch cinematico,
+  rateo prua e bank della traiettoria. IAS è una PROXY EAS con densità
+  isotermica semplificata (scala 8500 m), non una catena pitot/CAS qualificata.
+- Motore: risposta RPM del primo ordine, consumi integrati dalla stessa
+  risposta, ripartizione proporzionale dei serbatoi e arresto per esaurimento;
+  olio/CHT/EGT con riscaldamento e raffreddamento. Elettrico: alternatore,
+  carico e capacità batteria finita, perdita generazione e bus senza energia.
+  Quattro cilindri e coefficienti sintetici fissi V1, NON famiglia Rotax validata.
+- Flap comandato distinto da misura con velocità finita, consensi carrello
+  dopo transito. Finestre di guasto configurabili per pressione olio, CHT,
+  alternatore, IAS, barometro, GNSS, flap bloccato, carrello non bloccato,
+  pressione carburante e arresto motore. Health/provenance/fault identity
+  conservate; nessuna autorità verso attuatori reali.
+- Ricostruzione dello stato da tempo/seed/profilo/finestre: nessuna dipendenza
+  dalla storia dei campioni per valori, termica, carburante, flap o batteria.
+  La sequenza di trasporto cresce; le annotazioni frame sono stato attivo,
+  non una coda di edge-event da eseguire una seconda volta.
+- Clock indipendente dal sistema operativo: pausa, seek, fattore 0,125–20,
+  nanosecondi del chiamante senza perdita sistematica dei sotto-millisecondi.
+  Il PFD usa il clock anche per la demo precedente. Input NaN e timing fuori
+  contratto rifiutati; nessuna modifica al clock del sistema operativo.
+- CLI `efis-mission-simulator`: JSONL offline, 18 campioni motore con unità,
+  identità, raw, validità e SIM; dati volo e airframe nello stesso frame.
+  `--describe` esporta seed, durata e 18 parametri del profilo. Parametri
+  numerici espliciti validati; sempre SYNTHETIC_UNVALIDATED/flight_approval=false.
+  Nessun socket, writer hardware o file esistente aperto in sovrascrittura.
+
+Uso dopo build (stdout da archiviare in un nuovo run, non path di produzione):
+
+```text
+efis-mission-simulator --describe
+efis-mission-simulator --scenario full-flight --step-ms 1000 --seed 20261024
+efis-mission-simulator --scenario electrical-failure --step-ms 1000
+efis-mission-simulator --describe --wind-east-kt 12 --ambient-c 5
+```
+
+Build/test mirati del nucleo senza display (in un checkout completo):
+
+```text
+cmake -S . -B build/sil -DEFIS_BUILD_QT_RENDERER=OFF -DEFIS_BUILD_EMS_NODE=OFF -DEFIS_BUILD_TESTS=ON
+cmake --build build/sil --target efis_mission_simulator_tests efis-mission-simulator
+ctest --test-dir build/sil -R efis_mission_simulator --output-on-failure
+```
+
+Il test CLI CTest richiede Python rilevato in configurazione. Su questa
+workstation Windows il discovery Python del CMake esistente non lo rileva:
+il test black-box CLI è stato quindi eseguito esplicitamente su Linux; non
+considerare PASS un gate CTest locale non registrato. Nuovi eseguibili Windows
+compilati ma non avviati per la policy del sistema, senza aggiramenti.
+
+La CLI NON è DDP/EDP e NON è un formato di importazione diretto dei display.
+I JSONL e la descrizione possono essere conservati come artefatti offline;
+catalogazione automatica serverha/NAS e replay tramite trasporto richiedono
+ancora un componente dedicato. La copia dei sorgenti sul server per test non
+è una pubblicazione del catalogo, né un nuovo servizio server operativo.
+
+Verifiche solo software: missione C++ con derivate posizione/GS, quota/VS e
+serbatoi/portata, termica, fault/recovery, esaurimento, clock e seek; ASan/UBSan;
+sei test CLI black-box; controller PFD C++ reale su Qt Core/Network senza GUI;
+88 esiti QML inclusi sette esiti console/init-cleanup; 47 Python regressione;
+build/link Release MSVC CLI/PFD/EMS/test. Evidenza sorgente/log/hash in
+`../status/evidence/r1-12-autonomous-mission-20261024/verification.json`.
+Il mutante che aggiunge 100 ft/min alla VS viene respinto dal test di derivata.
+
+Limiti da NON occultare: traiettoria prescritta, non dinamica a forze/momenti;
+un guasto motore non calcola ancora la planata. Taxi e pista sono segmenti
+sulla rotta, non una geometria aeroportuale; nessun controllo collisione DEM
+o ostacoli. Meteo operativo/METAR/TAF dichiarati UNAVAILABLE, non VFR inventato.
+Non ci sono sei gradi di libertà, stallo, vento variabile/turbolenza, coeff.
+di massa/CG/aerodinamica validati, selector/crossfeed completo, modelli distinti
+dei due motori o avionica radio realisticamente propagata. I clock dei nodi
+EMS standalone/Blackbox non sono ancora agganciati a una sessione centrale.
+Nessuna nuova prova ARM64/display, volo o attivazione; power e golden aperti.
+
+Prossimi blocchi: (1) backend dinamico e contratto di stato compatibile,
+(2) profili aeromobile/motore con fonti e tolleranze indipendenti, (3) publisher
+unico SIL isolato verso DDP/EDP più contratto airframe, (4) catalogo/run e
+dataset server/NAS, (5) radar/meteo/terrain e matrice copertura multi-app,
+(6) HIL/acceptance autorizzati. Nessuna promozione a DONE per la sola build.
+
+Ricognizione primaria 2026-10-24, NON integrazione o concessione di diritti:
+[JSBSim Manual](https://jsbsim-team.github.io/jsbsim-reference-manual/) descrive
+un FDM non lineare 6DoF e licenza LGPL della libreria; i diritti dei singoli
+modelli/dataset richiedono verifica separata. È candidato per il backend
+dinamico, non dipendenza installata da R1-12.
+[SDK MSFS2024](https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simconnect/simconnect-sdk/)
+e [SimVars](https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simvars/simulation-variables/)
+documentano interfacce per il futuro bridge; non autorizzano da soli la copia
+di scenari, navdata o contenuti commerciali. Nessun SDK/pacchetto esterno,
+modello MSFS o dataset geografico è stato scaricato in questo blocco.

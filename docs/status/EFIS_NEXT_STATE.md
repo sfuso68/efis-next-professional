@@ -1,10 +1,39 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-24, stack EMS R1-04/R1-08/R1-09/R1-10 candidato; date hardware invariate
+Aggiornamento: 2026-10-24, stack EMS e motore missione R1-12 candidati; date hardware invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-12 — motore autonomo e collegamento PFD, candidato software
+
+AVX-G5-02 IN_PROGRESS; PRJ-004 VERIFY-HW, EMS-002/VER-001 PARTIAL.
+MissionSimulator + MissionProfile + SimulationClock nel Core senza Qt:
+missione geodetica/durata calcolata, coerenza posizione/GS e quota/VS, vento,
+RPM/termica, fuel/esaurimento, alternatore/batteria, flap/transito carrello,
+dieci tipi di fault temporizzati, pausa/seek/speed riproducibili. Nuove quattro
+missioni `mission-*` selezionabili nella console PFD; demo precedente conservata.
+CLI offline con frame JSONL/validità/provenance e descrizione 18 parametri,
+sempre SYNTHETIC_UNVALIDATED e flight_approval=false. Nessuna nuova rete attiva.
+
+Verificato solo software: native C++ Linux + ASan/UBSan, sei CLI black-box,
+controller PFD Qt Core/Network reale senza display, mutazione VS respinta;
+88 esiti QML e 47 Python PASS, build Release MSVC PFD/EMS/CLI/test PASS.
+Evidenza `evidence/r1-12-autonomous-mission-20261024/verification.json`.
+Nessun nodo avionico contattato/deploy/hardware; serverha usato soltanto come
+ambiente di compilazione/test isolato. Warning GCC in ddp_v2.cpp invariato
+osservato nella build completa del Core, non risolto o dichiarato innocuo.
+
+NON completati: dinamica 6DoF/planata/stallo e profili reali dei due motori,
+clock/sessione distribuita EMS/Blackbox, catalogo/replay server/NAS, dati DEM e
+ostacoli integrati fisicamente, radio/meteo operativo. Meteo missione è
+UNAVAILABLE, IAS una proxy isotermica, taxi/pista geometricamente semplificati.
+MSFS2024 sarà installato più avanti dal proprietario; nessuna dipendenza ora.
+Ricognizione SDK e JSBSim registrata nel backlog, nessun backend esterno installato.
+CI precedente 2b48c57: Project Control 40120746821 SUCCESS; Core 40120746818
+FAIL solo confronto golden, core/sanitizer/build/QML PASS. Nuovo candidato da
+verificare in CI; niente merge/baseline cambiata, attivazioni power-blocked.
 
 ## R1-11 — primo incremento simulatore, non ancora realistico
 
@@ -32,8 +61,8 @@ per tutte le applicazioni, profili aeromobile/motore tracciabili, fault/replay
 e dataset geografici/operativi versionati su serverha con backup NAS e cache
 offline ai nodi per zona/piano di volo. Valutare bridge/fonti FS2024 e altri
 simulatori solo previa verifica tecnica e dei diritti d'uso/archiviazione;
-manuali dei costruttori prioritari per limiti. Stato IN_PROGRESS solo sulla
-prima correzione di consumo; nessun nuovo modello/dataset o servizio. SIM sempre
+manuali dei costruttori prioritari per limiti. Stato IN_PROGRESS: base autonoma
+R1-12 verificata software, nessun modello reale/dataset esterno o servizio operativo. SIM sempre
 esplicito, nessun comando ad attuatori e nessuna equivalenza con prove reali.
 
 ## R1-10 — validità airframe, dieci passi software nella PR #59

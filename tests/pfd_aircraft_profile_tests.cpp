@@ -104,5 +104,14 @@ int main(int argc, char** argv) {
     require(!complete.gearDataValid() && std::isnan(complete.flapAngle()) &&
                 complete.gearState() == QStringLiteral("NO DATA"),
             "stopping the simulator must immediately invalidate retained airframe values");
+    require(complete.startSystemSimulation(QStringLiteral("mission-full-flight")) &&
+                complete.systemSimulationDurationSeconds()>600 &&
+                complete.systemSimulationScenario()==QStringLiteral("mission-full-flight"),
+            "PFD must expose the opt-in coherent mission and its computed duration");
+    const auto speed=complete.systemSimulationSpeed();
+    complete.setSystemSimulationSpeed(std::numeric_limits<double>::quiet_NaN());
+    require(complete.systemSimulationSpeed()==speed,"invalid speed must not corrupt the simulator clock");
+    complete.seekSystemSimulation(std::numeric_limits<double>::quiet_NaN());
+    complete.stopSystemSimulation();
     std::cout << "PFD aircraft profile and airframe fail-closed tests passed\n";
 }

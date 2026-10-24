@@ -1,0 +1,259 @@
+3d34c0752dfd3d28569d22554246bb0dc28c255dd3086813c3c9f212b515d958  /home/sfuso/avionix-r112-mission-20261024-a/source-v5.tar
+mission simulator: kinematics, coupled fuel/thermal, faults, clock, seek and validation PASS
+MISSION_NATIVE=PASS
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.059s
+
+OK
+MISSION_CLI=PASS
+mission simulator: kinematics, coupled fuel/thermal, faults, clock, seek and validation PASS
+MISSION_ASAN_UBSAN=PASS
+terminate called after throwing an instance of 'std::runtime_error'
+  what():  altitude derivative must agree with VS
+Aborted
+VERTICAL_COHERENCE_MUTATION=REJECTED
+-- The CXX compiler identification is GNU 14.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Performing Test HAVE_STDATOMIC
+-- Performing Test HAVE_STDATOMIC - Success
+-- Found WrapAtomic: TRUE
+-- Configuring done (0.9s)
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis_core.  AUTOMOC disabled.
+  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-core.  AUTOMOC disabled.
+  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-can-monitor.  AUTOMOC
+  disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-recorder.  AUTOMOC
+  disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-simulator.  AUTOMOC
+  disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-mission-simulator.
+  AUTOMOC disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-ddp-bench-publisher.
+  AUTOMOC disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-blackbox-broker.
+  AUTOMOC disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis_reference_renderer.
+  AUTOMOC disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-render-pfd.  AUTOMOC
+  disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in /source/CMakeLists.txt:
+  AUTOGEN: No valid Qt version found for target efis-render-dials.  AUTOMOC
+  disabled.  Consider adding:
+
+    find_package(Qt<QTVERSION> COMPONENTS Core)
+
+  to your CMakeLists.txt file.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Generating done (0.0s)
+-- Build files have been written to: /build/pfd
+[1/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/emergency/emergency_input.cpp.o
+[2/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/emergency/emergency_audio.cpp.o
+[3/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/voice/voice_assist.cpp.o
+[4/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/alert_engine.cpp.o
+[5/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/flight_model.cpp.o
+[6/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/node_health.cpp.o
+[7/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/emergency/emergency_assist.cpp.o
+[8/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/snapshot_arbitrator.cpp.o
+[9/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/flight_source.cpp.o
+[10/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/engine_runtime.cpp.o
+[11/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/derived_state.cpp.o
+[12/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/engine_source.cpp.o
+[13/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/engine_runtime_store.cpp.o
+[14/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/stasis_monitor.cpp.o
+[15/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/cross_check.cpp.o
+[16/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/recording/flight_record.cpp.o
+[17/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/recording/snapshot_recorder.cpp.o
+[18/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/recording/recorder_status.cpp.o
+[19/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/display/terrain_projection.cpp.o
+[20/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/display/display_model.cpp.o
+[21/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/simulation_source.cpp.o
+[22/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/simulation_provider.cpp.o
+[23/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/recording/segmented_recorder.cpp.o
+[24/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/ddp_udp_source.cpp.o
+[25/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/ddp_udp_publisher.cpp.o
+[26/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/edp_udp.cpp.o
+[27/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/engine_simulation_provider.cpp.o
+[28/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/sensor_adapter_health.cpp.o
+[29/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/mavlink_parser.cpp.o
+[30/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/simulation/system_simulator.cpp.o
+[31/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/mavlink_adapter.cpp.o
+[32/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/io/can_source.cpp.o
+[33/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/simulation/mission_simulator.cpp.o
+[34/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/esp32_can_adapter.cpp.o
+[35/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/io/socketcan_source.cpp.o
+[36/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/providers/dronecan.cpp.o
+[37/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/ingest/mavlink_pipeline.cpp.o
+[38/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/ingest/recording_session.cpp.o
+[39/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/io/byte_source.cpp.o
+[40/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/io/udp_datagram.cpp.o
+[41/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/altimetry.cpp.o
+[42/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/io/readonly_udp_fanout.cpp.o
+[43/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/ingest/blackbox_publisher_session.cpp.o
+[44/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/flight_dynamics.cpp.o
+[45/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/bench/sensor_bench.cpp.o
+[46/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/core/signal_access.cpp.o
+[47/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/protocol/ddp_session.cpp.o
+[48/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/protocol/ddp_v2.cpp.o
+In file included from /usr/include/x86_64-linux-gnu/c++/14/bits/c++allocator.h:33,
+                 from /usr/include/c++/14/bits/allocator.h:46,
+                 from /usr/include/c++/14/string:43,
+                 from /usr/include/c++/14/bits/locale_classes.h:40,
+                 from /usr/include/c++/14/bits/ios_base.h:41,
+                 from /usr/include/c++/14/ios:44,
+                 from /usr/include/c++/14/istream:40,
+                 from /usr/include/c++/14/sstream:40,
+                 from /usr/include/c++/14/chrono:45,
+                 from /source/include/efis/core/types.hpp:3,
+                 from /source/include/efis/core/sample.hpp:3,
+                 from /source/include/efis/core/flight_snapshot.hpp:3,
+                 from /source/include/efis/protocol/ddp_v2.hpp:3,
+                 from /source/src/protocol/ddp_v2.cpp:1:
+In member function ‘void std::__new_allocator<_Tp>::deallocate(_Tp*, size_type) [with _Tp = unsigned char]’,
+    inlined from ‘constexpr void std::allocator< <template-parameter-1-1> >::deallocate(_Tp*, std::size_t) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/allocator.h:208:35,
+    inlined from ‘static constexpr void std::allocator_traits<std::allocator<_CharT> >::deallocate(allocator_type&, pointer, size_type) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/alloc_traits.h:550:23,
+    inlined from ‘constexpr std::vector<_Tp, _Alloc>::_M_realloc_append(_Args&& ...)::_Guard::~_Guard() [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:616:18,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::_M_realloc_append(_Args&& ...) [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:688:7,
+    inlined from ‘constexpr std::vector<_Tp, _Alloc>::reference std::vector<_Tp, _Alloc>::emplace_back(_Args&& ...) [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:123:21,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::push_back(value_type&&) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/stl_vector.h:1301:21,
+    inlined from ‘std::vector<unsigned char> efis::protocol::ddp::encode_snapshot(const efis::FlightSnapshot&, Profile, uint32_t, uint64_t, efis::MonoTime)’ at /source/src/protocol/ddp_v2.cpp:157:22:
+/usr/include/c++/14/bits/new_allocator.h:172:33: warning: ‘void operator delete(void*, std::size_t)’ called on pointer ‘<unknown>’ with nonzero offset [1, 5764607523034234885] [-Wfree-nonheap-object]
+  172 |         _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+      |                                 ^
+In member function ‘_Tp* std::__new_allocator<_Tp>::allocate(size_type, const void*) [with _Tp = unsigned char]’,
+    inlined from ‘constexpr _Tp* std::allocator< <template-parameter-1-1> >::allocate(std::size_t) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/allocator.h:196:40,
+    inlined from ‘static constexpr _Tp* std::allocator_traits<std::allocator<_CharT> >::allocate(allocator_type&, size_type) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/alloc_traits.h:515:28,
+    inlined from ‘constexpr std::_Vector_base<_Tp, _Alloc>::pointer std::_Vector_base<_Tp, _Alloc>::_M_allocate(std::size_t) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/stl_vector.h:380:33,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::reserve(size_type) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:79:33,
+    inlined from ‘std::vector<unsigned char> efis::protocol::ddp::encode_snapshot(const efis::FlightSnapshot&, Profile, uint32_t, uint64_t, efis::MonoTime)’ at /source/src/protocol/ddp_v2.cpp:156:20:
+/usr/include/c++/14/bits/new_allocator.h:151:55: note: returned from ‘void* operator new(std::size_t)’
+  151 |         return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp)));
+      |                                                       ^
+[49/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/instruments/dial.cpp.o
+[50/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/protocol/edp_v1.cpp.o
+[51/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/instruments/panel.cpp.o
+[52/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/instruments/horizon.cpp.o
+[53/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/instruments/panel_store.cpp.o
+[54/61] Building CXX object /build/core/CMakeFiles/efis_core.dir/src/instruments/svg_dial_renderer.cpp.o
+[55/61] Linking CXX static library /build/core/libefis_core.a
+[56/61] Automatic MOC for target pfd_profile_integration
+[57/61] Building CXX object CMakeFiles/pfd_profile_integration.dir/source/tests/pfd_aircraft_profile_tests.cpp.o
+[58/61] Building CXX object CMakeFiles/pfd_profile_integration.dir/pfd_profile_integration_autogen/mocs_compilation.cpp.o
+[59/61] Building CXX object CMakeFiles/pfd_profile_integration.dir/source/src/setup/operational_profile_model.cpp.o
+[60/61] Building CXX object CMakeFiles/pfd_profile_integration.dir/source/src/renderers/qt/pfd_controller.cpp.o
+[61/61] Linking CXX executable pfd_profile_integration
+event=simulation_role role= DISABLED
+event=aircraft_profile_unavailable reason=no_complete_valid_profile
+PFD aircraft profile and airframe fail-closed tests passed
+event=catalog_index_unavailable
+event=navigation_index_unavailable
+event=radionavigation_index_unavailable
+event=imagery_package_unavailable
+event=fuel_leak_monitor state= SENSOR DATA UNAVAILABLE excess_gph= 0
+event=simulation_role role= DISABLED
+event=aircraft_profile_unavailable reason=no_complete_valid_profile
+event=catalog_index_unavailable
+event=navigation_index_unavailable
+event=radionavigation_index_unavailable
+event=imagery_package_unavailable
+event=fuel_leak_monitor state= SENSOR DATA UNAVAILABLE excess_gph= 0
+event=simulation_role role= DISABLED
+event=aircraft_profile_rejected path= /build/pfd_profile_integration-awbsLs/incomplete.json reason=missing_invalid_or_inconsistent_vspeeds
+event=aircraft_profile_unavailable reason=no_complete_valid_profile
+event=catalog_index_unavailable
+event=navigation_index_unavailable
+event=radionavigation_index_unavailable
+event=imagery_package_unavailable
+event=fuel_leak_monitor state= SENSOR DATA UNAVAILABLE excess_gph= 0
+event=simulation_role role= DISABLED
+event=aircraft_profile_loaded path= /build/pfd_profile_integration-awbsLs/complete.json profile= TEST • AIRCRAFT state= VERIFIED
+event=catalog_index_unavailable
+event=navigation_index_unavailable
+event=radionavigation_index_unavailable
+event=imagery_package_unavailable
+event=fuel_leak_monitor state= SENSOR DATA UNAVAILABLE excess_gph= 0
+event=system_simulation_start scenario= full-flight
+event=system_simulation_stop
+event=system_simulation_start scenario= mission-full-flight
+event=system_simulation_stop
+PFD_CONTROLLER_NATIVE=PASS

@@ -45,6 +45,7 @@ add_library(efis_core
     src/providers/engine_simulation_provider.cpp
     src/providers/sensor_adapter_health.cpp
     src/simulation/system_simulator.cpp
+    src/simulation/mission_simulator.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
     src/providers/esp32_can_adapter.cpp
@@ -93,6 +94,8 @@ target_link_libraries(efis-recorder PRIVATE efis_core)
 
 add_executable(efis-simulator src/apps/efis_simulator_main.cpp)
 target_link_libraries(efis-simulator PRIVATE efis_core)
+add_executable(efis-mission-simulator src/apps/mission_simulator_main.cpp)
+target_link_libraries(efis-mission-simulator PRIVATE efis_core)
 
 add_executable(efis-ddp-bench-publisher src/apps/efis_ddp_bench_publisher_main.cpp)
 target_link_libraries(efis-ddp-bench-publisher PRIVATE efis_core)
@@ -557,6 +560,15 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_system_simulator_tests tests/system_simulator_tests.cpp)
     target_link_libraries(efis_system_simulator_tests PRIVATE efis_core)
     add_test(NAME efis_system_simulator_tests COMMAND efis_system_simulator_tests)
+    add_executable(efis_mission_simulator_tests tests/mission_simulator_tests.cpp)
+    target_link_libraries(efis_mission_simulator_tests PRIVATE efis_core)
+    add_test(NAME efis_mission_simulator_tests COMMAND efis_mission_simulator_tests)
+    if(Python3_Interpreter_FOUND)
+        add_test(NAME efis_mission_simulator_cli_tests
+            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/mission_simulator_cli_tests.py"
+                "$<TARGET_FILE:efis-mission-simulator>")
+        set_tests_properties(efis_mission_simulator_cli_tests PROPERTIES TIMEOUT 60)
+    endif()
 
     add_executable(efis_ddp_v2_tests tests/ddp_v2_tests.cpp)
     target_link_libraries(efis_ddp_v2_tests PRIVATE efis_core)
