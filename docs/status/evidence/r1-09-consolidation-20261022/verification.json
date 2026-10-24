@@ -1,0 +1,144 @@
+{
+  "schema": "avionix-next.r1-09-verification.v1",
+  "date": "2026-10-22",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "base_commit": "0c83113aa4529b038d05cf171a15f9da6f131c54",
+  "pull_request": 59,
+  "consolidation": "Follow-up on existing PR59, not a new PR or merge",
+  "status": "VERIFIED_SOFTWARE_WITH_GOLDEN_REVIEW_OPEN",
+  "requirements": [
+    "PRJ-001",
+    "PRJ-004",
+    "EMS-002",
+    "VER-001"
+  ],
+  "flight_approval": false,
+  "baseline_update_authorized": false,
+  "hardware_verification": "NOT_RUN",
+  "avionics_nodes_contacted": false,
+  "deploy": "NOT_RUN",
+  "merge": "NOT_RUN",
+  "tests": {
+    "qml": {
+      "outcomes": 60,
+      "includes_init_cleanup": true,
+      "status": "PASS",
+      "platform": "Windows Qt6.11.1 offscreen/software, Segoe UI/Symbol explicit local fontdir",
+      "log": "qml.txt"
+    },
+    "python": {
+      "count": 47,
+      "status": "PASS",
+      "log": "python.txt"
+    },
+    "linux_python": {
+      "count": 18,
+      "status": "PASS",
+      "subset_of_windows_47": true,
+      "log": "linux-python.txt",
+      "environment": "serverha existing isolated container, source read-only, network none"
+    },
+    "build": {
+      "status": "PASS",
+      "targets": [
+        "efis-pfd-qt",
+        "efis-ems-qt"
+      ],
+      "mode": "MSVC Release and QML AOT",
+      "log": "build.txt",
+      "native_windows_executables_launched": false
+    }
+  },
+  "linux_ci_on_base": {
+    "commit": "0c83113aa4529b038d05cf171a15f9da6f131c54",
+    "project_control": {
+      "run": 39745779712,
+      "status": "success"
+    },
+    "core": {
+      "run": 39745779697,
+      "status": "failure",
+      "passed": [
+        "linux-core",
+        "linux-sanitizers",
+        "PFD+EMS build",
+        "actual QML state tests",
+        "weather tests"
+      ],
+      "failed": "golden pixel comparison"
+    }
+  },
+  "review": {
+    "artifact": 12411617225,
+    "archive_sha256": "6b95b568313f3ed101906d66481701fd275b8d281304b1959d6c1173cbbc0e2f",
+    "render_source_commit": "0c83113aa4529b038d05cf171a15f9da6f131c54",
+    "captures": 18,
+    "changes_required": 2,
+    "not_reviewed": 16,
+    "accepted": 0,
+    "report": "linux-review-report.json",
+    "decisions": "linux-review-decisions.json",
+    "source_of_ci_ids": "Read via GitHub connector; offline tool only validates caller-declared identifiers and external digest, not signature/attestation",
+    "final_tool_reproduction": "PASS; report identical locally",
+    "note": "Old artifact demonstrates CAS overlap, not the later fix. New Linux render is required."
+  },
+  "capture": {
+    "new_windows_png_count": 18,
+    "representatives": [
+      "ems-800x480-live-cas-fix.png",
+      "ems-800x480-lost-cas-fix.png"
+    ],
+    "log": "captures.txt",
+    "golden_baseline_changed": false
+  },
+  "open": [
+    "Final follow-up CI",
+    "Updated Linux artifact and complete explicit visual review",
+    "PR52 returned no CI runs in wrapper query; no PASS inferred",
+    "Potential integration conflicts not assessed by normalized mergeable field",
+    "No root ownership/systemd/TOCTOU/ARM64 functional qualification",
+    "Real power/target fonts/touch, radar product observation time and EDP vertical remain open"
+  ],
+  "artifacts": [
+    {
+      "path": "tools/ui/capture_hmi_golden.py",
+      "sha256_lf_text": "002171d1c3877debf43ad66d7e9afe4f456abac6249ffed182de63cd717a583c"
+    },
+    {
+      "path": "tools/ui/prepare_ems_golden_review.py",
+      "sha256_lf_text": "7c9d957b0c42c6d49ab583e5efc9e7c79cfcd56af41226ab69a1cff9edb45029"
+    },
+    {
+      "path": "tests/test_ems_golden_review.py",
+      "sha256_lf_text": "74432ded037ef0bf491fd118af5c4bc7c0db62f4126ffecd9485d85bb5b6f64f"
+    },
+    {
+      "path": "qml/AdaptiveEmsView.qml",
+      "sha256_lf_text": "7c533cd7f70f9e9a0b4366334fec816d6d5b973b640e46c3cfc99c31532444f8"
+    },
+    {
+      "path": "tests/qml/tst_ems_header_layout.qml",
+      "sha256_lf_text": "fc437360931ce4050f4260c92138d987f8d8a896b0e1e2b4de66d264729e9daa"
+    },
+    {
+      "path": "tests/qml-header-review/tst_review_capture.qml",
+      "sha256_lf_text": "f6616e255ba7e576cbe7e9ffd38d09b0ff8405d5582458c14b0ab3ae747dbef5"
+    },
+    {
+      "path": ".github/workflows/efis-project-control.yml",
+      "sha256_lf_text": "ace666f4f2f0acd692d88b68ca925094141ddf3b767537099a9447ef9e59b68c"
+    },
+    {
+      "path": "docs/status/evidence/r1-09-consolidation-20261022/linux-review-report.json",
+      "sha256_lf_text": "c31a41ec92d9ee6f1060221fae2469e71db4b6a4967a9fa03e1929ce30516e9a"
+    },
+    {
+      "path": "docs/status/evidence/r1-09-consolidation-20261022/linux-review-decisions.json",
+      "sha256_lf_text": "96914d016c14095e0fedff59df39f4288a0fed14bc9b1381e9e1352b9f604172"
+    },
+    {
+      "path": "docs/status/evidence/r1-09-consolidation-20261022/pr-snapshot.json",
+      "sha256_lf_text": "a4e03d9ad9cf27d1061e94d86a05547586768a2101219dfb80607999c3497fdb"
+    }
+  ]
+}

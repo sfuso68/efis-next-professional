@@ -1,0 +1,10 @@
+[1/11] Building CXX object CMakeFiles\efis_core.dir\src\simulation\mission_simulator.cpp.obj
+[2/11] Linking CXX static library efis_core.lib
+[3/11] Automatic MOC and UIC for target efis_mission_simulator_tests
+[4/10] Linking CXX executable efis-mission-simulator.exe
+[5/10] Linking CXX executable efis_pfd_aircraft_profile_tests.exe
+[6/10] Linking CXX executable efis_system_simulator_tests.exe
+[7/10] Linking CXX executable efis-ems-qt.exe
+[8/10] Linking CXX executable efis-pfd-qt.exe
+[9/10] Building CXX object CMakeFiles\efis_mission_simulator_tests.dir\tests\mission_simulator_tests.cpp.obj
+[10/10] Linking CXX executable efis_mission_simulator_tests.exe

@@ -1,6 +1,6 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
-Aggiornamento: 2026-09-21
+Aggiornamento: 2026-10-24 (aggiunta requisito simulatore realistico; storico conservato)
 Stato: controllato da WS0/G0; nessuna attività hardware autorizzata da questo documento.
 
 Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
@@ -25,6 +25,7 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | AVX-G3-04 | G3 | Congelare contratto HMI SkyView/EMS | concept approvato e design esistente | manifesto macchina, 10 gate, 20 controlli fail-closed e test | G0 | medio | stessa semantica a tutte le risoluzioni | config/ui, docs/design, tools/ui | validator/golden/CI/HW | M | IN_PROGRESS |
 | AVX-G4-01 | G4 | PSU, harness, enclosure e schema filo-per-filo | inventario finale | prototipo installabile | G1/G3 | alto | design review e brownout test | hardware docs | electrical/environmental | XL | PROPOSED |
 | AVX-G5-01 | G5 | HIL e fault injection integrati | G3/G4 | matrice prove ripetibile | gate precedenti | molto alto | fault obbligatori con evidenza | tests/evidence | HIL | XL | PROPOSED |
+| AVX-G5-02 | G5 | Simulatore realistico integrato e archivio dati sul server | richiesta proprietario 2026-10-24, modelli e dataset tracciabili | ambiente SIL ripetibile per tutte le applicazioni, bridge simulatori opzionale e pacchetti offline | contratti DDP/EDP/airframe, fonti/licenze, profili validati | alto: coerenza fisica, falsi dati normali, licenze, carico | scenari nominali/fault end-to-end, correlazioni e tolleranze per modello verificate, riproducibilità, nessun comando hardware | simulator/providers, strumenti ingestione, server/catalogo, tests/evidence; design prima del codice | SIL/replay/contract e confronto con riferimenti, HIL separato | XL | IN_PROGRESS |
 | AVX-G6-01 | G6 | Congelare baseline EFIS Next | G0–G5 | release/config/recovery controllati | tutti i gate | alto | configuration index e rollback | release docs | acceptance completa | L | PROPOSED |
 | AVX-G7-01 | G7 | Porting CM/Next Plus | baseline G6 | parità funzionale su hardware industriale | G6 | alto | replay e benchmark equivalenti | nuovo profilo HW | benchmark/replay | XL | PROPOSED |
 
@@ -117,3 +118,220 @@ Il readiness batch R100 rende espliciti e verificabili i cinque confini che
 precedono l'integrazione: inventario, 18 segnali, calibrazione, trasporto ed
 evidence. I 49 controlli software in PASS non promuovono i 51 controlli
 PREPARED/BLOCKED e non autorizzano probing o deployment.
+
+## Nota vincolante di planning — simulazione realistica e archivio server
+
+Richiesta del proprietario del 2026-10-24, AVX-G5-02. **IN_PROGRESS / PARZIALE**:
+correzione consumo R1-11 e base autonoma R1-12 verificate solo software, non simulatore
+realistico completato. La simulazione deve diventare un ambiente coerente di prova
+dell'intero sistema, non una collezione di numeri animati indipendenti. Si mira
+a utilizzare le applicazioni come durante una missione, senza dichiarare che
+un simulatore equivalga a un aeroplano reale o sostituisca la qualifica hardware.
+
+### Fedeltà richiesta
+
+- Un unico tempo di simulazione e uno scenario comune per PFD, MFD/Canvas,
+  EMS, navigazione, meteo, allarmi/emergenze, voce, FPV dove pertinente e blackbox.
+  Assetto, traiettoria, accelerazioni, IAS/TAS/GS, vento, pressione/QNH, quota,
+  VS, GNSS e sensori devono essere correlati, non generati separatamente.
+- Modello configurabile per aeromobile/motore: massa e centraggio, aerodinamica
+  e prestazioni, inviluppo e limiti, motore/termica, consumi/serbatoi,
+  elettrico/utenze, carrello e flap con comando distinto da feedback. I limiti
+  devono riferirsi alla variante effettiva, non ereditati da un modello simile.
+- Fault ripetibili: open/short, pitot/statico, bias/stasi/disaccordo sensori,
+  GNSS perso, degrado EDP/DDP, perdita/ritardo/reordine rete, guasti motore,
+  elettrico e airframe. Conservare validità, età e provenienza per segnale.
+- Scenari seedati/versionati, avvio/pausa/seek coerenti e replay deterministico;
+  stessi ingressi alle interfacce di produzione, catture e log confrontabili.
+  Tutto rimane marcato SIM; rete di test isolata e nessuna autorità su servi,
+  Pixhawk o altri attuatori reali. Un bridge esterno non può mascherarsi LIVE.
+
+### Modelli e fonti da acquisire, non ancora acquisiti
+
+Valutare Microsoft Flight Simulator 2024, altri simulatori e modelli aperti
+come possibili sorgenti/bridge di stato e dati prestazionali. Verificare prima
+SDK/interfacce ufficiali, disponibilità dei campi, unità, frequenze, licenze e
+diritti di esportazione/archiviazione per ciascun contenuto. Non assumere che
+scenari, modelli commerciali, navdata o streaming del simulatore siano copiabili
+nel nostro server. Se non esportabili, usare il bridge autorizzato o dati
+alternativi con licenza compatibile: niente estrazione non autorizzata.
+
+Priorità ai manuali POH/AFM e del costruttore motore per limiti e prestazioni;
+dati del simulatore sono supplementari, non automaticamente validati o
+certificati. Catalogare fonte/revisione/variante/unità/licenza, confidenza e
+campi mancanti; nessun valore inventato classificato come dato verificato.
+
+### Archivio geografico e operativo comune
+
+Serverha ospita catalogo, ingestione controllata e pacchetti versionati; NAS
+conserva le copie secondo la pipeline di backup/restore prevista. Archiviare
+modelli, configurazioni, scenari e dataset consentiti: DEM/terreno, ortofoto e
+texture, ostacoli, aeroporti/piste, radioassistenze/frequenze, spazi aerei,
+cartografia, meteo storico/scenari e piani di volo. Priorità Nord Italia,
+Treviso–Belluno e Dolomiti, senza limitare il formato a questa regione.
+
+Ogni pacchetto deve dichiarare copertura geografica, livello di dettaglio,
+CRS/datum verticale, unità, data di osservazione/validità e aggiornamento,
+fonte/licenza, dimensioni, checksum e compatibilità. Mappe e terreno devono
+allinearsi a coordinate, pista, ostacoli e quota dello scenario. Un inventario
+scaricato non dimostra completezza, attualità o idoneità aeronautica.
+
+Distribuzione ai nodi per zona e corridoio di piano di volo, con livelli di
+dettaglio, quote/cache, ripresa download, verifica integrità, aggiornamento
+atomico e rollback; funzionamento offline e segnalazione esplicita dei gap.
+Non modificare oggi percorsi server, retention o copie esistenti e non avviare
+download massivi senza stima di spazio, banda, licenze e piano di acquisizione.
+
+### Ordine di esecuzione e chiusura
+
+1. Inventario simulatore e dataset già presenti; specifica del modello comune,
+   contratti/versioni, clock e budget di fedeltà con tolleranze per segnale.
+2. Catalogo fonti/licenze e profili aeromobile/motore con validazione distinta
+   da dati dimostrativi. Decisione motivata modello interno/bridge/ibrido.
+3. Verticale SIL completa di una missione Treviso–Belluno: tutti i consumer
+   dallo stesso scenario e dalle stesse interfacce, registrazione e replay.
+4. Ingestione e pacchetti server/NAS, prove checksum/restore/offline/gap;
+   estensione scenari e fault a tutte le applicazioni censite, matrice copertura.
+5. Confronto con riferimenti indipendenti per ogni modello e tolleranze, prove
+   integrazione, prestazioni e recovery con evidenze. Solo dopo, sessioni HIL
+   autorizzate e hardware: nessuna promozione a DONE per la sola nota o SIL.
+
+### R1-11 — primo incremento verificato (2026-10-24)
+
+Inventario sorgente: SystemSimulator campiona SimulationSource e
+EngineSimulationProvider, poi sovrascrive valori secondo fasi dimostrative.
+La singola missione dura 600 secondi; i profili motore e traiettoria non sono
+un modello prestazionale validato. EMS standalone e publisher Blackbox hanno
+ancora propri generatori/clock: NON è già un SIL multi-nodo unificato.
+
+Implementato nel solo SystemSimulator: un'unica tabella di portata alimenta
+indicazione e integrale analitico dei consumi; ripartizione simmetrica tra i
+due serbatoi dimostrativi. Motore fermo = portata zero e nessun consumo;
+reset, seek avanti/indietro, pause e numero dei campioni non accumulano errori.
+Provenienza SIM conservata. Quantità iniziale 10,57 US gal per serbatoio e
+portate restano valori sintetici, NON dati approvati del 912 UL o dell'Asso.
+Nessuna nuova semantica del fuel selector o gestione alimentazione motore.
+
+Verifiche software: eseguibile C++ Linux PASS su tutti i quattro scenari con
+601 campioni ciascuno, integrale manuale, seek, reset, limiti temporali,
+provenienza e motore spento; mutazione integrale azzerato REJECTED. GCC nel
+container serverha esistente, rete disabilitata, source read-only, hash tar
+confrontato. Build/link MSVC PFD+EMS+test PASS e regressione QML 81 esiti PASS.
+Evidenza `../status/evidence/r1-11-simulation-fuel-20261024/verification.json`.
+Nessuna prova avionica reale o modifica di servizi; staging test conservato.
+
+Audit ancora aperto: quota e VS provengono da leggi diverse (salita da 800 a
+5500 ft in 85 s ma VS esposta 900 ft/min); posizione avanza anche nelle fasi
+al suolo e non è integrata dalla GS; heading/assetto e traiettoria non sono
+un'unica dinamica. QNH/quota indicata, termica, meteo e aeroporti richiedono
+coerenza di modello e datum. Non correggere questi problemi presentando altri
+valori arbitrari come prestazioni reali. Priorità successiva: specifica di
+clock/frame comune e catalogo profili/dataset tracciabili, poi verticale SIL.
+FS2024/altre fonti non ancora investigati o acquisiti, nessun nuovo archivio
+geografico pubblicato su serverha/NAS e nessun download massivo eseguito.
+
+### R1-12 — motore autonomo cinematico/impiantistico (2026-10-24)
+
+AVX-G5-02 resta IN_PROGRESS. Il proprietario installerà MSFS 2024 più avanti:
+non è una dipendenza del banco autonomo. ID correlati PRJ-004, EMS-002,
+VER-001 invariati; NON un completamento del simulatore realistico integrato.
+
+Implementato nel Core C++20 senza Qt: MissionProfile, MissionSimulator,
+SimulationClock. Il vecchio SystemSimulator resta disponibile come demo;
+le nuove missioni sono una modalità esplicita `mission-*` nella console PFD.
+
+- Missione parametrica: grande cerchio tra due coordinate, distanza integrata
+  dalla GS, segmento cruise dimensionato dalla distanza residua, nessun moto
+  prima del taxi; quota e VS provengono dagli stessi segmenti. Durata calcolata,
+  non più compressa a 600 s. QNH standard e quota indicata/pressione coerenti
+  nella sola atmosfera di riferimento sintetica.
+- Vento costante nord/est, velocità relativa aria, crab, pitch cinematico,
+  rateo prua e bank della traiettoria. IAS è una PROXY EAS con densità
+  isotermica semplificata (scala 8500 m), non una catena pitot/CAS qualificata.
+- Motore: risposta RPM del primo ordine, consumi integrati dalla stessa
+  risposta, ripartizione proporzionale dei serbatoi e arresto per esaurimento;
+  olio/CHT/EGT con riscaldamento e raffreddamento. Elettrico: alternatore,
+  carico e capacità batteria finita, perdita generazione e bus senza energia.
+  Quattro cilindri e coefficienti sintetici fissi V1, NON famiglia Rotax validata.
+- Flap comandato distinto da misura con velocità finita, consensi carrello
+  dopo transito. Finestre di guasto configurabili per pressione olio, CHT,
+  alternatore, IAS, barometro, GNSS, flap bloccato, carrello non bloccato,
+  pressione carburante e arresto motore. Health/provenance/fault identity
+  conservate; nessuna autorità verso attuatori reali.
+- Ricostruzione dello stato da tempo/seed/profilo/finestre: nessuna dipendenza
+  dalla storia dei campioni per valori, termica, carburante, flap o batteria.
+  La sequenza di trasporto cresce; le annotazioni frame sono stato attivo,
+  non una coda di edge-event da eseguire una seconda volta.
+- Clock indipendente dal sistema operativo: pausa, seek, fattore 0,125–20,
+  nanosecondi del chiamante senza perdita sistematica dei sotto-millisecondi.
+  Il PFD usa il clock anche per la demo precedente. Input NaN e timing fuori
+  contratto rifiutati; nessuna modifica al clock del sistema operativo.
+- CLI `efis-mission-simulator`: JSONL offline, 18 campioni motore con unità,
+  identità, raw, validità e SIM; dati volo e airframe nello stesso frame.
+  `--describe` esporta seed, durata e 18 parametri del profilo. Parametri
+  numerici espliciti validati; sempre SYNTHETIC_UNVALIDATED/flight_approval=false.
+  Nessun socket, writer hardware o file esistente aperto in sovrascrittura.
+
+Uso dopo build (stdout da archiviare in un nuovo run, non path di produzione):
+
+```text
+efis-mission-simulator --describe
+efis-mission-simulator --scenario full-flight --step-ms 1000 --seed 20261024
+efis-mission-simulator --scenario electrical-failure --step-ms 1000
+efis-mission-simulator --describe --wind-east-kt 12 --ambient-c 5
+```
+
+Build/test mirati del nucleo senza display (in un checkout completo):
+
+```text
+cmake -S . -B build/sil -DEFIS_BUILD_QT_RENDERER=OFF -DEFIS_BUILD_EMS_NODE=OFF -DEFIS_BUILD_TESTS=ON
+cmake --build build/sil --target efis_mission_simulator_tests efis-mission-simulator
+ctest --test-dir build/sil -R efis_mission_simulator --output-on-failure
+```
+
+Il test CLI CTest richiede Python rilevato in configurazione. Su questa
+workstation Windows il discovery Python del CMake esistente non lo rileva:
+il test black-box CLI è stato quindi eseguito esplicitamente su Linux; non
+considerare PASS un gate CTest locale non registrato. Nuovi eseguibili Windows
+compilati ma non avviati per la policy del sistema, senza aggiramenti.
+
+La CLI NON è DDP/EDP e NON è un formato di importazione diretto dei display.
+I JSONL e la descrizione possono essere conservati come artefatti offline;
+catalogazione automatica serverha/NAS e replay tramite trasporto richiedono
+ancora un componente dedicato. La copia dei sorgenti sul server per test non
+è una pubblicazione del catalogo, né un nuovo servizio server operativo.
+
+Verifiche solo software: missione C++ con derivate posizione/GS, quota/VS e
+serbatoi/portata, termica, fault/recovery, esaurimento, clock e seek; ASan/UBSan;
+sei test CLI black-box; controller PFD C++ reale su Qt Core/Network senza GUI;
+88 esiti QML inclusi sette esiti console/init-cleanup; 47 Python regressione;
+build/link Release MSVC CLI/PFD/EMS/test. Evidenza sorgente/log/hash in
+`../status/evidence/r1-12-autonomous-mission-20261024/verification.json`.
+Il mutante che aggiunge 100 ft/min alla VS viene respinto dal test di derivata.
+
+Limiti da NON occultare: traiettoria prescritta, non dinamica a forze/momenti;
+un guasto motore non calcola ancora la planata. Taxi e pista sono segmenti
+sulla rotta, non una geometria aeroportuale; nessun controllo collisione DEM
+o ostacoli. Meteo operativo/METAR/TAF dichiarati UNAVAILABLE, non VFR inventato.
+Non ci sono sei gradi di libertà, stallo, vento variabile/turbolenza, coeff.
+di massa/CG/aerodinamica validati, selector/crossfeed completo, modelli distinti
+dei due motori o avionica radio realisticamente propagata. I clock dei nodi
+EMS standalone/Blackbox non sono ancora agganciati a una sessione centrale.
+Nessuna nuova prova ARM64/display, volo o attivazione; power e golden aperti.
+
+Prossimi blocchi: (1) backend dinamico e contratto di stato compatibile,
+(2) profili aeromobile/motore con fonti e tolleranze indipendenti, (3) publisher
+unico SIL isolato verso DDP/EDP più contratto airframe, (4) catalogo/run e
+dataset server/NAS, (5) radar/meteo/terrain e matrice copertura multi-app,
+(6) HIL/acceptance autorizzati. Nessuna promozione a DONE per la sola build.
+
+Ricognizione primaria 2026-10-24, NON integrazione o concessione di diritti:
+[JSBSim Manual](https://jsbsim-team.github.io/jsbsim-reference-manual/) descrive
+un FDM non lineare 6DoF e licenza LGPL della libreria; i diritti dei singoli
+modelli/dataset richiedono verifica separata. È candidato per il backend
+dinamico, non dipendenza installata da R1-12.
+[SDK MSFS2024](https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simconnect/simconnect-sdk/)
+e [SimVars](https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simvars/simulation-variables/)
+documentano interfacce per il futuro bridge; non autorizzano da soli la copia
+di scenari, navdata o contenuti commerciali. Nessun SDK/pacchetto esterno,
+modello MSFS o dataset geografico è stato scaricato in questo blocco.

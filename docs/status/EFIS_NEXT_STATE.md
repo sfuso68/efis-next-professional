@@ -1,10 +1,152 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-21, candidati N4/N5 e R1-04/N7/N8; date hardware invariate
+Aggiornamento: 2026-10-24, stack EMS e motore missione R1-12 candidati; date hardware invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-12 — motore autonomo e collegamento PFD, candidato software
+
+AVX-G5-02 IN_PROGRESS; PRJ-004 VERIFY-HW, EMS-002/VER-001 PARTIAL.
+MissionSimulator + MissionProfile + SimulationClock nel Core senza Qt:
+missione geodetica/durata calcolata, coerenza posizione/GS e quota/VS, vento,
+RPM/termica, fuel/esaurimento, alternatore/batteria, flap/transito carrello,
+dieci tipi di fault temporizzati, pausa/seek/speed riproducibili. Nuove quattro
+missioni `mission-*` selezionabili nella console PFD; demo precedente conservata.
+CLI offline con frame JSONL/validità/provenance e descrizione 18 parametri,
+sempre SYNTHETIC_UNVALIDATED e flight_approval=false. Nessuna nuova rete attiva.
+
+Verificato solo software: native C++ Linux + ASan/UBSan, sei CLI black-box,
+controller PFD Qt Core/Network reale senza display, mutazione VS respinta;
+88 esiti QML e 47 Python PASS, build Release MSVC PFD/EMS/CLI/test PASS.
+Evidenza `evidence/r1-12-autonomous-mission-20261024/verification.json`.
+Nessun nodo avionico contattato/deploy/hardware; serverha usato soltanto come
+ambiente di compilazione/test isolato. Warning GCC in ddp_v2.cpp invariato
+osservato nella build completa del Core, non risolto o dichiarato innocuo.
+
+NON completati: dinamica 6DoF/planata/stallo e profili reali dei due motori,
+clock/sessione distribuita EMS/Blackbox, catalogo/replay server/NAS, dati DEM e
+ostacoli integrati fisicamente, radio/meteo operativo. Meteo missione è
+UNAVAILABLE, IAS una proxy isotermica, taxi/pista geometricamente semplificati.
+MSFS2024 sarà installato più avanti dal proprietario; nessuna dipendenza ora.
+Ricognizione SDK e JSBSim registrata nel backlog, nessun backend esterno installato.
+CI precedente 2b48c57: Project Control 40120746821 SUCCESS; Core 40120746818
+FAIL solo confronto golden, core/sanitizer/build/QML PASS. Nuovo candidato da
+verificare in CI; niente merge/baseline cambiata, attivazioni power-blocked.
+
+## R1-11 — primo incremento simulatore, non ancora realistico
+
+AVX-G5-02 IN_PROGRESS, VER-001 PARTIAL. SystemSimulator usa ora la stessa
+tabella per portata e consumo integrato; niente consumo a motore spento e
+serbatoi riproducibili indipendentemente da pause/seek/cadenza. Quantità e
+portate restano dimostrative: non nuova validazione aeromobile/motore.
+Native Linux PASS (quattro scenari, integrale, reset/seek/clamp/provenance),
+mutazione integrale rifiutata; build/link MSVC PFD/EMS/test e 81 esiti QML PASS.
+Evidenza `evidence/r1-11-simulation-fuel-20261024/verification.json`. Container
+isolato su serverha per soli test, nessun servizio/nodo avionico modificato.
+
+Audit: quota/VS incoerenti, posizione non integrata da GS e in movimento a
+terra, frame/clock separati tra generatori PFD/EMS/Blackbox. Specifica comune,
+modelli validati e catalogo server sono ancora da realizzare; nessun dato
+FS2024 o archivio geografico acquisito. Il backlog riporta la sequenza restante.
+CI dfad7fc riconfermata: Project Control 40117795920 SUCCESS; Core 40117795910
+FAIL solo golden, core/sanitizer/build/QML SUCCESS. Nessun gate aggirato.
+
+## Requisito aperto — simulatore realistico e archivio dati server
+
+Richiesta proprietario 2026-10-24 registrata in
+`../project/AVIONIX_NEXT_EXECUTION_BACKLOG.md`, AVX-G5-02: ambiente SIL coerente
+per tutte le applicazioni, profili aeromobile/motore tracciabili, fault/replay
+e dataset geografici/operativi versionati su serverha con backup NAS e cache
+offline ai nodi per zona/piano di volo. Valutare bridge/fonti FS2024 e altri
+simulatori solo previa verifica tecnica e dei diritti d'uso/archiviazione;
+manuali dei costruttori prioritari per limiti. Stato IN_PROGRESS: base autonoma
+R1-12 verificata software, nessun modello reale/dataset esterno o servizio operativo. SIM sempre
+esplicito, nessun comando ad attuatori e nessuna equivalenza con prove reali.
+
+## R1-10 — validità airframe, dieci passi software nella PR #59
+
+Registro: `../project/R1_10_AIRFRAME_2026-10-24.md`. ID PRJ-004, EMS-002,
+VER-001 invariati. EDP V1 non trasporta carrello/flap: engine LIVE/SIM non
+valida l'airframe. EMS dedicato espone LOST, NO DATA e angoli NaN; PFD espone
+feedback soltanto dal simulatore completo esplicito, marcato SIM, inizializzato
+prima della pubblicazione e invalidato allo stop. Nessun nuovo adapter fisico.
+
+Pagina EMS: validità separate gear/misurato/comandato, whitelist sorgenti,
+età finita non negativa, STALE/LOST/FAIL e stati sconosciuti mascherati;
+scala da detent finiti ordinati, niente clamp ingannevole dei fuori scala.
+CAS AIRFRAME DATA UNAVAILABLE impedisce SYSTEM NORMAL con feedback assente.
+Banda PFD: eliminati PITOT ON, ICE OFF, TRIM 0.1, FLAPS UP e T/O OFF fissi;
+flap valido con SIM esplicito, altri segnali senza adapter mostrano trattino.
+
+Solo software: 81 esiti QML PASS (inclusi init/cleanup), 47 Python PASS,
+mutazione di gearValid rifiutata, build/link Release e AOT PFD/EMS PASS.
+18 catture Windows/software, esempi LOST e SIM allegati. Test C++ del controller
+esteso e compilato; esecuzione nativa locale non dichiarata (policy Windows).
+Evidenza `evidence/r1-10-airframe-20261024/`; nessun nodo avionico contattato,
+hardware verificato, release attivata o merge eseguito. Golden non sostituite.
+
+CI sul precedente f96b483: Project Control 39752056068 PASS; Core 39752055866
+FAIL solo confronto golden, con core/sanitizer/build e test Qt PASS. Questo
+non certifica R1-10: nuova CI e review Linux restano richieste. Rollout bloccato
+da power; trasporto/qualifica reale airframe e verticale EDP reale ancora aperti.
+
+## R1-09 — consolidamento nella stessa PR #59
+
+Registro unico: `../project/R1_09_CONSOLIDATION_2026-10-22.md`. Snapshot di
+otto PR #52–59 con SHA, CI e dipendenze in `evidence/r1-09-consolidation-20261022/`.
+Nessun merge: stack EMS #53→#56→#59 e meteo #55→#57→#58 ancora distinti;
+#54 indipendente, #52 senza run restituito dalla query. Main e release sui
+nodi non sono aggiornati da questo blocco. Il viewer serverha segue main.
+
+CI #59 su 0c83113: core/sanitizer/build/test Qt PASS, Project Control PASS,
+solo confronto golden FAIL. Artifact Linux 12411617225 verificato con SHA
+esterno; review di 800 LIVE/LOST rileva collisione CAS MESSAGES/LIMITS INDICATIVE.
+Due CHANGES_REQUIRED, altre 16 NOT_REVIEWED: NON revisione completa approvata.
+Follow-up corregge il CAS e aggiunge sei test geometrici. Nuovo rerender Linux
+necessario; le vecchie immagini non provano la correzione successiva.
+
+Implementato: preparatore offline che lega ZIP, commit/render source, run,
+artifact, riferimento e pixel; report non sovrascrivibile e fuori dal riferimento,
+18 decisioni esplicite. Anche ACCEPT totale non autorizza una baseline.
+Decoder PNG con limiti codificato/pixel/espansione, CRC e rifiuto APNG/corruzione;
+nessun PNG golden/manifesto/tolleranza modificato. Fixture DEGRADED a 600 ms.
+
+Verificato solo software: 60 esiti Qt PASS, 47 test Python PASS e sottoinsieme
+18 test Linux PASS in container isolato source read-only/rete disabilitata,
+build/link PFD+EMS/AOT MSVC PASS. 18 nuove catture Windows; due allegate CAS.
+Nessun nodo avionico contattato o modificato, nessun nuovo test hardware.
+Restano CI follow-up, artifact Linux aggiornato, review completa, font/touch
+ARM64, power, radar live qualificato ed EDP reale. ID PRJ-001/004, EMS-002,
+VER-001 invariati. Commit e push sulla stessa PR, non un'altra integrazione.
+
+## R1-08 candidato — intestazione EMS responsive e dati non inventati
+
+Registro dieci passi: `../project/R1_08_TEN_STEP_EMS_HEADER_2026-10-22.md`.
+Branch `fix/ems-responsive-header-r108-v1` su #56 `306d145`, distinto dallo
+stack meteo/controllo #55→#57→#58. #58 riconfermata Core/Project Control
+SUCCESS sul commit `2f1251a4ce05cd412a9066cce10679fe86d50d63`; non integrata.
+R1-07 verticale EDP reale non è completato né anticipato da questa numerazione.
+
+Implementato: EmsStatusHeader con dimensioni del testo misurate, logo senza
+coordinate x fisse, titolo/badge/clock separati, target setup >=44 px, long
+press 1,2 s e clock LOCAL con binding persistente. Rimossi OAT 24°C e QNH
+1013 codificati: nessun valore di sostituzione; serve futuro adapter valido.
+Componente incluso nei moduli QML PFD/EMS, non è redesign della banda PFD.
+
+Verificato solo software: build/link Release MSVC e QML AOT PFD+EMS PASS,
+54 esiti Qt Quick (18 combinazioni header più input/clock e regressioni) e
+37 Python PASS. 18 catture Windows/software generate, tre allegate; font
+offscreen espliciti per escludere quadratini/font condensato del primo
+tentativo. Evidenza `evidence/r1-08-ems-header-20261022/verification.json`.
+Non eseguiti nuovi binari Windows nativi; gate golden locale non registrato.
+
+Verificato su hardware reale: NULLA. Nessun nodo contattato, deploy, reboot,
+rete o firmware modificato. Golden Linux #56 NON aggiornata né approvata:
+nuovo rerender/review necessari, nessuna soglia allargata. CI di questo nuovo
+candidato da verificare. PRJ-004, EMS-002 e VER-001 restano invariati; power,
+leggibilità fisica, touch, font ARM64, input reali e acceptance aperti.
 
 ## R1-04 candidato — validità motore e baseline carburante
 
