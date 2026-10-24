@@ -373,3 +373,32 @@ registrazione/replay/catalogo server e adapter/publisher SIL isolati via
 Blackbox. Nessun collegamento diretto MSFS→display, servizi/firmware/firewall,
 power waiver, deployment sui nodi o HIL non autorizzato. Gli altri gate R1-12,
 6DoF/profili reali e golden review restano aperti.
+
+### R1-14 — priorità simulazione headless su serverha / grafica EFIS reale
+
+Decisione proprietario 2026-10-25: nessun visualizzatore esterno necessario;
+sviluppare i modelli su serverha e verificare in seguito le applicazioni EFIS
+NEXT reali contemporaneamente, alimentate da una sessione comune.
+
+Prima base fisica implementata ed eseguita: JSBSim 1.3.3/NumPy 2.3.4 isolati
+su serverha, C172P incluso REFERENCE_UNVALIDATED, pilota interno al FDM,
+integrazione 100 Hz/output 20 Hz, quattro scenari e replay completi con hash.
+26 test serverha PASS (18 offline, 8 dinamica reale), 37 Windows e CTest 2/2
+PASS. Quattro run persistenti, ciascuno 60 s/1201 frame, verificati senza rete.
+Fonte e dettagli: `../development/SERVERHA_HEADLESS_SIL_V1.md` ed evidenza
+`../status/evidence/r1-14-serverha-sil-20261025/verification.json`.
+
+NON risolto implicitamente l'intero AVX-G5-02: prima di mostrare questi dati
+sui pannelli servono adapter canonico per aria/quote/heading, clock/sessione
+SIL e publisher DDP/EDP/airframe isolati, source selection opt-in senza sensori
+reali e codec/consumer loopback; poi canary release/power su display reali.
+Le role_view attuali verificano solo identità/tempo delle proiezioni offline.
+Nessun servizio di stream o renderer attivato, nessun bridge/NAT o bypass
+firewall, nessun nodo avionico modificato. Servizi serverha esistenti intatti.
+
+Restano profili reali Asso/Pioneer e due motori, sonde per cilindro, elettrico,
+missioni decollo/atterraggio, radio/meteo/terrain e catalogo/replica NAS. Il
+C172P non è un sostituto validato degli aerei del proprietario. CHT/EGT medie
+non vengono moltiplicate per quattro; i canali non modellati sono UNAVAILABLE.
+AVX-G5-02 IN_PROGRESS e ID PRJ-004/EMS-002/VER-001 invariati. Il motore non ha
+più una traiettoria prescritta come R1-12, ma non è il prodotto completo.

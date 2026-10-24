@@ -1,10 +1,44 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-24, stack EMS/missione e bridge locale MSFS R1-13 candidati; date hardware avionico invariate
+Aggiornamento: 2026-10-25, motore fisico headless R1-14 provato su serverha; display e hardware avionico invariati
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-14 — JSBSim headless su serverha, sessione unica offline verificata
+
+Decisione proprietario: usare la grafica EFIS NEXT reale simultaneamente sui
+display, NON un visualizzatore esterno. Predisposto ed eseguito JSBSim 1.3.3
+con NumPy 2.3.4 nel solo runtime isolato serverha
+`/home/sfuso/avionix-sil-r114-20261025`, nessun pacchetto globale o servizio
+persistente. Container senza rete, non privilegiato, CPU/RAM limitate;
+runtime/sorgenti read-only. Nessun nodo avionico contattato o modificato.
+
+Implementati Backend fisico C172P, pilota di banco interno al FDM, clock
+integrazione 100 Hz/output 20 Hz, quattro scenari cruise/turn/engine-out/
+sensor-loss, frame unico volo/motore/airframe e replay con manifesto/checksum.
+Quattro sessioni permanenti di 60 s/1201 frame e wheel hash verificate.
+Quota nominale entro circa 0.59 ft, virata bank 18.78° a 35 s, taglio miscela
+porta flow a 0 e quota finale circa 4518 ft: dati del modello NON validati
+per l'aereo reale. CHT/EGT aggregate non copiate nei cilindri; elettrico,
+fuel-pressure e lock carrello non modellati sono UNAVAILABLE, non simulati
+come sani. CAS, heading TRUE e quota geometrica non mascherati da IAS/MAG/QNH.
+
+Verificato software su serverha reale: 26 test (18 offline + 8 con JSBSim),
+coerenza quota/VS e consumo/flow, doppio run byte-identico e replay alterato
+respinto. Windows 37 test (18 nuovi + 19 MSFS) PASS, CTest 2/2 PASS. Prova
+breve software, NON endurance/server worst-case né qualifica ARM64/volo.
+Evidenza `evidence/r1-14-serverha-sil-20261025/verification.json`.
+
+Ancora APERTI: adapter canonico FDM→core, mapping aria/quote/heading,
+publisher SIL DDP/EDP/airframe e isolamento sorgenti, sessione distribuita
+e prove sui renderer/pannelli REALI, catalogo server/NAS, missioni complete,
+profili Asso/Pioneer e due motori, dettaglio sonde/impianto elettrico/meteo.
+Le tre role_view sono viste di test OFFLINE: non provano display connessi.
+Nessun nuovo rendering, attivazione, merge o waiver power/golden. ID PRJ-004
+VERIFY-HW, EMS-002/VER-001 PARTIAL, AVX-G5-02 IN_PROGRESS invariati.
+Runbook e piano: `../development/SERVERHA_HEADLESS_SIL_V1.md`.
 
 ## R1-13 — acquisizione locale MSFS, non ancora publisher verso EFIS
 
