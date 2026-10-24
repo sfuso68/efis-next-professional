@@ -25,7 +25,7 @@ Gli stati ammessi qui sono `PROPOSED`, `OPEN`, `BLOCKED`, `IN_PROGRESS` e
 | AVX-G3-04 | G3 | Congelare contratto HMI SkyView/EMS | concept approvato e design esistente | manifesto macchina, 10 gate, 20 controlli fail-closed e test | G0 | medio | stessa semantica a tutte le risoluzioni | config/ui, docs/design, tools/ui | validator/golden/CI/HW | M | IN_PROGRESS |
 | AVX-G4-01 | G4 | PSU, harness, enclosure e schema filo-per-filo | inventario finale | prototipo installabile | G1/G3 | alto | design review e brownout test | hardware docs | electrical/environmental | XL | PROPOSED |
 | AVX-G5-01 | G5 | HIL e fault injection integrati | G3/G4 | matrice prove ripetibile | gate precedenti | molto alto | fault obbligatori con evidenza | tests/evidence | HIL | XL | PROPOSED |
-| AVX-G5-02 | G5 | Simulatore realistico integrato e archivio dati sul server | richiesta proprietario 2026-10-24, modelli e dataset tracciabili | ambiente SIL ripetibile per tutte le applicazioni, bridge simulatori opzionale e pacchetti offline | contratti DDP/EDP/airframe, fonti/licenze, profili validati | alto: coerenza fisica, falsi dati normali, licenze, carico | scenari nominali/fault end-to-end, correlazioni e tolleranze per modello verificate, riproducibilità, nessun comando hardware | simulator/providers, strumenti ingestione, server/catalogo, tests/evidence; design prima del codice | SIL/replay/contract e confronto con riferimenti, HIL separato | XL | OPEN |
+| AVX-G5-02 | G5 | Simulatore realistico integrato e archivio dati sul server | richiesta proprietario 2026-10-24, modelli e dataset tracciabili | ambiente SIL ripetibile per tutte le applicazioni, bridge simulatori opzionale e pacchetti offline | contratti DDP/EDP/airframe, fonti/licenze, profili validati | alto: coerenza fisica, falsi dati normali, licenze, carico | scenari nominali/fault end-to-end, correlazioni e tolleranze per modello verificate, riproducibilità, nessun comando hardware | simulator/providers, strumenti ingestione, server/catalogo, tests/evidence; design prima del codice | SIL/replay/contract e confronto con riferimenti, HIL separato | XL | IN_PROGRESS |
 | AVX-G6-01 | G6 | Congelare baseline EFIS Next | G0–G5 | release/config/recovery controllati | tutti i gate | alto | configuration index e rollback | release docs | acceptance completa | L | PROPOSED |
 | AVX-G7-01 | G7 | Porting CM/Next Plus | baseline G6 | parità funzionale su hardware industriale | G6 | alto | replay e benchmark equivalenti | nuovo profilo HW | benchmark/replay | XL | PROPOSED |
 
@@ -121,8 +121,9 @@ PREPARED/BLOCKED e non autorizzano probing o deployment.
 
 ## Nota vincolante di planning — simulazione realistica e archivio server
 
-Richiesta del proprietario del 2026-10-24, AVX-G5-02. **OPEN / NON IMPLEMENTATO**
-da questa nota. La simulazione deve diventare un ambiente coerente di prova
+Richiesta del proprietario del 2026-10-24, AVX-G5-02. **IN_PROGRESS / PARZIALE**:
+prima correzione del consumo R1-11 verificata solo software, non simulatore
+realistico completato. La simulazione deve diventare un ambiente coerente di prova
 dell'intero sistema, non una collezione di numeri animati indipendenti. Si mira
 a utilizzare le applicazioni come durante una missione, senza dichiarare che
 un simulatore equivalga a un aeroplano reale o sostituisca la qualifica hardware.
@@ -194,3 +195,37 @@ download massivi senza stima di spazio, banda, licenze e piano di acquisizione.
 5. Confronto con riferimenti indipendenti per ogni modello e tolleranze, prove
    integrazione, prestazioni e recovery con evidenze. Solo dopo, sessioni HIL
    autorizzate e hardware: nessuna promozione a DONE per la sola nota o SIL.
+
+### R1-11 — primo incremento verificato (2026-10-24)
+
+Inventario sorgente: SystemSimulator campiona SimulationSource e
+EngineSimulationProvider, poi sovrascrive valori secondo fasi dimostrative.
+La singola missione dura 600 secondi; i profili motore e traiettoria non sono
+un modello prestazionale validato. EMS standalone e publisher Blackbox hanno
+ancora propri generatori/clock: NON è già un SIL multi-nodo unificato.
+
+Implementato nel solo SystemSimulator: un'unica tabella di portata alimenta
+indicazione e integrale analitico dei consumi; ripartizione simmetrica tra i
+due serbatoi dimostrativi. Motore fermo = portata zero e nessun consumo;
+reset, seek avanti/indietro, pause e numero dei campioni non accumulano errori.
+Provenienza SIM conservata. Quantità iniziale 10,57 US gal per serbatoio e
+portate restano valori sintetici, NON dati approvati del 912 UL o dell'Asso.
+Nessuna nuova semantica del fuel selector o gestione alimentazione motore.
+
+Verifiche software: eseguibile C++ Linux PASS su tutti i quattro scenari con
+601 campioni ciascuno, integrale manuale, seek, reset, limiti temporali,
+provenienza e motore spento; mutazione integrale azzerato REJECTED. GCC nel
+container serverha esistente, rete disabilitata, source read-only, hash tar
+confrontato. Build/link MSVC PFD+EMS+test PASS e regressione QML 81 esiti PASS.
+Evidenza `../status/evidence/r1-11-simulation-fuel-20261024/verification.json`.
+Nessuna prova avionica reale o modifica di servizi; staging test conservato.
+
+Audit ancora aperto: quota e VS provengono da leggi diverse (salita da 800 a
+5500 ft in 85 s ma VS esposta 900 ft/min); posizione avanza anche nelle fasi
+al suolo e non è integrata dalla GS; heading/assetto e traiettoria non sono
+un'unica dinamica. QNH/quota indicata, termica, meteo e aeroporti richiedono
+coerenza di modello e datum. Non correggere questi problemi presentando altri
+valori arbitrari come prestazioni reali. Priorità successiva: specifica di
+clock/frame comune e catalogo profili/dataset tracciabili, poi verticale SIL.
+FS2024/altre fonti non ancora investigati o acquisiti, nessun nuovo archivio
+geografico pubblicato su serverha/NAS e nessun download massivo eseguito.

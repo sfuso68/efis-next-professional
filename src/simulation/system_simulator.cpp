@@ -1,12 +1,39 @@
 #include "efis/simulation/system_simulator.hpp"
 
 #include <algorithm>
+#include <array>
 #include <stdexcept>
 
 namespace efis::simulation {
 namespace {
 
 constexpr std::chrono::milliseconds full_duration{600000};
+
+// Demonstration schedule, NOT validated aircraft performance. One schedule is
+// shared by the instantaneous indication and its exact integral, so pause/seek
+// and polling frequency cannot create or destroy simulated fuel.
+struct FuelSegment { double begin; double end; double gallons_per_hour; };
+constexpr std::array<FuelSegment, 8> fuel_schedule{{
+    {15.0, 30.0, 2.0}, {30.0, 75.0, 2.2}, {75.0, 105.0, 6.8},
+    {105.0, 190.0, 6.0}, {190.0, 380.0, 4.8}, {380.0, 475.0, 3.1},
+    {475.0, 545.0, 3.6}, {545.0, 580.0, 2.5}
+}};
+constexpr double initial_fuel_per_tank_gal = 10.57;
+
+double fuel_flow_at(double seconds) noexcept {
+    for (const auto& segment : fuel_schedule)
+        if (seconds >= segment.begin && seconds < segment.end)
+            return segment.gallons_per_hour;
+    return 0.0;
+}
+
+double fuel_used_at(double seconds) noexcept {
+    double gallons = 0.0;
+    for (const auto& segment : fuel_schedule)
+        gallons += std::clamp(seconds - segment.begin, 0.0, segment.end - segment.begin)
+                   * segment.gallons_per_hour / 3600.0;
+    return gallons;
+}
 
 FlightPhase phase_at(double seconds) noexcept {
     if (seconds < 15.0) return FlightPhase::cold_and_dark;
@@ -159,23 +186,23 @@ void apply_engine_phase(engine::EngineSnapshot& engine, FlightPhase phase,
                         double seconds) noexcept {
     double rpm = 0.0;
     double manifold = 0.0;
-    double fuel_flow = 0.0;
+    const double fuel_flow = fuel_flow_at(seconds);
     switch (phase) {
         case FlightPhase::cold_and_dark:
         case FlightPhase::complete: break;
         case FlightPhase::engine_start:
             rpm = interpolate(seconds, 0.0, 1800.0, 15.0, 30.0);
-            manifold = 15.0; fuel_flow = 2.0; break;
-        case FlightPhase::taxi: rpm = 2000.0; manifold = 16.0; fuel_flow = 2.2; break;
-        case FlightPhase::takeoff: rpm = 5800.0; manifold = 27.5; fuel_flow = 6.8; break;
-        case FlightPhase::climb: rpm = 5500.0; manifold = 26.0; fuel_flow = 6.0; break;
-        case FlightPhase::cruise: rpm = 5000.0; manifold = 24.1; fuel_flow = 4.8; break;
-        case FlightPhase::descent: rpm = 4200.0; manifold = 18.0; fuel_flow = 3.1; break;
-        case FlightPhase::approach: rpm = 4500.0; manifold = 20.0; fuel_flow = 3.6; break;
-        case FlightPhase::landing: rpm = 3500.0; manifold = 15.0; fuel_flow = 2.5; break;
+            manifold = 15.0; break;
+        case FlightPhase::taxi: rpm = 2000.0; manifold = 16.0; break;
+        case FlightPhase::takeoff: rpm = 5800.0; manifold = 27.5; break;
+        case FlightPhase::climb: rpm = 5500.0; manifold = 26.0; break;
+        case FlightPhase::cruise: rpm = 5000.0; manifold = 24.1; break;
+        case FlightPhase::descent: rpm = 4200.0; manifold = 18.0; break;
+        case FlightPhase::approach: rpm = 4500.0; manifold = 20.0; break;
+        case FlightPhase::landing: rpm = 3500.0; manifold = 15.0; break;
         case FlightPhase::shutdown:
             rpm = interpolate(seconds, 1800.0, 0.0, 580.0, 600.0);
-            manifold = 12.0; fuel_flow = rpm > 100.0 ? 1.8 : 0.0; break;
+            manifold = 12.0; break;
     }
     set_value(engine.rpm, rpm);
     set_value(engine.manifold_pressure_inhg, manifold);
@@ -224,6 +251,9 @@ SimulationFrame SystemSimulator::sample(MonoTime now,
 
     apply_flight_phase(frame.flight, phase, seconds);
     apply_engine_phase(frame.engine, phase, seconds);
+    const double fuel_per_tank = std::max(0.0, initial_fuel_per_tank_gal - fuel_used_at(seconds) / 2.0);
+    set_value(frame.engine.fuel_left_gal, fuel_per_tank);
+    set_value(frame.engine.fuel_right_gal, fuel_per_tank);
 
     if (!frame.airframe.engine_running) {
         frame.engine.rpm.value = 0.0;
@@ -234,6 +264,7 @@ SimulationFrame SystemSimulator::sample(MonoTime now,
         frame.engine.bus_voltage_v.raw = frame.engine.bus_voltage_v.value;
         set_value(frame.engine.oil_pressure_psi, 0.0);
         set_value(frame.engine.fuel_pressure_psi, 0.0);
+        set_value(frame.engine.fuel_flow_gph, 0.0);
     }
     if (phase != previous_phase_)
         frame.events.push_back(std::string{"PHASE:"} + phase_name(phase));

@@ -6,6 +6,24 @@ Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
+## R1-11 — primo incremento simulatore, non ancora realistico
+
+AVX-G5-02 IN_PROGRESS, VER-001 PARTIAL. SystemSimulator usa ora la stessa
+tabella per portata e consumo integrato; niente consumo a motore spento e
+serbatoi riproducibili indipendentemente da pause/seek/cadenza. Quantità e
+portate restano dimostrative: non nuova validazione aeromobile/motore.
+Native Linux PASS (quattro scenari, integrale, reset/seek/clamp/provenance),
+mutazione integrale rifiutata; build/link MSVC PFD/EMS/test e 81 esiti QML PASS.
+Evidenza `evidence/r1-11-simulation-fuel-20261024/verification.json`. Container
+isolato su serverha per soli test, nessun servizio/nodo avionico modificato.
+
+Audit: quota/VS incoerenti, posizione non integrata da GS e in movimento a
+terra, frame/clock separati tra generatori PFD/EMS/Blackbox. Specifica comune,
+modelli validati e catalogo server sono ancora da realizzare; nessun dato
+FS2024 o archivio geografico acquisito. Il backlog riporta la sequenza restante.
+CI dfad7fc riconfermata: Project Control 40117795920 SUCCESS; Core 40117795910
+FAIL solo golden, core/sanitizer/build/QML SUCCESS. Nessun gate aggirato.
+
 ## Requisito aperto — simulatore realistico e archivio dati server
 
 Richiesta proprietario 2026-10-24 registrata in
@@ -14,8 +32,8 @@ per tutte le applicazioni, profili aeromobile/motore tracciabili, fault/replay
 e dataset geografici/operativi versionati su serverha con backup NAS e cache
 offline ai nodi per zona/piano di volo. Valutare bridge/fonti FS2024 e altri
 simulatori solo previa verifica tecnica e dei diritti d'uso/archiviazione;
-manuali dei costruttori prioritari per limiti. Stato OPEN: nota e pianificazione,
-nessun nuovo modello/dataset acquisito o servizio implementato. SIM sempre
+manuali dei costruttori prioritari per limiti. Stato IN_PROGRESS solo sulla
+prima correzione di consumo; nessun nuovo modello/dataset o servizio. SIM sempre
 esplicito, nessun comando ad attuatori e nessuna equivalenza con prove reali.
 
 ## R1-10 — validità airframe, dieci passi software nella PR #59
