@@ -1,10 +1,37 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-22, stack EMS R1-04/R1-08/R1-09 candidato; date hardware invariate
+Aggiornamento: 2026-10-24, stack EMS R1-04/R1-08/R1-09/R1-10 candidato; date hardware invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-10 — validità airframe, dieci passi software nella PR #59
+
+Registro: `../project/R1_10_AIRFRAME_2026-10-24.md`. ID PRJ-004, EMS-002,
+VER-001 invariati. EDP V1 non trasporta carrello/flap: engine LIVE/SIM non
+valida l'airframe. EMS dedicato espone LOST, NO DATA e angoli NaN; PFD espone
+feedback soltanto dal simulatore completo esplicito, marcato SIM, inizializzato
+prima della pubblicazione e invalidato allo stop. Nessun nuovo adapter fisico.
+
+Pagina EMS: validità separate gear/misurato/comandato, whitelist sorgenti,
+età finita non negativa, STALE/LOST/FAIL e stati sconosciuti mascherati;
+scala da detent finiti ordinati, niente clamp ingannevole dei fuori scala.
+CAS AIRFRAME DATA UNAVAILABLE impedisce SYSTEM NORMAL con feedback assente.
+Banda PFD: eliminati PITOT ON, ICE OFF, TRIM 0.1, FLAPS UP e T/O OFF fissi;
+flap valido con SIM esplicito, altri segnali senza adapter mostrano trattino.
+
+Solo software: 81 esiti QML PASS (inclusi init/cleanup), 47 Python PASS,
+mutazione di gearValid rifiutata, build/link Release e AOT PFD/EMS PASS.
+18 catture Windows/software, esempi LOST e SIM allegati. Test C++ del controller
+esteso e compilato; esecuzione nativa locale non dichiarata (policy Windows).
+Evidenza `evidence/r1-10-airframe-20261024/`; nessun nodo avionico contattato,
+hardware verificato, release attivata o merge eseguito. Golden non sostituite.
+
+CI sul precedente f96b483: Project Control 39752056068 PASS; Core 39752055866
+FAIL solo confronto golden, con core/sanitizer/build e test Qt PASS. Questo
+non certifica R1-10: nuova CI e review Linux restano richieste. Rollout bloccato
+da power; trasporto/qualifica reale airframe e verticale EDP reale ancora aperti.
 
 ## R1-09 — consolidamento nella stessa PR #59
 

@@ -55,7 +55,7 @@ Rectangle {
             }
         }
         Grid { x:18*root.uiScale; y:218*root.uiScale; columns:4; spacing:8*root.uiScale
-            Repeater { model:[{k:"IAS",v:controller.airspeed.toFixed(0)+" KT"},{k:"ALT",v:controller.altitude.toFixed(0)+" FT"},{k:"RPM",v:controller.engineRpm.toFixed(0)},{k:"BUS",v:controller.busVoltage.toFixed(1)+" V"},{k:"GEAR",v:controller.gearState},{k:"FLAPS",v:controller.flapAngle.toFixed(0)+"°"},{k:"FAULT",v:controller.engineFaultMode},{k:"SPEED",v:controller.systemSimulationSpeed.toFixed(2)+"×"}]
+            Repeater { model:[{k:"IAS",v:controller.airspeed.toFixed(0)+" KT"},{k:"ALT",v:controller.altitude.toFixed(0)+" FT"},{k:"RPM",v:controller.engineRpm.toFixed(0)},{k:"BUS",v:controller.busVoltage.toFixed(1)+" V"},{k:"GEAR",v:controller.gearState},{k:"FLAPS",v:controller.flapAngleValid===true&&isFinite(controller.flapAngle)?controller.flapAngle.toFixed(0)+"°":"—"},{k:"FAULT",v:controller.engineFaultMode},{k:"SPEED",v:controller.systemSimulationSpeed.toFixed(2)+"×"}]
                 delegate:Rectangle { required property var modelData; width:152*root.uiScale; height:58*root.uiScale; color:"#0B1922"; border.color:"#304550"
                     Text { x:8*root.uiScale; y:7*root.uiScale; text:modelData.k; color:root.cyan; font.pixelSize:7*root.uiScale; font.bold:true }
                     Text { x:8*root.uiScale; y:27*root.uiScale; width:parent.width-16*root.uiScale; text:modelData.v; color:"white"; font.pixelSize:11*root.uiScale; font.bold:true; elide:Text.ElideRight }

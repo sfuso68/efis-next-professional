@@ -88,12 +88,13 @@ Item {
     readonly property bool centralLogSyncOffline: String(controller.centralBlackBoxState||"OFFLINE")!=="ONLINE"
     function maximumValue(values) { var result=NaN; for(var i=0;i<values.length;i++)if(typeof values[i]==="number"&&isFinite(values[i]))result=isFinite(result)?Math.max(result,values[i]):values[i]; return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
+    readonly property bool airframeUnavailable: (controller.landingGearInstalled===true && !airframePanel.gearUsable) || (controller.flapsInstalled===true && !airframePanel.flapUsable)
     readonly property string casLevel: !dataUsable ? "WARNING" : dataDegraded ? "CAUTION" :
                                        channelValid("engineRpm") && channelValid("oilPressure") && controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
                                        maximumCht>chtMaximum || (channelValid("oilTemperature") && controller.oilTemperature>oilTemperatureMaximum) ? "WARNING" :
                                        fuelTotalGallons<=fuelReserveGallons*.5 || fuelLeakAlarm || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
                                        (channelValid("busVoltage") && controller.busVoltage<12.5) || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
-                                       !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "CAUTION" :
+                                       !engineChannelsAvailable || controller.fuelOnBoardValid!==true || airframeUnavailable ? "CAUTION" :
                                        fuelImbalanceGallons>3 || centralLogSyncOffline ? "ADVISORY" : "NORMAL"
     readonly property string casHeadline: !dataUsable ? "ENGINE DATA "+normalizedDataState :
                                           dataDegraded ? "ENGINE DATA "+normalizedDataState :
@@ -106,6 +107,7 @@ Item {
                                           fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "FUEL QUANTITY DISAGREE" :
                                           fuelTotalGallons<=fuelReserveGallons ? "FINAL RESERVE" :
                                           !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "ENGINE CHANNEL UNAVAILABLE" :
+                                          airframeUnavailable ? "AIRFRAME DATA UNAVAILABLE" :
                                           fuelImbalanceGallons>3 ? "FUEL IMBALANCE" :
                                           centralLogSyncOffline ? "CENTRAL LOG SYNC OFFLINE" : "SYSTEM NORMAL"
     readonly property string casAction: !dataUsable ? "USE STANDBY INDICATIONS • CHECK EMS LINK" :
@@ -119,6 +121,7 @@ Item {
                                         fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "CHECK FOR LEAK OR SENSOR FAULT" :
                                         fuelTotalGallons<=fuelReserveGallons ? "VERIFY ENDURANCE AND DIVERT" :
                                         !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "CHECK SENSOR VALIDITY • USE VALID INDICATIONS" :
+                                        airframeUnavailable ? "VERIFY GEAR / FLAPS INDEPENDENTLY" :
                                         fuelImbalanceGallons>3 ? "SELECT FULLER TANK" :
                                         centralLogSyncOffline ? "ENGINE DATA LINK UNAFFECTED • CHECK CACHE SYNC" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
     readonly property color casColor: casLevel==="WARNING" ? "#FF3933" : casLevel==="CAUTION" ? amber : casLevel==="ADVISORY" ? cyan : green
@@ -255,12 +258,18 @@ Item {
             TapHandler { onTapped:{root.selectedPanel="CAS";root.activeNavigation="INDICATIONS"} }
         }
         HmiAirframePanel {
+            id:airframePanel
             objectName:"emsAirframePanel"
             anchors { left:parent.left; right:parent.right; top:casBanner.bottom; bottom:parent.bottom; margins:5*root.uiScale }
             uiScale:root.uiScale; compact:root.compactLayout; gearInstalled:controller.landingGearInstalled; noseLocked:controller.gearNoseLocked
             leftLocked:controller.gearLeftLocked; rightLocked:controller.gearRightLocked; gearState:controller.gearState
             flapsInstalled:controller.flapsInstalled; flapDetents:controller.flapDetents; flapAngle:controller.flapAngle
-            flapCommandedAngle:controller.flapCommandedAngle; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs
+            flapCommandedAngle:controller.flapCommandedAngle
+            dataState:String(controller.airframeSourceState || "LOST")
+            dataAgeMs:controller.airframeDataAgeMs===undefined?-1:controller.airframeDataAgeMs
+            gearValid:controller.gearDataValid===true
+            flapAngleValid:controller.flapAngleValid===true
+            flapCommandedValid:controller.flapCommandedValid===true
         }
     }
 

@@ -1,0 +1,24 @@
+********* Start testing of qmltestrunner *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by MSVC 2022), windows 11
+PASS   : qmltestrunner::R108ReviewCapture::initTestCase()
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(800-LIVE)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(800-SIM)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(800-STALE)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(800-DEGRADED)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(800-LOST)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(800-FAIL)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1024-LIVE)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1024-SIM)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1024-STALE)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1024-DEGRADED)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1024-LOST)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1024-FAIL)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1280-LIVE)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1280-SIM)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1280-STALE)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1280-DEGRADED)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1280-LOST)
+PASS   : qmltestrunner::R108ReviewCapture::test_capture(1280-FAIL)
+PASS   : qmltestrunner::R108ReviewCapture::cleanupTestCase()
+Totals: 20 passed, 0 failed, 0 skipped, 0 blacklisted, 3739ms
+********* Finished testing of qmltestrunner *********

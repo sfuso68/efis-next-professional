@@ -1420,6 +1420,7 @@ bool PfdController::startSystemSimulation(const QString& scenario) {
     } catch (const std::exception&) {
         return false;
     }
+    system_frame_ = system_simulator_.sample(efis::MonoClock::now(), std::chrono::milliseconds{0});
     system_simulation_active_ = true;
     system_simulation_running_ = true;
     system_simulation_elapsed_ms_ = 0.0;
@@ -1427,6 +1428,7 @@ bool PfdController::startSystemSimulation(const QString& scenario) {
     system_simulation_last_event_ = QStringLiteral("SCENARIO STARTED");
     qInfo().noquote() << "event=system_simulation_start scenario=" << scenario;
     emit simulationChanged();
+    emit snapshotChanged();
     return true;
 }
 
@@ -1449,6 +1451,7 @@ void PfdController::stopSystemSimulation() {
     system_simulation_last_event_ = QStringLiteral("STOPPED");
     qInfo().noquote() << "event=system_simulation_stop";
     emit simulationChanged();
+    emit snapshotChanged();
 }
 
 void PfdController::seekSystemSimulation(double progress) {

@@ -20,6 +20,7 @@ TestCase {
     function test_capture(row) {
         view.width=row.w;view.height=row.h
         fixture.engineSourceState=row.state;fixture.engineDataAgeMs=row.age
+        fixture.airframeSourceState=row.state;fixture.airframeDataAgeMs=row.age
         wait(150)
         var image=grabImage(view)
         compare(image.width,row.w);compare(image.height,row.h)

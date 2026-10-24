@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <cstddef>
+#include <limits>
 
 #include <QObject>
 #include <QTimer>
@@ -125,6 +126,11 @@ class PfdController final : public QObject {
     Q_PROPERTY(bool landingGearInstalled READ landingGearInstalled CONSTANT)
     Q_PROPERTY(bool retractableGear READ retractableGear CONSTANT)
     Q_PROPERTY(bool gearNoseLocked READ gearNoseLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(QString airframeSourceState READ airframeSourceState NOTIFY snapshotChanged)
+    Q_PROPERTY(int airframeDataAgeMs READ airframeDataAgeMs NOTIFY snapshotChanged)
+    Q_PROPERTY(bool gearDataValid READ gearDataValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flapAngleValid READ flapAngleValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flapCommandedValid READ flapCommandedValid NOTIFY snapshotChanged)
     Q_PROPERTY(bool gearLeftLocked READ gearLeftLocked NOTIFY snapshotChanged)
     Q_PROPERTY(bool gearRightLocked READ gearRightLocked NOTIFY snapshotChanged)
     Q_PROPERTY(QString gearState READ gearState NOTIFY snapshotChanged)
@@ -325,14 +331,20 @@ public:
     [[nodiscard]] QString maintenanceStatus() const;
     [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
     [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
-    [[nodiscard]] bool gearNoseLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_nose_locked : true; }
-    [[nodiscard]] bool gearLeftLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_left_locked : true; }
-    [[nodiscard]] bool gearRightLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_right_locked : true; }
-    [[nodiscard]] QString gearState() const { return !landing_gear_installed_ ? QStringLiteral("NOT INSTALLED") : (gearNoseLocked() && gearLeftLocked() && gearRightLocked() ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("UP / TRANSIT")); }
+    // No real airframe transport is wired yet. Engine health is not evidence.
+    [[nodiscard]] QString airframeSourceState() const { return system_simulation_active_ ? QStringLiteral("SIM") : QStringLiteral("LOST"); }
+    [[nodiscard]] int airframeDataAgeMs() const { return system_simulation_active_ ? 0 : -1; }
+    [[nodiscard]] bool gearDataValid() const { return system_simulation_active_; }
+    [[nodiscard]] bool flapAngleValid() const { return system_simulation_active_; }
+    [[nodiscard]] bool flapCommandedValid() const { return system_simulation_active_; }
+    [[nodiscard]] bool gearNoseLocked() const { return gearDataValid() && system_frame_.airframe.gear_nose_locked; }
+    [[nodiscard]] bool gearLeftLocked() const { return gearDataValid() && system_frame_.airframe.gear_left_locked; }
+    [[nodiscard]] bool gearRightLocked() const { return gearDataValid() && system_frame_.airframe.gear_right_locked; }
+    [[nodiscard]] QString gearState() const { return !landing_gear_installed_ ? QStringLiteral("NOT INSTALLED") : !gearDataValid() ? QStringLiteral("NO DATA") : (gearNoseLocked() && gearLeftLocked() && gearRightLocked() ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("UP / TRANSIT")); }
     [[nodiscard]] bool flapsInstalled() const { return flaps_installed_; }
     [[nodiscard]] QVariantList flapDetents() const { return flap_detents_; }
-    [[nodiscard]] double flapAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_angle_deg : 15.0; }
-    [[nodiscard]] double flapCommandedAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_command_deg : 15.0; }
+    [[nodiscard]] double flapAngle() const { return flapAngleValid() ? system_frame_.airframe.flap_angle_deg : std::numeric_limits<double>::quiet_NaN(); }
+    [[nodiscard]] double flapCommandedAngle() const { return flapCommandedValid() ? system_frame_.airframe.flap_command_deg : std::numeric_limits<double>::quiet_NaN(); }
     Q_INVOKABLE void cycleEngineFault();
     [[nodiscard]] QVariantMap aircraftSpeedProfile() const { return aircraft_speed_profile_; }
     [[nodiscard]] bool aircraftSpeedProfileAvailable() const { return aircraft_speed_profile_available_; }

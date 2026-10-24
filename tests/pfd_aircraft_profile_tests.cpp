@@ -5,6 +5,7 @@
 #include <QTemporaryDir>
 
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
 
 namespace {
@@ -85,5 +86,23 @@ int main(int argc, char** argv) {
                 complete.aircraftSpeedProfile().value("vne").toDouble() == 140.0,
             "a complete coherent profile must be applied as one unit");
 
-    std::cout << "PFD aircraft profile fail-closed tests passed\n";
+    require(!complete.gearDataValid() && !complete.flapAngleValid() &&
+                !complete.flapCommandedValid() && !complete.gearNoseLocked() &&
+                !complete.gearLeftLocked() && !complete.gearRightLocked() &&
+                complete.airframeSourceState() == QStringLiteral("LOST") &&
+                complete.airframeDataAgeMs() == -1 &&
+                complete.gearState() == QStringLiteral("NO DATA") &&
+                std::isnan(complete.flapAngle()) && std::isnan(complete.flapCommandedAngle()),
+            "profile and engine data must not fabricate real gear/flap feedback");
+    require(complete.startSystemSimulation(QStringLiteral("full-flight")),
+            "explicit full-system simulation must start");
+    require(complete.gearDataValid() && complete.flapAngleValid() &&
+                complete.airframeSourceState() == QStringLiteral("SIM") &&
+                std::isfinite(complete.flapAngle()),
+            "only the explicit airframe simulator may expose SIM feedback");
+    complete.stopSystemSimulation();
+    require(!complete.gearDataValid() && std::isnan(complete.flapAngle()) &&
+                complete.gearState() == QStringLiteral("NO DATA"),
+            "stopping the simulator must immediately invalidate retained airframe values");
+    std::cout << "PFD aircraft profile and airframe fail-closed tests passed\n";
 }
