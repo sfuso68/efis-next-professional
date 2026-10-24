@@ -335,3 +335,41 @@ e [SimVars](https://docs.flightsimulator.com/msfs2024/retail/programming-apis/si
 documentano interfacce per il futuro bridge; non autorizzano da soli la copia
 di scenari, navdata o contenuti commerciali. Nessun SDK/pacchetto esterno,
 modello MSFS o dataset geografico è stato scaricato in questo blocco.
+
+### R1-13 — MSFS installato, prima acquisizione locale e bridge diagnostico
+
+Aggiornamento proprietario: MSFS2024 Steam ora installato sul PC Windows
+WIN-9MB3K78GSR2 / 192.168.1.33, SDK in D:\MSFS 2024 SDK. Nessuna dipendenza
+aggiunta al simulatore autonomo. Sonda C++ preliminare: OPEN/12 frame PASS del
+volo dichiarato C172; non certifica identità o fedeltà del modello. Nessun dato
+o asset FS archiviato sul server e nessun diritto di redistribuzione dedotto.
+
+Implementato `tools/simulation/msfs_readonly.py`, CLI Windows x64 senza librerie
+Python esterne: sette SimVar provate dalla sonda, sola lettura locale, output
+JSONL esclusivo/SIM/flight_approval=false, tempi host di ricezione, sequenze
+output e sorgente separate, WAITING→SIMULATED→STALE→LOST, fault terminali,
+NaN/corruzione rifiutati, valori non correnti null. Non è DDP/EDP e non contiene
+publisher/rete, setter o comandi ad attuatori. Assi nativi non convertiti,
+quote e orologio da qualificare prima di qualsiasi normalizzazione EFIS.
+
+19 test offline PASS, inclusi ABI mock/allowlist API e file non sovrascrivibili;
+66 test Python combinati PASS (19 nuovi + 47 regressioni); CMake Release
+con Python esplicito registra il gate ed esegue CTest 1/1 PASS. Nessuna nuova
+build C++/Qt completa: questo incremento non cambia core o renderer.
+Il primo configure Debug e il riuso della cache hanno incontrato il C1902
+MSVC/PDB già noto; configure Release e TRY_COMPILE_CONFIGURATION=Release
+in directory separata PASS, senza modificare toolchain/security del PC.
+
+Il tentativo runtime del nuovo client trova FS non più osservato in esecuzione:
+open 0x80004005, exit 1, FAULT/null e summary FAIL. È soltanto prova negativa;
+la sessione positiva della sonda C++ NON è attribuita al tool finale. Nuova
+sessione positiva, pausa/disconnect e variazioni di volo controllate PENDING.
+Runbook: `../development/MSFS_READONLY_BRIDGE_V1.md`.
+
+AVX-G5-02 IN_PROGRESS e PRJ-004/EMS-002/VER-001 invariati. Prossimo passo:
+riaprire cockpit e acquisire il nuovo client, poi mappare assi/quote/tempo,
+aggiungere canali disponibili verificandoli sul modello scelto, preparare
+registrazione/replay/catalogo server e adapter/publisher SIL isolati via
+Blackbox. Nessun collegamento diretto MSFS→display, servizi/firmware/firewall,
+power waiver, deployment sui nodi o HIL non autorizzato. Gli altri gate R1-12,
+6DoF/profili reali e golden review restano aperti.

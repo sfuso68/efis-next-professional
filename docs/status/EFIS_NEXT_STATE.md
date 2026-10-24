@@ -1,10 +1,45 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-24, stack EMS e motore missione R1-12 candidati; date hardware invariate
+Aggiornamento: 2026-10-24, stack EMS/missione e bridge locale MSFS R1-13 candidati; date hardware avionico invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-13 — acquisizione locale MSFS, non ancora publisher verso EFIS
+
+PC Windows WIN-9MB3K78GSR2, LAN servizio 192.168.1.33, Steam e SDK in
+`D:\MSFS 2024 SDK` confermati. Sonda C++ locale preliminare: SimConnect OPEN,
+12 frame PASS, posizione/IAS/quota/assetto/RPM del volo dichiarato C172.
+Questa osservazione non valida il modello aeromobile né profili Rotax.
+
+Implementato `tools/simulation/msfs_readonly.py`: sette sole SimVar, cinque
+API read-only/connessione locale, nessun socket/evento setter o inoltro;
+JSONL con SIM sempre, flight_approval=false, raw/unità, UUID, sequenze
+ricezione/output separate, UTC/monotono HOST_RECEIPT_NOT_SIM_TIME e age.
+WAITING/SIMULATED/STALE/LOST/FAULT, mascheramento value=null a stale/lost/fault,
+timeout iniziale e nessun fallback inventato; file nuovi esclusivi.
+Pitch/bank nativi MSFS non ancora convertiti al contratto EFIS.
+
+Verificato software: 19 test offline di parser, freshness/recovery, errori,
+ABI mock fixed-width, confini read-only, CLI e preservazione output PASS.
+Regressione combinata 66 test Python PASS; nuovo gate CTest registrato ed
+eseguito 1/1 PASS con configure Release/Python esplicito. Tentativi Debug
+incontrano C1902 MSVC/PDB già noto; nessuna policy di sicurezza modificata.
+Tentativo runtime del nuovo bridge: FS non più osservato in esecuzione,
+open 0x80004005, exit 1 e FAULT/FAIL con valori null: caso negativo corretto.
+Acquisizione positiva del tool finale e disconnect/pausa reali NOT_RUN;
+la sonda preliminare non li sostituisce. Nessun nodo avionico contattato,
+nessuna release/servizio/firewall/firmware modificato. ID PRJ-004 VERIFY-HW,
+EMS-002/VER-001 PARTIAL, AVX-G5-02 IN_PROGRESS invariati.
+
+Specifiche e prossimi gate: `../development/MSFS_READONLY_BRIDGE_V1.md`.
+Restano identità/modello/clock, assi/quote e canali aggiuntivi EMS verificati,
+registrazione/replay server/NAS e publisher SIL canonico isolato tramite
+Blackbox, NON collegamento diretto FS→display. Nessun merge o flight approval.
+CI sorgente precedente 1ae8373: Project Control 40126263266 SUCCESS;
+Core 40126263419 FAIL solo golden step 11, linux-core e sanitizers SUCCESS,
+build Qt/QML/weather PASS. Non sostituiti riferimenti/tolleranze golden.
 
 ## R1-12 — motore autonomo e collegamento PFD, candidato software
 
@@ -29,7 +64,8 @@ NON completati: dinamica 6DoF/planata/stallo e profili reali dei due motori,
 clock/sessione distribuita EMS/Blackbox, catalogo/replay server/NAS, dati DEM e
 ostacoli integrati fisicamente, radio/meteo operativo. Meteo missione è
 UNAVAILABLE, IAS una proxy isotermica, taxi/pista geometricamente semplificati.
-MSFS2024 sarà installato più avanti dal proprietario; nessuna dipendenza ora.
+In questo blocco MSFS2024 era previsto più avanti; installazione osservata
+successivamente in R1-13. Il motore autonomo resta privo di tale dipendenza.
 Ricognizione SDK e JSBSim registrata nel backlog, nessun backend esterno installato.
 CI precedente 2b48c57: Project Control 40120746821 SUCCESS; Core 40120746818
 FAIL solo confronto golden, core/sanitizer/build/QML PASS. Nuovo candidato da
