@@ -1,10 +1,37 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-25, motore fisico headless R1-14 provato su serverha; display e hardware avionico invariati
+Aggiornamento: 2026-10-25, preflight collegamento SIL R1-15 e consumer canonici verificati; nessuna commutazione dei nodi
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-15 — collegamento SIL: adapter/consumer verificati, pannelli NON commutati
+
+Inventario SSH read-only PFD/MFD/EMS/Blackbox riconfermato: PFD è attivo come
+servizio utente (PID 1495), MFD PID 1328, EMS PID 948 e Blackbox PID 1294.
+EMS realmente attivo è ems-a0be9a5-main-v1 / source completo a0be9a52494ea7ccb5a3890e94d03b671162383b,
+manifesto e /proc/exe verificati: registro release aggiornato come osservazione,
+NON nuovo deployment. PFD/EMS 0x0; MFD/Blackbox 0x50000. MFD registra ulteriori
+undervoltage questo boot, ultimo 25 ottobre 00:02:26→28 normalizzato (journal
+locale): gate PWR-001 ancora aperto, nessun carico/reboot/PSU cambiato.
+
+Implementato target opzionale Qt Core efis-sil-wire-check: adapter offline di
+un sottoinsieme JSBSim nei tipi core, codec e due consumer DDP più uno EDP
+canonici reali, identità SIM 65000 separata dalla Blackbox operativa 47.
+GCC/Qt Core serverha build e 5 test black-box PASS; quattro replay da 1201 frame
+ciascuno accettati dai tre consumer, SIM/clock/CRC/duplicati/identità/STALE/LOST
+verificati. MSVC build/link del target PASS e CTest 3/3 PASS. Sono classi codec
+e consumer, NON renderer/pannelli né LAN reale. Nessun socket o publisher.
+
+Il mapping volutamente NON inventa IAS da CAS, quota indicata da geometrica
+o convenzione heading da TRUE; quei campi restano UNAVAILABLE, come i cilindri
+e impianti non modellati. Warning preesistente GCC ddp_v2 osservato, non risolto.
+Restano mapping aria/compasso, session publisher e ingresso SIM isolato con
+rollback, gate power/release/golden e prova simultanea dei display REALI.
+Broker MAVLink/CAN/recorder attuale e consumer delle porte operative invariati.
+Evidenza evidence/r1-15-sil-link-preflight-20261025/verification.json;
+runbook ../development/SIL_CANONICAL_LINK_PREFLIGHT_V1.md. Nessun DONE aggiunto.
 
 ## R1-14 — JSBSim headless su serverha, sessione unica offline verificata
 

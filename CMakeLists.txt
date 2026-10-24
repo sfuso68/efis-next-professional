@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(EFIS_BUILD_TESTS "Build EFIS Next tests" ON)
 option(EFIS_BUILD_QT_RENDERER "Build the Qt Quick PFD when Qt is available" ON)
 option(EFIS_REQUIRE_QT_RENDERER "Fail configuration if the Qt Quick PFD cannot be built" OFF)
+option(EFIS_BUILD_SIL_WIRE_CHECK "Build offline JSBSim to canonical DDP/EDP consumer check (Qt Core only)" OFF)
 
 if(MSVC)
     # Core, adapters and applications use standard C++ exceptions for
@@ -722,5 +723,17 @@ if(EFIS_BUILD_TESTS)
         target_compile_definitions(efis_operational_profile_model_tests PRIVATE
             EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
         add_test(NAME efis_operational_profile_model_tests COMMAND efis_operational_profile_model_tests)
+    endif()
+endif()
+
+if(EFIS_BUILD_SIL_WIRE_CHECK)
+    find_package(Qt6 REQUIRED COMPONENTS Core)
+    add_executable(efis-sil-wire-check tools/simulation/jsbsim_wire_check.cpp)
+    target_link_libraries(efis-sil-wire-check PRIVATE efis_core Qt6::Core)
+    if(EFIS_BUILD_TESTS AND Python3_Interpreter_FOUND)
+        add_test(NAME efis_jsbsim_wire_check_tests
+            COMMAND ${Python3_EXECUTABLE} -m tests.jsbsim_wire_check_tests $<TARGET_FILE:efis-sil-wire-check>)
+        set_tests_properties(efis_jsbsim_wire_check_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
     endif()
 endif()

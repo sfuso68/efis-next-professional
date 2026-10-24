@@ -1,6 +1,6 @@
 # EFIS NEXT — Registro canonico delle release sui nodi
 
-Aggiornamento documentale: 2026-10-18
+Aggiornamento documentale: 2026-10-25
 Stato: DEVELOPMENT / NON-CERT
 
 Questo file è l'unica fonte documentale autorizzata per rispondere alla domanda
@@ -24,7 +24,7 @@ non possono sovrascrivere questo registro.
 |---|---|---:|---|---|---|---|---|
 | `efis-pfd-01` | PFD + recorder RPi5 | `192.168.1.45` | `pfdrec-7051a47-retention-v1` (`7051a47839389f739f2d1e0ad22b385173299f61`) | 2026-09-30 activation + reboot | ATTIVA IMMUTABILE / RETENTION VERIFY-HW | archivio pre-potatura serverha 9.208 file/33.777.901.735 byte con secondo `rsync -aHnc --delete` a zero differenze; build ARM64 e test mirati PASS; prima potatura 2.222 segmenti/8.008.825.406 byte, rollback drill e reboot PASS; una seconda potatura post-reboot ha rimosso 12 segmenti/43.890.672 byte; PFD/recorder attivi dai binari canonici, status V3 crescente, DDP LIVE e `get_throttled=0x0`; root 71% con 17,4 GB disponibili; candidata meteo `pfdrec-3c7bb4d-weather-async-v1` preparata soltanto a livello software e non attivata | eseguire sul PFD build/test ARM64, attivazione con rollback, prova I/O meteo e reboot acceptance della candidata; completare soak >=24 h; indagare startup retry; visuale/touch/terrain e 27 gap tile restano aperti |
 | `pi5` | MFD RPi5 | `192.168.1.49` | `mfd-3432402-primary-v1` (`3432402ae35c168a14a14fe408a2b635fe750c92`) | 2026-09-29 18:48 UTC | ATTIVA IMMUTABILE / POWER VERIFY-HW | unità attiva, eseguibile canonico, `NRestarts=0`; `get_throttled=0x50000` con due undervoltage kernel il 2026-09-23 | qualificare alimentatore/cavo, poi acceptance touch/terrain e soak |
-| `efis` | EMS RPi4 | `192.168.1.36` | `ems-62ba90b-hmi-cas-v1` (`62ba90bcc53799303af2fa1de5b8ec3b1b5fb35f`) | 2026-09-29 18:48 UTC | ATTIVA IMMUTABILE CONFERMATA / SIM | manifesto HMI/CAS, unità attiva, eseguibile canonico, `NRestarts=0`, `simulation_mode=true`, `get_throttled=0x0` | sorgenti motore reali, calibrazioni, touch e soak restano aperti |
+| `efis` | EMS RPi4 | `192.168.1.36` | `ems-a0be9a5-main-v1` (`a0be9a52494ea7ccb5a3890e94d03b671162383b`) | 2026-10-25 preflight, UTC 24T22:19:58Z | ATTIVA CONFERMATA / SIM | current e /proc/948/exe risolti in /opt/efis-next-ems-releases/ems-a0be9a5-main-v1, manifesto SHA 9bd369fa..., servizio active/restart 0 e 0x0; sola osservazione, nessuna attivazione in R1-15 | sorgenti reali/calibrazione e acceptance display aperte; non commutare a SIL senza ingresso isolato/rollback e gate del sistema |
 | `efisblackbox` | Blackbox RPi5 | `192.168.1.47` | `blackbox-7655799-primary-v1` (`765579959f7970a17eb212ca1ef13628aaa4d71f`) + drop-in NAV `4a2e33ce...` | 2026-09-29 19:36 UTC | ATTIVA IMMUTABILE / SIM / POWER VERIFY-HW / NAV FAIL-CLOSED | broker attivo `NRestarts=0`, `--engine-simulation`; drop-in esterno alla release ferma `bbxnav` su exit 2 con `NRestarts=0`; cinque transienti recenti senza errori NVMe/USB correlati | qualificare alimentatore/cavo; integrare il drop-in nella prossima release e qualificare ricevitori NAV; CAN reale, endurance e fault restano aperti |
 | `ems-sensor` | ASSO5 sensor RPi4 | `192.168.1.89` | nessuna release distribuita | 2026-09-18 | NON DISTRIBUITA | identità nodo verificata; adapter reale non distribuito | nessun deployment prima di inventario e approvazione G1 |
 | `PORTATILE` | Ground station | `192.168.1.39` | non applicabile/untracked | 2026-09-15 | DA INVENTARIARE | QGC e firewall osservati separatamente | registrare package/versioni/config hash in sola lettura |
@@ -93,3 +93,20 @@ storico e recorder/MFD/Blackbox 0: non attribuire quell'1 a questo lavoro.
 Nessuna variazione a retention, configurazione, rete, unità o bus.
 Anche EMS conserva current `ems-62ba90b-hmi-cas-v1`, PID 949/NRestarts 0;
 la cattura offscreen della candidata non è una cattura del pannello operativo.
+
+## Riconferma preflight SIL 2026-10-25 — nessuna attivazione
+
+Questa osservazione successiva prevale sulle descrizioni storiche sopra.
+SSH UTC 2026-10-24T22:19:57/58Z, data locale Europe/Rome 25 ottobre:
+
+| Nodo | Evidenza letta ora | Esito e limite |
+|---|---|---|
+| PFD .45 | current pfdrec-7051a47-retention-v1; servizio UTENTE efis-pfd active, processo 1495 | puntatore/processo riconfermati; hash completo artefatti non ripetuto; 0x0 |
+| MFD .49 | current mfd-3432402-primary-v1; servizio direct active, PID 1328/restart 0 | puntatore/processo riconfermati, hash non ripetuto; 0x50000 e undervoltage recenti |
+| EMS .36 | current /opt/efis-next-ems-releases/ems-a0be9a5-main-v1; /proc/948/exe stesso binario; servizio active/restart 0 | ATTIVA CONFERMATA da manifesto source a0be9a52494ea7ccb5a3890e94d03b671162383b, SIM=true; 0x0; nessun nuovo deployment in questo blocco |
+| Blackbox .47 | current /opt/efis-blackbox-releases/blackbox-7655799-v1; servizio active, PID 1294/restart 0 | puntatore/processo riconfermati, hash non ripetuto; 0x50000; broker/endpoint non modificati |
+
+Manifesto EMS SHA256: 9bd369facf5a348ec83d9dd6f9eaa388f7dc90f9b839861a62cd67528095e625.
+I percorsi della vecchia candidata EMS sotto /home/pi descrivevano lo staging,
+non il runtime ora osservato sotto /opt. L'attivazione intermedia non è
+attribuita a questo lavoro. Nessuna unità/puntatore cambiato, nessun reboot.

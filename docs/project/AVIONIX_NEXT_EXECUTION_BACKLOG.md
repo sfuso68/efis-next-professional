@@ -402,3 +402,29 @@ C172P non è un sostituto validato degli aerei del proprietario. CHT/EGT medie
 non vengono moltiplicate per quattro; i canali non modellati sono UNAVAILABLE.
 AVX-G5-02 IN_PROGRESS e ID PRJ-004/EMS-002/VER-001 invariati. Il motore non ha
 più una traiettoria prescritta come R1-12, ma non è il prodotto completo.
+
+### R1-15 — richiesta collegamento display: percorso software e preflight
+
+Adapter diagnostico offline JSBSim→tipi core→codec/consumer canonici DDP/EDP
+implementato e verificato su serverha: cinque test black-box e quattro replay
+fisici da 1201 frame, due consumer DDP e uno EDP allineati. SIM conservato;
+CRC, duplicati, source identity e timeout STALE/LOST verificati. Nessun socket,
+publisher o endpoint attivato. Identità test 65000 distinta dalla Blackbox 47;
+consumer production configurati 47 rifiutano le fixture. Target MSVC build PASS,
+CTest Windows 3/3 PASS, gate di build/test aggiunto alla CI Qt senza toccare
+golden/tolleranze. Evidenza r1-15-sil-link-preflight-20261025.
+
+Nuovo inventario read-only: PFD attivo via unità utente, MFD/EMS/Blackbox attivi.
+EMS realmente osservato è a0be9a5, non più 62ba90b; aggiornato registro canonico
+con manifesto e /proc/exe, non nuovo deploy. MFD/Blackbox mantengono 0x50000;
+MFD ha undervoltage del 25 ottobre 00:02:26→28. Attivazioni restano BLOCCATE
+dal gate alimentazione, non da una semplice richiesta di conferma software.
+
+Nessuna equivalenza ingannevole CAS→IAS/MSL→QNH/TRUE→heading: mapping non
+approvato rimane UNAVAILABLE. Prossimo software: modello sensori aria/heading,
+publisher di sessione con aging/restart reali e ingresso SIM opt-in sul broker,
+test loopback e rollback. Poi finestra fisica con sorgenti reali isolate,
+qualifica PWR-001/release/golden e prova contemporanea sui renderer REALI.
+Non attivare due publisher sulle porte operative, non impersonare source47,
+non cambiare firewall o bridge fra LAN servizio e FLIGHT-DATA. Runbook:
+`../development/SIL_CANONICAL_LINK_PREFLIGHT_V1.md`. AVX-G5-02 IN_PROGRESS.
