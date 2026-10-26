@@ -18,15 +18,31 @@ senza accumulare il ritardo di risveglio a ogni tick. Limite100ms invariato.
 Verificatore trace controlla hash/config/identità/lifecycle/epoch/sequence,
 coppie raw/canonico e conteggi:integrità,NON oracle indipendente di fisica.
 
-Software locale:106test PASS (5nuovi rispettoR1-23). Serverha,container già
-presente senza rete/capability e con source/runtime read-only:prime3prove
-native PASS su source-v1 (sessione1s,pausa2s,corruzione). Nessuna prova HMI,
-nessun pannello/Blackbox/Pixhawk/CAN modificato. Prove temporizzate aggiuntive
-e suite finale da registrare nella seguente evidenza prima di dichiararle PASS.
+Software locale:106test PASS (5nuovi rispettoR1-23),8/8CTest mirati PASS;
+configurazione CMake PASS con warning path MSVC preesistente,nessun nuovo
+renderer ricompilato. Serverha:111test PASS,inclusi5JSBSim reali;source-v2
+archiviato dal commit fec6507cacd797561ff3c9bb4bfb6b59b6501ed4,container
+senza rete/capability con source/runtime read-only. POSIX hardlink verificato.
+
+Due run live su /dev/sda2/ext4 si sono fermate correttamente per pipeline
+frame/persistenza>100ms a tick1260 e1400:FAIL conservati,nessuna soglia
+allargata e nessun result.json di successo. Diagnosi non identifica fsync
+come unica causa;CPU bassa osservata non è una qualifica del server.
+Prova diagnostica con journal tmpfs64MiB:60.120529s,6000tick/1202frame,
+2epoch per pausa a tick2500,maxlag3.460428ms;probe fast1200 ricevimenti,
+slow/absent non bloccano e slow registra1201overwrite. Non sono display.
+201frame GNSS indisponibili (inclusa emissione al resume),verità fisica
+preservata e recovery successivo verificati. Non prestazioni Asso/Rotax.
+Trace copiato dopo la run su disco in nuova directory:verifica server e
+ulteriore verifica dopo copia Windows PASS,hash4f6df98200e8ab09892d908aad650ad5609aa3e4c84fd08151d506d8052375f6.
+Tmpfs non è persistente a power loss:PASS dimostra fisica/scheduler e
+integrità della copia,NON qualifica della registrazione live su disco.
+Nessuna prova HMI,nessun pannello/Blackbox/Pixhawk/CAN modificato;solo
+esecuzione software isolata sul server reale,nessun deployment operativo.
 
 P01/P02 e requisiti progetto rimangono PARTIAL. Aperti:coda/lease/dedup e
 comandi pilota P03,codec/fanout P04,prodotti meteo/NAV/airframe completi,
-modelli validati,watchdog storage,backup/restore NAS,hardware/power/touch/
+modelli validati,registrazione live su disco/watchdog storage,backup/restore NAS,hardware/power/touch/
 golden e endurance. R1-20 rimane il collegamento PFD precedente separato.
 Evidenza corrente: evidence/r1-24-jsbsim-session-engine-20261027/verification.json.
 

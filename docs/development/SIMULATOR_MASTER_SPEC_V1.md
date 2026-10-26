@@ -316,6 +316,12 @@ Errori conservati; niente waiver automatico o cambi golden per rendere verde.
 
 ## 12 Sequenza di sviluppo e passaggio ai moduli finali
 
+Incremento R1-24: adapter JSBSim reale e trace verification collegati al
+motore P02;111test serverha PASS e run60s tmpfs con copia archivio verificata.
+Persistenza live su disco FAIL in due run;P02 resta PARTIAL,nessuna
+promozione di gate storage o collegamento automatico ai display. Vedere
+`SIL_SESSION_ENGINE_V1.md` per risultati e limiti,non dedurre closure dai demo.
+
 Incremento R1-23: P02PARTIAL,owner loop/lifecycle/clock e latest-state
 software descritti in `SIL_SESSION_ENGINE_V1.md`;non ancora adapter JSBSim
 o consumer di rete. Snapshot e guasti sono verificati con fixture di test.

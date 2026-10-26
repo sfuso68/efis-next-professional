@@ -19,7 +19,10 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 R1-24 / PRJ-004,EMS-002,NAV-003,VER-001:adapter nuovo scheduler→JSBSim,
 mapping raw/canonico e trace verifier offline,cadenza senza deriva cumulata
-da jitter.106test locali eprime3prove native serverha PASS (source-v1).
+da jitter.106test locali,111serverha incluse5prove fisiche e8/8CTest PASS.
+Run tmpfs60.120529s/6000tick/1202frame,2epoch,maxlag3.460428ms e copie
+verificate PASS. Due run su disco FAIL a tick1260/1400 per pipeline>100ms,
+conservate:tmpfs non qualifica registrazione durevole o power-loss tolerance.
 Non consumer grafici o nuovo wire:prodotti/impianti non modellati espliciti
 UNAVAILABLE. Stati invariati,nuove prove complete legate all'evidenza
 r1-24-jsbsim-session-engine-20261027;PFD/MFD/EMS operativi non modificati.

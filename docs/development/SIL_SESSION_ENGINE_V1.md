@@ -26,6 +26,44 @@ Deadlines mantengono fase per il jitter normale;se una deadline futura non
 esiste più si rinvia senza raffica e si conserva il ritardo globale con
 stop oltre100ms. Soglia invariata,non qualifica hard-real-time.
 
+### Risultati del27ottobre e gate storage
+
+Source-v2 corrisponde al commit fec6507;archivio SHA256
+76707d366b53f2ce424930e9b7e0ebdafedf7ffa67feeb7b8b8d634cae29928f.
+111test serverha PASS,inclusi5nativi;106Windows e8CTest mirati PASS.
+Le due run su disco ext4 falliscono per frame/persistenza>100ms a12.6s
+e14s fisici. Dati falliti conservati sotto runs/r124-physical-60s-pause-v1/v2;
+nessun risultato COMPLETE. Questi fail non scompaiono perché una prova RAM passa.
+
+Run diagnostica r124-memory-v1:journal dentro tmpfs64MiB del container,
+poi copia esclusiva in runs/r124-memory-archived-v1 e verifica hash/trace.
+6000tick/1202frame/2epoch,60.120529s incluso pause100ms,maxlag3.460428ms.
+Probe fast1200ricevimenti,slow1201overwrite;nessuna prova che tutti i frame
+siano stati ricevuti o disegnati da un pannello. GNSS assente201frame
+coerenti con fault20–30s e resume a25s. Trace hash:
+4f6df98200e8ab09892d908aad650ad5609aa3e4c84fd08151d506d8052375f6.
+Verifiche nel container prima/dopo copia e dopo trasferimento Windows PASS.
+
+Questo isola un percorso funzionante senza persistenza sincrona sul disco,
+ma non prova che fsync sia la sola causa né rende durevole la RAM. Il
+passaggio a recorder asincrono bounded/processo e watchdog richiede prove
+overflow/disk-hang/crash,policy di stop e dichiarazione esplicita del limite
+di dati non ancora persistiti:non cambiare implicitamente append-before-publish.
+Fino ad allora registrazione live su disco/endurance restano FAIL/OPEN.
+
+Comandi ripetibili dalla copia esatta del source nel container isolato:
+
+```sh
+python -B -m tools.simulation.session_jsbsim --directory /tmp/NUOVA_RUN \
+  --world config/simulation/treviso-belluno-world-reference.json \
+  --session-id NUOVA_RUN --source-commit fec6507cacd797561ff3c9bb4bfb6b59b6501ed4 \
+  --seconds 60 --pause-tick 2500
+python -B -m tools.simulation.session_trace /tmp/NUOVA_RUN
+```
+
+Sono comandi software senza pannelli,non un'autorizzazione ad aumentare
+le lease di banco,aprire reti o usare RAM come blackbox operativa.
+
 ## Percorso implementato
 
 SessionEngine possiede manifest congelato,backend e registro di verità test.

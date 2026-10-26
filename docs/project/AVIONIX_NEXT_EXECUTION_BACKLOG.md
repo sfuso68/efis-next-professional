@@ -1,5 +1,13 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-24/AVX-G5-02: collegato scheduler P02 a JSBSim1.3.3,trace raw/canonico e
+verifica integrità;106test Windows,111serverha e8/8CTest PASS. Run60s con
+journal RAM e copia finale su disco PASS;due run di persistenza live su
+disco FAIL conservate. Nessun gate storage/power aggirato o qualificato.
+Priorità seguente:separare/limitare recorder test con watchdog mantenendo
+garanzie di audit e stop;poi coda comandi P03 e codec/fanout P04. Prodotti
+NAV/WX/airframe e modelli reali restano parziali,nessun display aggiornato.
+
 R1-23/AVX-G5-02: P02PARTIAL,session engine indipendente dalle letture dei
 consumer in software,lifecycle/epoch e registro bounded con19test
 nuovi/101totali PASS e7/7CTest PASS. Non collegato al JSBSim o ai pannelli reali: prossimo
