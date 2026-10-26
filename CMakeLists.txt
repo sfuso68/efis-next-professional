@@ -69,6 +69,35 @@ target_link_libraries(efis-recorder PRIVATE efis_core)
 add_executable(efis-simulator src/apps/efis_simulator_main.cpp)
 target_link_libraries(efis-simulator PRIVATE efis_core)
 
+# --- Motore di volo ----------------------------------------------------------
+# Libreria propria e non parte di efis_core, per la ragione della ADR-002: e' un
+# modulo, con un confine. Il nucleo non deve dipendere da essa -- il display e il
+# nodo EMS non hanno nulla da fare con un modello aerodinamico -- mentre essa
+# dipende dal nucleo, perche' pubblica i suoi snapshot e usa le sue relazioni di
+# volo. La direzione della dipendenza e' la cosa che questo confine protegge.
+add_library(efis_fdm
+    src/fdm/atmosphere.cpp
+    src/fdm/airframe.cpp
+    src/fdm/propulsion.cpp
+    src/fdm/dynamics.cpp
+    src/fdm/sensors.cpp
+    src/fdm/sim_vars.cpp
+    src/fdm/scenario_pilot.cpp
+    src/fdm/flight_bench.cpp
+)
+target_include_directories(efis_fdm PUBLIC include)
+target_compile_features(efis_fdm PUBLIC cxx_std_20)
+target_link_libraries(efis_fdm PUBLIC efis_core)
+
+if(MSVC)
+    target_compile_options(efis_fdm PRIVATE /W4 /permissive-)
+else()
+    target_compile_options(efis_fdm PRIVATE -Wall -Wextra -Wpedantic -Wconversion)
+endif()
+
+add_executable(efis-fdm src/apps/efis_fdm_main.cpp)
+target_link_libraries(efis-fdm PRIVATE efis_fdm)
+
 add_library(efis_reference_renderer src/display/svg_pfd_renderer.cpp)
 target_include_directories(efis_reference_renderer PUBLIC include)
 target_link_libraries(efis_reference_renderer PUBLIC efis_core)
@@ -276,6 +305,14 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_system_simulator_tests tests/system_simulator_tests.cpp)
     target_link_libraries(efis_system_simulator_tests PRIVATE efis_core)
     add_test(NAME efis_system_simulator_tests COMMAND efis_system_simulator_tests)
+
+    # Prove del motore di volo. Eseguibile proprio perche' verificano una
+    # categoria diversa: non che il dato sia trasportato bene, ma che il moto,
+    # l'atmosfera e i sensori simulati si comportino come la fisica e come
+    # l'hardware.
+    add_executable(efis_fdm_tests tests/fdm_tests.cpp)
+    target_link_libraries(efis_fdm_tests PRIVATE efis_fdm)
+    add_test(NAME efis_fdm_tests COMMAND efis_fdm_tests)
 endif()
 
 # --- Nodo EMS ---------------------------------------------------------------

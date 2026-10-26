@@ -48,3 +48,22 @@ source router.
 - No update of authoritative engine-hour state.
 - Simulation data remains visibly and structurally distinguishable from live data.
 - Intended for software tests and display demonstrations only.
+
+## Two simulators, two questions
+
+Since 26 October 2026 the project also contains a six-degree-of-freedom flight
+model with a sensor layer, `efis-fdm` (see `docs/design/FLIGHT_MODEL_ENGINE_V1.md`
+and ADR-008). It does not replace this scenario simulator; the two answer
+different questions.
+
+| | `efis-simulator` (this document) | `efis-fdm` |
+|---|---|---|
+| Produces | A scripted ten-minute timeline | An integrated trajectory |
+| Repeatable | Sample by sample | Run by run, not sample by sample across code changes |
+| Truth vs indication | One value per quantity | Truth and sensor indication, side by side |
+| Faults | Replace or remove a value | Act on the physical condition |
+| Answers | Does the data path behave as last time? | Does the instrument tell the truth in this condition? |
+
+Use this one for transport regressions, the flight model for tuning a threshold
+or exercising the ADR-004 surveillances. Both mark every sample simulated, and
+neither may be used for calibration, engine-hour accounting or flight decisions.
