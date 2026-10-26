@@ -222,5 +222,12 @@ class SessionEngineTests(unittest.TestCase):
             with self.assertRaises(OSError):journal.finish({"status":"CANDIDATE"})
             self.assertEqual(path.read_bytes(),b"existing-test-evidence")
 
+    def test_sleep_jitter_does_not_accumulate_every_tick(self):
+        engine=SessionEngine(self.manifest,self.backend,self.journal,clock=self.clock,max_ticks=1000)
+        def jitter_sleep(seconds):self.clock.now+=round(seconds*1e9)+100000
+        engine.validate();engine.arm_software_test();engine.start();engine.run(sleep=jitter_sleep)
+        self.assertEqual(engine.state,"COMPLETE")
+        self.assertLess(engine.maximum_lag_ns,1000000)
+
 
 if __name__=="__main__":unittest.main()

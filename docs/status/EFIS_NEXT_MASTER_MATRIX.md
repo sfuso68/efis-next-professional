@@ -17,6 +17,13 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-24 / PRJ-004,EMS-002,NAV-003,VER-001:adapter nuovo scheduler→JSBSim,
+mapping raw/canonico e trace verifier offline,cadenza senza deriva cumulata
+da jitter.106test locali eprime3prove native serverha PASS (source-v1).
+Non consumer grafici o nuovo wire:prodotti/impianti non modellati espliciti
+UNAVAILABLE. Stati invariati,nuove prove complete legate all'evidenza
+r1-24-jsbsim-session-engine-20261027;PFD/MFD/EMS operativi non modificati.
+
 R1-23 / PRJ-004,EMS-002,VER-001: SessionEngine software lifecycle/clock/epoch,
 slot latest-state bounded e journal esclusivo.19nuovi test con clock virtuale
 e fixture contatore +82regressioni PASS,7/7CTest PASS;non fisica o tempo reale qualificati.

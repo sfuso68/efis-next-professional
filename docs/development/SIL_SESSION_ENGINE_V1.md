@@ -3,6 +3,29 @@
 2026-10-26, R1-23/P02 PARTIAL. DEVELOPMENT / NON-CERT.
 Codice: `tools/simulation/session_engine.py`; test: `tests/test_sil_session_engine.py`.
 
+## R1-24 adapter fisico candidato
+
+2026-10-27: `session_jsbsim.py` collega Backend JSBSim1.3.3 al nuovo motore
+in un processo isolato senza rete. Conserva PHYSICS_WORLD raw nel journal
+prima del FRAME normalizzato. `session_trace.py` verifica integrità e mapping
+del log,non fedeltà rispetto a un aeromobile reale. Le sezioni R1-23 sotto
+restano la baseline storica;il limite «non ancora collegato» è superato solo
+per le prove fisiche espressamente registrate in R1-24,non per i pannelli.
+
+Mapping:GNSS da world.navigation.gnss (non dalla posizione verità),heading
+MAG e aria/quote dai sensori del mondo;CAS/TAS/assetto/motore dal FDM. Le
+etichette degMAG/degTRUE diventano unità deg nei campi nominalmente distinti.
+Pressioni raw assenti,comandi/lock carrello e per-cylinder assenti rimangono
+UNAVAILABLE. NAV/WX restano nel trace raw:nessun riferimento prodotto valido
+o nuovo publisher di cache viene inventato. Rollout grafico e DDP/EDP aperti.
+
+Il runner accetta1–60s,realtime1x e pausa owner opzionale,tre probe in-memory:
+fast letto,slow/absent non letti. Nessuna delle probe è un pannello reale.
+Configurazione scenario/world/durata e modello legata a digest e commit.
+Deadlines mantengono fase per il jitter normale;se una deadline futura non
+esiste più si rinvia senza raffica e si conserva il ritardo globale con
+stop oltre100ms. Soglia invariata,non qualifica hard-real-time.
+
 ## Percorso implementato
 
 SessionEngine possiede manifest congelato,backend e registro di verità test.

@@ -234,7 +234,10 @@ class SessionEngine:
             after_step = self._now()
             if after_step - expected > MAX_LAG_NS:
                 raise ValueError("backend deadline exceeded")
-            self.next_deadline = (after_step if after_step >= now+TICK_NS else now) + TICK_NS
+            # Preserve the deadline phase for ordinary sleep jitter; repeatedly
+            # rebasing to actual wake-up would accumulate drift on every tick.
+            nominal_next = self.next_deadline + TICK_NS
+            self.next_deadline = nominal_next if nominal_next > after_step else after_step + TICK_NS
             if self.relative_tick % 5 == 0:
                 self._emit(now)
             if self.total_ticks >= self.max_ticks:

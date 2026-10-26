@@ -1,10 +1,34 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-26, R1-23 motore sessione SIL software con consumer bounded; release permanenti invariate
+Aggiornamento: 2026-10-27, R1-24 adapter JSBSim e verifica trace del nuovo motore; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-24 — adapter fisico del nuovo motore di sessione
+
+Implementati session_jsbsim.py e session_trace.py: mapping esplicito raw
+fisica/mondo→ICD candidato,conservazione trace raw separata,epoch relativa
+e clock fisico totale. GNSS invalido resta nullo anche con verità fisica
+disponibile;CAS/IAS/TAS e quote distinte. Canali non modellati e riferimenti
+prodotto non pubblicati restano UNAVAILABLE;nessuna copia CHT/EGT aggregate.
+Corretto scheduling P02 per conservare fase deadline con jitter ordinario,
+senza accumulare il ritardo di risveglio a ogni tick. Limite100ms invariato.
+Verificatore trace controlla hash/config/identità/lifecycle/epoch/sequence,
+coppie raw/canonico e conteggi:integrità,NON oracle indipendente di fisica.
+
+Software locale:106test PASS (5nuovi rispettoR1-23). Serverha,container già
+presente senza rete/capability e con source/runtime read-only:prime3prove
+native PASS su source-v1 (sessione1s,pausa2s,corruzione). Nessuna prova HMI,
+nessun pannello/Blackbox/Pixhawk/CAN modificato. Prove temporizzate aggiuntive
+e suite finale da registrare nella seguente evidenza prima di dichiararle PASS.
+
+P01/P02 e requisiti progetto rimangono PARTIAL. Aperti:coda/lease/dedup e
+comandi pilota P03,codec/fanout P04,prodotti meteo/NAV/airframe completi,
+modelli validati,watchdog storage,backup/restore NAS,hardware/power/touch/
+golden e endurance. R1-20 rimane il collegamento PFD precedente separato.
+Evidenza corrente: evidence/r1-24-jsbsim-session-engine-20261027/verification.json.
 
 ## R1-23 — P02 lifecycle clock e latest-state software
 
