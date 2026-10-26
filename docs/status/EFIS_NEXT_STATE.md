@@ -1,10 +1,31 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-27, R1-24 adapter JSBSim e verifica trace del nuovo motore; release permanenti invariate
+Aggiornamento: 2026-10-27, R1-25 recorder SIL asincrono opt-in con queue e watchdog; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-25 — writer separato e durabilità esplicita
+
+Implementata modalità opzionale async-test:writer processo spawn,coda16record/
+512KiB,batch massimo8,fsync e ACK cumulativo. Policy congelata nel config/hash:
+QUEUED_NOT_DURABLE,watchdog ACK100ms controllato ogni pump e durante pausa.
+Deadline fisica100ms invariata;default sync invariato. In async la distribuzione
+può precedere persistenza attestata,finestra massima osservata100ms:non
+spacciare il dato accodato per durevole. Errori/coda piena/timeout/crash
+portano FAILED. Solo risultato root dopo writer,copia,hash e fsync è completo.
+
+Verificato software locale:115test PASS,inclusi9nuovi per writer reale su
+file temporanei,hang,crash,errore disco iniettato,limiti/no-overwrite e
+stop engine prima dello step se watchdog scade. Nessun fault su storage
+operativo. Prove serverha e temporizzate del nuovo modo ancora da acquisire.
+Nessun pannello/firmware/wire/chiave/recorder operativo modificato.
+
+Aperti:finalizzazione parent ancora sincrona dopo la fisica,kernel I/O non
+interrompibile,power-loss/dir fsync e endurance. P02 e requisiti restano
+PARTIAL;nessun DONE. Non trasferire la policy test nel prodotto senza review
+e prove. Evidenza: evidence/r1-25-async-test-recorder-20261027/verification.json.
 
 ## R1-24 — adapter fisico del nuovo motore di sessione
 

@@ -93,21 +93,26 @@ class PhysicalAdapter:
         return value
 
 
-def run(directory, world, *, session_id, source_commit, scenario="turn", seconds=3, pause_tick=None):
+def run(directory, world, *, session_id, source_commit, scenario="turn", seconds=3, pause_tick=None,
+        journal_mode="sync"):
     c.token(session_id)
     c.integer(seconds,1,60)
     if pause_tick is not None:c.integer(pause_tick,1,seconds*100-1)
     config_digest(world)
+    c.require(journal_mode in ("sync","async-test"),"unknown journal mode")
+    from tools.simulation.async_journal import AsyncTruthJournal
     backend=Backend(copy.deepcopy(world))
     configuration=dict(world=world,scenario=scenario,seconds=seconds,pause_tick=pause_tick,
-                       backend="JSBSim-"+VERSION,model="c172p")
+                       backend="JSBSim-"+VERSION,model="c172p",
+                       recording_policy=copy.deepcopy(AsyncTruthJournal.policy) if journal_mode=="async-test"
+                                        else dict(mode="SYNC_PER_RECORD"))
     manifest=dict(schema=c.SCHEMA,kind="MANIFEST",session_id=session_id,epoch=0,simulated=True,
         flight_approval=False,mode="LIVE",epoch_utc=world["epoch_utc"],integration_hz=100,output_hz=20,
         source_node=65000,config_sha256=hashlib.sha256(encode(configuration)).hexdigest(),
         model_sha256=backend.model_digest["sha256"],source_commit=source_commit,
         profile_status="REFERENCE_UNVALIDATED",event_ids=[],station_ids=[],route_hashes=[])
     c.manifest(manifest)
-    journal=TruthJournal(directory)
+    journal=(AsyncTruthJournal if journal_mode=="async-test" else TruthJournal)(directory)
     try:
         journal.append(dict(kind="RUN_CONFIGURATION",configuration=configuration,manifest=manifest))
         adapter=PhysicalAdapter(backend,scenario,journal)
@@ -117,7 +122,12 @@ def run(directory, world, *, session_id, source_commit, scenario="turn", seconds
         received=0;paused=False;started=time.monotonic()
         while engine.state == "RUNNING":
             if pause_tick is not None and not paused and engine.total_ticks >= pause_tick:
-                engine.pause();time.sleep(.1);engine.resume();paused=True
+                engine.pause()
+                pause_end=time.monotonic()+.1
+                while time.monotonic()<pause_end:
+                    if journal_mode=="async-test":journal.check()
+                    time.sleep(.001)
+                engine.resume();paused=True
             if engine.poll("fast_probe") is not None:received+=1
             if not engine.pump():time.sleep(max(0,engine.next_deadline-time.monotonic_ns())/1e9)
         summary=dict(status=engine.state,frames=engine.frames,total_ticks=engine.total_ticks,
@@ -125,6 +135,11 @@ def run(directory, world, *, session_id, source_commit, scenario="turn", seconds
             fast_probe_receipts=received,slow_overwritten=engine.slots["slow_probe"].overwritten,
             epoch=engine.manifest["epoch"],backend="JSBSim-"+VERSION,simulated=True,
             flight_approval=False,network_publisher=False,actual_display_connected=False)
+        summary["journal_mode"]=journal_mode
+        if journal_mode=="async-test":
+            summary.update(maximum_pending_records=journal.maximum_pending,
+                maximum_observed_ack_age_ms=journal.maximum_ack_age_ms,
+                durable_records=journal.durable)
         with (Path(directory)/"probe-report.json").open("xb") as stream:stream.write(encode(summary))
         return summary
     finally:
@@ -140,11 +155,13 @@ def main():
     parser.add_argument("--scenario",choices=SCENARIOS,default="turn")
     parser.add_argument("--seconds",type=int,default=3)
     parser.add_argument("--pause-tick",type=int)
+    parser.add_argument("--journal-mode",choices=("sync","async-test"),default="sync")
     args=parser.parse_args()
     try:
         c.require(args.world.stat().st_size<=65536,"world size")
         print(json.dumps(run(args.directory,c.decode(args.world.read_bytes()),session_id=args.session_id,
-            source_commit=args.source_commit,scenario=args.scenario,seconds=args.seconds,pause_tick=args.pause_tick)))
+            source_commit=args.source_commit,scenario=args.scenario,seconds=args.seconds,
+            pause_tick=args.pause_tick,journal_mode=args.journal_mode)))
     except (ValueError,OSError,RuntimeError,ImportError) as exc:parser.exit(2,f"Session JSBSim FAILED: {exc}\n")
 
 

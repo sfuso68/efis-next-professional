@@ -17,6 +17,12 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-25 / PRJ-004,BBX-001,VER-001:P02recorder di TEST async opt-in con
+writer separato,16record/512KiB e watchdog ACK100ms;QUEUED distinto da
+DURABLE,defaultsync e100msfisica invariati.115test locali PASS,9nuovi.
+Fault iniettati solo in test;nessuna prova hardware o modifica Blackbox.
+Qualifica storage/endurance aperta,stati invariati. Evidence r1-25-async-test-recorder-20261027.
+
 R1-24 / PRJ-004,EMS-002,NAV-003,VER-001:adapter nuovo scheduler→JSBSim,
 mapping raw/canonico e trace verifier offline,cadenza senza deriva cumulata
 da jitter.106test locali,111serverha incluse5prove fisiche e8/8CTest PASS.

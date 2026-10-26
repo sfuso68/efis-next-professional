@@ -1,0 +1,14 @@
+{
+  "schema":"fuso-avionics.async-test-recorder-evidence.v1",
+  "date":"2026-10-27",
+  "status":"PARTIAL",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "local_tests":{"methods":115,"new_methods":9,"status":"PASS"},
+  "server_tests":"PENDING",
+  "timed_direct_disk_run":"PENDING",
+  "policy":{"mode":"ASYNC_TEST_V1","acceptance":"QUEUED_NOT_DURABLE","records":16,"bytes":524288,"ack_timeout_ms":100,"default_changed":false},
+  "operational_recorder_modified":false,
+  "panels_connected":false,
+  "open":["server timed verification","parent finalization I/O watchdog","kernel uninterruptible I/O","power-loss directory durability and endurance","product policy review","P03 commands and P04 fanout"]
+}

@@ -55,5 +55,14 @@ class RealSessionTests(unittest.TestCase):
             self.assertIsNone(frame["groups"]["engine"][name]["value"])
         self.assertIsNone(frame["groups"]["airframe"]["gear_down_locked"]["value"])
 
+    def test_native_async_recorder_and_pause(self):
+        report=s.run(self.root/"async",self.world,session_id="native-async",source_commit="0"*40,
+                     seconds=1,pause_tick=25,journal_mode="async-test")
+        self.assertEqual(report["status"],"COMPLETE")
+        self.assertEqual(report["journal_mode"],"async-test")
+        self.assertLessEqual(report["maximum_pending_records"],16)
+        self.assertLessEqual(report["maximum_observed_ack_age_ms"],100)
+        self.assertEqual(verify(self.root/"async")["status"],"PASS")
+
 
 if __name__=="__main__":unittest.main()

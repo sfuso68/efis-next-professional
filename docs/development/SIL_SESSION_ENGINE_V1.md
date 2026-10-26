@@ -3,6 +3,39 @@
 2026-10-26, R1-23/P02 PARTIAL. DEVELOPMENT / NON-CERT.
 Codice: `tools/simulation/session_engine.py`; test: `tests/test_sil_session_engine.py`.
 
+## R1-25 recorder asincrono di test
+
+2026-10-27: `--journal-mode async-test` è opt-in;default resta sync.
+`async_journal.py` avvia un writer separato con spawn. Il manifesto/hash
+config lega la policy `ASYNC_TEST_V1`:accettazione QUEUED_NOT_DURABLE,
+massimo16record pendenti/512KiB,record massimo64KiB e watchdog ACK100ms.
+I100ms del producer non cambiano. La nuova semantica NON è «persistito prima
+di distribuire»:in questo solo modo di banco si distribuisce dopo accodamento,
+con fino a100ms di dati non ancora attestati durevoli. SIM non è un volo.
+
+Writer concatena al massimo8record per batch e fa un fsync prima di inviare
+ACK cumulativo DURABLE. Producer misura l'età osservata dell'ACK dal proprio
+enqueue,non assume latenza zero. Ogni pump controlla il watchdog anche fra
+i frame20Hz;la pausa del runner mantiene il controllo senza avanzare FDM.
+Coda piena,byte budget superato,ACK tardivo,crash/errore writer fermano la
+run in FAILED. Nessun drop silenzioso del truth-log. Close termina il figlio
+in errore senza svuotare una coda ormai fallita;le evidenze su disco restano.
+
+Startup attende READY massimo5s prima della fisica;drain/finalizzazione worker
+massimo3s dopo la fisica. Questi limiti di lifecycle non sono soglie di
+freshness e non estendono il watchdog100ms dei record pendenti.
+Il risultato del writer in writer-private è candidato:solo il result.json
+alla radice è autorevole,dopo copia esclusiva,checksum/conteggi e fsync.
+Operazioni finali di copia/metadata nel parent sono fuori dal loop temporizzato
+e non ancora protette da watchdog di processo. Directory fsync/power loss e
+I/O kernel in stato non interrompibile restano non qualificati;un SIGKILL
+non garantisce cessazione immediata di una syscall in D-state.
+
+Test di errore iniettano hang,crash e disk-full;non sono distacchi fisici o
+fault sul disco operativo. Nessuna modifica al recorder Blackbox,ai suoi log,
+ai permessi SSH o alle configurazioni dei pannelli. La modalità non va
+promossa a prodotto sulla base di queste sole prove.
+
 ## R1-24 adapter fisico candidato
 
 2026-10-27: `session_jsbsim.py` collega Backend JSBSim1.3.3 al nuovo motore

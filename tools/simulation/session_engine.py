@@ -188,7 +188,8 @@ class SessionEngine:
         self._event("FRAME", total_frames=self.frames, frame=value)
         if self._now() - now > MAX_LAG_NS:
             raise ValueError("frame persistence deadline exceeded")
-        # Persist before exposing. No consumer function or I/O is invoked here.
+        # Sync mode persists; explicit async-test mode only queues. The latter
+        # has a frozen policy/watchdog and must not claim immediate durability.
         for slot in self.slots.values():
             slot.publish(self._manifest["epoch"], packet)
         self.frames += 1
@@ -219,6 +220,8 @@ class SessionEngine:
         if self.state != "RUNNING":
             return False
         try:
+            check = getattr(self.journal, "check", None)
+            if check is not None: check()
             now = self._now()
             if now < self.next_deadline:
                 return False
