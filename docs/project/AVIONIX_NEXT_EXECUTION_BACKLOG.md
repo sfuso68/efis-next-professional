@@ -1,5 +1,11 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-23/AVX-G5-02: P02PARTIAL,session engine indipendente dalle letture dei
+consumer in software,lifecycle/epoch e registro bounded con19test
+nuovi/101totali PASS e7/7CTest PASS. Non collegato al JSBSim o ai pannelli reali: prossimo
+adapter con mapping P01 e prova locale temporizzata,poi P03/P04. Watchdog
+storage,replay,comandi,fanout e qualifica hardware restano aperti. Nessun DONE.
+
 R1-22/AVX-G5-02: P01 ora PARTIAL,candidato ICD sessione/frame/comandi/ACK
 con validatori e vettori offline in config/protocols/sil-session-icd-v1.json
 e docs/protocols/SIL_SESSION_ICD_V1.md.14nuovi test +68regressioni PASS;

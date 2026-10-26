@@ -17,6 +17,13 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-23 / PRJ-004,EMS-002,VER-001: SessionEngine software lifecycle/clock/epoch,
+slot latest-state bounded e journal esclusivo.19nuovi test con clock virtuale
+e fixture contatore +82regressioni PASS,7/7CTest PASS;non fisica o tempo reale qualificati.
+P02PARTIAL,adapter JSBSim/coda comandi/fanout/replay/endurance aperti. Nessun
+nodo o protocollo operativo modificato;stati requisiti invariati. Evidenza
+r1-23-sil-session-engine-20261026,runbook SIL_SESSION_ENGINE_V1.md.
+
 R1-22 / PRJ-004,EMS-002,NAV-003,WX-001/002,VER-001: candidato ICD SIL
 sessione/frame/comandi/ACK e gap map,solo oggetti offline;14 nuovi test e68
 regressioni PASS.17flight/18engine/5airframe,prodotti SIM referenziati,lease

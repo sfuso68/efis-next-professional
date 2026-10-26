@@ -1,10 +1,38 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-26, R1-22 candidato ICD SIL sessione/frame/comandi verificato offline; release permanenti invariate
+Aggiornamento: 2026-10-26, R1-23 motore sessione SIL software con consumer bounded; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-23 — P02 lifecycle clock e latest-state software
+
+Implementata SessionEngine candidate owner-thread:manifest congelato,
+tick10ms/frame20Hz,lifecycle/pausa e nuova epoch alla ripresa conservando
+backend e contatore globale. Slot latest-state immutabili massimo8consumer;
+lock occupato non blocca producer,perdite/overwrite espliciti. Loop senza
+richieste consumer,nessun catch-up,limite100ms di ritardo accumulato. Journal
+test esclusivo append/fsync/hash;successo separato dal log e pubblicato solo
+dopo finalizzazione. Errori dati/clock/backend/storage portano a FAILED.
+
+Verificato SOLO software:19 test nuovi con backend contatore e clock virtuale,
+più82 regressioni locali PASS (101metodi);7/7 CTest mirati PASS.
+CMake configurato,binari nativi preesistenti,nessuna nuova build renderer;
+warning path oggetti MSVC preesistente ancora aperto. Nessuna prova di fisica JSBSim o
+durata reale implicita;backend fidato sincrono e I/O kernel appesa non sono
+interrompibili da questa classe. Nessun hard-real-time/power-cut qualificato.
+Tentativo hardlink Windows negato dal sandbox e fallito chiuso:corretto
+percorso Windows con rename esclusiva,nessun permesso allargato. POSIX
+hardlink non provato in questo incremento;log fallito conservato.
+Hardware in questo incremento:NESSUNO;nessun nodo contattato o modificato.
+
+P02 TODO→PARTIAL. Restano adapter JSBSim/mapping P01,watchdog/storage/replay,
+comandi autenticati/coda/dedup P03,codec/fanout P04 e prove multi-nodo.
+P01 e gate globali invariati;nessun nuovo DONE. R1-20/chiavi/wire/renderer/
+recorder/firmware/power/touch/golden non modificati. Runbook:
+../development/SIL_SESSION_ENGINE_V1.md. Evidenza:
+evidence/r1-23-sil-session-engine-20261026/verification.json.
 
 ## R1-22 — P01 contratto sessione frame comandi e mappa gap
 

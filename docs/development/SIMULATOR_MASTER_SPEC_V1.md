@@ -316,6 +316,10 @@ Errori conservati; niente waiver automatico o cambi golden per rendere verde.
 
 ## 12 Sequenza di sviluppo e passaggio ai moduli finali
 
+Incremento R1-23: P02PARTIAL,owner loop/lifecycle/clock e latest-state
+software descritti in `SIL_SESSION_ENGINE_V1.md`;non ancora adapter JSBSim
+o consumer di rete. Snapshot e guasti sono verificati con fixture di test.
+
 Incremento R1-22: candidato P01 descritto in
 `../protocols/SIL_SESSION_ICD_V1.md`,validatori e vettori offline presenti.
 P01 resta PARTIAL: non è un protocollo live distribuito né review conclusa.
