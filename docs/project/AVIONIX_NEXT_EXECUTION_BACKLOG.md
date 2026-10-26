@@ -1,5 +1,12 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-22/AVX-G5-02: P01 ora PARTIAL,candidato ICD sessione/frame/comandi/ACK
+con validatori e vettori offline in config/protocols/sil-session-icd-v1.json
+e docs/protocols/SIL_SESSION_ICD_V1.md.14nuovi test +68regressioni PASS;
+gap di mapping e review aperti. Primo P02 può svilupparsi su fixture candidate:
+producer indipendente,lifecycle/epoch e coda bounded;nessuna commutazione
+automatica dell'adapter/chiave R1-20 o consumer production. Stati invariati.
+
 R1-21/AVX-G5-02,2026-10-26: consolidata la definizione completa del SIL in
 `../development/SIMULATOR_MASTER_SPEC_V1.md`; piano macchina in
 `../../config/simulation/development-plan-v1.json`.12 pacchetti con dipendenze,

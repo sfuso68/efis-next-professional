@@ -1,10 +1,37 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-26, R1-21 definizione integrata e piano SIL; release permanenti invariate
+Aggiornamento: 2026-10-26, R1-22 candidato ICD SIL sessione/frame/comandi verificato offline; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-22 — P01 contratto sessione frame comandi e mappa gap
+
+Implementato candidato OFFLINE_OBJECTS_ONLY,schema sil-session.v1 e registro
+ICD JSON separato dai protocolli wire congelati. Manifest100/20Hz/node65000,
+sessione/epoch/hash/profilo non validato;frame atomico17flight/18engine/5airframe,
+provenienza/age/unità/null e sette riferimenti prodotto SIM. Comandi a lease
+e tick futuro bounded,controlli normalizzati,OBS/stazione/rotta/eventi solo
+da catalogo congelato;validazione restituisce NOT_APPLIED. ACK correlati
+con stato/motivo/tick coerenti. Parser respinge extra/duplicate/nonfinite.
+Mappa gap DDP/EDP/NAV/airframe/meteo in ../protocols/SIL_SESSION_ICD_V1.md.
+
+Verificato SOLO software:14 test nuovi e68 regressioni locali PASS (82 totali).
+Riconfigurazione CMake e6/6 CTest mirati PASS;nessuna nuova build C++/renderer.
+Warning MSVC preesistente sulla lunghezza path oggetti resta nella configurazione.
+Nessun nuovo producer,pilotaggio o fanout runtime implementato. Lifecycle,
+ordine tra frame,dedup/comandi realmente applicati,autenticazione/capability
+modello e collegamento ai codec restano P02/P03/P04. P01 passa TODO→PARTIAL,
+non DONE: review e mapping semantico aperti. La V1 non accetta dati validati
+del modello né dichiara fisiologicamente corretto un valore solo finito.
+
+Hardware verificato in questo incremento: NESSUNO;nessun nodo contattato.
+R1-20/SSH/renderer/puntatori/recorder invariati;nessuna revisione wire,servizio,
+firmware,parametro,endpoint o permesso esteso. Gate progetto invariati.
+Evidenza: evidence/r1-22-sil-session-contract-20261026/verification.json.
+Prossimo: P02 in ambiente software con questo contratto candidato,senza
+aggirare il protocollo live R1-20 o le review/acceptance necessarie ai nodi.
 
 ## R1-21 — definizione completa del simulatore e sequenza di completamento
 

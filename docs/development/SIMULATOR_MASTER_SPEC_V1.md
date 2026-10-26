@@ -316,6 +316,11 @@ Errori conservati; niente waiver automatico o cambi golden per rendere verde.
 
 ## 12 Sequenza di sviluppo e passaggio ai moduli finali
 
+Incremento R1-22: candidato P01 descritto in
+`../protocols/SIL_SESSION_ICD_V1.md`,validatori e vettori offline presenti.
+P01 resta PARTIAL: non è un protocollo live distribuito né review conclusa.
+Il piano macchina conserva questo stato senza promuovere readiness.
+
 | Pacchetto | Consegna verificabile | Dipende da |
 |---|---|---|
 | P01 | ICD sessione/frame/comandi e test isolamento; mappa gap DDP/EDP/airframe | Specifica V1 |

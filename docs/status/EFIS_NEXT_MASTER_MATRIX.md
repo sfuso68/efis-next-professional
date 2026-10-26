@@ -17,6 +17,13 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-22 / PRJ-004,EMS-002,NAV-003,WX-001/002,VER-001: candidato ICD SIL
+sessione/frame/comandi/ACK e gap map,solo oggetti offline;14 nuovi test e68
+regressioni PASS.17flight/18engine/5airframe,prodotti SIM referenziati,lease
+e campi stretti. P01PARTIAL,non un nuovo wire o executor;runtime/pannelli
+invariati,nessun hardware verificato. Evidenza r1-22-sil-session-contract-20261026.
+Stati requisiti invariati: contratto non prova consumer,fisica o fanout.
+
 R1-21 / PRJ-004,EMS-002,NAV-003,WX-001,WX-002,VER-001: definizione SIL
 integrata e piano verificabile in SIMULATOR_MASTER_SPEC_V1.md e development-plan-v1.json.
 12 pacchetti/14 domini/16 scenari con dipendenze e confini; test strutturali
