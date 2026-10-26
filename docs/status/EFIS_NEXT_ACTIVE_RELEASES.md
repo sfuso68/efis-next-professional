@@ -1,6 +1,6 @@
 # EFIS NEXT — Registro canonico delle release sui nodi
 
-Aggiornamento documentale: 2026-10-25
+Aggiornamento documentale: 2026-10-26
 Stato: DEVELOPMENT / NON-CERT
 
 Questo file è l'unica fonte documentale autorizzata per rispondere alla domanda
@@ -19,6 +19,13 @@ non possono sovrascrivere questo registro.
   rollback non valgono come prova di attivazione.
 
 ## Registro corrente
+
+R1-18 osservato UTC2026-10-26T13:35:11Z: stesso pointer PFD e binario
+7051a47/SHA a64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854.
+Sessione transitoria SIM/replay virata, lease900s e backstop930s; ripristino
+normale verificato prima di riarmare. Recorder1419 invariato/power0x0.
+Non inferire che la sessione sia ancora attiva oltre la lease. Nessuna nuova
+release permanente o cambio MFD/EMS/Blackbox; touch PFD ancora non accettato.
 
 Osservazione R1-17 del2026-10-25: PFD.45 ha eseguito la STESSA release
 7051a47 in una sessione temporanea PrivateNetwork/SIM node65000 da unità

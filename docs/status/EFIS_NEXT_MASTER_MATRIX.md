@@ -17,6 +17,14 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-18, 2026-10-26 / PRJ-004, NAV-003, VER-001: --realtime con deadline
+prima dello step e fail oltre100ms; 51 test Windows/59 serverha PASS, prova
+fisica v1 60.006s/1201frame/max lateness3.589ms. Replay di questa virata
+sul PFD reale7051a47 in namespace SIM, 20Hz e restore verificato; non stream
+live né EMS/meteo/UI integrati. Touch kernel11 coppie PASS ma MENU FAIL
+segnalato: acceptance HMI aperta. Fonte: evidence/r1-18-realtime-pfd-20261026.
+Stati delle righe invariati: questa nota non chiude integrazione/power/golden.
+
 R1-17 / PRJ-004, NAV-003 e VER-001: PFD reale.45 collegato al replay SIM
 nominale in banco transitorio PrivateNetwork/loopback, binario7051a47 e
 recorder invariati, restore service e stopfeed provati; ARM64 6test e CTest5/5

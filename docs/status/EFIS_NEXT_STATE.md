@@ -1,10 +1,70 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-25, R1-17 prova temporanea SIL sul PFD .45 con ripristino; release permanenti invariate
+Aggiornamento: 2026-10-26, R1-18 temporizzazione fisica JSBSim e nuovo replay PFD; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-18 — temporizzazione fisica e virata sul pannello, integrazione ancora PARZIALE
+
+Richiesta: sviluppo del simulatore e avvio con capacità reali. Corretto il
+percorso --realtime: attesa su deadline monotona PRIMA dello step fisico,
+arresto se ritardo >100 ms, timing nel manifesto e verifica fail-closed.
+Il launcher serverha accetta ora --realtime esplicito; nessun servizio globale.
+SOFTWARE: 51 test Windows e 59 serverha, inclusi sei test con JSBSim reale,
+PASS sulla copia finale r118-world-source-v2. Overrun iniettato non produce
+manifesto COMPLETE; mutazioni di timing respinte. Non è qualifica hard-real-time.
+
+ESECUZIONE SERVER reale: copia v1, C172P reference JSBSim1.3.3, virata con
+vento, osservazioni meteo e radio fittizie; 60.006 s/6001 step/1201 frame,
+massimo ritardo3.589 ms, verificatore replay PASS. V1 preservata e legata
+all'archivio; v2 aggiunge guardia clock nonfinito/test e launcher opzionale,
+ha regressioni native PASS ma non è la sorgente della misura temporale v1.
+Dataset include perdita GNSS20–30s e fault radio/meteo dichiarati: non nominale.
+
+HARDWARE PFD.45: medesimo binario7051a47/SHA originale, nuovo replay verificato
+r118-turn-v1, node65000/loopback49152 in namespace solo lo. Preflight ARM64,
+stop-feed/ripresa originale e servizio del timer rollback PASS; recorder PID1419
+invariato, power0x0. Sessione riarmata UTC2026-10-26T13:35:11Z per900s,
+timer di backstop930s; NON deployment permanente. Ultima finestra osservata
+DDP20Hz/accepted2706/reject0/gap0/socket_errors0 e60Hz rendering. La cattura
+durante GNSS loss mostra SVS DATA INVALID; seconda cattura mostra terreno
+nuovamente disponibile: non spacciare il vuoto come terreno.
+Resta startup stall1680ms; non qualifica endurance o frametime massimo.
+
+NON COMPLETO: flusso fisico live server→pannelli, pilotaggio interattivo,
+EDP/EMS e airframe, prodotti meteo sui consumer grafici, identità NAV completa,
+profili Asso/Pioneer/Rotax validati. PFD è un REPLAY ciclico di60s riemesso per
+15min, non sessione live; server ha eseguito una prova temporizzata finita.
+Touch/MENU ancora FAIL segnalato, pur con11 tocchi kernel validi; nuova prova
+con mouse non ricevuta. MFD/Blackbox power-gated, nessuna modifica. Nessun
+comando Pixhawk/servi, modifica firmware, main o golden; nessun nuovo DONE.
+Evidenza: evidence/r1-18-realtime-pfd-20261026/verification.json.
+
+## Follow-up 2026-10-26 — touch PFD non accettato
+
+Operatore: schermo visibile, touch non risponde. Acceptance touch/MENU FAIL
+segnalata; causa NON ancora identificata, nessun DONE. Diagnostica SSH reale
+read-only: USB QDtech MPI7003 0484:5750 presente, touchscreen riconosciuto da
+libinput su seat0/event4 (event5 è il pulsante power), calibrazione identity.
+Sessione Wayland attiva; configurazione labwc associa questo dispositivo a
+HDMI-A-1, attivo 1024x600. Presenza/enumerazione non provano eventi fisici
+né consegna all'applicazione. Successivo log fornito dall'operatore: 11 coppie
+TOUCH_DOWN/TOUCH_UP, senza contatti rimasti aperti nel campione. I dieci tocchi
+successivi al primo sono a x=785–807/y=13–32 circa, compatibili con MENU nella
+cattura reale 1024x600 (rettangolo x=750–826/y=12–46). Percorso fisico fino
+a libinput verificato; risposta MENU ancora FAIL, non attribuita a guasto USB.
+Labwc ha aperto event4, configura mouseEmulation=yes; Qt usa Wayland. Questa
+configurazione osservata non prova la consegna degli eventi al client Qt.
+Restano aperti focus/consegna compositore-client e gestione click dell'app;
+nessuna correzione cieca di calibrazione o riavvio eseguita.
+PFD normale attivo PID 1618997, bench screen/feed inattivi, power 0x0.
+Journal root conferma scadenza naturale RuntimeMax il 25 ottobre 01:43:36
+locale: risultato timeout atteso del limite di banco; oggi app normale attiva.
+Journal utente storico non disponibile in questa interrogazione: non dedurre
+da questo controllo il tempo esatto di ripresa della UI normale. Nessuna
+riattivazione replay, modifica software/configurazione, riavvio o reset USB.
 
 ## R1-17 — PFD reale collegato al replay, SOLO banco temporaneo e parziale
 

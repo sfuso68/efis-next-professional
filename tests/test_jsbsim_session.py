@@ -50,6 +50,60 @@ def fixture(directory, mutate=None):
 
 
 class SessionTests(unittest.TestCase):
+    def test_realtime_pacing_waits_before_tick_and_records_timing(self):
+        now = [10.0]
+        def sleep(delay):
+            now[0] += delay
+        pacer = s.RealtimePacer(lambda: now[0], sleep)
+        for tick in range(101):
+            pacer.wait(tick)
+        report = pacer.report()
+        self.assertEqual(report["ticks"], 101)
+        self.assertEqual(report["elapsed_seconds"], 1)
+        self.assertEqual(report["maximum_lateness_ms"], 0)
+
+    def test_realtime_stall_and_discontinuity_fail_closed(self):
+        now = [0.0]
+        pacer = s.RealtimePacer(lambda: now[0], lambda delay: None)
+        pacer.wait(0)
+        now[0] = .2
+        with self.assertRaisesRegex(ValueError, "deadline exceeded"):
+            pacer.wait(1)
+        self.assertEqual(pacer.last_tick, 0)
+        with self.assertRaisesRegex(ValueError, "discontinuity"):
+            pacer.wait(2)
+
+    def test_realtime_timing_manifest_mutations_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp)
+            fixture(p)
+            manifest = json.loads((p / "manifest.json").read_text())
+            good = {"mode": "MONOTONIC_FIXED_STEP", "ticks": 101,
+                    "elapsed_seconds": 1.01, "maximum_lateness_ms": 2,
+                    "lateness_limit_ms": 100, "overrun_policy": "STOP_NO_CATCHUP"}
+            for key, value in (("ticks", 100), ("maximum_lateness_ms", 101),
+                               ("elapsed_seconds", .99), ("elapsed_seconds", True),
+                               ("overrun_policy", "CATCHUP")):
+                manifest["realtime_timing"] = dict(good, **{key: value})
+                (p / "manifest.json").write_text(json.dumps(manifest))
+                with self.subTest(key=key), self.assertRaises(ValueError):
+                    s.verify_session(p)
+            manifest["realtime_timing"] = good
+            (p / "manifest.json").write_text(json.dumps(manifest))
+            self.assertEqual(s.verify_session(p)["realtime_timing"], good)
+
+    def test_realtime_failure_never_completes_and_nonfinite_clock_rejected(self):
+        with self.assertRaises(ValueError):
+            s.RealtimePacer(lambda: math.nan)
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "overrun"
+            with patch.object(s, "Backend", return_value=backend()), \
+                    patch.object(s.RealtimePacer, "wait", side_effect=ValueError("deadline exceeded")):
+                with self.assertRaises(ValueError):
+                    s.run_session(p, seconds=1, realtime=True)
+            self.assertFalse((p / "manifest.json").exists())
+            self.assertEqual(json.loads((p / "failure.json").read_text())["status"], "FAILED")
+
     def test_sample_conversion_and_unavailable(self):
         self.assertEqual(s.sample(212, "degC", "x", None)["value"], 100)
         for value in (None, math.nan, math.inf):

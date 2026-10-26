@@ -17,6 +17,7 @@ SCHEMA = "fuso-avionics.physics-sil.v1"
 VERSION = "1.3.3"
 DT = 0.01
 OUTPUT_HZ = 20
+MAX_REALTIME_LATENESS_S = 0.1
 SCENARIOS = ("cruise", "turn", "engine-out", "sensor-loss")
 FLIGHT = {
     "latitude_deg": ("position/lat-geod-deg", "deg", 1),
@@ -196,6 +197,43 @@ def write_json(path, value):
         stream.write("\n")
 
 
+class RealtimePacer:
+    """Fixed monotonic deadlines; never silently fast-forward after a stall."""
+    def __init__(self, clock=None, sleep=None):
+        self.clock = clock or time.monotonic
+        self.sleep = sleep or time.sleep
+        self.start = self.clock()
+        if not math.isfinite(self.start):
+            raise ValueError("nonfinite monotonic clock")
+        self.maximum_lateness_s = 0.0
+        self.last_tick = -1
+
+    def wait(self, tick):
+        if type(tick) is not int or tick != self.last_tick + 1:
+            raise ValueError("realtime tick discontinuity")
+        deadline = self.start + tick * DT
+        now = self.clock()
+        if not math.isfinite(now):
+            raise ValueError("nonfinite monotonic clock")
+        while now < deadline:
+            self.sleep(deadline - now)
+            now = self.clock()
+            if not math.isfinite(now):
+                raise ValueError("nonfinite monotonic clock")
+        lateness = now - deadline
+        self.maximum_lateness_s = max(self.maximum_lateness_s, lateness)
+        if lateness > MAX_REALTIME_LATENESS_S:
+            raise ValueError("realtime deadline exceeded; stop instead of catchup")
+        self.last_tick = tick
+
+    def report(self):
+        return {"mode": "MONOTONIC_FIXED_STEP", "ticks": self.last_tick + 1,
+                "maximum_lateness_ms": self.maximum_lateness_s * 1000,
+                "lateness_limit_ms": MAX_REALTIME_LATENESS_S * 1000,
+                "elapsed_seconds": self.clock() - self.start,
+                "overrun_policy": "STOP_NO_CATCHUP"}
+
+
 def run_session(directory, scenario="cruise", seconds=60, session_id=None, realtime=False, world_config=None):
     if scenario not in SCENARIOS or not isinstance(seconds, int) or not 1 <= seconds <= 3600:
         raise ValueError("scenario/duration invalid")
@@ -208,11 +246,13 @@ def run_session(directory, scenario="cruise", seconds=60, session_id=None, realt
     directory.mkdir(parents=False, exist_ok=False)  # never replace a prior session
     try:
         backend = Backend(world_config) if world_config is not None else Backend()
-        start = time.monotonic()
+        pacer = RealtimePacer() if realtime else None
         frames = 0
         digest = hashlib.sha256()
         with (directory / "frames.jsonl").open("xb") as stream:
             for tick in range(seconds * 100 + 1):
+                if pacer:
+                    pacer.wait(tick)
                 if tick:
                     backend.step(scenario)
                 if tick % 5 == 0:
@@ -221,10 +261,6 @@ def run_session(directory, scenario="cruise", seconds=60, session_id=None, realt
                     stream.write(line)
                     digest.update(line)
                     frames += 1
-                if realtime:
-                    delay = start + tick * DT - time.monotonic()
-                    if delay > 0:
-                        time.sleep(delay)
             stream.flush()
             os.fsync(stream.fileno())
         manifest = {"schema": SCHEMA, "status": "COMPLETE_OFFLINE_REFERENCE",
@@ -235,6 +271,9 @@ def run_session(directory, scenario="cruise", seconds=60, session_id=None, realt
                     "frames_sha256": digest.hexdigest(), "model_tree": backend.model_digest,
                     "initial_trim": backend.initial, "network_publisher": False,
                     "efis_nodes_connected": False}
+        if pacer:
+            # Timing evidence, not evidence of a connected display or hard real time.
+            manifest["realtime_timing"] = pacer.report()
         if world_config is not None:
             manifest["world_config"] = world_config
             manifest["world_config_sha256"] = config_digest(world_config)
@@ -288,6 +327,20 @@ def verify_session(directory):
             or not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", manifest["session_id"])):
         raise ValueError("manifest contract")
     digest, count = hashlib.sha256(), 0
+    if "realtime_timing" in manifest:
+        timing = manifest["realtime_timing"]
+        if (not isinstance(timing, dict) or timing.get("mode") != "MONOTONIC_FIXED_STEP"
+                or type(timing.get("ticks")) is not int
+                or timing["ticks"] != manifest["duration_seconds"] * 100 + 1
+                or timing.get("overrun_policy") != "STOP_NO_CATCHUP"
+                or timing.get("lateness_limit_ms") != MAX_REALTIME_LATENESS_S * 1000):
+            raise ValueError("realtime timing contract")
+        for key in ("maximum_lateness_ms", "elapsed_seconds"):
+            if type(timing.get(key)) not in (int, float) or not math.isfinite(timing[key]):
+                raise ValueError("nonfinite realtime timing")
+        if (not 0 <= timing["maximum_lateness_ms"] <= timing["lateness_limit_ms"]
+                or timing["elapsed_seconds"] < manifest["duration_seconds"]):
+            raise ValueError("realtime timing acceptance")
     world = None
     if "world_config" in manifest:
         if config_digest(manifest["world_config"]) != manifest.get("world_config_sha256"):

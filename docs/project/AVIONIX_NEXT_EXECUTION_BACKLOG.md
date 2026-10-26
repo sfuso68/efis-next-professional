@@ -1,5 +1,12 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+Incremento AVX-G5-02 R1-18 del2026-10-26: deadline --realtime controllata;
+51 test Windows/59 serverha PASS, motore fisico C172P eseguito60s con vento,
+virata e fault GNSS/radio/meteo. Replay sul PFD.45 con restore, non nuova
+release. Ancora IN_PROGRESS: stream live PFD/MFD/EMS, controlli pilota,
+EDP/airframe, meteo nella GUI, modelli reali validati e gate power/golden.
+Touch kernel11 coppie PASS, MENU FAIL segnalato; non acceptance HMI.
+
 Aggiornamento: 2026-10-24 (aggiunta requisito simulatore realistico; storico conservato)
 Stato: controllato da WS0/G0; nessuna attività hardware autorizzata da questo documento.
 

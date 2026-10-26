@@ -3,6 +3,39 @@
 2026-10-25. Richiesta: collegare la sessione serverha ai veri EFIS NEXT.
 Stato R1-15 storico: PARZIALE, nessun pannello attivato in quel blocco.
 
+## R1-18 — temporizzazione verificata, NON ancora collegamento live
+
+2026-10-26: --realtime usa deadline monotona prima dello step e fallisce se
+il ritardo supera100ms. Manifesto con timing e verificatore fail-closed,
+failure.json senza COMPLETE in caso di arresto. Non hard real time certificato.
+Launcher serverha, dalla copia di sorgente approvata e isolata:
+
+```sh
+sh tools/simulation/run_serverha_world_sil.sh turn NOME_SESSIONE_NUOVO 60 --realtime
+```
+
+Non sovrascrive sessioni, nessuna rete nel container. Prova v1 60.006s,
+6001step/1201frame/maxlateness3.589ms; copia finale v2 59 test nativi PASS.
+Il nuovo replay sul PFD include GNSS loss20–30s: SVS invalido in quella
+finestra è degradazione attesa. Non trasporta EMS/airframe/prodotti meteo.
+Tocchi kernel ricevuti ma MENU non risponde secondo operatore: gate aperto.
+
+Launcher PFD PINNED, NON generico: deploy/scripts/run_pfd_sil_bench_r118.sh,
+sessione e SHA fissi, stesso binario e tool R1-17. Copia sotto
+/home/efis/efis-sil-panel-r117, guardia root-owned /run/efis-sil-r118,
+timer efis-sil-r118-restore930s e unità screen/feed RuntimeMax900s.
+Stopfeed e servizio rollback verificati; namespace solo lo, recorder invariato.
+
+```sh
+bash /home/efis/efis-sil-panel-r117/run_pfd_sil_bench_r118.sh --preflight
+bash /home/efis/efis-sil-panel-r117/run_pfd_sil_bench_r118.sh --activate
+bash /home/efis/efis-sil-panel-r117/run_pfd_sil_bench_r118.sh --restore
+```
+
+Ultimo avvio UTC2026-10-26T13:35:11Z, durata15min: non stato permanente.
+Nessun flusso live dal server, comando attuatori o approvazione al volo.
+Evidenza: ../status/evidence/r1-18-realtime-pfd-20261026/verification.json.
+
 ## R1-17 — prova PFD .45 isolata e reversibile
 
 Su richiesta esplicita del proprietario, verificato il collegamento parziale
