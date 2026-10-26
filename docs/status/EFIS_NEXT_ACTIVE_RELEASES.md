@@ -20,6 +20,12 @@ non possono sovrascrivere questo registro.
 
 ## Registro corrente
 
+R1-19, UTC2026-10-26T21:19:42Z: prova fisica LIVE terminata, PFD normale
+nuovamente attivo PID1743673, recorder1419 invariato/0x0. Stesso binario e
+pointer7051a47; solo adapter di banco r119-build-v4 aggiunto in cartella
+separata, NON release prodotto. Doppia finestra live da60s verificata, nessuna
+modifica MFD/EMS/Blackbox. Stato grafico/touch e qualificazione restano aperti.
+
 R1-18 osservato UTC2026-10-26T13:35:11Z: stesso pointer PFD e binario
 7051a47/SHA a64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854.
 Sessione transitoria SIM/replay virata, lease900s e backstop930s; ripristino

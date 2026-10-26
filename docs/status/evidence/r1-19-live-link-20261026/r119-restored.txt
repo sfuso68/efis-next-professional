@@ -1,0 +1,24 @@
+Mon 26 Oct 21:12:17 UTC 2026
+MainPID=1742951
+ActiveState=active
+
+MainPID=1419
+ActiveState=active
+MainPID=0
+ActiveState=inactive
+
+MainPID=0
+ActiveState=inactive
+Oct 26 22:11:16 efis-pfd-01 env[1742815]: 2026-10-26T22:11:16.756 event=render_health presentation_hz= 51.1 presentation_interval_ms= 19.58 snapshot_hz= 47.5 sequence= 1988 ddp_state= LIVE ddp_hz= 20.2 ddp_accepted= 880 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 22:11:21 efis-pfd-01 env[1742815]: 2026-10-26T22:11:21.758 event=render_health presentation_hz= 60.2 presentation_interval_ms= 16.61 snapshot_hz= 50.0 sequence= 2238 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 980 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 22:11:26 efis-pfd-01 env[1742815]: 2026-10-26T22:11:26.760 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.67 snapshot_hz= 50.0 sequence= 2488 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 1080 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 22:11:31 efis-pfd-01 env[1742815]: 2026-10-26T22:11:31.755 event=render_health presentation_hz= 60.1 presentation_interval_ms= 16.65 snapshot_hz= 50.1 sequence= 2738 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 1180 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 22:11:32 efis-pfd-01 systemd[1]: Stopping efis-sil-panel-screen.service - [systemd-run] /usr/bin/env -i HOME=/home/efis USER=efis PATH=/usr/local/bin:/usr/bin:/bin XDG_RUNTIME_DIR=/run/user/1000 WAYLAND_DISPLAY=wayland-0 DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus QT_QPA_PLATFORM=wayland QT_QPA_PLATFORMTHEME=qt6ct EFIS_KIOSK=1 XDG_CONFIG_HOME=/home/efis/efis-sil-panel-r117/work-v1/settings XDG_CACHE_HOME=/home/efis/efis-sil-panel-r117/work-v1/cache EFIS_AIRCRAFT_PROFILE=/home/efis/efis-sil-panel-r117/panel-profile.json EFIS_DDP_BIND_ADDRESS=127.0.0.1 EFIS_DDP_LISTEN_PORT=49152 EFIS_DDP_SOURCE_NODE=65000 EFIS_SIMULATION_ROLE=DISABLED EFIS_START_PAGE=PFD EFIS_TERRAIN_GPU_ROOT=/home/efis/efis-next/data/terrain/gpu EFIS_TERRAIN_ACTIVE=/home/efis/efis-next/data/terrain/active-package.json EFIS_IMAGERY_TEXTURE_ROOT=/home/efis/efis-next/output/imagery/active-textures EFIS_IMAGERY_ACTIVE_PACKAGE=/home/efis/efis-next/output/imagery/active-package.json EFIS_WEATHER_SIMULATION_DIR=/home/efis/efis-sil-panel-r117/work-v1/cache /home/efis/efis-next-releases/pfdrec-7051a47-retention-v1/bin/efis-pfd-qt...
+Oct 26 22:11:33 efis-pfd-01 systemd[1]: efis-sil-panel-screen.service: Deactivated successfully.
+Oct 26 22:11:33 efis-pfd-01 systemd[1]: Stopped efis-sil-panel-screen.service - [systemd-run] /usr/bin/env -i HOME=/home/efis USER=efis PATH=/usr/local/bin:/usr/bin:/bin XDG_RUNTIME_DIR=/run/user/1000 WAYLAND_DISPLAY=wayland-0 DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus QT_QPA_PLATFORM=wayland QT_QPA_PLATFORMTHEME=qt6ct EFIS_KIOSK=1 XDG_CONFIG_HOME=/home/efis/efis-sil-panel-r117/work-v1/settings XDG_CACHE_HOME=/home/efis/efis-sil-panel-r117/work-v1/cache EFIS_AIRCRAFT_PROFILE=/home/efis/efis-sil-panel-r117/panel-profile.json EFIS_DDP_BIND_ADDRESS=127.0.0.1 EFIS_DDP_LISTEN_PORT=49152 EFIS_DDP_SOURCE_NODE=65000 EFIS_SIMULATION_ROLE=DISABLED EFIS_START_PAGE=PFD EFIS_TERRAIN_GPU_ROOT=/home/efis/efis-next/data/terrain/gpu EFIS_TERRAIN_ACTIVE=/home/efis/efis-next/data/terrain/active-package.json EFIS_IMAGERY_TEXTURE_ROOT=/home/efis/efis-next/output/imagery/active-textures EFIS_IMAGERY_ACTIVE_PACKAGE=/home/efis/efis-next/output/imagery/active-package.json EFIS_WEATHER_SIMULATION_DIR=/home/efis/efis-sil-panel-r117/work-v1/cache /home/efis/efis-next-releases/pfdrec-7051a47-retention-v1/bin/efis-pfd-qt.
+Oct 26 22:11:33 efis-pfd-01 systemd[1]: efis-sil-panel-screen.service: Consumed 17.616s CPU time.
+Result=success
+ExecMainStatus=0
+throttled=0x0
+/home/efis/efis-next-releases/pfdrec-7051a47-retention-v1
+a64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854  /home/efis/efis-next-current/bin/efis-pfd-qt

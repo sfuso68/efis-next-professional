@@ -1,0 +1,20 @@
+{
+  "schema": "fuso-avionics.sil-live.v1",
+  "status": "PASS",
+  "simulated": true,
+  "flight_approval": false,
+  "session_directory": "live-panel-r119-v4",
+  "frames_forwarded": 1201,
+  "mode": "LOOPBACK",
+  "panel_result": {
+    "flight_approval": false,
+    "frames": 1201,
+    "kind": "COMPLETE",
+    "maximum_rtt_ms": 103.911947,
+    "mode": "LIVE_LOOPBACK",
+    "schema": "fuso-avionics.sil-live.v1",
+    "simulated": true
+  },
+  "source_session_id": "a027e263ba954f0c85812191d1ac4761",
+  "elapsed_seconds": 61.42200000002049
+}

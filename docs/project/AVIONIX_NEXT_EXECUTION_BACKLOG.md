@@ -1,5 +1,14 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-19/AVX-G5-02,2026-10-26: live fisico verso PFD verificato su banco con
+nonce e timeout, non più solo replay. Stati IN_PROGRESS invariati. Priorità:
+1) accesso SIL dedicato serverha→PFD, previa autorizzazione, eliminare relay
+Windows;2) producer continuo/fanout e pilotaggio virtuale;3) EDP/airframe/
+meteo e NAV sui consumer reali;4) nominali/fault/endurance multi-display,
+sempre subordinati a power/golden e senza comandi hardware. Touch PFD aperto.
+Prove:57 Windows/67 serverha/10 ARM64; live60s/1201frame e restore reali;
+fallimento deadline intermedio conservato. Non confondere con prodotto finito.
+
 Incremento AVX-G5-02 R1-18 del2026-10-26: deadline --realtime controllata;
 51 test Windows/59 serverha PASS, motore fisico C172P eseguito60s con vento,
 virata e fault GNSS/radio/meteo. Replay sul PFD.45 con restore, non nuova

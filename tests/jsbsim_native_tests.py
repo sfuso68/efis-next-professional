@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+import io
 
 from tools.simulation import jsbsim_session as s
 
@@ -92,6 +93,32 @@ class NativeTests(unittest.TestCase):
         frames.write_text(text.replace('"simulated":true', '"simulated":false', 1))
         with self.assertRaises(ValueError):
             s.verify_session(p)
+
+    def test_09_live_exchange_uses_actual_fdm_and_source_does_not_claim_display(self):
+        from tools.simulation.jsbsim_live import Exchange
+        from tests.test_sil_world import config
+        requests = iter(json.dumps({"schema": "fuso-avionics.sil-live.v1",
+                                    "sequence": i, "nonce": f"{i:032x}"}) for i in range(21))
+        output = io.StringIO()
+        world = config()
+        path = self.root / "live-one-second"
+        result = s.run_session(path, seconds=1, world_config=world, realtime=True,
+                               exchange=Exchange(world, output, lambda: next(requests)))
+        self.assertIsNone(result["efis_nodes_connected"])
+        self.assertEqual(result["live_exchange"]["requests"], 21)
+        self.assertEqual(len(output.getvalue().splitlines()), 22)
+        self.assertEqual(s.verify_session(path)["frames"], 21)
+
+    def test_10_partial_request_times_out_without_newline(self):
+        from tools.simulation.jsbsim_live import bounded_line
+        read_fd, write_fd = os.pipe()
+        try:
+            os.write(write_fd, b"{")
+            with os.fdopen(read_fd, "rb", buffering=0) as stream:
+                with self.assertRaisesRegex(ValueError, "timeout"):
+                    bounded_line(stream, .02)
+        finally:
+            os.close(write_fd)
 
 
 if __name__ == "__main__":

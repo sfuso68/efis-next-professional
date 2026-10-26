@@ -1,10 +1,58 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-26, R1-18 temporizzazione fisica JSBSim e nuovo replay PFD; release permanenti invariate
+Aggiornamento: 2026-10-26, R1-19 collegamento fisico LIVE serverha→PFD di banco; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-19 — sessione fisica LIVE sul PFD, non più soltanto replay
+
+Implementati source STDIO JSBSim, bridge su due pipe SSH autenticate e adapter
+ARM64 challenge/nonce128bit. Una richiesta per frame viene controllata prima
+dello step; source100Hz/output20Hz, frame con identità/sessione/clock SIM.
+Adapter respinge nonce/clock/SIM errati, dati tardivi e replay accelerati;
+RTT<=250ms dal FreshnessBudget, intero RTT conservato nell'età pubblicata.
+Solo DDP canonico node65000 a127.0.0.1:49152 nel namespace privato del PFD.
+Nessun IP forwarding, NAT, porta LAN nuova o percorso Pixhawk/CAN/servi.
+
+SOFTWARE:57 metodi Windows PASS;67 serverha PASS, inclusi10 test nativi
+JSBSim (nuova prova live1s e timeout riga parziale). ARM64 build e10 test
+adapter PASS (4 live,6 replay). MSVC build e CTest mirato registrati
+nell'evidence bundle; gate golden/UI invariati. R1-18 aveva8 test nativi,
+non6: corretto metadato, totale59 invariato. Tentativo compile v1 const
+sample accessor fallito, corretto senza mutare il core; tentativi preservati.
+Warning GCC ddp_v2.cpp preesistente e warning path MSVC non risolti/waived.
+
+HARDWARE PFD.45: sessione LIVE60s v1 passata con1201frame e RTTmax141.451ms;
+successivo check ha fallito dopo3frame per deadline FDM>100ms: conservato,
+nessuna soglia aumentata. Ottimizzata lettura native da poll/read per byte
+a blocchi4096 limitati; non prova che fosse l'unica causa del jitter.
+Versione finale adapter v4: build/test10 PASS, check3s/61frame RTTmax55.951ms,
+ulteriore sessione LIVE60s/1201frame PASS. Source fisico60.0219s/maxlateness
+57.395ms; bridge RTTmax103.912ms. Log reale GUI20Hz/accepted1186/reject0/gap0/
+socket_errors0 nell'ultima finestra;1201 attestati dal bridge, NON tutti
+attestati come renderizzati. Marker SIM e SVS invalid durante fault GNSS
+in cattura reale; nessuna nuova acceptance grafica o touch.
+
+Source finale: serverha/r119-source-v3; adapter finale PFD/r119-build-v4,
+SHA7d1c5880e6e06d69f71b6c3fe26a8f67860a65fe2259f661c49ad960066f6167.
+Stesso renderer7051a47, screen/feed140s, timer root180s. Fine feed ripristina
+automaticamente PFD normale: osservato UTC2026-10-26T21:19:42Z PID1743673,
+recorder1419 invariato/power0x0. Nessun bench lasciato permanente o release
+sostituita. Source attesta fisica, non UI: nuovo manifesto connessione=null;
+booleano false nel primo manifesto live-v1 era metadato legacy, non misura.
+Conferma collegamento solo tramite bridge-report e log separati del display.
+
+RIMANE APERTO: dipendenza da Windows/SSH relay e jitter non qualificato,
+producer continuo indipendente dai consumer, pilotaggio interattivo, fanout
+simultaneo PFD/MFD/EMS, EDP/airframe/meteo/identità NAV nella GUI, modelli reali
+validati, power/golden/endurance e touch PFD. Accesso diretto serverha→PFD
+non già autorizzato con chiavi presenti; nessuna chiave copiata o permesso
+esteso. Chiesta autorizzazione per nuova chiave dedicata limitata al solo SIL.
+Nessun DONE/merge/main/firmware/attuatore/volo autorizzato da questo lavoro.
+Runbook: ../development/SIL_LIVE_BENCH_V1.md.
+Evidenza: evidence/r1-19-live-link-20261026/verification.json.
 
 ## R1-18 — temporizzazione fisica e virata sul pannello, integrazione ancora PARZIALE
 
@@ -12,7 +60,8 @@ Richiesta: sviluppo del simulatore e avvio con capacità reali. Corretto il
 percorso --realtime: attesa su deadline monotona PRIMA dello step fisico,
 arresto se ritardo >100 ms, timing nel manifesto e verifica fail-closed.
 Il launcher serverha accetta ora --realtime esplicito; nessun servizio globale.
-SOFTWARE: 51 test Windows e 59 serverha, inclusi sei test con JSBSim reale,
+SOFTWARE: 51 test Windows e 59 serverha, inclusi otto test nativi JSBSim
+(conteggio corretto in R1-19; totale59 invariato),
 PASS sulla copia finale r118-world-source-v2. Overrun iniettato non produce
 manifesto COMPLETE; mutazioni di timing respinte. Non è qualifica hard-real-time.
 

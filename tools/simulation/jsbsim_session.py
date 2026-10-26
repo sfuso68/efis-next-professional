@@ -234,7 +234,8 @@ class RealtimePacer:
                 "overrun_policy": "STOP_NO_CATCHUP"}
 
 
-def run_session(directory, scenario="cruise", seconds=60, session_id=None, realtime=False, world_config=None):
+def run_session(directory, scenario="cruise", seconds=60, session_id=None, realtime=False, world_config=None,
+                exchange=None):
     if scenario not in SCENARIOS or not isinstance(seconds, int) or not 1 <= seconds <= 3600:
         raise ValueError("scenario/duration invalid")
     session_id = session_id or uuid.uuid4().hex
@@ -242,15 +243,23 @@ def run_session(directory, scenario="cruise", seconds=60, session_id=None, realt
         raise ValueError("session identifier invalid")
     if world_config is not None:
         config_digest(world_config)  # validate before creating output
+    if exchange is not None and (not realtime or world_config is None):
+        raise ValueError("live exchange requires realtime world")
     directory = Path(directory)
     directory.mkdir(parents=False, exist_ok=False)  # never replace a prior session
     try:
         backend = Backend(world_config) if world_config is not None else Backend()
-        pacer = RealtimePacer() if realtime else None
+        if exchange is not None:
+            exchange.start(session_id, seconds)
+        pacer = None
         frames = 0
         digest = hashlib.sha256()
         with (directory / "frames.jsonl").open("xb") as stream:
             for tick in range(seconds * 100 + 1):
+                if exchange is not None and tick % 5 == 0:
+                    exchange.request(tick // 5)
+                if realtime and pacer is None:
+                    pacer = RealtimePacer()
                 if pacer:
                     pacer.wait(tick)
                 if tick:
@@ -261,6 +270,8 @@ def run_session(directory, scenario="cruise", seconds=60, session_id=None, realt
                     stream.write(line)
                     digest.update(line)
                     frames += 1
+                    if exchange is not None:
+                        exchange.send(frame)
             stream.flush()
             os.fsync(stream.fileno())
         manifest = {"schema": SCHEMA, "status": "COMPLETE_OFFLINE_REFERENCE",
@@ -274,6 +285,12 @@ def run_session(directory, scenario="cruise", seconds=60, session_id=None, realt
         if pacer:
             # Timing evidence, not evidence of a connected display or hard real time.
             manifest["realtime_timing"] = pacer.report()
+        if exchange is not None:
+            # Only the separate receiver can attest to a connected display.
+            manifest["efis_nodes_connected"] = None
+            manifest["live_exchange"] = {"protocol": "fuso-avionics.sil-live.v1",
+                                         "requests": frames, "transport": "STDIO_CHALLENGE",
+                                         "display_acceptance": "NOT_IMPLIED"}
         if world_config is not None:
             manifest["world_config"] = world_config
             manifest["world_config_sha256"] = config_digest(world_config)

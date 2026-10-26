@@ -6,7 +6,7 @@
   "software": {
     "windows_tests": 51,
     "serverha_tests": 59,
-    "native_jsbsim_tests_included": 6,
+    "native_jsbsim_tests_included": 8,
     "result": "PASS",
     "final_source_archive_sha256": "8cb0acdb4b8fab4a63a919f5580882fd38de404c98c7053f964d0d2357ff1a12"
   },

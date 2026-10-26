@@ -17,6 +17,14 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-19 / PRJ-004, NAV-003, VER-001: collegamento fisico LIVE serverha→bridge
+Windows→adapter ARM64→DDP loopback PFD, nonce/timeout/età RTT e SIM vincolati.
+57 test Windows/67 serverha/10 ARM64 PASS; sessione live finale60s/1201frame,
+RTTmax103.912ms, ultimo log UI accepted1186/reject0/gap0. Restore reale e
+recorder invariato. Un tentativo intermedio deadline FDM FAIL conservato;
+non qualifica jitter/endurance. Evidenza r1-19-live-link-20261026. Pipeline
+ancora sperimentale, non EMS/meteo/fanout o modelli validati; stati invariati.
+
 R1-18, 2026-10-26 / PRJ-004, NAV-003, VER-001: --realtime con deadline
 prima dello step e fail oltre100ms; 51 test Windows/59 serverha PASS, prova
 fisica v1 60.006s/1201frame/max lateness3.589ms. Replay di questa virata

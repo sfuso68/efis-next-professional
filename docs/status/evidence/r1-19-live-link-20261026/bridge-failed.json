@@ -1,0 +1,12 @@
+{
+  "schema": "fuso-avionics.sil-live.v1",
+  "status": "FAIL",
+  "simulated": true,
+  "flight_approval": false,
+  "session_directory": "live-check-r119-final",
+  "frames_forwarded": 3,
+  "mode": "CHECK_ONLY",
+  "error_type": "ValueError",
+  "reason": "SSH stream EOF/nonobject",
+  "elapsed_seconds": 1.827999999979511
+}

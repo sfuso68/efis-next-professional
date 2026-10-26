@@ -267,5 +267,73 @@ class SessionTests(unittest.TestCase):
                     s.verify_session(p)
 
 
+class LiveExchangeTests(unittest.TestCase):
+    def exchange(self, requests):
+        from tools.simulation.jsbsim_live import Exchange
+        from tests.test_sil_world import config
+        return Exchange(config(), io.StringIO(), lambda: requests.pop(0))
+
+    def request(self, index=0, nonce="a" * 32):
+        return json.dumps({"schema": "fuso-avionics.sil-live.v1", "sequence": index, "nonce": nonce})
+
+    def test_live_handshake_and_nonce_echo(self):
+        exchange = self.exchange([self.request()])
+        exchange.start("test", 1)
+        exchange.request(0)
+        exchange.send(backend().frame("cruise", "test"))
+        hello, response = map(json.loads, exchange.output.getvalue().splitlines())
+        self.assertEqual(hello["kind"], "HELLO")
+        self.assertEqual(response["nonce"], "a" * 32)
+        self.assertEqual(response["frame"]["sequence"], 0)
+
+    def test_live_bad_request_types_identity_and_commands_rejected(self):
+        requests = ["[]", "{}", self.request(1), self.request(True), self.request(nonce="bad"),
+                    self.request().replace('"sequence": 0', '"sequence": 0, "sequence": 0'),
+                    self.request()[:-1] + ', "command":"arm"}']
+        for request in requests:
+            with self.subTest(request=request), self.assertRaises(ValueError):
+                self.exchange([request]).request(0)
+
+    def test_live_reused_nonce_pending_and_unrequested_frame_rejected(self):
+        exchange = self.exchange([self.request(), self.request(1)])
+        with self.assertRaises(ValueError):
+            exchange.send(backend().frame("cruise", "test"))
+        exchange.request(0)
+        with self.assertRaises(ValueError):
+            exchange.request(0)
+        exchange.send(backend().frame("cruise", "test"))
+        with self.assertRaises(ValueError):
+            exchange.request(1)
+
+    def test_live_duration_and_oversize_output_rejected(self):
+        exchange = self.exchange([])
+        for seconds in (0, 121, True):
+            with self.assertRaises(ValueError):
+                exchange.start("test", seconds)
+        with self.assertRaises(ValueError):
+            exchange.emit({"oversize": "x" * 65536})
+
+    def test_live_requires_realtime_world_before_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "not-created"
+            with self.assertRaises(ValueError):
+                s.run_session(root, exchange=object())
+            self.assertFalse(root.exists())
+
+    def test_live_bridge_is_named_ssh_only_and_rejects_injection(self):
+        from tools.simulation.live_bench_bridge import commands
+        source, panel = commands("new_session", 1, False)
+        self.assertIn("--network none", source)
+        self.assertIn("--live-check-stdio", panel)
+        self.assertNotIn("sudo", panel)
+        self.assertNotIn("49002", source+panel)
+        _, panel = commands("new_session", 1, True)
+        self.assertIn("PrivateNetwork=yes", panel)
+        self.assertIn("RuntimeMaxSec=140", panel)
+        for session, seconds in (("../bad", 1), ("x; reboot", 1), ("x", 121), ("x", True)):
+            with self.assertRaises(ValueError):
+                commands(session, seconds, False)
+
+
 if __name__ == "__main__":
     unittest.main()

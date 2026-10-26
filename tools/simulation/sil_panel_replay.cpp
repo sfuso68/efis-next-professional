@@ -1,5 +1,6 @@
 // Bounded bench replay only. No arbitrary endpoint, production port or source identity.
 #include "efis/core/signal_access.hpp"
+#include "efis/core/freshness_budget.hpp"
 #include "efis/protocol/ddp_session.hpp"
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -12,11 +13,17 @@
 #include <QRandomGenerator>
 #include <QUdpSocket>
 #include <chrono>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <thread>
 #include <vector>
+#ifdef Q_OS_UNIX
+#include <poll.h>
+#include <unistd.h>
+#include <cerrno>
+#endif
 
 using namespace efis;
 using namespace std::chrono_literals;
@@ -109,6 +116,100 @@ FlightSnapshot adapt(const QJsonObject& f, const QJsonObject& config, MonoTime n
     }
     return s;
 }
+
+#ifdef Q_OS_UNIX
+QJsonObject read_live_line(MonoTime deadline) {
+    QByteArray line;
+    for (;;) {
+        const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline-MonoClock::now()).count();
+        require(remaining > 0, "live response timeout");
+        pollfd descriptor{STDIN_FILENO, POLLIN, 0};
+        const auto ready = ::poll(&descriptor, 1, static_cast<int>(remaining));
+        if (ready < 0 && errno == EINTR) continue;
+        require(ready > 0, "live response timeout/poll");
+        char bytes[4096];
+        const auto received = ::read(STDIN_FILENO, bytes, sizeof(bytes));
+        if (received < 0 && errno == EINTR) continue;
+        require(received > 0, "live response EOF/read");
+        line.append(bytes, static_cast<qsizetype>(received));
+        require(line.size() <= 65536, "oversize live response");
+        const auto newline = line.indexOf('\n');
+        if (newline >= 0) {
+            require(newline == line.size()-1, "unsolicited pipelined live response");
+            break;
+        }
+    }
+    QJsonParseError error;
+    const auto doc = QJsonDocument::fromJson(line, &error);
+    require(error.error == QJsonParseError::NoError && doc.isObject(), "bad live JSON");
+    return doc.object();
+}
+
+void live_json(const QJsonObject& object) {
+    std::cout << QJsonDocument(object).toJson(QJsonDocument::Compact).constData() << std::endl;
+}
+
+int live_stdio(const QByteArray& expected, bool send) {
+    const auto hello = read_live_line(MonoClock::now()+10s);
+    constexpr auto schema = "fuso-avionics.sil-live.v1";
+    require(hello["schema"].toString() == schema && hello["kind"].toString() == "HELLO" &&
+            hello["simulated"].isBool() && hello["simulated"].toBool() &&
+            hello["flight_approval"].isBool() && !hello["flight_approval"].toBool(), "bad live hello");
+    const auto canonical = hello["world_config_canonical"].toString().toUtf8();
+    require(expected.size() == 64 && hello["world_config_sha256"].toString().toLatin1() == expected &&
+            QCryptographicHash::hash(canonical, QCryptographicHash::Sha256).toHex() == expected, "live config digest");
+    const auto config = QJsonDocument::fromJson(canonical).object();
+    const auto sid = hello["session_id"].toString();
+    const auto seconds = hello["seconds"].toDouble(-1);
+    require(!sid.isEmpty() && sid.size() <= 64 && seconds >= 1 && seconds <= 120 && std::floor(seconds) == seconds,
+            "live session/duration");
+    auto instance = QRandomGenerator::system()->generate64();
+    if (!instance) instance = 1;
+    protocol::ddp::SnapshotPublisher publisher{{protocol::ddp::Profile::professional, node, instance, 1}};
+    protocol::ddp::SnapshotConsumer test{{250ms, 1000ms, node}}, production{{250ms, 1000ms, 47}};
+    QUdpSocket socket;
+    const auto start = MonoClock::now();
+    double maximum_rtt_ms = 0;
+    const auto count = static_cast<std::uint64_t>(seconds)*20+1;
+    for (std::uint64_t index = 0; index < count; ++index) {
+        const auto nonce = QString::number(QRandomGenerator::system()->generate64(), 16).rightJustified(16, '0')+
+                           QString::number(QRandomGenerator::system()->generate64(), 16).rightJustified(16, '0');
+        const auto sent = MonoClock::now();
+        live_json({{"schema", schema}, {"sequence", static_cast<qint64>(index)}, {"nonce", nonce}});
+        const auto response = read_live_line(sent+FreshnessBudget::network_age_margin);
+        const auto now = MonoClock::now();
+        require(now-sent <= FreshnessBudget::network_age_margin, "late live response");
+        maximum_rtt_ms = std::max(maximum_rtt_ms, std::chrono::duration<double, std::milli>(now-sent).count());
+        require(response["schema"].toString() == schema && response["kind"].toString() == "FRAME" &&
+                response["nonce"].toString() == nonce && response["frame"].isObject(), "live challenge mismatch");
+        const auto frame = response["frame"].toObject();
+        require(frame["schema"].toString() == "fuso-avionics.physics-sil.v1" &&
+                frame["session_id"].toString() == sid && frame["sequence"].isDouble() &&
+                frame["sequence"].toDouble(-1) == static_cast<double>(index) &&
+                frame["sim_time_ms"].toDouble(-1) == static_cast<double>(index*50) &&
+                frame["simulated"].isBool() && frame["simulated"].toBool() &&
+                frame["flight_approval"].isBool() && !frame["flight_approval"].toBool() &&
+                frame["backend"].toString() == "JSBSim-1.3.3" && frame["model"].toString() == "c172p" &&
+                frame["profile_status"].toString() == "REFERENCE_UNVALIDATED", "live frame contract");
+        // Reject acceleration/buffer bursts; the source must actually pace physical time.
+        const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now-start).count();
+        require(elapsed_ms+100 >= static_cast<std::int64_t>(index*50) &&
+                elapsed_ms <= static_cast<std::int64_t>(index*50)+FreshnessBudget::transport_lost.count(), "live stream clock drift");
+        // Conservatively preserve the ENTIRE measured request RTT as sensor age.
+        const auto snapshot = adapt(frame, config, sent, index+1);
+        const auto packet = publisher.publish(snapshot, now);
+        require(static_cast<bool>(test.consume(packet, now)) && !production.consume(packet, now), "live consumer guard");
+        if (send) {
+            require(socket.writeDatagram(reinterpret_cast<const char*>(packet.data()), static_cast<qint64>(packet.size()),
+                    QHostAddress::LocalHost, port) == static_cast<qint64>(packet.size()), "live loopback send");
+        }
+    }
+    live_json({{"schema", schema}, {"kind", "COMPLETE"}, {"frames", static_cast<qint64>(count)},
+               {"maximum_rtt_ms", maximum_rtt_ms}, {"simulated", true}, {"flight_approval", false},
+               {"mode", send ? "LIVE_LOOPBACK" : "LIVE_CHECK_ONLY"}});
+    return 0;
+}
+#endif
 int run(const QString& root, const QByteArray& expected, bool send) {
     QFile mf(root+"/manifest.json"), file(root+"/frames.jsonl");
     require(mf.open(QIODevice::ReadOnly) && mf.size() < 65536 && file.open(QIODevice::ReadOnly) && file.size() <= 32*1024*1024,
@@ -173,6 +274,13 @@ int run(const QString& root, const QByteArray& expected, bool send) {
 int main(int argc, char** argv) {
     QCoreApplication app(argc, argv);
     try {
+        if (argc == 3 && (QString(argv[2]) == "--live-check-stdio" || QString(argv[2]) == "--live-loopback-stdio")) {
+#ifdef Q_OS_UNIX
+            return live_stdio(QByteArray(argv[1]), QString(argv[2]) == "--live-loopback-stdio");
+#else
+            throw std::runtime_error("live stdio requires POSIX pipe deadline support");
+#endif
+        }
         require(argc == 4 && (QString(argv[3]) == "--check" || QString(argv[3]) == "--loopback-900s"),
                 "usage: efis-sil-panel-replay VERIFIED_SESSION SHA256 --check|--loopback-900s");
         return run(QString::fromLocal8Bit(argv[1]), QByteArray(argv[2]), QString(argv[3]) == "--loopback-900s");
