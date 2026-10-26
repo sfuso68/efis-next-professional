@@ -5,6 +5,13 @@ Stato: baseline documentale WS0/G0, DEVELOPMENT / NON-CERT
 
 ## Repository autorevole
 
+Definizione simulatore corrente: `docs/development/SIMULATOR_MASTER_SPEC_V1.md`
+e `config/simulation/development-plan-v1.json`, aggiornati R1-21 del2026-10-26.
+Dodici pacchetti,quattordici domini e sedici scenari minimi; specifica di
+sviluppo, non evidenza di acceptance o autorizzazione hardware. Prevale sulle
+descrizioni dimostrative di SYSTEM-SIMULATOR per gli obiettivi SIL, senza
+derogare ad ADR/stato/matrice o sostituire i contratti wire congelati.
+
 Il prodotto **FUSO AVIONICS NEXT**, con alias tecnico `EFIS NEXT`, è sviluppato in
 `sfuso68/efis-next-professional`. Il repository `sfuso68/efis-evolved` resta
 storico e non è una base di merge. Il Master Brief R0 è stato importato dal

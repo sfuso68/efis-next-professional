@@ -1,0 +1,36 @@
+{
+  "schema": "fuso-avionics.sil-development-plan.v1",
+  "specification": "docs/development/SIMULATOR_MASTER_SPEC_V1.md",
+  "parent_requirement": "AVX-G5-02",
+  "flight_approval": false,
+  "deployment_authorized": false,
+  "completion": "NOT_COMPLETE",
+  "model_validation": "OPEN",
+  "hardware_acceptance": "OPEN",
+  "packages": [
+    {"id":"P01","title":"Session frame command ICD and isolation","state":"TODO","depends_on":[],"exit":"Versioned contract and negative vectors; no runtime wire change"},
+    {"id":"P02","title":"Independent producer clock lifecycle and truth log","state":"TODO","depends_on":["P01"],"exit":"Slow consumer cannot stall physics; pause epoch overrun and stop tests"},
+    {"id":"P03","title":"Pilot controls instructor console and command replay","state":"TODO","depends_on":["P02"],"exit":"Lease acknowledgement duplicate expiry and replay verified"},
+    {"id":"P04","title":"Canonical DDP EDP broker fanout","state":"PARTIAL","depends_on":["P02"],"exit":"Simultaneous real consumers; no operational source impersonation"},
+    {"id":"P05","title":"Engine systems sensors fuel and airframe","state":"PARTIAL","depends_on":["P02"],"exit":"Coupled synthetic models with conservation and fault recovery tests"},
+    {"id":"P06","title":"Dynamic navigation weather and product contracts","state":"PARTIAL","depends_on":["P01","P02"],"exit":"Products traverse actual parsers caches and consumers; identity validity checked"},
+    {"id":"P07","title":"Model dataset catalogue server NAS restore","state":"TODO","depends_on":["P01"],"exit":"Licences provenance hashes and fresh-directory session restore"},
+    {"id":"P08","title":"Real PFD MFD EMS consumers","state":"PARTIAL","depends_on":["P03","P04","P05","P06"],"exit":"Same session epoch and correlated frames; no competing generators"},
+    {"id":"P09","title":"Terrain synthetic vision TAWS and route cache","state":"TODO","depends_on":["P06","P07","P08"],"exit":"Datum runway obstacles gaps and offline packs verified"},
+    {"id":"P10","title":"Emergency voice FPV setup and accessory test coverage","state":"TODO","depends_on":["P05","P07","P08"],"exit":"Cross-module faults and advisory-only boundaries exercised"},
+    {"id":"P11","title":"Aircraft and UL ULS model correlation","state":"TODO","depends_on":["P05","P07"],"exit":"Independent references tolerance envelopes and model review per variant"},
+    {"id":"P12","title":"Mission endurance multi-panel acceptance and restore","state":"TODO","depends_on":["P09","P10","P11"],"exit":"All required scenarios and separate software HMI hardware results recorded"}
+  ],
+  "coverage": {
+    "PFD":["P08","P12"], "MFD_CANVAS":["P08","P12"],
+    "EMS":["P05","P08","P11","P12"], "NAV":["P06","P08","P12"],
+    "SVS_TAWS":["P09","P12"], "WEATHER":["P06","P08","P12"],
+    "BLACKBOX":["P04","P07","P12"], "SETUP_PROFILES":["P07","P10","P12"],
+    "EMERGENCY":["P10","P11","P12"], "VOICE_RADIO":["P10","P12"],
+    "FPV":["P10","P12"], "ACCESSORIES":["P10","P12"],
+    "HEALTH_MAINTENANCE":["P04","P07","P10","P12"],
+    "STANDARD_PROFESSIONAL":["P10","P12"]
+  },
+  "scenario_ids": ["MISSION","FLIGHT_WIND","ENGINE_OUT","ENGINE_THERMAL","ELECTRICAL","FUEL","SENSORS","RADIO_NAV","WEATHER_PRODUCTS","TERRAIN_GAPS","AIRFRAME","TRANSPORT_RESTART","RECORD_RESTORE","EMERGENCY_VOICE","FOUR_VIDEO","SETUP_SKU_ISOLATION"],
+  "open_gates": ["INDEPENDENT_PRODUCER","COMPLETE_CONSUMERS","MODEL_REFERENCES","PFD_TOUCH","MFD_BLACKBOX_POWER","GOLDEN_RELEASE","SIL_NAS_RESTORE","ENDURANCE"]
+}

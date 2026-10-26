@@ -1,5 +1,15 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-21/AVX-G5-02,2026-10-26: consolidata la definizione completa del SIL in
+`../development/SIMULATOR_MASTER_SPEC_V1.md`; piano macchina in
+`../../config/simulation/development-plan-v1.json`.12 pacchetti con dipendenze,
+14 domini applicativi,16 scenari e gate separati. Primo incremento P01 ICD
+sessione/frame/comandi e gap DDP/EDP/airframe; poi producer indipendente,
+comandi pilota e fanout,impianti/NAV/WX/catalogo,consumer e acceptance.
+Controllo del piano NON chiude i pacchetti o le prove fisiche: stato invariato.
+Modelli UL/ULS e Asso/Pioneer distinti,nessuna equivalenza presunta; limiti
+non documentati non attivabili. Nessun deployment o modifica dei nodi.
+
 R1-20/AVX-G5-02,2026-10-26: autorizzata e verificata chiave dedicata SIL,
 due sessioni dirette serverha→PFD60s/1201frame,8 dinieghi SSH PASS; Windows
 fuori dal data path. Sotto-gate accesso verificato, stati invariati. Prossimo:

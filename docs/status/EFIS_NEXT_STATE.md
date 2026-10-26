@@ -1,10 +1,39 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-26, R1-20 accesso SSH ristretto serverha→PFD SIL verificato; release permanenti invariate
+Aggiornamento: 2026-10-26, R1-21 definizione integrata e piano SIL; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-21 — definizione completa del simulatore e sequenza di completamento
+
+Consolidati architettura e contratti da sviluppare in
+`../development/SIMULATOR_MASTER_SPEC_V1.md`: fisica,clock/lifecycle,
+pilotaggio di TEST,producer indipendente,fanout DDP/EDP,impianti/sensori,
+NAV/meteo/terreno,catalogo/restore e consumer di tutte le applicazioni.
+12 pacchetti dipendenti,14 domini e16 scenari minimi. UL/ULS e Asso/Pioneer
+distinti; no limiti/prestazioni approvati dedotti da dati simulati o somiglianza.
+Specificati controllo senza attuatori,PAUSE/epoch,fault e criteri di
+accettazione separati fisica/trasporto/consumer/HMI e software/hardware.
+
+Implementato SOLO supporto di pianificazione: JSON versionato,lint fail-closed,
+otto test nuovi e registrazione CTest; nessun nuovo runtime avionico o servizio.
+Verificato software:68 test Python locali PASS (8 piano +60 regressioni).
+Riconfigurazione CMake PASS e5/5 CTest mirati PASS,binari nativi già esistenti;
+nessuna nuova build renderer. Warning path oggetti MSVC preesistente ancora
+presente nella configurazione,non risolto né qualificato da questa prova.
+Le prove di struttura non provano modelli,fanout o prestazioni del simulatore.
+Verificato hardware in questo incremento: NESSUNO; restano valide come storico
+le prove R1-20, non estese ad altri moduli. Nessuna lettura/modifica di nodi,
+chiavi,firewall,retention,release,firmware o profili operativi.
+
+Aperto: P01 ICD sessione/frame/comandi e gap dei domini non trasportati,
+poi producer/PFD-EMS simultanei e sviluppi ordinati nel nuovo piano. Fonti
+indipendenti/tolleranze per modello,impianti UL/ULS,power,touch,golden,
+restore SIL NAS,endurance e acceptance umana rimangono gate distinti.
+La specifica completa NON equivale a simulatore completo; nessun DONE.
+Evidenza software: evidence/r1-21-simulator-definition-20261026/verification.json.
 
 ## R1-20 — chiave dedicata e collegamento diretto SIL, Windows fuori dal flusso dati
 

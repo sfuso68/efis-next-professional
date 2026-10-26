@@ -17,6 +17,14 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-21 / PRJ-004,EMS-002,NAV-003,WX-001,WX-002,VER-001: definizione SIL
+integrata e piano verificabile in SIMULATOR_MASTER_SPEC_V1.md e development-plan-v1.json.
+12 pacchetti/14 domini/16 scenari con dipendenze e confini; test strutturali
+del piano respingono promozioni DONE,autorità deployment/volo e coperture
+omesse. Non attestano fedeltà dei modelli o integrazione consumer. Stati
+invariati; nessun nodo contattato in questo incremento. Prossimo P01 ICD
+sessione/comandi e gap wire; riferimenti prestazionali/power/touch aperti.
+
 R1-20 / PRJ-004, NAV-003, VER-001: chiave dedicata autorizzata, forced-command
 SIL con DynamicUser/capability0/rete privata e limiti risorse; source e bridge
 locali serverha, Windows fuori dal data path.60 Windows/70 serverha/4 CTest

@@ -1,0 +1,28 @@
+{
+  "schema": "fuso-avionics.simulator-definition-evidence.v1",
+  "date": "2026-10-26",
+  "source_parent_commit": "a6edfb53e4eaf3800e595fdce914041dc50de2b1",
+  "scope": "SPECIFICATION_AND_PLANNING_LINT_ONLY",
+  "status": "PARTIAL",
+  "flight_approval": false,
+  "deployment_authorized": false,
+  "specification": "docs/development/SIMULATOR_MASTER_SPEC_V1.md",
+  "plan": "config/simulation/development-plan-v1.json",
+  "packages": 12,
+  "application_domains": 14,
+  "minimum_scenarios": 16,
+  "verification": {
+    "python_tests": {"status": "PASS", "methods": 68, "new_planning_methods": 8, "regression_methods": 60, "log": "r121-python-tests.txt"},
+    "cmake_configure": {"status": "PASS", "log": "r121-cmake-configure.txt"},
+    "ctest": {"status": "PASS", "targets": 5, "log": "r121-ctest.txt", "native_binaries": "PREEXISTING_NOT_REBUILT"},
+    "plan_lint": {"status": "PASS", "log": "r121-plan-check.json", "does_not_attest_implementation": true}
+  },
+  "hardware_verification_this_increment": "NOT_RUN_NO_NODES_CONTACTED",
+  "prior_hardware_reference": "docs/status/evidence/r1-20-restricted-sil-ssh-20261026/verification.json",
+  "runtime_changes": false,
+  "new_renderer_build": false,
+  "warnings": ["Preexisting MSVC object path length warning remains in configure log"],
+  "open": ["P01 session frame command ICD", "independent producer", "pilot controls and multi-consumer fanout", "engine systems and complete GUI consumers", "aircraft and engine references with tolerance review", "terrain weather NAV product integration", "SIL NAS restore", "touch power golden endurance and hardware acceptance"],
+  "next_safe_package": "P01",
+  "requirements_promoted_to_done": []
+}
