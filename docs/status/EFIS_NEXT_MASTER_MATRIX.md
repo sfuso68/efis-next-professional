@@ -17,6 +17,14 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-20 / PRJ-004, NAV-003, VER-001: chiave dedicata autorizzata, forced-command
+SIL con DynamicUser/capability0/rete privata e limiti risorse; source e bridge
+locali serverha, Windows fuori dal data path.60 Windows/70 serverha/4 CTest
+PASS;8 dinieghi SSH reali PASS;due run hardware60s/1201frame,RTTmax61.275209
+e61.274087ms. Ripristino PFD/recorder verificato; nessuna nuova acceptance
+grafica o qualifica modelli/EMS/touch. Stati invariati: sotto-gate accesso
+verificato, integrazione prodotto ancora parziale. Evidence r1-20-restricted-sil-ssh-20261026.
+
 R1-19 / PRJ-004, NAV-003, VER-001: collegamento fisico LIVE serverha→bridge
 Windows→adapter ARM64→DDP loopback PFD, nonce/timeout/età RTT e SIM vincolati.
 57 test Windows/67 serverha/10 ARM64 PASS; sessione live finale60s/1201frame,

@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse
 import json
+import os
 from pathlib import Path
 import queue
 import re
@@ -78,24 +79,40 @@ def send(process, message):
     process.stdin.flush()
 
 
-def run(key, directory, session, seconds, loopback=False):
+def direct_identity_allowed(hostname, uid, key):
+    return (hostname == "serverha" and type(uid) is int and uid == 1000
+            and key == "/home/sfuso/.ssh/efis_sil_pfd_ed25519")
+
+
+def execution_plan(key, session, seconds, loopback=False, direct_serverha=False):
     source_command, panel_command = commands(session, seconds, loopback)
     key = Path(key).resolve(strict=True)
+    ssh = ["ssh", "-T", "-i", str(key), "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
+           "-o", "ConnectTimeout=6", "-o", "ServerAliveInterval=2", "-o", "ServerAliveCountMax=2"]
+    if direct_serverha:
+        if (os.name != "posix" or not direct_identity_allowed(os.uname().nodename, os.getuid(), key.as_posix())):
+            raise ValueError("direct mode requires pinned serverha user and dedicated key")
+        return [("source", shlex.split(source_command)),
+                ("panel", ssh + ["efis@192.168.1.45", "SIL_FEED_V1" if loopback else "SIL_CHECK_V1"])]
+    return [("source", ssh + ["sfuso@192.168.1.6", source_command]),
+            ("panel", ssh + ["efis@192.168.1.45", panel_command])]
+
+
+def run(key, directory, session, seconds, loopback=False, direct_serverha=False):
+    plan = execution_plan(key, session, seconds, loopback, direct_serverha)
     directory = Path(directory)
     directory.mkdir(parents=False, exist_ok=False)
     processes, logs = [], []
     report = {"schema": SCHEMA, "status": "FAIL", "simulated": True, "flight_approval": False,
-              "session_directory": session, "frames_forwarded": 0, "mode": "LOOPBACK" if loopback else "CHECK_ONLY"}
+              "session_directory": session, "frames_forwarded": 0, "mode": "LOOPBACK" if loopback else "CHECK_ONLY",
+              "transport": "DIRECT_SERVERHA_RESTRICTED_SSH" if direct_serverha else "TWO_SSH_PIPES_VIA_CLIENT",
+              "windows_in_data_path": not direct_serverha}
     started = time.monotonic()
     try:
-        for name, endpoint, command in (("source", "sfuso@192.168.1.6", source_command),
-                                        ("panel", "efis@192.168.1.45", panel_command)):
+        for name, command in plan:
             log = (directory / (name+"-stderr.txt")).open("xb")
             logs.append(log)
-            process = subprocess.Popen(["ssh", "-T", "-i", str(key), "-o", "BatchMode=yes",
-                                        "-o", "ConnectTimeout=6", "-o", "ServerAliveInterval=2",
-                                        "-o", "ServerAliveCountMax=2", endpoint, command],
-                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=log)
+            process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=log)
             processes.append(process)
         source, panel = processes
         source_messages, panel_messages = queue.Queue(2), queue.Queue(2)
@@ -160,9 +177,10 @@ def main():
     parser.add_argument("--session", required=True)
     parser.add_argument("--seconds", type=int, default=60)
     parser.add_argument("--loopback", action="store_true", help="Requires isolated screen bench already active")
+    parser.add_argument("--direct-serverha", action="store_true", help="Local source and restricted PFD SSH key only")
     args = parser.parse_args()
     try:
-        print(json.dumps(run(args.ssh_key, args.directory, args.session, args.seconds, args.loopback)))
+        print(json.dumps(run(args.ssh_key, args.directory, args.session, args.seconds, args.loopback, args.direct_serverha)))
     except (ValueError, OSError, subprocess.SubprocessError) as exc:
         parser.exit(2, f"SIL bridge failed: {exc}\n")
 

@@ -3,6 +3,13 @@
 Aggiornamento documentale: 2026-10-26
 Stato: DEVELOPMENT / NON-CERT
 
+R1-20: installati credential/helper di banco SIL ristretto serverha→PFD,
+non nuova release avionica. Renderer7051a47 e puntatore PFD invariati;
+nessuna modifica release MFD/EMS/Blackbox. Due run60s bounded con ritorno
+automatico verificato; finale UTC2026-10-26T21:39:46Z PFD attivo PID1745346,
+recorder1419 invariato,power0x0,nessun bench attivo. Helper root persistenti,
+adapter SHA7d1c5880 invariato; vedere evidence/r1-20-restricted-sil-ssh-20261026.
+
 Questo file è l'unica fonte documentale autorizzata per rispondere alla domanda
 «quale release è attiva su un nodo?». I checkpoint restano evidenze storiche e
 non possono sovrascrivere questo registro.

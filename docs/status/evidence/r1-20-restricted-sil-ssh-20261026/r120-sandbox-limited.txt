@@ -1,0 +1,24 @@
+Mon 26 Oct 21:38:25 UTC 2026
+MainPID=1745236
+CPUQuotaPerSecUSec=500ms
+MemoryMax=134217728
+MemorySwapMax=0
+TasksMax=16
+CapabilityBoundingSet=
+User=efis-sil-bench
+DynamicUser=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+ProtectHome=yes
+ProtectSystem=strict
+NoNewPrivileges=yes
+RestrictAddressFamilies=AF_INET AF_UNIX
+ActiveState=active
+Uid:	63330	63330	63330	63330
+CapEff:	0000000000000000
+NoNewPrivs:	1
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+Oct 26 22:38:10 efis-pfd-01 env[1745176]: 2026-10-26T22:38:10.755 event=render_health presentation_hz= 60.2 presentation_interval_ms= 16.61 snapshot_hz= 50.0 sequence= 616 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 285 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 22:38:15 efis-pfd-01 env[1745176]: 2026-10-26T22:38:15.756 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.67 snapshot_hz= 50.0 sequence= 866 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 385 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 22:38:20 efis-pfd-01 env[1745176]: 2026-10-26T22:38:20.756 event=render_health presentation_hz= 51.8 presentation_interval_ms= 19.30 snapshot_hz= 50.0 sequence= 1116 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 485 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+throttled=0x0

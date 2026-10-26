@@ -1,5 +1,10 @@
 # SIL live R1-19 — protocollo di banco, non rete operativa
 
+R1-20: il percorso diretto serverha→PFD è ora autorizzato e verificato con
+chiave forced-command dedicata. Vedere `SIL_RESTRICTED_SSH_V1.md` per policy,
+prove e limiti. Il percorso Windows qui descritto rimane storico/fallback,
+non è più necessario al flusso dati delle sessioni dirette verificate.
+
 2026-10-26. DEVELOPMENT / NON-CERT / flight_approval=false.
 Implementazione: `jsbsim_live.py`, `live_bench_bridge.py`, modalità live di
 `efis-sil-panel-replay`, launcher specifico `run_pfd_sil_live_r119.sh`.

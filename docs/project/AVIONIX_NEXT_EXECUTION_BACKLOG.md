@@ -1,5 +1,12 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-20/AVX-G5-02,2026-10-26: autorizzata e verificata chiave dedicata SIL,
+due sessioni dirette serverha→PFD60s/1201frame,8 dinieghi SSH PASS; Windows
+fuori dal data path. Sotto-gate accesso verificato, stati invariati. Prossimo:
+producer indipendente/controllo pilota/fanout e consumer EMS/meteo/NAV completi,
+modelli validati; touch PFD, endurance, golden e power altri nodi aperti.
+Nessuna autorizzazione implicita a deployment operativo o attuatori.
+
 R1-19/AVX-G5-02,2026-10-26: live fisico verso PFD verificato su banco con
 nonce e timeout, non più solo replay. Stati IN_PROGRESS invariati. Priorità:
 1) accesso SIL dedicato serverha→PFD, previa autorizzazione, eliminare relay

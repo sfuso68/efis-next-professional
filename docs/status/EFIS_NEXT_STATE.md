@@ -1,10 +1,54 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-26, R1-19 collegamento fisico LIVE serverha→PFD di banco; release permanenti invariate
+Aggiornamento: 2026-10-26, R1-20 accesso SSH ristretto serverha→PFD SIL verificato; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-20 — chiave dedicata e collegamento diretto SIL, Windows fuori dal flusso dati
+
+Autorizzazione esplicita: nuova chiave serverha→PFD limitata al banco SIL,
+senza shell interattiva, forwarding o accesso Pixhawk. Implementati dispatcher
+forced-command con soli SIL_CHECK_V1/SIL_FEED_V1, sudoers a due azioni fisse,
+adapter root-owned verificato SHA, processo DynamicUser distinto da efis,
+rete privata solo loopback, capability vuote e NoNewPrivileges. Limiti:
+128 MiB, swap0,16 task,CPU50%,140s; nessun daemon SIL permanente/autostart.
+Chiave privata creata SOLO su serverha,0600; authorized_keys preesistente
+preservato byte per byte e backup root protetto. Nessun riavvio sshd.
+Il bridge gira su serverha con source locale: Windows serve solo per gestione,
+non trasporta i frame e non è necessario alla durata della sessione avviata.
+
+SOFTWARE:60 test Windows,70 serverha (inclusi10 nativi JSBSim),4/4 CTest
+mirati PASS. Nessuna nuova build C++: adapter ARM64 precedente SHA7d1c5880
+invariato. Otto prove negative SSH reali PASS: comando vuoto/id/iniezione/
+argomenti extra/SFTP/PTY/TCP diretto/remote forwarding. Agent e X11 negati
+dalla policy restrict, non provati separatamente. visudo/sshd syntax PASS.
+
+HARDWARE: due sessioni dirette60s,1201 frame ciascuna PASS; RTT massimo
+61.275209ms e61.274087ms. Seconda sessione con limiti risorse attivi:
+lateness FDM max11.829301ms,source60.012962s,100Hz/output20Hz. Runtime PFD
+UID63330/capability0/NoNewPrivileges1/solo lo verificati. Log GUI finale:
+20Hz,accepted1185,rejected0,gaps0,socket_errors0; non equivale a1201 frame
+tutti renderizzati. Fine feed ripristina PFD normale; verifica finale UTC
+2026-10-26T21:39:46Z PFD PID1745346 attivo,recorder1419 invariato,power0x0.
+Nessun bench lasciato attivo. Renderer7051a47/puntatore release invariati.
+Credential e helper SIL persistono come autorizzato, non release avionica.
+
+Tentativi conservati: primo installer fermato prima della mutazione per
+directory backup assente; test path Windows corretto con as_posix; pacchetto
+server v2 privo della fixture mondo fallisce, ricreato v3 con70 test PASS.
+Non sono stati allargati limiti di freshness o permessi per ottenere PASS.
+
+APERTO: producer continuo, comandi pilota interattivi, fanout PFD/MFD/EMS,
+consumer GUI EDP/airframe/meteo/NAV completi, modelli reali validati,
+endurance/golden/power altri nodi e touch PFD già segnalato non funzionante.
+Queste prove non sono acceptance grafica, qualifica hard-real-time o volo.
+Stati requisiti invariati; nessun DONE di prodotto/merge/main/firmware.
+Runbook: ../development/SIL_RESTRICTED_SSH_V1.md.
+Evidenza: evidence/r1-20-restricted-sil-ssh-20261026/verification.json.
+La precedente richiesta di autorizzazione R1-19 è superata dalla conferma
+esplicita e dalle verifiche R1-20 qui documentate.
 
 ## R1-19 — sessione fisica LIVE sul PFD, non più soltanto replay
 

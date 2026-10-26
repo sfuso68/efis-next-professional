@@ -9,7 +9,7 @@ TOOL=$BASE/r119-build-v4/efis-sil-panel-replay
 case "${1:-}" in
 --root-restore)
     test "$(id -u)" = 0
-    systemctl stop efis-sil-live-feed.service efis-sil-panel-screen.service 2>/dev/null || true
+    systemctl stop efis-sil-r120-feed.service efis-sil-live-feed.service efis-sil-panel-screen.service 2>/dev/null || true
     /usr/sbin/runuser -u efis -- /usr/bin/env XDG_RUNTIME_DIR=/run/user/1000 \
       DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /usr/bin/systemctl --user start efis-pfd.service
     /usr/sbin/runuser -u efis -- /usr/bin/env XDG_RUNTIME_DIR=/run/user/1000 \
@@ -30,7 +30,7 @@ test "$(sha256sum "$TOOL" | cut -d' ' -f1)" = 7d1c5880e6e06d69f71b6c3fe26a8f6786
 test -S /run/user/1000/wayland-0
 test -f "$BASE/panel-profile.json" && test -d "$BASE/work-v1/config"
 systemctl --user is-active --quiet efis-pfd.service
-for unit in efis-sil-panel-screen.service efis-sil-panel-feed.service efis-sil-live-feed.service; do
+for unit in efis-sil-panel-screen.service efis-sil-panel-feed.service efis-sil-live-feed.service efis-sil-r120-check.service efis-sil-r120-feed.service; do
     if sudo -n systemctl is-active --quiet "$unit"; then exit 2; fi
 done
 "$TOOL" "$BASE/replay/nominal-v1" 697ffb68a76d0b20c448e4d3b05194f1d3016f5615a95247f4589c900d4d8b80 --check

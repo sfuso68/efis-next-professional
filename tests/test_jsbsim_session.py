@@ -335,5 +335,33 @@ class LiveExchangeTests(unittest.TestCase):
                 commands(session, seconds, False)
 
 
+class RestrictedSilKeyTests(unittest.TestCase):
+    def public(self):
+        import base64
+        return "ssh-ed25519 " + base64.b64encode(b"\0\0\0\x0bssh-ed25519\0\0\0\x20" + b"a"*32).decode() + " efis-sil-serverha-to-pfd-r120"
+
+    def test_key_entry_has_only_named_source_and_root_forced_command(self):
+        from deploy.scripts.install_sil_restricted_ssh_r120 import restricted_entry
+        entry = restricted_entry(self.public()).decode()
+        self.assertTrue(entry.startswith('restrict,from="192.168.1.6",command="/usr/local/lib/efis-next/sil-r120/dispatch.sh" '))
+        self.assertEqual(entry.count("\n"), 1)
+        self.assertNotIn("permitopen", entry)
+
+    def test_malformed_public_material_and_option_injection_fail(self):
+        from deploy.scripts.install_sil_restricted_ssh_r120 import restricted_entry
+        for text in ("", "ssh-ed25519 YQ== efis-sil-serverha-to-pfd-r120", self.public()+"\ncommand=sh",
+                     self.public().replace("ssh-ed25519 ", "ssh-rsa "), self.public().replace("r120", 'r120\"')):
+            with self.assertRaises(ValueError):
+                restricted_entry(text)
+
+    def test_direct_identity_is_exact_and_never_backup_key(self):
+        from tools.simulation.live_bench_bridge import direct_identity_allowed
+        key = "/home/sfuso/.ssh/efis_sil_pfd_ed25519"
+        self.assertTrue(direct_identity_allowed("serverha", 1000, key))
+        for host, uid, path in (("other", 1000, key), ("serverha", 0, key), ("serverha", True, key),
+                                 ("serverha", 1000, key.replace("efis_sil_pfd", "efis_pfd_archive"))):
+            self.assertFalse(direct_identity_allowed(host, uid, path))
+
+
 if __name__ == "__main__":
     unittest.main()
