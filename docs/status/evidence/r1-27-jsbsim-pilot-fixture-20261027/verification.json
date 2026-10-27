@@ -5,10 +5,14 @@
   "flight_approval":false,
   "deployment_authorized":false,
   "local_tests":{"new_methods":6,"total_methods":134,"status":"PASS"},
-  "server_tests":"PENDING",
-  "ctest":"PENDING",
+  "source_commit":"0c2a1d5b8aa315cba68be4336dfd182394944602",
+  "source_archive_sha256":"14b407e72656e1b3e148e3fd1b5666467a3314cc2236de711d13c7810d3735c7",
+  "server_tests":{"methods":143,"native_jsbsim_methods":9,"status":"PASS","physics_difference_test":"PASS","three_inputs_readback":"PASS","rehashed_false_readback_rejected":true},
+  "initial_server_bundle":{"status":"FAIL","methods":142,"failures":1,"errors":2,"reason":"test package omitted specification document and restricted-entry helper; corrected v2 without relaxing assertions"},
+  "ctest":{"passed":11,"total":11,"new_renderer_build":false},
+  "timed_run":{"status":"COMPLETE_SOFTWARE_ONLY","directory":"/srv/data/avionix-sil-test/r127-pilot-60s-v2","ticks":6000,"frames":1201,"commands_applied":3,"elapsed_s":60.18276234017685,"max_lag_ms":6.494672,"max_observed_durability_ack_ms":21.430393680930138,"durable_records":2419,"trace_integrity":"PASS","truth_sha256":"ad860282513963e5234dad3185193fec55020accbce15dafb159305634544b2b","result_sha256":"408158a996efd851f62241b7af5bc54a6ed26425d3b0a724ecc179b7bb10e4e6"},
   "pilot_scope":"LOCAL_FROZEN_FIRST_SECOND_FIXTURE_ONLY",
   "real_console":false,
   "hardware_acceptance":false,
-  "open":["native FDM comparison","live authenticated console","model capability expansion","lifecycle epoch and crash recovery","executive replay","P04 fanout","systems and product consumers","catalogue restore and model validation","endurance and actual panel acceptance"]
+  "open":["live authenticated console","model capability expansion","lifecycle epoch and crash recovery","executive replay","P04 fanout","systems and product consumers","catalogue restore and model validation","endurance and actual panel acceptance"]
 }

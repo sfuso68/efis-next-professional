@@ -18,8 +18,10 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 ## Matrice principale
 
 R1-27 / PRJ-004,VER-001:P03fixture locale→tre ingressi reali JSBSim con
-audit/readback e rilascio lease,134test locali PASS. Nativi/server pending;
-nessuna console o acceptance hardware. P03 e tutti gli stati restano PARTIAL.
+audit/readback e rilascio lease,134test locali/143server/11CTest PASS.
+Run60s secondoSSD/1201frame/3comandi,integrità trace PASS,ACKmax21.430394ms.
+Evidence r1-27-jsbsim-pilot-fixture-20261027;nessuna console o acceptance
+hardware. P03PARTIAL,nessuna promozione dei requisiti a DONE.
 
 R1-26 / PRJ-004,VER-001:P03ammissione bounded offline,lease monotona/tick,
 dedup non-evicting e handoff una tantum.13nuovi/128totali test software

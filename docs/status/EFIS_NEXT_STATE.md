@@ -19,11 +19,25 @@ Default invariato;nessun endpoint/attuatore/credenziale modificato.
 Trace verifier ora correla gli eventi al piano congelato e respinge
 duplicati,ordine/valori/ACK alterati o applicazione incompleta. Integrità
 e readback degli ingressi NON equivalgono a oracle aerodinamico indipendente.
-Software locale:134test PASS,inclusi6nuovi. Test nativi/server e CTest pending.
+Software locale:134test PASS,inclusi6nuovi;11/11CTest mirati PASS con binari
+nativi preesistenti,nessun renderer compilato. Warning path MSVC invariato.
+Serverha:143test PASS,inclusi9JSBSim nativi;confronto contro baseline prova
+variazione del rollio e rilascio al tick101,tre ingressi con readback e
+rifiuto di readback falso anche con hash ricalcolato. Primo pacchetto v1
+incompleto:142test con1FAIL/2ERROR per documento/script omessi;log conservato,
+nessuna deroga. Pacchetto v2 completo da0c2a1d5 verificato SHA256
+14b407e72656e1b3e148e3fd1b5666467a3314cc2236de711d13c7810d3735c7.
+Run reale software60s sul secondoSSD autorizzato:6000tick/1201frame,
+3comandi applicati,elapsed60.182762s,maxlag6.494672ms,ACKmax21.430394ms,
+2419record durevoli. Trace/audit PASS,hash
+ad860282513963e5234dad3185193fec55020accbce15dafb159305634544b2b.
+Container senza rete e sorgenti/runtime read-only;solo directory test
+scrivibile. Nessun consumer reale collegato,nessuna qualifica storage/volo.
 Nessuna verifica hardware avionica. P03PARTIAL:console/inbox autenticata,
 comandi distribuiti,lifecycle fermo,epoch/recovery e replay esecutivo restano
 aperti. P04fanout/P05impianti/P06prodotti/P07catalogo e acceptance P08–P12
 non sono chiusi da questa fixture. Non dichiarare simulatore completo.
+Quadro completo dei12pacchetti e criteri residui: SIMULATOR_COMPLETION_CHECKLIST.md.
 
 ## R1-26 — P03 ammissione e dedup dei comandi
 
