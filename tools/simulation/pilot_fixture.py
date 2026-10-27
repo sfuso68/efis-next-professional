@@ -84,6 +84,7 @@ class PilotFixture:
 class Audit:
     """Trace correlation, NOT an independent aerodynamic oracle."""
     def __init__(self, plan, manifest):
+        self.manifest = copy.deepcopy(manifest)
         self.expected = {r["command_id"]:r for r in requests(plan, manifest)} if plan is not None else {}
         self.admitted, self.intents, self.applied = set(), set(), set()
         self.last_tick = 0
@@ -104,6 +105,8 @@ class Audit:
         base = "kind event session_id epoch total_ticks simulated flight_approval request"
         c.exact(r, base + (" ack property readback" if event == "APPLIED" else " ack" if event == "ADMITTED" else ""))
         request = r["request"]
+        c.command(request, self.manifest, current_tick=0, authority_id="local-fixture",
+                  lease_id="fixture-lease", lease_until_tick=100)
         identity = request["command_id"]
         c.require(identity in self.expected and request == self.expected[identity], "pilot request differs from frozen plan")
         if event == "ADMITTED":

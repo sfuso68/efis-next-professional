@@ -8,6 +8,24 @@ from tools.simulation.session_trace import verify
 
 
 class RealSessionTests(unittest.TestCase):
+    def test_native_three_inputs_and_rehashed_false_readback_rejected(self):
+        import hashlib
+        from tools.simulation.session_engine import encode
+        plan=[dict(apply_tick=10,control=name,value=value) for name,value in
+              (("aileron",.1),("elevator",.01),("throttle",.6))]
+        s.run(self.root/"inputs",self.world,session_id="native-inputs",source_commit="0"*40,
+              scenario="cruise",seconds=1,pilot_fixture=plan)
+        self.assertEqual(verify(self.root/"inputs")["pilot_commands_applied"],3)
+        path=self.root/"inputs"/"truth.jsonl"
+        rows=[c.decode(line) for line in path.read_bytes().splitlines()]
+        next(r for r in rows if r.get("event")=="APPLIED")["readback"]=-.9
+        data=b"".join(encode(r) for r in rows)
+        path.write_bytes(data)
+        result_path=self.root/"inputs"/"result.json"
+        result=c.decode(result_path.read_bytes()); result["truth_sha256"]=hashlib.sha256(data).hexdigest()
+        result_path.write_bytes(encode(result))
+        with self.assertRaisesRegex(ValueError,"readback"):verify(self.root/"inputs")
+
     def test_native_pilot_changes_physics_and_is_audited(self):
         plan=[dict(apply_tick=10,control="aileron",value=.25)]
         for name,pilot in (("baseline",None),("pilot",plan)):
