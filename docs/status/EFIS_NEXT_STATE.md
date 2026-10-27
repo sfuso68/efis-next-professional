@@ -1,10 +1,26 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-27, R1-25 recorder SIL asincrono opt-in con queue e watchdog; release permanenti invariate
+Aggiornamento: 2026-10-27, R1-26 ammissione comandi SIL bounded; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-26 — P03 ammissione e dedup dei comandi
+
+Implementato componente isolato CommandQueue:16pending,256identità,
+512KiB complessivi,validazione P01,principal fornito dal chiamante fidato,
+lease monotona massima5s e scadenza tick,ordine/expiry/revoca e dedup senza
+eviction. Capacità storia esaurita o clock invertito revocano la coda.
+Consegna bytes immutabili una tantum;nessun APPLIED,nessuna applicazione
+fisica o autenticazione di rete dichiarata. Default runner invariato.
+Software locale:13nuovi test e128totali PASS;10/10CTest mirati PASS con
+binari nativi preesistenti,nessun renderer ricompilato. Warning path oggetti
+MSVC preesistente non risolto né derogato. Prova Linux/server da acquisire.
+Nessuna verifica su hardware avionico,nessun nodo/pannello modificato.
+P03PARTIAL:inbox autenticata multi-thread,executor/capability JSBSim,
+lifecycle fermo,audit/durabilità e ACK fisico,epoch/recovery restano aperti.
+Runbook: ../development/SIL_COMMAND_ADMISSION_V1.md. Nessun nuovo DONE.
 
 ## R1-25 — writer separato e durabilità esplicita
 

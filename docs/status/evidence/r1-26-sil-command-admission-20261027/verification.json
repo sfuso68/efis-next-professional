@@ -1,0 +1,17 @@
+{
+  "schema":"fuso-avionics.sil-command-admission-evidence.v1",
+  "date":"2026-10-27",
+  "status":"PARTIAL",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "local_tests":{"new_methods":13,"total_methods":128,"status":"PASS"},
+  "ctest":{"passed":10,"total":10,"new_native_build":false},
+  "server_tests":"PENDING",
+  "limits":{"pending":16,"history":256,"history_bytes":524288,"lease_max_ms":5000},
+  "authentication":"TRUSTED_CALLER_IDENTITY_ONLY_NOT_NETWORK_AUTHENTICATION",
+  "command_application":"NOT_IMPLEMENTED",
+  "applied_ack_emitted":false,
+  "hardware_verified":false,
+  "operational_nodes_modified":false,
+  "open":["authenticated ingress and cross-thread bounded inbox","model capability and FDM executor","paused lifecycle semantics","command audit and durability","APPLIED evidence","epoch and crash recovery","P04 fanout","repeatability endurance power and panel gates"]
+}

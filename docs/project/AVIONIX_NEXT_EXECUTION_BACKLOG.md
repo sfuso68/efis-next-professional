@@ -1,5 +1,11 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-26/AVX-G5-02:P03 ammissione/dedup bounded software implementata e13test
+nuovi PASS (128regressioni complessive). Lease wall/tick,revoca,history
+senza eviction,consegna una tantum;nessun APPLIED. Prossimo:executor con
+capability,audit e clock/lifecycle,poi ingressi autenticati e P04fanout.
+Nessuna console o sessione pilota reale già collegata. P03 resta PARTIAL.
+
 R1-25/AVX-G5-02: recorder async-test opt-in con queue bounded e watchdog
 ACK100ms implementato;115test locali,121serverha e9/9CTest PASS. SSD sistema
 FAIL conservato;secondoSSD autorizzato /dev/sdb,btrfs,run60s e trace PASS

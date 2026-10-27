@@ -17,6 +17,11 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-26 / PRJ-004,VER-001:P03ammissione bounded offline,lease monotona/tick,
+dedup non-evicting e handoff una tantum.13nuovi/128totali test software
+locali PASS;nessun APPLIED,executor o autenticazione rete. P03PARTIAL,
+stati invariati:non è una nuova accettazione hardware o chiusura dei requisiti.
+
 R1-25 / PRJ-004,BBX-001,VER-001:P02recorder di TEST async opt-in con
 writer separato,16record/512KiB e watchdog ACK100ms;QUEUED distinto da
 DURABLE,defaultsync e100msfisica invariati.115test locali,121server e9/9CTest PASS.
