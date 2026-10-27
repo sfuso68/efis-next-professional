@@ -1,5 +1,26 @@
 # SIL P03 — ammissione comandi di test
 
+## Incremento R1-27: fixture locale applicata agli ingressi FDM
+
+`session_jsbsim --scenario cruise --pilot-fixture
+config/simulation/pilot-fixture-reference.json` accetta un piano locale
+congelato e hash-bound,non un flusso remoto. Massimo16azioni nel primo secondo,
+tutte ammesse al tick0;nessuna pausa/epoch/lifecycle supportata. Tre soli
+controlli:aileron/elevator/throttle,catalogo proprietà modello verificato.
+Il backend sovrascrive gli ingressi prima del run fisico,poi legge le stesse
+proprietà e registra ACK APPLIED correlato al tick. APPLIED attesta applicazione
+all'ingresso del modello,non movimento fisico di servo né risposta certificata.
+La coda base mantiene il suo ACK di ammissione;retry/ACK executor unificati
+per futura console restano da integrare. Nessuna autenticazione rete implicita.
+
+INTENT precede mutazione,APPLIED segue step/readback. In async-test questi
+eventi possono essere accodati e non ancora durevoli:vale policy R1-25,
+watchdog100ms e risultato completo solo dopo flush/hash. Trace verifier
+correla piano/eventi/ACK;non è replay deterministico esecutivo dei comandi.
+Alla scadenza wall5s o tick100 sono cancellati gli override;al passo seguente
+torna il pilota sintetico di banco. Questo fallback è solo software SIL.
+Non usare la fixture per dichiarare completata una console o una missione.
+
 2026-10-27, R1-26. DEVELOPMENT / NON-CERT, componente software isolato.
 
 `tools/simulation/command_queue.py` implementa la sola ammissione e consegna

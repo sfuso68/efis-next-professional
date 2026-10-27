@@ -1,5 +1,12 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-27/AVX-G5-02: fixture locale P03 collegata a tre ingressi FDM con audit
+e readback;134test locali PASS,prove fisiche native pending. Piano macchina
+P03 aggiornato TODO→PARTIAL,non DONE. Coda ed executor non equivalgono alla
+console live:prossimi ingressi/capability/lifecycle completi,poi P04fanout,
+P05impianti e P06prodotti verso i veri consumer. P07catalogo/restore,
+P09terreno e P10funzioni accessorie,P11modelli e P12acceptance restano aperti.
+
 R1-26/AVX-G5-02:P03 ammissione/dedup bounded software implementata e13test
 nuovi PASS (128regressioni complessive). Lease wall/tick,revoca,history
 senza eviction,consegna una tantum;nessun APPLIED. Prossimo:executor con

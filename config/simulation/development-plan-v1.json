@@ -10,7 +10,7 @@
   "packages": [
     {"id":"P01","title":"Session frame command ICD and isolation","state":"PARTIAL","depends_on":[],"exit":"Versioned contract and negative vectors; no runtime wire change"},
     {"id":"P02","title":"Independent producer clock lifecycle and truth log","state":"PARTIAL","depends_on":["P01"],"exit":"Slow consumer cannot stall physics; pause epoch overrun and stop tests"},
-    {"id":"P03","title":"Pilot controls instructor console and command replay","state":"TODO","depends_on":["P02"],"exit":"Lease acknowledgement duplicate expiry and replay verified"},
+    {"id":"P03","title":"Pilot controls instructor console and command replay","state":"PARTIAL","depends_on":["P02"],"exit":"Lease acknowledgement duplicate expiry and replay verified"},
     {"id":"P04","title":"Canonical DDP EDP broker fanout","state":"PARTIAL","depends_on":["P02"],"exit":"Simultaneous real consumers; no operational source impersonation"},
     {"id":"P05","title":"Engine systems sensors fuel and airframe","state":"PARTIAL","depends_on":["P02"],"exit":"Coupled synthetic models with conservation and fault recovery tests"},
     {"id":"P06","title":"Dynamic navigation weather and product contracts","state":"PARTIAL","depends_on":["P01","P02"],"exit":"Products traverse actual parsers caches and consumers; identity validity checked"},

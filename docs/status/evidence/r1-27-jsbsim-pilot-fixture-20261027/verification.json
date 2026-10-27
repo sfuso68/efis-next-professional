@@ -1,0 +1,14 @@
+{
+  "schema":"fuso-avionics.sil-pilot-fixture-evidence.v1",
+  "date":"2026-10-27",
+  "status":"PARTIAL",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "local_tests":{"new_methods":6,"total_methods":134,"status":"PASS"},
+  "server_tests":"PENDING",
+  "ctest":"PENDING",
+  "pilot_scope":"LOCAL_FROZEN_FIRST_SECOND_FIXTURE_ONLY",
+  "real_console":false,
+  "hardware_acceptance":false,
+  "open":["native FDM comparison","live authenticated console","model capability expansion","lifecycle epoch and crash recovery","executive replay","P04 fanout","systems and product consumers","catalogue restore and model validation","endurance and actual panel acceptance"]
+}

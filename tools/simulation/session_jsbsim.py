@@ -79,8 +79,12 @@ class PhysicalAdapter:
         if scenario not in SCENARIOS:raise ValueError("scenario")
         self.backend,self.scenario,self.journal=backend,scenario,journal
         self.frames=0
+        self.pilot=None
 
-    def step(self):self.backend.step(self.scenario)
+    def step(self):
+        if self.pilot is not None:self.pilot.before_step()
+        self.backend.step(self.scenario)
+        if self.pilot is not None:self.pilot.after_step()
 
     def frame(self, manifest, tick, mono_ns):
         raw=self.backend.frame(self.scenario,manifest["session_id"])
@@ -94,10 +98,14 @@ class PhysicalAdapter:
 
 
 def run(directory, world, *, session_id, source_commit, scenario="turn", seconds=3, pause_tick=None,
-        journal_mode="sync"):
+        journal_mode="sync", pilot_fixture=None):
     c.token(session_id)
     c.integer(seconds,1,60)
     if pause_tick is not None:c.integer(pause_tick,1,seconds*100-1)
+    if pilot_fixture is not None:
+        from tools.simulation.pilot_fixture import validate_plan
+        pilot_fixture=validate_plan(pilot_fixture)
+        c.require(pause_tick is None and scenario=="cruise", "pilot fixture requires unpaused cruise")
     config_digest(world)
     c.require(journal_mode in ("sync","async-test"),"unknown journal mode")
     from tools.simulation.async_journal import AsyncTruthJournal
@@ -106,6 +114,7 @@ def run(directory, world, *, session_id, source_commit, scenario="turn", seconds
                        backend="JSBSim-"+VERSION,model="c172p",
                        recording_policy=copy.deepcopy(AsyncTruthJournal.policy) if journal_mode=="async-test"
                                         else dict(mode="SYNC_PER_RECORD"))
+    if pilot_fixture is not None:configuration["pilot_fixture"]=pilot_fixture
     manifest=dict(schema=c.SCHEMA,kind="MANIFEST",session_id=session_id,epoch=0,simulated=True,
         flight_approval=False,mode="LIVE",epoch_utc=world["epoch_utc"],integration_hz=100,output_hz=20,
         source_node=65000,config_sha256=hashlib.sha256(encode(configuration)).hexdigest(),
@@ -119,6 +128,9 @@ def run(directory, world, *, session_id, source_commit, scenario="turn", seconds
         engine=SessionEngine(manifest,adapter,journal,max_ticks=seconds*100)
         for name in ("fast_probe","slow_probe","absent_probe"):engine.register(name)
         engine.validate();engine.arm_software_test();engine.start()
+        if pilot_fixture is not None:
+            from tools.simulation.pilot_fixture import PilotFixture
+            adapter.pilot=PilotFixture(pilot_fixture,manifest,backend,journal)
         received=0;paused=False;started=time.monotonic()
         while engine.state == "RUNNING":
             if pause_tick is not None and not paused and engine.total_ticks >= pause_tick:
@@ -136,6 +148,7 @@ def run(directory, world, *, session_id, source_commit, scenario="turn", seconds
             epoch=engine.manifest["epoch"],backend="JSBSim-"+VERSION,simulated=True,
             flight_approval=False,network_publisher=False,actual_display_connected=False)
         summary["journal_mode"]=journal_mode
+        if adapter.pilot is not None:summary["pilot_commands_applied"]=adapter.pilot.applied
         if journal_mode=="async-test":
             summary.update(maximum_pending_records=journal.maximum_pending,
                 maximum_observed_ack_age_ms=journal.maximum_ack_age_ms,
@@ -156,12 +169,17 @@ def main():
     parser.add_argument("--seconds",type=int,default=3)
     parser.add_argument("--pause-tick",type=int)
     parser.add_argument("--journal-mode",choices=("sync","async-test"),default="sync")
+    parser.add_argument("--pilot-fixture",type=Path,help="frozen local SET_CONTROL plan, NOT a remote console")
     args=parser.parse_args()
     try:
         c.require(args.world.stat().st_size<=65536,"world size")
+        pilot=None
+        if args.pilot_fixture is not None:
+            c.require(args.pilot_fixture.stat().st_size<=65536,"pilot fixture size")
+            pilot=c.decode(args.pilot_fixture.read_bytes())
         print(json.dumps(run(args.directory,c.decode(args.world.read_bytes()),session_id=args.session_id,
             source_commit=args.source_commit,scenario=args.scenario,seconds=args.seconds,
-            pause_tick=args.pause_tick,journal_mode=args.journal_mode)))
+            pause_tick=args.pause_tick,journal_mode=args.journal_mode,pilot_fixture=pilot)))
     except (ValueError,OSError,RuntimeError,ImportError) as exc:parser.exit(2,f"Session JSBSim FAILED: {exc}\n")
 
 

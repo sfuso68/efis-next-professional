@@ -1,10 +1,29 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-27, R1-26 ammissione comandi SIL bounded; release permanenti invariate
+Aggiornamento: 2026-10-27, R1-27 fixture pilota e audit ingressi JSBSim; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-27 — applicazione di una fixture pilota locale
+
+Implementato runner opt-in con piano congelato nel config/hash,coda R1-26,
+tre ingressi FDM C172P (aileron/elevator/throttle),audit ADMITTED/INTENT/
+APPLIED con readback della proprietà dopo step fisico. Lease massima5s e
+tick100;rilascio degli override al tick101 o scadenza wall. Fallback al
+pilota di banco,non neutralizzazione né comportamento approvato per aereo.
+Massimo16comandi,tutti ammessi al tick0/applicati nel primo secondo:
+NON console interattiva o piano pilota esteso. Solo cruise senza pausa.
+Default invariato;nessun endpoint/attuatore/credenziale modificato.
+Trace verifier ora correla gli eventi al piano congelato e respinge
+duplicati,ordine/valori/ACK alterati o applicazione incompleta. Integrità
+e readback degli ingressi NON equivalgono a oracle aerodinamico indipendente.
+Software locale:134test PASS,inclusi6nuovi. Test nativi/server e CTest pending.
+Nessuna verifica hardware avionica. P03PARTIAL:console/inbox autenticata,
+comandi distribuiti,lifecycle fermo,epoch/recovery e replay esecutivo restano
+aperti. P04fanout/P05impianti/P06prodotti/P07catalogo e acceptance P08–P12
+non sono chiusi da questa fixture. Non dichiarare simulatore completo.
 
 ## R1-26 — P03 ammissione e dedup dei comandi
 

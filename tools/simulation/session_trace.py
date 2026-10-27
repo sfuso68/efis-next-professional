@@ -6,6 +6,7 @@ from pathlib import Path
 from tools.simulation import session_contract as c
 from tools.simulation.session_engine import encode
 from tools.simulation.session_jsbsim import normalize
+from tools.simulation.pilot_fixture import Audit
 
 
 def verify(directory):
@@ -14,7 +15,7 @@ def verify(directory):
     c.require(result["status"]=="COMPLETE_SOFTWARE_ONLY" and result["simulated"] is True
               and result["flight_approval"] is False,"not a completed SIM run")
     digest=hashlib.sha256();count=frames=0;pending=None;manifest=None
-    phase="NEW";offset=0;last_sequence=-1;last_mono=-1;last_total=0
+    phase="NEW";offset=0;last_sequence=-1;last_mono=-1;last_total=0;pilot=None
     with (root/"truth.jsonl").open("rb") as stream:
         while True:
             raw=stream.readline(65537)
@@ -28,9 +29,15 @@ def verify(directory):
                 manifest=c.manifest(r["manifest"])
                 c.require(manifest["epoch"]==0,"initial epoch")
                 c.require(hashlib.sha256(encode(r["configuration"])).hexdigest()==manifest["config_sha256"],"configuration digest")
+                pilot=Audit(r["configuration"].get("pilot_fixture"),manifest)
                 continue
             c.require(manifest is not None and r["session_id"]==manifest["session_id"]
                 and r["simulated"] is True and r["flight_approval"] is False,"trace identity/SIM")
+            if r["kind"]=="PILOT_FIXTURE":
+                c.require(pending is None and r["epoch"]==0 and manifest["epoch"]==0
+                    and last_total<=r["total_ticks"]<=last_total+5,"pilot frame/epoch order")
+                pilot.record(r,phase)
+                continue
             if r["kind"]=="PHYSICS_WORLD":
                 c.require(phase=="RUNNING" and pending is None,"physics order")
                 pending=r;continue
@@ -69,10 +76,12 @@ def verify(directory):
                     c.require(r["total_ticks"]>=last_total,"physical clock reversed")
                     last_total=r["total_ticks"]
     c.require(phase=="ENDED" and pending is None,"incomplete lifecycle")
+    applied=pilot.finish()
     c.require(result["session_id"]==manifest["session_id"] and result["truth_records"]==count
         and result["truth_sha256"]==digest.hexdigest() and result["frames"]==frames
         and result["total_ticks"]==last_total,"trace result digest/count")
     return dict(status="PASS",frames=frames,total_ticks=last_total,epochs=manifest["epoch"]+1,
+                pilot_commands_applied=applied,
                 scope="TRACE_INTEGRITY_NOT_MODEL_VALIDATION",flight_approval=False)
 
 

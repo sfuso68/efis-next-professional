@@ -111,6 +111,18 @@ class Backend:
                         "cas_kt": self.base_v, "pitch_deg": self.base_p,
                         "throttle": self.base_t}
         self.ticks = 0
+        self.test_controls = {}
+
+    def set_test_control(self, control, value):
+        from tools.simulation.pilot_fixture import INPUTS
+        if control not in INPUTS or INPUTS[control] not in self.catalog:
+            raise ValueError("model control capability unavailable")
+        from tools.simulation import session_contract as c
+        c.number(value, *c.ICD["controls"][control])
+        self.test_controls[control] = value
+
+    def clear_test_controls(self):
+        self.test_controls.clear()
 
     def read(self, prop):
         # A missing property is never auto-created as a plausible zero.
@@ -139,6 +151,11 @@ class Backend:
         self.f["fcs/aileron-cmd-norm"] = clip(.04*(target_roll-self.f["attitude/phi-deg"])
                                              - .2*self.f["velocities/p-rad_sec"], -1, 1)
         self.f["fcs/throttle-cmd-norm"] = clip(self.base_t + .02*(self.base_v-self.f["velocities/vc-kts"]), 0, 1)
+        # Explicit opt-in test commands override only these FDM inputs. The
+        # airborne bench pilot writes all three again when the lease releases.
+        from tools.simulation.pilot_fixture import INPUTS
+        for control, value in getattr(self, "test_controls", {}).items():
+            self.f[INPUTS[control]] = value
         if not self.f.run():
             raise ValueError("FDM stopped")
         self.ticks += 1

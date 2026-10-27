@@ -426,6 +426,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_session_jsbsim)
         set_tests_properties(efis_sil_jsbsim_adapter_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_pilot_fixture_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_pilot_fixture)
+        set_tests_properties(efis_sil_pilot_fixture_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
         add_test(NAME efis_sil_command_queue_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_command_queue)
         set_tests_properties(efis_sil_command_queue_tests PROPERTIES
