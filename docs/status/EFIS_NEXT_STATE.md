@@ -16,8 +16,12 @@ Consegna bytes immutabili una tantum;nessun APPLIED,nessuna applicazione
 fisica o autenticazione di rete dichiarata. Default runner invariato.
 Software locale:13nuovi test e128totali PASS;10/10CTest mirati PASS con
 binari nativi preesistenti,nessun renderer ricompilato. Warning path oggetti
-MSVC preesistente non risolto né derogato. Prova Linux/server da acquisire.
-Nessuna verifica su hardware avionico,nessun nodo/pannello modificato.
+MSVC preesistente non risolto né derogato. Gli stessi13test della nuova coda
+PASS su serverha in container senza rete,source/runtime read-only,senza
+endpoint avionici. Source0441c7e,archivio SHA256
+44c64368a1a2e30228738dee092132ae735046a489d31db0f29a90bc36e2fe9c.
+È esecuzione software su server reale,non acceptance hardware o FDM pilotato.
+Nessuna verifica su hardware avionico,nessun nodo avionico/pannello modificato.
 P03PARTIAL:inbox autenticata multi-thread,executor/capability JSBSim,
 lifecycle fermo,audit/durabilità e ACK fisico,epoch/recovery restano aperti.
 Runbook: ../development/SIL_COMMAND_ADMISSION_V1.md. Nessun nuovo DONE.
