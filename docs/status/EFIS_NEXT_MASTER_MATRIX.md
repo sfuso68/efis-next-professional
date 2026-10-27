@@ -19,7 +19,9 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 R1-25 / PRJ-004,BBX-001,VER-001:P02recorder di TEST async opt-in con
 writer separato,16record/512KiB e watchdog ACK100ms;QUEUED distinto da
-DURABLE,defaultsync e100msfisica invariati.115test locali PASS,9nuovi.
+DURABLE,defaultsync e100msfisica invariati.115test locali,121server e9/9CTest PASS.
+Run60s su secondoSSD /dev/sdb PASS software,6000tick/1202frame,ACKmax24.870313ms;
+integrità trace PASS. Run SSD sistema FAIL ACK>100ms conservata senza successo.
 Fault iniettati solo in test;nessuna prova hardware o modifica Blackbox.
 Qualifica storage/endurance aperta,stati invariati. Evidence r1-25-async-test-recorder-20261027.
 

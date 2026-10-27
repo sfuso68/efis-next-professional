@@ -19,7 +19,17 @@ portano FAILED. Solo risultato root dopo writer,copia,hash e fsync è completo.
 Verificato software locale:115test PASS,inclusi9nuovi per writer reale su
 file temporanei,hang,crash,errore disco iniettato,limiti/no-overwrite e
 stop engine prima dello step se watchdog scade. Nessun fault su storage
-operativo. Prove serverha e temporizzate del nuovo modo ancora da acquisire.
+operativo. Serverha:121test PASS,inclusi6JSBSim nativi;9/9CTest locali PASS
+senza nuovo renderer compilato. Source7276a156202a400e73fb2dc7760734cddeb948cc.
+Run async sul SSD di sistema FAIL per ACK oltre100ms,ultimo tick fisico240,
+senza risultato pubblico di successo. Dopo autorizzazione utente,creata sola
+directory isolata /srv/data/avionix-sil-test sul secondo SSD FIKWOT /dev/sdb
+btrfs;nessun cambiamento a mappe/archivi. Run60s PASS SOFTWARE ONLY:
+6000tick,1202frame,2epoch,60.328081s,maxlag5.036858ms,ACK massimo osservato
+24.870313ms,coda massima5record,2414record durevoli. Verifica integrità
+trace PASS,hash63de4cf30c2e2d7fa4cea80f2bb347004548db0742f4227bb8f0cbae844f2204.
+Una prova non dimostra endurance,power-loss o causa esclusiva del FAIL
+del disco di sistema. Ripetibilità/soak ancora aperti.
 Nessun pannello/firmware/wire/chiave/recorder operativo modificato.
 
 Aperti:finalizzazione parent ancora sincrona dopo la fisica,kernel I/O non

@@ -1,5 +1,13 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-25/AVX-G5-02: recorder async-test opt-in con queue bounded e watchdog
+ACK100ms implementato;115test locali,121serverha e9/9CTest PASS. SSD sistema
+FAIL conservato;secondoSSD autorizzato /dev/sdb,btrfs,run60s e trace PASS
+software (6000tick/1202frame,ACKmax24.870313ms). Nessun pannello collegato.
+P02 resta PARTIAL: ripetibilità,soak,power-loss e watchdog finalizzazione
+ancora aperti. Poi P03 comandi bounded/lease/dedup e P04 codec/fanout.
+Non elevare a DONE né distribuire il recorder test come registratore operativo.
+
 R1-24/AVX-G5-02: collegato scheduler P02 a JSBSim1.3.3,trace raw/canonico e
 verifica integrità;106test Windows,111serverha e8/8CTest PASS. Run60s con
 journal RAM e copia finale su disco PASS;due run di persistenza live su
