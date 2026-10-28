@@ -1,10 +1,24 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-27, R1-27 fixture pilota e audit ingressi JSBSim; release permanenti invariate
+Aggiornamento: 2026-10-28, R1-28 archivio e restore verificato delle run SIL; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-28 — archivio dati di sessione e restore esclusivo
+
+Implementati pack/restore di tre soli file di run,manifesto hash/config/
+modello/commit e completion marker;TAR non compresso bounded,allowlist fissa,
+rifiuto traversal/link/device/sparse/PAX/duplicati/trailer nascosti. Target
+solo nuovo,nessun overwrite o cleanup. Restore completo solo dopo fsync e
+verifica semantica trace;fallimenti conservati senza receipt di successo.
+Nessun asset modello/MSFS redistribuito,checksum non è autenticazione.
+Software locale:15nuovi/149totali PASS. CTest e server/restore reale pending.
+Nessuna verifica hardware avionica,nessun nodo operativo modificato.
+P07TODO→PARTIAL nel piano SIL;catalogo/licenze/dataset/replica e restore NAS,
+dipendenze eseguibili,firma e power-loss restano aperti. Fonte:
+../development/SIL_SESSION_ARCHIVE_V1.md. Nessun nuovo DONE.
 
 ## R1-27 — applicazione di una fixture pilota locale
 

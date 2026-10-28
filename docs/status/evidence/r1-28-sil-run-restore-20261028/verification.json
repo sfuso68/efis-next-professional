@@ -1,0 +1,14 @@
+{
+  "schema":"fuso-avionics.sil-run-restore-evidence.v1",
+  "date":"2026-10-28",
+  "status":"PARTIAL",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "local_tests":{"new_methods":15,"total_methods":149,"status":"PASS"},
+  "server_tests":"PENDING",
+  "ctest":"PENDING",
+  "actual_run_restore":"PENDING",
+  "nas_replication":"NOT_PERFORMED",
+  "hardware_acceptance":false,
+  "open":["catalogue licences provenance and datasets","independent NAS restore","runtime and model dependency restore","authentication signatures and power-loss","live console fanout complete systems and actual panel acceptance"]
+}

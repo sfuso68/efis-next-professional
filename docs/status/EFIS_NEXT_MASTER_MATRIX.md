@@ -17,6 +17,10 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-28 / PRJ-004,VER-001:P07 archivio dati SIL bounded e restore esclusivo
+con hash e controllo semantico;15nuovi/149test locali PASS,server pending.
+Nessuna replica NAS o acceptance hardware implicita;requisiti invariati.
+
 R1-27 / PRJ-004,VER-001:P03fixture locale→tre ingressi reali JSBSim con
 audit/readback e rilascio lease,134test locali/143server/11CTest PASS.
 Run60s secondoSSD/1201frame/3comandi,integrità trace PASS,ACKmax21.430394ms.

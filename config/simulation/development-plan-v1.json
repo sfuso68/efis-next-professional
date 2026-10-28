@@ -14,7 +14,7 @@
     {"id":"P04","title":"Canonical DDP EDP broker fanout","state":"PARTIAL","depends_on":["P02"],"exit":"Simultaneous real consumers; no operational source impersonation"},
     {"id":"P05","title":"Engine systems sensors fuel and airframe","state":"PARTIAL","depends_on":["P02"],"exit":"Coupled synthetic models with conservation and fault recovery tests"},
     {"id":"P06","title":"Dynamic navigation weather and product contracts","state":"PARTIAL","depends_on":["P01","P02"],"exit":"Products traverse actual parsers caches and consumers; identity validity checked"},
-    {"id":"P07","title":"Model dataset catalogue server NAS restore","state":"TODO","depends_on":["P01"],"exit":"Licences provenance hashes and fresh-directory session restore"},
+    {"id":"P07","title":"Model dataset catalogue server NAS restore","state":"PARTIAL","depends_on":["P01"],"exit":"Licences provenance hashes and fresh-directory session restore"},
     {"id":"P08","title":"Real PFD MFD EMS consumers","state":"PARTIAL","depends_on":["P03","P04","P05","P06"],"exit":"Same session epoch and correlated frames; no competing generators"},
     {"id":"P09","title":"Terrain synthetic vision TAWS and route cache","state":"TODO","depends_on":["P06","P07","P08"],"exit":"Datum runway obstacles gaps and offline packs verified"},
     {"id":"P10","title":"Emergency voice FPV setup and accessory test coverage","state":"TODO","depends_on":["P05","P07","P08"],"exit":"Cross-module faults and advisory-only boundaries exercised"},

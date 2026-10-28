@@ -1,5 +1,10 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-28/AVX-G5-02:P07PARTIAL,pack/restore bounded dei dati di run senza
+overwrite,verifica trace e receipt;149test locali PASS,server pending.
+Catalogo licenze/modelli/dataset e replica/restore NAS ancora aperti.
+Non sostituisce il completamento P03console,P04fanout e consumer reali.
+
 R1-27/AVX-G5-02: fixture locale P03 collegata a tre ingressi FDM con audit
 e readback;134test locali,143serverha incluse9prove JSBSim e11CTest PASS.
 Run60s su secondoSSD/1201frame/3comandi e trace PASS software;non HMI né

@@ -1,6 +1,6 @@
 # Simulatore — quadro di completamento
 
-2026-10-27, R1-27. DEVELOPMENT / NON-CERT. Nessuna approvazione al volo.
+2026-10-28, R1-28. DEVELOPMENT / NON-CERT. Nessuna approvazione al volo.
 Il piano canonico macchina è config/simulation/development-plan-v1.json;
 questa vista esplicita i gap,non sostituisce Master Matrix o evidence bundle.
 Non calcolare avanzamento del prodotto dal numero dei test automatici.
@@ -13,7 +13,7 @@ Non calcolare avanzamento del prodotto dal numero dei test automatici.
 | P04 distribuzione | Checker DDP/EDP offline e precedente link PFD ristretto | Nuovo producer verso broker e PFD/MFD/EMS simultanei;source arbitration e correlazione sessione |
 | P05 impianti | Motore C172P reference,fuel/flow,flap parziale,canali mancanti null | Rete elettrica,sonde per cilindro,pressioni/carburante,airframe e guasti accoppiati |
 | P06 NAV/WX | Mondo analitico offline,VOR/NDB/ILS/DME/route/GNSS e prodotti WX sintetici | Prodotti attraversano parser/cache/HMI reali,TAF dinamico,identità NAV e propagazione RF realistica |
-| P07 catalogo | Hash modello/runtime e archivi di singole run | Catalogo licenze/provenienza/versioni,dataset completi,replica e restore SIL NAS verificato |
+| P07 catalogo | Hash modello/runtime,pack/restore bounded dei dati run con verifica semantica | Catalogo licenze/provenienza/versioni,dataset completi,replica e restore SIL NAS verificato;restore runtime/modelli |
 | P08 consumer | Prove storiche del PFD con sottoinsieme dati SIM | Tre applicazioni attuali dalla stessa sessione,senza generatori concorrenti;EMS/airframe/WX completi |
 | P09 terreno | SVS e cache esistenti nel prodotto | Collisione/DEM/ostacoli/datum legati alla sessione,route packs e guasti attraverso consumer reali |
 | P10 funzioni | Moduli applicativi esistenti,non nuova acceptance SIL | Emergenze/voce/FPV/setup/accessori con guasti coerenti e isolamento ore operative |

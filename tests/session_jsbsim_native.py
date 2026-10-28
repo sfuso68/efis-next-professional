@@ -8,6 +8,18 @@ from tools.simulation.session_trace import verify
 
 
 class RealSessionTests(unittest.TestCase):
+    def test_native_archive_restore_preserves_actual_fdm_and_pilot_audit(self):
+        from tools.simulation.session_archive import pack, restore, FILES
+        plan=[dict(apply_tick=10,control="aileron",value=.1)]
+        s.run(self.root/"original",self.world,session_id="native-archive",source_commit="0"*40,
+              scenario="cruise",seconds=1,pilot_fixture=plan)
+        exported=pack(self.root/"original",self.root/"session.tar")
+        restored=restore(self.root/"session.tar",self.root/"restored")
+        self.assertEqual(restored["archive_sha256"],exported["archive_sha256"])
+        self.assertEqual(restored["trace"]["pilot_commands_applied"],1)
+        for name in FILES:
+            self.assertEqual((self.root/"original"/name).read_bytes(),(self.root/"restored"/name).read_bytes())
+
     def test_native_three_inputs_and_rehashed_false_readback_rejected(self):
         import hashlib
         from tools.simulation.session_engine import encode
