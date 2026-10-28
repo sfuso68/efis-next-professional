@@ -18,8 +18,10 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 ## Matrice principale
 
 R1-28 / PRJ-004,VER-001:P07 archivio dati SIL bounded e restore esclusivo
-con hash e controllo semantico;15nuovi/149test locali PASS,server pending.
-Nessuna replica NAS o acceptance hardware implicita;requisiti invariati.
+con hash e controllo semantico;15nuovi/149test locali e159server PASS.
+Restore della run60s su server e dopo copia Windows PASS;NAS non provato.
+CTest11/12PASS,1FAIL WinError4551 (policy applicazioni,non aggirata).
+Evidence r1-28-sil-run-restore-20261028;requisiti/hardware invariati.
 
 R1-27 / PRJ-004,VER-001:P03fixture locale→tre ingressi reali JSBSim con
 audit/readback e rilascio lease,134test locali/143server/11CTest PASS.

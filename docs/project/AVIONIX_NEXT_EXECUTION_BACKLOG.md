@@ -1,7 +1,9 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
 R1-28/AVX-G5-02:P07PARTIAL,pack/restore bounded dei dati di run senza
-overwrite,verifica trace e receipt;149test locali PASS,server pending.
+overwrite,verifica trace e receipt;149test locali/159server PASS,restore
+run60s su server e Windows PASS. CTest11PASS/1FAIL per controllo applicazioni
+WinError4551;nessuna modifica alla policy,gate aperto.
 Catalogo licenze/modelli/dataset e replica/restore NAS ancora aperti.
 Non sostituisce il completamento P03console,P04fanout e consumer reali.
 

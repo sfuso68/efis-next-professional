@@ -14,11 +14,27 @@ rifiuto traversal/link/device/sparse/PAX/duplicati/trailer nascosti. Target
 solo nuovo,nessun overwrite o cleanup. Restore completo solo dopo fsync e
 verifica semantica trace;fallimenti conservati senza receipt di successo.
 Nessun asset modello/MSFS redistribuito,checksum non è autenticazione.
-Software locale:15nuovi/149totali PASS. CTest e server/restore reale pending.
+Software locale:15nuovi/149totali PASS;serverha159test PASS,inclusi10JSBSim
+nativi e restore di sessione fisica con audit pilota. Source75d46dd,
+archivio SHA2560ac6edd46b94c00d810814a0f77fc966617cc2228ed382c45fc47143f7be157e.
+CTest locale11/12PASS:efis_sil_panel_replay_tests FAIL per WinError4551
+controllo applicazioni (4casiPOSIX già skip attesi). Non aggirata la policy,
+nessun nuovo binario renderer compilato;gate nativo Windows aperto.
+Warning path MSVC preesistente invariato. Primo test di sviluppo Windows
+ha rilevato ctime lstat/fstat non comparabili:confronto Windows ora basato
+su identità/size/mtime e payload completo;POSIX include ancora ctime.
+Run60s R1-27 archiviata e ripristinata in directory nuova sul secondoSSD,
+poi archivio copiato su Windows e restore indipendente PASS. Conservati
+6000tick/1201frame/3comandi;hash archive
+d70e5da8c71e8672c7942b8782c4a2c4ccd15a4e2ed7f4c8532b8377cc9ab5a5,
+truth ad860282513963e5234dad3185193fec55020accbce15dafb159305634544b2b,
+result408158a996efd851f62241b7af5bc54a6ed26425d3b0a724ecc179b7bb10e4e6.
+Queste sono prove software su server/workstation reali,non avionica in volo.
 Nessuna verifica hardware avionica,nessun nodo operativo modificato.
 P07TODO→PARTIAL nel piano SIL;catalogo/licenze/dataset/replica e restore NAS,
 dipendenze eseguibili,firma e power-loss restano aperti. Fonte:
 ../development/SIL_SESSION_ARCHIVE_V1.md. Nessun nuovo DONE.
+Evidenza: evidence/r1-28-sil-run-restore-20261028/verification.json.
 
 ## R1-27 — applicazione di una fixture pilota locale
 
