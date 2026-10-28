@@ -17,6 +17,11 @@ Ogni modifica a un sottosistema deve aggiornare nello stesso commit/PR almeno un
 
 ## Matrice principale
 
+R1-29 / PRJ-004,VER-001:dossier PDF/snapshot riproducibile con tutte71voci,
+mappe Standard/Professional,planning e gap;4test di coerenza PASS.
+Solo rendicontazione software/documentale:nessuna nuova funzione avionica,
+accettazione hardware o chiusura dei requisiti;stati invariati.
+
 R1-28 / PRJ-004,VER-001:P07 archivio dati SIL bounded e restore esclusivo
 con hash e controllo semantico;15nuovi/149test locali e159server PASS.
 Restore della run60s su server e dopo copia Windows PASS;NAS non provato.

@@ -1,5 +1,11 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-29/PRJ-004:consolidato dossier Standard/Professional con mappa visiva,
+requisiti completi,scope delle evidenze e planning di chiusura.4test
+documentali PASS,nessun avanzamento funzionale o hardware implicito.
+Prossimo sviluppo operativo resta P03console/lifecycle e P04fanout;
+il PDF non sostituisce i criteri di uscita del piano SIL.
+
 R1-28/AVX-G5-02:P07PARTIAL,pack/restore bounded dei dati di run senza
 overwrite,verifica trace e receipt;149test locali/159server PASS,restore
 run60s su server e Windows PASS. CTest11PASS/1FAIL per controllo applicazioni

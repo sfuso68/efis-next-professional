@@ -1,9 +1,16 @@
 # FUSO AVIONICS NEXT — indice documentale e regole di autorità
 
-Aggiornamento: 2026-09-22
+Aggiornamento: 2026-10-28
 Stato: baseline documentale WS0/G0, DEVELOPMENT / NON-CERT
 
 ## Repository autorevole
+
+Dossier completo di perimetro Standard/Professional R1-29:
+`reports/FUSO_AVIONICS_NEXT_PROGETTO_COMPLETO_2026-10-28.pdf`,con snapshot
+JSON nella stessa cartella. Include mappe,sottosistemi,71requisiti,planning
+e gap;non dichiara completato il software o l'acceptance. È una vista delle
+fonti sotto,non una nuova autorità prevalente. Rigenerazione dal repository:
+`python -m tools.project_status.project_dossier --output output/pdf/FUSO_AVIONICS_NEXT_PROGETTO_COMPLETO_2026-10-28.pdf --snapshot output/pdf/FUSO_AVIONICS_NEXT_SNAPSHOT_2026-10-28.json`.
 
 Definizione simulatore corrente: `docs/development/SIMULATOR_MASTER_SPEC_V1.md`
 e `config/simulation/development-plan-v1.json`, aggiornati R1-21 del2026-10-26.

@@ -1,10 +1,26 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-28, R1-28 archivio e restore verificato delle run SIL; release permanenti invariate
+Aggiornamento: 2026-10-28, R1-29 dossier completo del progetto e rendicontazione riproducibile; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-29 — dossier Standard/Professional e mappa complessiva
+
+Implementato generatore PDF documentale riproducibile con snapshot JSON,
+conteggi derivati dalla matrice,hash delle fonti e dettaglio di tutti71requisiti.
+Include mappe fisica/software,profili Standard/Professional come target,
+nodi/release con date,moduli e peculiarità,pacchetti SIL,rischi,planning e
+attività interattive. Non attribuisce al prodotto una percentuale di sicurezza
+o un completamento del simulatore.4nuovi test di coerenza PASS;verifica
+grafica del PDF separata dalle prove avioniche. Nessun nuovo test hardware,
+audit live dei nodi,deployment o completamento funzionale dichiarato.
+Il gate Windows WinError4551 R1-28 resta aperto,non aggirato.
+Documento versionato: ../project/reports/FUSO_AVIONICS_NEXT_PROGETTO_COMPLETO_2026-10-28.pdf.
+Il dossier copre l'intero progetto ma fotografa implementazione ancora
+parziale:console live,fanout multi-panel,impianti/prodotti,catalogo/NAS e
+acceptance mantengono i propri gate. Requisiti e stati invariati.
 
 ## R1-28 — archivio dati di sessione e restore esclusivo
 
