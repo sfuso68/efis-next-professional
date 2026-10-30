@@ -3,7 +3,9 @@
 R1-31/PRJ-004,VER-001: inbox nel pump owner RUNNING/PAUSED e revoca permanente
 ai confini lifecycle/epoch. Nessun executor live o endpoint. 16 nuovi test,
 52 mirati PASS; regressione locale186 ERROR timeout async iniziale, 9async
-isolati e186 ripetuti PASS, ripetibilità timing aperta. Prossimo: executor
+isolati e186 ripetuti PASS, ripetibilità timing aperta; 193 server PASS inclusi
+11 JSBSim nativi e 10 suite CTest Python PASS. Nessuna acceptance hardware.
+Prossimo: executor
 live con audit/capability e lifecycle autenticato, riarmo epoch e dedup.
 
 R1-30/PRJ-001,PRJ-004,VER-001: piano concentrato in sei macroblocchi e tre

@@ -21,8 +21,17 @@ regressione 186 test con un ERROR per ACK recorder async oltre 100 ms:
 conservata, nessuna soglia cambiata. Suite async isolata 9/9 PASS e ripetizione
 186/186 PASS. Causa del primo timeout non determinata; ripetibilità timing
 Windows resta aperta, non si presenta il primo run come verde.
-Test server/nativo di composizione da eseguire. Nessun hardware avionico
-verificato, nessun deploy/merge/servizio/endpoint modificato. Gate WinError4551
+Serverha: 193 test PASS, inclusi 11 JSBSim nativi, nuovo test di composizione
+admission/pausa/epoch con FDM reale ma clock/journal fixture (non timing live).
+Source d982f6dea8c5f8bfa6b2acffe57226778e390d23, archivio SHA256
+4c344564558e12de1938f98cf536b4a50b1bb8d6e73b7cb66fbcfcf10369388c,
+container senza rete/capability, sorgenti/runtime read-only. CMake configurato
+e 10/10 suite CTest Python PASS, nessun binario ricompilato. Review indipendente
+read-only senza bug concreti; aggiunti test negativi suggeriti. Primo test
+di scadenza correggeva un'attesa del test prima del successivo pump, non la
+semantica di expiry; log iniziale conservato. Evidenze:
+evidence/r1-31-sil-owner-service-20261030/verification.json.
+Nessun hardware avionico verificato, nessun deploy/merge/servizio/endpoint modificato. Gate WinError4551
 e warning path MSVC preesistenti non aggirati. P03 resta PARTIAL: mancano
 executor live, console/trasporto autenticato, riarmo epoch/dedup, audit
 interattivo durevole e fanout. Fonte: ../development/SIL_OWNER_SERVICE_V1.md.

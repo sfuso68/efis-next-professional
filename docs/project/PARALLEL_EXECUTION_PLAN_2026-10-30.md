@@ -77,3 +77,12 @@ Non stimare date finali senza inventario dei residui e primi tempi di campagna.
 
 R1-30 non completa M2: endpoint autenticato, executor live, pausa/epoch,
 durabilità degli eventi interattivi e consumer simultanei restano aperti.
+
+Checkpoint R1-31: servizio di ammissione collegato al pump RUNNING/PAUSED,
+con revoca permanente ai confini lifecycle/epoch e senza executor. 16 nuovi
+test locali, ripetizione 186/186 e 193 server (11 JSBSim) PASS; prima
+regressione Windows conserva un timeout async>100ms, timing non qualificato.
+10 suite CTest Python PASS; gate nativo Windows e hardware restano aperti.
+Il prossimo lavoro del filone A è executor live/capability/readback con audit,
+poi lifecycle autenticato e riarmo/dedup tra epoch. Non scambiare questo
+collegamento owner con la chiusura di M2. Filone B ancora solo handoff.
