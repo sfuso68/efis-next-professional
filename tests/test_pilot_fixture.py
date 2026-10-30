@@ -87,4 +87,15 @@ class PilotFixtureTests(unittest.TestCase):
         self.assertEqual(self.backend.writes,0)
 
 
+    def test_slow_intent_journal_expires_lease_before_input_write(self):
+        p=self.pilot()
+        original=self.journal.append
+        def slow(record):
+            original(record)
+            if record["event"]=="INTENT":self.now+=5_000_000_000
+        self.journal.append=slow
+        with self.assertRaises(ValueError):p.before_step()
+        self.assertEqual(self.backend.writes,0)
+
+
 if __name__=="__main__":unittest.main()

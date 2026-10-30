@@ -1,10 +1,33 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-28, R1-29 dossier completo del progetto e rendicontazione riproducibile; release permanenti invariate
+Aggiornamento: 2026-10-30, R1-30 piano concentrato e fondazioni controllo SIL; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-30 — piano concentrato e ingresso comandi SIL limitato
+
+IDs: PRJ-001, PRJ-004, VER-001. Piano in sei macroblocchi, tre filoni con
+ownership e tre campagne aggregate, più handoff Claude EMS preparato ma
+NON avviato. Un agente indipendente ha revisionato il controllo SIL in sola
+lettura; corretti accesso ai risultati dopo revoca e monotonia del tick.
+Implementati inbox cross-thread bounded, revoca separata, servizio owner
+della lease anche a tick fermo e ACK terminali conservati senza riesecuzione.
+La fixture ricontrolla la lease dopo INTENT, prima della mutazione FDM.
+Localmente 170 test Python PASS, inclusi 17 nuovi; CMake configurato e nove
+suite CTest Python PASS. Warning path MSVC preesistente invariato; nessun
+nuovo binario compilato. Il gate nativo Windows WinError4551 resta aperto,
+non aggirato e non sostituito da questi PASS. Nuovi test server: da eseguire.
+
+Solo software: nessuna nuova prova hardware avionica o accettazione HMI,
+nessun deploy, merge, servizio, endpoint o autorizzazione attuatori modificato.
+Inbox non ancora collegato al loop SessionEngine: durante pausa la chiamata
+owner è una responsabilità del futuro integratore, non watchdog autonomo.
+Console autenticata, lifecycle/resume/epoch, audit interattivo durevole e
+fanout multi-panel restano aperti. P03 PARTIAL, nessun nuovo DONE.
+Piano: ../project/PARALLEL_EXECUTION_PLAN_2026-10-30.md.
+Specifica: ../development/SIL_CONTROL_INBOX_V1.md.
 
 ## R1-29 — dossier Standard/Professional e mappa complessiva
 

@@ -64,6 +64,7 @@ class PilotFixture:
             self.released = True
         for request in self.inflight:
             self._record("INTENT", tick, request=request)
+            c.require(self.queue.authorize_dispatch(request,current_tick=tick),"fixture dispatch revoked")
             self.backend.set_test_control(**request["args"])
 
     def after_step(self):
@@ -77,6 +78,7 @@ class PilotFixture:
             ack.update(status="APPLIED", applied_tick=tick)
             c.acknowledgement(ack, request)
             self._record("APPLIED", tick, request=request, ack=ack, property=prop, readback=value)
+            self.queue.record_outcome(request,ack,current_tick=tick)
             self.applied += 1
         self.inflight = ()
 

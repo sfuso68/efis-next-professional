@@ -1,8 +1,8 @@
 """Owner-thread SIL command admission, not authentication or an FDM executor.
 
 The caller must authenticate the principal independently. No sockets, hardware,
-callbacks, lease renewal, or APPLIED acknowledgements are implemented here.
-Dispatch yields each command once; it does not assert that physics applied it.
+callbacks or lease renewal. Dispatch is one-time; only a trusted executor can
+record an outcome AFTER its separate execution/readback/audit evidence.
 """
 import copy
 import threading
@@ -31,7 +31,7 @@ class CommandQueue:
         self._owner = threading.get_ident()
         self._last_ns = self._last_tick = 0
         self._deadline = self._now() + lease_duration_ns
-        self._history, self._pending = {}, {}
+        self._history, self._pending, self._dispatched = {}, {}, {}
         self._bytes = self._sequence = 0
         self.closed = False
 
@@ -62,6 +62,9 @@ class CommandQueue:
         for identity, request in list(self._pending.items()):
             if tick > request["expires_tick"]:
                 self._reject_pending(identity, "EXPIRED")
+        for identity, request in list(self._dispatched.items()):
+            if tick > request["expires_tick"]:
+                self._reject_dispatched(identity, "EXPIRED")
 
     @staticmethod
     def _ack(request, reason="NONE"):
@@ -75,15 +78,26 @@ class CommandQueue:
         request = self._pending.pop(identity)
         self._history[identity][1] = self._ack(request, reason)
 
+    def _reject_dispatched(self, identity, reason):
+        request = self._dispatched.pop(identity)
+        self._history[identity][1] = self._ack(request, reason)
+
     def revoke(self):
         """Independent of queue capacity; no future admission after revocation."""
         self._owner_check()
         self.closed = True
         for identity in list(self._pending):
             self._reject_pending(identity, "NO_LEASE")
+        for identity in list(self._dispatched):
+            self._reject_dispatched(identity, "NO_LEASE")
+
+    def maintain(self, *, current_tick):
+        """Owner service, including idle pause; does not advance simulation."""
+        self._advance(current_tick)
+        return not self.closed
 
     def submit(self, raw, *, authenticated_principal, current_tick):
-        """Strict JSON only. Returns QUEUED/REJECTED, never APPLIED.
+        """Strict JSON admission, or cached outcome on an identical retry.
 
         Principal is trusted caller context, not a credential in the command.
         Wrong principal and malformed requests raise without allocating history.
@@ -121,7 +135,7 @@ class CommandQueue:
                           lease_until_tick=self._until_tick)
             except ValueError:
                 reason = "EXPIRED" if request["apply_tick"] <= current_tick else "INVALID"
-        if reason == "NONE" and len(self._pending) >= self.MAX_PENDING:
+        if reason == "NONE" and len(self._pending)+len(self._dispatched) >= self.MAX_PENDING:
             reason = "INVALID"  # Frozen ICD has no QUEUE_FULL reason.
         ack = self._ack(request, reason)
         self._history[identity] = [canonical, ack]
@@ -143,9 +157,56 @@ class CommandQueue:
                      key=lambda r: (r["apply_tick"], r["sequence"]))
         for request in due:
             del self._pending[request["command_id"]]
+            self._dispatched[request["command_id"]] = request
         return tuple(encode(r) for r in due)
+
+    def authorize_dispatch(self, request, *, current_tick):
+        """Recheck immediately before mutation; handed-out bytes are not authority."""
+        self._advance(current_tick)
+        identity = request["command_id"]
+        return (not self.closed and identity in self._dispatched
+                and encode(self._dispatched[identity]) == encode(request))
+
+    def record_outcome(self, request, ack, *, current_tick):
+        """Store trusted executor evidence, never infer APPLIED from dequeue.
+
+        No journal or physics verification here. The executor must authorize
+        before mutation, then verify/audit before recording the outcome. The
+        caller must fail the session if execution or audit becomes uncertain.
+        """
+        self._owner_check()
+        c.integer(current_tick, self._last_tick)
+        identity = request["command_id"]
+        c.require(identity in self._dispatched and
+                  encode(request) == self._history[identity][0], "outcome without dispatch")
+        c.acknowledgement(ack, request)
+        c.require(ack["status"] in ("APPLIED","REJECTED"), "outcome not terminal")
+        if ack["status"] == "APPLIED":
+            c.require(ack["applied_tick"] == current_tick and current_tick <= self._until_tick,
+                      "outcome tick mismatch")
+        self._history[identity][1] = copy.deepcopy(ack)
+        del self._dispatched[identity]
+        self._last_tick = current_tick
+        return copy.deepcopy(ack)
+
+    def lookup_outcome(self, raw, *, authenticated_principal):
+        """Owner exact retry lookup after closure; never admits or allocates.
+
+        None means no identical retained request, never successful execution.
+        """
+        self._owner_check()
+        c.require(authenticated_principal == self._principal, "unauthenticated principal")
+        request = c.decode(raw)
+        c.require(isinstance(request, dict), "command object")
+        identity = request.get("command_id")
+        c.token(identity)
+        previous = self._history.get(identity)
+        if previous is None or previous[0] != encode(request):
+            return None
+        return copy.deepcopy(previous[1])
 
     @property
     def counts(self):
         self._owner_check()
-        return dict(pending=len(self._pending), history=len(self._history), bytes=self._bytes)
+        return dict(pending=len(self._pending), dispatched=len(self._dispatched),
+                    history=len(self._history), bytes=self._bytes)
