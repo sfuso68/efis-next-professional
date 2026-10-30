@@ -18,7 +18,13 @@ La fixture ricontrolla la lease dopo INTENT, prima della mutazione FDM.
 Localmente 170 test Python PASS, inclusi 17 nuovi; CMake configurato e nove
 suite CTest Python PASS. Warning path MSVC preesistente invariato; nessun
 nuovo binario compilato. Il gate nativo Windows WinError4551 resta aperto,
-non aggirato e non sostituito da questi PASS. Nuovi test server: da eseguire.
+non aggirato e non sostituito da questi PASS. Serverha: 176 test PASS,
+inclusi 10 JSBSim nativi, container senza rete/capability, source e runtime
+read-only. Source 892b3930115b54e24eb143fbb27aca9b19bbb5e4, archivio SHA256
+4265ea26ca53b91be357d6faa7a567ce6713d6e23386e85fd55aea7e1280a7c8.
+Sono verifiche software su server reale, non collaudo avionico. Review finale
+read-only senza finding bloccanti nel perimetro dei componenti isolati.
+Evidenza: evidence/r1-30-sil-control-inbox-20261030/verification.json.
 
 Solo software: nessuna nuova prova hardware avionica o accettazione HMI,
 nessun deploy, merge, servizio, endpoint o autorizzazione attuatori modificato.
