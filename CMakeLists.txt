@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(EFIS_BUILD_TESTS "Build EFIS Next tests" ON)
 option(EFIS_BUILD_QT_RENDERER "Build the Qt Quick PFD when Qt is available" ON)
 option(EFIS_REQUIRE_QT_RENDERER "Fail configuration if the Qt Quick PFD cannot be built" OFF)
+option(EFIS_BUILD_SIL_WIRE_CHECK "Build offline JSBSim to canonical DDP/EDP consumer check (Qt Core only)" OFF)
 
 if(MSVC)
     # Core, adapters and applications use standard C++ exceptions for
@@ -45,6 +46,7 @@ add_library(efis_core
     src/providers/engine_simulation_provider.cpp
     src/providers/sensor_adapter_health.cpp
     src/simulation/system_simulator.cpp
+    src/simulation/mission_simulator.cpp
     src/providers/mavlink_parser.cpp
     src/providers/mavlink_adapter.cpp
     src/providers/esp32_can_adapter.cpp
@@ -93,6 +95,8 @@ target_link_libraries(efis-recorder PRIVATE efis_core)
 
 add_executable(efis-simulator src/apps/efis_simulator_main.cpp)
 target_link_libraries(efis-simulator PRIVATE efis_core)
+add_executable(efis-mission-simulator src/apps/mission_simulator_main.cpp)
+target_link_libraries(efis-mission-simulator PRIVATE efis_core)
 
 add_executable(efis-ddp-bench-publisher src/apps/efis_ddp_bench_publisher_main.cpp)
 target_link_libraries(efis-ddp-bench-publisher PRIVATE efis_core)
@@ -162,6 +166,7 @@ if(EFIS_BUILD_QT_RENDERER)
                 qml/AdaptiveFpvView.qml
                 qml/AdaptiveShell.qml
                 qml/AdaptiveEmsView.qml
+        qml/EmsStatusHeader.qml
                 qml/EmsSetupOverlay.qml
                 qml/OperationalProfileSetup.qml
                 qml/EfisTouchKeyboard.qml
@@ -393,6 +398,58 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_hmi_golden_tools)
         set_tests_properties(efis_hmi_golden_tools_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_msfs_readonly_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_msfs_readonly)
+        set_tests_properties(efis_msfs_readonly_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_jsbsim_session_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_jsbsim_session)
+        set_tests_properties(efis_jsbsim_session_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        add_test(NAME efis_sil_world_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_sil_world)
+        set_tests_properties(efis_sil_world_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_development_plan_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_sil_development_plan)
+        set_tests_properties(efis_sil_development_plan_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_session_contract_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_sil_session_contract)
+        set_tests_properties(efis_sil_session_contract_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_session_engine_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_sil_session_engine)
+        set_tests_properties(efis_sil_session_engine_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_jsbsim_adapter_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_session_jsbsim)
+        set_tests_properties(efis_sil_jsbsim_adapter_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_session_archive_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_session_archive)
+        set_tests_properties(efis_sil_session_archive_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_pilot_fixture_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_pilot_fixture)
+        set_tests_properties(efis_sil_pilot_fixture_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_command_queue_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_command_queue)
+        set_tests_properties(efis_sil_command_queue_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_control_inbox_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_control_inbox)
+        set_tests_properties(efis_sil_control_inbox_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_session_control_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_session_control)
+        set_tests_properties(efis_sil_session_control_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_async_journal_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_async_journal)
+        set_tests_properties(efis_sil_async_journal_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
         add_test(NAME efis_avionix_hmi_contract_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_avionix_hmi_contract)
         set_tests_properties(efis_avionix_hmi_contract_tests PROPERTIES
@@ -556,6 +613,15 @@ if(EFIS_BUILD_TESTS)
     add_executable(efis_system_simulator_tests tests/system_simulator_tests.cpp)
     target_link_libraries(efis_system_simulator_tests PRIVATE efis_core)
     add_test(NAME efis_system_simulator_tests COMMAND efis_system_simulator_tests)
+    add_executable(efis_mission_simulator_tests tests/mission_simulator_tests.cpp)
+    target_link_libraries(efis_mission_simulator_tests PRIVATE efis_core)
+    add_test(NAME efis_mission_simulator_tests COMMAND efis_mission_simulator_tests)
+    if(Python3_Interpreter_FOUND)
+        add_test(NAME efis_mission_simulator_cli_tests
+            COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/mission_simulator_cli_tests.py"
+                "$<TARGET_FILE:efis-mission-simulator>")
+        set_tests_properties(efis_mission_simulator_cli_tests PROPERTIES TIMEOUT 60)
+    endif()
 
     add_executable(efis_ddp_v2_tests tests/ddp_v2_tests.cpp)
     target_link_libraries(efis_ddp_v2_tests PRIVATE efis_core)
@@ -617,6 +683,7 @@ if(EFIS_BUILD_EMS_NODE)
             QML_FILES
                 qml/EmsMain.qml
                 qml/AdaptiveEmsView.qml
+                qml/EmsStatusHeader.qml
                 qml/CommandRail.qml
                 qml/ProfessionalCircularGauge.qml
                 qml/EmsGaugeV3.qml
@@ -700,5 +767,23 @@ if(EFIS_BUILD_TESTS)
         target_compile_definitions(efis_operational_profile_model_tests PRIVATE
             EFIS_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
         add_test(NAME efis_operational_profile_model_tests COMMAND efis_operational_profile_model_tests)
+    endif()
+endif()
+
+if(EFIS_BUILD_SIL_WIRE_CHECK)
+    find_package(Qt6 REQUIRED COMPONENTS Core Network)
+    add_executable(efis-sil-wire-check tools/simulation/jsbsim_wire_check.cpp)
+    target_link_libraries(efis-sil-wire-check PRIVATE efis_core Qt6::Core)
+    add_executable(efis-sil-panel-replay tools/simulation/sil_panel_replay.cpp)
+    target_link_libraries(efis-sil-panel-replay PRIVATE efis_core Qt6::Core Qt6::Network)
+    if(EFIS_BUILD_TESTS AND Python3_Interpreter_FOUND)
+        add_test(NAME efis_jsbsim_wire_check_tests
+            COMMAND ${Python3_EXECUTABLE} -m tests.jsbsim_wire_check_tests $<TARGET_FILE:efis-sil-wire-check>)
+        set_tests_properties(efis_jsbsim_wire_check_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_panel_replay_tests
+            COMMAND ${Python3_EXECUTABLE} -m tests.sil_panel_replay_tests $<TARGET_FILE:efis-sil-panel-replay>)
+        set_tests_properties(efis_sil_panel_replay_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
     endif()
 endif()

@@ -1,0 +1,23 @@
+{
+  "schema":"fuso-avionics.sil-icd.v1",
+  "status":"DEVELOPMENT_CONTRACT",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "transport":"OFFLINE_OBJECTS_ONLY",
+  "integration_hz":100,
+  "output_hz":20,
+  "source_node":65000,
+  "limits":{"json_bytes":65536,"command_horizon_ticks":100,"max_events":64},
+  "sample_validities":["SIMULATED","UNAVAILABLE","STALE","LOST","INVALID"],
+  "signals":{
+    "flight":{"latitude_deg":"deg","longitude_deg":"deg","roll_deg":"deg","pitch_deg":"deg","heading_true_deg":"deg","heading_magnetic_deg":"deg","track_true_deg":"deg","ias_kt":"kt","cas_kt":"kt","tas_kt":"kt","gs_kt":"kt","static_hpa":"hPa","differential_pa":"Pa","geometric_msl_ft":"ft","pressure_altitude_ft":"ft","indicated_altitude_ft":"ft","vs_fpm":"ft/min"},
+    "engine":{"rpm":"rpm","map_inhg":"inHg","oil_pressure_psi":"psi","oil_temperature_c":"degC","fuel_pressure_psi":"psi","flow_gph":"USgal/h","fuel_left_gal":"USgal","fuel_right_gal":"USgal","bus_v":"V","current_a":"A","cht1":"degC","cht2":"degC","cht3":"degC","cht4":"degC","egt1":"degC","egt2":"degC","egt3":"degC","egt4":"degC"},
+    "airframe":{"flap_command_deg":"deg","flap_position_deg":"deg","gear_command_down":"bool","gear_down_locked":"bool","trim_position":"ratio"}
+  },
+  "product_kinds":["NAV","WEATHER","RADAR","TERRAIN","OBSTACLES","AIRPORTS","ROUTE"],
+  "controls":{"aileron":[-1,1],"elevator":[-1,1],"rudder":[-1,1],"throttle":[0,1],"mixture":[0,1],"trim":[-1,1],"brake_left":[0,1],"brake_right":[0,1]},
+  "commands":["START","STOP","PAUSE","RESUME","SET_CONTROL","SELECT_NAV","SET_OBS","LOAD_ROUTE","SCENARIO_EVENT"],
+  "ack_states":["REJECTED","QUEUED","APPLIED"],
+  "ack_reasons":["NONE","INVALID","EXPIRED","NO_LEASE","WRONG_EPOCH","DUPLICATE_CONFLICT","UNSUPPORTED","STOPPED"],
+  "states":["CREATED","VALIDATED","ARMED_TEST","RUNNING","PAUSED","STOPPING","COMPLETE","FAILED"]
+}

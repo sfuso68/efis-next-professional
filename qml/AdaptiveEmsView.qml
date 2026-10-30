@@ -88,12 +88,13 @@ Item {
     readonly property bool centralLogSyncOffline: String(controller.centralBlackBoxState||"OFFLINE")!=="ONLINE"
     function maximumValue(values) { var result=NaN; for(var i=0;i<values.length;i++)if(typeof values[i]==="number"&&isFinite(values[i]))result=isFinite(result)?Math.max(result,values[i]):values[i]; return result }
     readonly property real maximumCht: maximumValue(controller.chtValues||[])
+    readonly property bool airframeUnavailable: (controller.landingGearInstalled===true && !airframePanel.gearUsable) || (controller.flapsInstalled===true && !airframePanel.flapUsable)
     readonly property string casLevel: !dataUsable ? "WARNING" : dataDegraded ? "CAUTION" :
                                        channelValid("engineRpm") && channelValid("oilPressure") && controller.engineRpm>800 && controller.oilPressure<oilPressureMinimum ? "WARNING" :
                                        maximumCht>chtMaximum || (channelValid("oilTemperature") && controller.oilTemperature>oilTemperatureMaximum) ? "WARNING" :
                                        fuelTotalGallons<=fuelReserveGallons*.5 || fuelLeakAlarm || (fuelCalibrationReady&&fuelDiscrepancyGallons>3) ? "WARNING" :
                                        (channelValid("busVoltage") && controller.busVoltage<12.5) || fuelTotalGallons<=fuelReserveGallons ? "CAUTION" :
-                                       !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "CAUTION" :
+                                       !engineChannelsAvailable || controller.fuelOnBoardValid!==true || airframeUnavailable ? "CAUTION" :
                                        fuelImbalanceGallons>3 || centralLogSyncOffline ? "ADVISORY" : "NORMAL"
     readonly property string casHeadline: !dataUsable ? "ENGINE DATA "+normalizedDataState :
                                           dataDegraded ? "ENGINE DATA "+normalizedDataState :
@@ -106,6 +107,7 @@ Item {
                                           fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "FUEL QUANTITY DISAGREE" :
                                           fuelTotalGallons<=fuelReserveGallons ? "FINAL RESERVE" :
                                           !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "ENGINE CHANNEL UNAVAILABLE" :
+                                          airframeUnavailable ? "AIRFRAME DATA UNAVAILABLE" :
                                           fuelImbalanceGallons>3 ? "FUEL IMBALANCE" :
                                           centralLogSyncOffline ? "CENTRAL LOG SYNC OFFLINE" : "SYSTEM NORMAL"
     readonly property string casAction: !dataUsable ? "USE STANDBY INDICATIONS • CHECK EMS LINK" :
@@ -119,6 +121,7 @@ Item {
                                         fuelCalibrationReady&&fuelDiscrepancyGallons>3 ? "CHECK FOR LEAK OR SENSOR FAULT" :
                                         fuelTotalGallons<=fuelReserveGallons ? "VERIFY ENDURANCE AND DIVERT" :
                                         !engineChannelsAvailable || controller.fuelOnBoardValid!==true ? "CHECK SENSOR VALIDITY • USE VALID INDICATIONS" :
+                                        airframeUnavailable ? "VERIFY GEAR / FLAPS INDEPENDENTLY" :
                                         fuelImbalanceGallons>3 ? "SELECT FULLER TANK" :
                                         centralLogSyncOffline ? "ENGINE DATA LINK UNAFFECTED • CHECK CACHE SYNC" : "ENGINE AND AIRFRAME PARAMETERS IN RANGE"
     readonly property color casColor: casLevel==="WARNING" ? "#FF3933" : casLevel==="CAUTION" ? amber : casLevel==="ADVISORY" ? cyan : green
@@ -193,21 +196,13 @@ Item {
             GradientStop { position: .55; color: "#020B11" }
             GradientStop { position: 1; color: "#071723" } } }
 
-    Rectangle { id: header; anchors { left: parent.left; right: parent.right; top: parent.top }
-        height: root.compactLayout ? 40 : 44*root.uiScale; color: "#D0061119"; border.color: root.line
-        Text { x: 13*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EFIS"; color: "white"; font.pixelSize: hmiTokens.legibleText(17,root.textScale,13); font.bold: true }
-        Text { x: 54*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "NEXT"; color: root.cyan; font.pixelSize: hmiTokens.legibleText(17,root.textScale,13); font.bold: true }
-        Rectangle { x: 112*root.uiScale; y: 8*root.uiScale; width: 1; height: 28*root.uiScale; color: root.line }
-        Text { x: 129*root.uiScale; anchors.verticalCenter: parent.verticalCenter; text: "EMS"; color: root.cyan; font.pixelSize: hmiTokens.legibleText(15,root.textScale,12) }
-        Text { anchors.centerIn: parent; text: "ENGINE"; color: "white"; font.pixelSize: hmiTokens.legibleText(20,root.textScale,16); font.bold: true; font.letterSpacing: 1.2 }
-        HmiDataStateBadge { anchors { verticalCenter:parent.verticalCenter; right:clock.left; rightMargin:24*root.uiScale }
-            dataState:root.normalizedDataState; ageMs:root.dataAgeMs; uiScale:root.textScale; showLive:true }
-        Text { id: clock; anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 18*root.uiScale }
-        text: (root.clockOverride.length?root.clockOverride:Qt.formatTime(new Date(),"hh:mm:ss"))+(root.compactLayout?"   OAT 24°C":"   LOCAL     24 °C  OAT     1013 HPA  QNH"); color: "#E8ECEE"; font.pixelSize: hmiTokens.legibleText(11,root.textScale,9); font.bold: true }
-        Timer { interval: 1000; running: root.clockOverride.length===0; repeat: true; onTriggered: clock.text=Qt.formatTime(new Date(),"hh:mm:ss")+(root.compactLayout?"   OAT 24°C":"   LOCAL     24 °C  OAT     1013 HPA  QNH") }
-        Item { x:0; y:0; width:105*root.uiScale; height:parent.height
-            TapHandler { longPressThreshold:1.2; onLongPressed:root.openSetup(0) }
-        }
+    EmsStatusHeader { id: header; objectName: "emsStatusHeader"
+        anchors { left: parent.left; right: parent.right; top: parent.top }
+        height: implicitHeight
+        uiScale: root.uiScale; textScale: root.textScale
+        dataState: root.normalizedDataState; dataAgeMs: root.dataAgeMs
+        clockOverride: root.clockOverride
+        onSetupRequested: root.openSetup(0)
     }
 
     Rectangle { id: nav; anchors { left: parent.left; top: header.bottom; bottom: actions.top }
@@ -242,24 +237,39 @@ Item {
     Item { id: rightColumn; anchors { left: gauges.right; right: body.right; top: body.top; bottom: body.bottom; leftMargin: 8*root.uiScale } }
     Rectangle { id: cas; anchors { left: rightColumn.left; right: rightColumn.right; top: rightColumn.top }
         height: rightColumn.height*.42; color: root.panel; border.color: root.line; radius: 5*root.uiScale
-        Text { anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 5*root.uiScale }
-        text: "CAS MESSAGES"; color: "#E7ECEE"; font.pixelSize:hmiTokens.legibleText(10,root.textScale,9) }
-        Rectangle { visible:!root.engineLimitsVerified; anchors { right:parent.right; top:parent.top; rightMargin:6*root.uiScale; topMargin:4*root.uiScale }
-            width:limitsStatusText.implicitWidth+10*root.uiScale; height:16*root.uiScale; radius:2*root.uiScale; color:"#301F1700"; border.color:root.amber
-            Text { id:limitsStatusText; anchors.centerIn:parent; text:"LIMITS INDICATIVE"; color:root.amber; font.pixelSize:hmiTokens.legibleText(6,root.textScale,8); font.bold:true }
+        Item { id: casHeader; objectName: "emsCasHeader"; width: parent.width
+            height: Math.max(22, 25*root.uiScale)
+            Text { objectName: "emsCasTitle"
+                anchors { left:parent.left; right:limitsNotice.visible?limitsNotice.left:parent.right
+                    leftMargin:6*root.uiScale; rightMargin:6*root.uiScale; verticalCenter:parent.verticalCenter }
+                text: "CAS MESSAGES"; horizontalAlignment:Text.AlignHCenter; elide:Text.ElideRight
+                color: "#E7ECEE"; font.pixelSize:hmiTokens.legibleText(10,root.textScale,9) }
+            Rectangle { id: limitsNotice; objectName: "emsLimitsNotice"; visible:!root.engineLimitsVerified
+                anchors { right:parent.right; rightMargin:6*root.uiScale; verticalCenter:parent.verticalCenter }
+                width:limitsStatusText.implicitWidth+10*root.uiScale; height:Math.max(16,16*root.uiScale)
+                radius:2*root.uiScale; color:"#301F1700"; border.color:root.amber
+                Text { id:limitsStatusText; anchors.centerIn:parent; text:"LIMITS INDICATIVE"; color:root.amber; font.pixelSize:hmiTokens.legibleText(6,root.textScale,8); font.bold:true }
+            }
         }
-        Rectangle { id:casBanner; x: 1; y: 25*root.uiScale; width: parent.width-2; height: 34*root.uiScale; color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
+        Rectangle { id:casBanner; objectName:"emsCasBanner"; x:1; y:casHeader.height; width:parent.width-2; height:Math.max(32,34*root.uiScale); color: root.casLevel==="WARNING"?"#45100F":"#07151D"; border.color: root.casColor
             SequentialAnimation on opacity { running:!root.goldenMode&&root.casLevel==="WARNING"&&!root.casAcknowledged; loops:Animation.Infinite; NumberAnimation { to:.55; duration:450 } NumberAnimation { to:1; duration:450 } }
             Text { anchors { horizontalCenter:parent.horizontalCenter; top:parent.top; topMargin:4*root.uiScale } text:(root.casLevel==="NORMAL"?"✓   ":"⚠   ")+root.casHeadline; color:root.casColor; font.pixelSize:hmiTokens.legibleText(11,root.textScale,10); font.bold:true }
             Text { anchors { horizontalCenter:parent.horizontalCenter; bottom:parent.bottom; bottomMargin:3*root.uiScale } text:root.casAction; color:"#D9E3E6"; font.pixelSize:hmiTokens.legibleText(5.5,root.textScale,8); font.bold:root.casLevel!=="NORMAL" }
             TapHandler { onTapped:{root.selectedPanel="CAS";root.activeNavigation="INDICATIONS"} }
         }
         HmiAirframePanel {
-            anchors { left:parent.left; right:parent.right; top:parent.top; bottom:parent.bottom; topMargin:62*root.uiScale; margins:5*root.uiScale }
+            id:airframePanel
+            objectName:"emsAirframePanel"
+            anchors { left:parent.left; right:parent.right; top:casBanner.bottom; bottom:parent.bottom; margins:5*root.uiScale }
             uiScale:root.uiScale; compact:root.compactLayout; gearInstalled:controller.landingGearInstalled; noseLocked:controller.gearNoseLocked
             leftLocked:controller.gearLeftLocked; rightLocked:controller.gearRightLocked; gearState:controller.gearState
             flapsInstalled:controller.flapsInstalled; flapDetents:controller.flapDetents; flapAngle:controller.flapAngle
-            flapCommandedAngle:controller.flapCommandedAngle; dataState:root.normalizedDataState; dataAgeMs:root.dataAgeMs
+            flapCommandedAngle:controller.flapCommandedAngle
+            dataState:String(controller.airframeSourceState || "LOST")
+            dataAgeMs:controller.airframeDataAgeMs===undefined?-1:controller.airframeDataAgeMs
+            gearValid:controller.gearDataValid===true
+            flapAngleValid:controller.flapAngleValid===true
+            flapCommandedValid:controller.flapCommandedValid===true
         }
     }
 

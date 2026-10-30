@@ -1,0 +1,134 @@
+{
+  "schema": "avionix.ems-golden-review-decisions.v1",
+  "reference_manifest_sha256": "b2a73253988ef497df4544faf452f18ee6524416c05fd263aefaee806fde0fc3",
+  "archive_sha256": "6b95b568313f3ed101906d66481701fd275b8d281304b1959d6c1173cbbc0e2f",
+  "source_commit": "0c83113aa4529b038d05cf171a15f9da6f131c54",
+  "decisions": [
+    {
+      "file": "ems-800x480-live.png",
+      "pixel_sha256": "4a8d3b73b1461979f22c6f07591137d6e6315a4bca6455d28db37f047ec10b7c",
+      "decision": "CHANGES_REQUIRED",
+      "reviewer": "Codex visual inspection",
+      "reason": "CAS MESSAGES and LIMITS INDICATIVE overlap at 800x480 in Linux run 39745779697; requires new render after source fix."
+    },
+    {
+      "file": "ems-800x480-stale.png",
+      "pixel_sha256": "b9e71523d33f29a26c23eb29fabde93a79615242f3094c4e56f391913bcd06d2",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-800x480-degraded.png",
+      "pixel_sha256": "4abd9721e1b42aabd4d2e555fd3d8a40767ef4d42e3247f3ac9def4fba35be59",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-800x480-lost.png",
+      "pixel_sha256": "15862f3ca14b911cca2f14cbe51a5e373a01c9b5718103a1727ecb200f1d9939",
+      "decision": "CHANGES_REQUIRED",
+      "reviewer": "Codex visual inspection",
+      "reason": "CAS MESSAGES and LIMITS INDICATIVE overlap at 800x480 in Linux run 39745779697; requires new render after source fix."
+    },
+    {
+      "file": "ems-800x480-fail.png",
+      "pixel_sha256": "251c8bf7dcc48dab4d5b2054fd0b8a39db82c1a373468f687ede5a50abbf15c3",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-800x480-sim.png",
+      "pixel_sha256": "bb401694c0891d0a9b8a21021a401f3664f1c1930a35264a7a50cb2c1c34a89d",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1024x600-live.png",
+      "pixel_sha256": "ecbb45b20d1b4d07ec8d759432f15f3e78fa7fdd15650fb59641de8910412f16",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1024x600-stale.png",
+      "pixel_sha256": "2a104ef17e5e2a6c445af93ee9b635283a5c38a8f319dec908bc066eaecfce13",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1024x600-degraded.png",
+      "pixel_sha256": "2715c8e427ecc500d4f688e79fc6aa206ec4d961fc9967e402a552e223369e16",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1024x600-lost.png",
+      "pixel_sha256": "8117da81a3d1ca79145c6613370a945763f45b2d533d11e23dce2d391dafd0c8",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1024x600-fail.png",
+      "pixel_sha256": "626367690e66c5ee2dda9d7e17431ef81d3cf978bd710faf24ff233ddaa4f3da",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1024x600-sim.png",
+      "pixel_sha256": "d6bce99f99cfc10a616e9aecc6401f86d07a50dbe6b83cc3c42eb0a79b396dee",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1280x800-live.png",
+      "pixel_sha256": "52a556f8631141b627722b7c0ad67be49af02d1dff5df4257dda8c0dad9ecc06",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1280x800-stale.png",
+      "pixel_sha256": "406cd66d77dd17404a7f49ec0b87e65b39f69d62b1d7a6357d5fbb9d01d091bf",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1280x800-degraded.png",
+      "pixel_sha256": "5f86427f29c8df167511114eebb475b459773fafa8454fe716d9628e897be34d",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1280x800-lost.png",
+      "pixel_sha256": "c381a27135a0b6f7960892567180ae8d13bdfaf5457247696ee988b18f9185b0",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1280x800-fail.png",
+      "pixel_sha256": "104e9128ff6bca8c9d8772fa1c2b44147ef389b7733ff56975fb8ba4100d626c",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    },
+    {
+      "file": "ems-1280x800-sim.png",
+      "pixel_sha256": "04cf923ae0db41020328e52e98bb893885ec251fe90a5a1ac946fc67f6221716",
+      "decision": "NOT_REVIEWED",
+      "reviewer": "",
+      "reason": ""
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "schema": "fuso-avionics.r1-13-verification.v1",
+  "date": "2026-10-24",
+  "base_commit": "1ae837307acee1a28f1ffede4191b5ba0ddf0cd2",
+  "requirements": [
+    "PRJ-004",
+    "EMS-002",
+    "VER-001"
+  ],
+  "backlog": "AVX-G5-02",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "pull_request": 59,
+  "status": "PARTIAL_LOCAL_READONLY_BRIDGE_POSITIVE_RUNTIME_PENDING",
+  "flight_approval": false,
+  "avionics_nodes_contacted": false,
+  "deploy": "NOT_RUN",
+  "merge": "NOT_RUN",
+  "implementation": {
+    "file": "tools/simulation/msfs_readonly.py",
+    "signals": 7,
+    "transport": "LOCAL_SIMCONNECT_ONLY",
+    "output": "DIAGNOSTIC_JSONL_NOT_DDP_EDP",
+    "setters": false,
+    "publisher": false,
+    "clock": "HOST_RECEIPT_NOT_SIM_TIME",
+    "native_axes_not_mapped": true,
+    "automatic_reconnect": false
+  },
+  "tests": {
+    "unit": {
+      "status": "PASS",
+      "count": 19
+    },
+    "regression": {
+      "status": "PASS",
+      "count": 66,
+      "new": 19,
+      "existing": 47
+    },
+    "ctest": {
+      "status": "PASS",
+      "registered": true,
+      "tests": 1,
+      "configuration": "MSVC Release and CMAKE_TRY_COMPILE_CONFIGURATION=Release, explicit Python 3.12.14"
+    },
+    "initial_configure": {
+      "status": "FAILED",
+      "reason": "MSVC C1902/PDB with Debug try_compile and reused cache; preserved, new Release directory passed; no toolchain/security changes"
+    },
+    "new_cpp_qml_build": "NOT_RUN_NO_CORE_RENDERER_CHANGES"
+  },
+  "prior_probe": {
+    "status": "PASS",
+    "type": "SEPARATE_PRELIMINARY_CPP_PROBE_OBSERVED_IN_THIS_CHAT",
+    "frames": 12,
+    "simconnect_open": true,
+    "user_selected_aircraft": "Cessna 172",
+    "model_identity_verified": false,
+    "not_evidence_for_final_python_client": true
+  },
+  "runtime_final_bridge": {
+    "status": "NEGATIVE_CASE_VERIFIED",
+    "source_file": "runtime-no-simulator.jsonl",
+    "simulator_process_not_observed": true,
+    "open_hresult": "0x80004005",
+    "process_exit_code": 1,
+    "output_status": "FAULT",
+    "values_null": true,
+    "summary": "FAIL",
+    "positive_capture": "NOT_RUN",
+    "real_pause_disconnect": "NOT_RUN"
+  },
+  "sdk_installed": {
+    "host": "WIN-9MB3K78GSR2",
+    "service_address": "192.168.1.33",
+    "store": "Steam",
+    "path": "D:\\MSFS 2024 SDK",
+    "dll_sha256": "5cd1ddc2e6ece8c36ce47d3a953a776f012cc13ebee17b263088f05f98568323",
+    "header_sha256": "cee6783f81e1139efee81407ceb552c0eabea2fc7324ed28f9ae14ff1e0c7842",
+    "redistributed": false
+  },
+  "previous_ci": {
+    "commit": "1ae837307acee1a28f1ffede4191b5ba0ddf0cd2",
+    "project_control": {
+      "run": 40126263266,
+      "status": "SUCCESS"
+    },
+    "core": {
+      "run": 40126263419,
+      "status": "FAILURE",
+      "linux_core": "SUCCESS",
+      "sanitizers": "SUCCESS",
+      "qt_build_qml_weather": "SUCCESS",
+      "golden_step_11": "FAILURE"
+    },
+    "baselines_or_tolerances_changed": false
+  },
+  "remaining": [
+    "positive capture final client",
+    "aircraft identity/profile validation",
+    "pause, sim rate and simulation clock",
+    "axis/altitude domain mapping",
+    "additional flight/engine/electrical/per-cylinder data with explicit availability",
+    "isolated canonical SIL adapter/publisher via Blackbox, no direct renderer coupling",
+    "server/NAS session catalog and replay",
+    "real aircraft and hardware acceptance"
+  ],
+  "digest_convention": "SHA256 of UTF-8 text with CRLF normalized to LF; no binary artifacts redistributed",
+  "sha256": {
+    "tools/simulation/msfs_readonly.py": "2a1a69398b4e14ba8d9350af71496cc434bbdd22a1ffb8ade473a575c900b51c",
+    "tests/test_msfs_readonly.py": "70f8d86720dc5648c56ea83a6cbbcad7ec7d19207f4283381aab98e0cbb3de55",
+    "CMakeLists.txt": "b69e3622ca8c6451b935fd64ffa3fa8bb12873ba23b55cf63874645d4d1758ca",
+    "docs/development/MSFS_READONLY_BRIDGE_V1.md": "b70932e0d60384f10c11e1fdc2c43b8723c6bf9d3fd42912d89bd732ab49686a",
+    "docs/status/evidence/r1-13-msfs-readonly-20261024/unit.txt": "a788f448de3b1ab61616f4c26d52740c424b5f4b1777db2e90ce35459ff163ac",
+    "docs/status/evidence/r1-13-msfs-readonly-20261024/regression.txt": "294bfec8772efb7662dbe70c80612696f2ed2f73f6ca8e11ba26fcba94889cc8",
+    "docs/status/evidence/r1-13-msfs-readonly-20261024/ctest.txt": "2e8bb403693fb0df1293ace57eec51fa490106e4eb4e8347a6c5ea2579631593",
+    "docs/status/evidence/r1-13-msfs-readonly-20261024/runtime-no-simulator.jsonl": "d30ecf0a1810dfdd42d3ccd84278bea0be9d6200d7a4c3abd148e6ebd48d8576"
+  }
+}

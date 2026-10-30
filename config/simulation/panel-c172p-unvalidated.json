@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "profile_id": "c172p-sil-REFERENCE-UNVALIDATED",
+  "revision": 1,
+  "state": "SIMULATION",
+  "catalog_version": "BENCH_ONLY",
+  "aircraft": {
+    "manufacturer": "JSBSim SIM",
+    "model": "C172P REFERENCE UNVALIDATED",
+    "registration": "SIM-NON-CERT",
+    "category": "SIMULATION"
+  },
+  "engine": {
+    "manufacturer": "REFERENCE",
+    "model": "NO EMS INPUT IN THIS BENCH",
+    "cylinders": 4,
+    "limits": {"status": "UNVERIFIED"},
+    "sensors": []
+  },
+  "speeds_kt": {},
+  "systems": {
+    "landing_gear": {"installed": false, "retractable": false},
+    "flaps": {"installed": false, "detents_deg": []}
+  }
+}

@@ -78,6 +78,7 @@ jobs:
           python -m unittest tests.test_hmi_hardware_acceptance -v
           python -m unittest tests.test_assemble_hmi_hardware_evidence -v
           python -m unittest tests.test_hmi_golden_tools -v
+          python -m unittest tests.test_ems_golden_review -v
           python tools/ui/validate_ems_state_presentation.py
           python tools/ui/validate_ems_responsive_state_matrix.py
           python tools/ui/validate_hmi_hardware_acceptance.py

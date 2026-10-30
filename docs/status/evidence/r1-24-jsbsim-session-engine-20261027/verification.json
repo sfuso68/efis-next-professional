@@ -1,0 +1,20 @@
+{
+  "schema":"fuso-avionics.jsbsim-session-engine-evidence.v1",
+  "date":"2026-10-27",
+  "status":"PARTIAL",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "local_tests":{"methods":106,"status":"PASS"},
+  "native_source_v1":{"tests":3,"status":"PASS","archive_sha256":"ee548ea6f407bf2b5f2190b95adbe4406c9eab255284c66e79b3f2ea55d728ad"},
+  "final_native_suite":{"status":"PASS","methods":111,"real_jsbsim_methods":5,"source_commit":"fec6507cacd797561ff3c9bb4bfb6b59b6501ed4","archive_sha256":"76707d366b53f2ce424930e9b7e0ebdafedf7ffa67feeb7b8b8d634cae29928f"},
+  "ctest":{"status":"PASS","targets":8,"native_binaries":"PREEXISTING_NOT_REBUILT"},
+  "timed_60s":{"status":"PASS_TMPFS_DIAGNOSTIC_ONLY","elapsed_s":60.12052940810099,"total_ticks":6000,"frames":1202,"epochs":2,"maximum_lag_ms":3.460428,"fast_probe_receipts":1200,"slow_overwritten":1201,"gnss_unavailable_frames":201,"truth_sha256":"4f6df98200e8ab09892d908aad650ad5609aa3e4c84fd08151d506d8052375f6","source_directory":"r124-source-v2","archived_run":"runs/r124-memory-archived-v1","copy_checks":"PASS_SERVER_AND_WINDOWS"},
+  "direct_disk_runs":[{"directory":"runs/r124-physical-60s-pause-v1","status":"FAIL","tick":1260,"reason":"frame persistence deadline exceeded"},{"directory":"runs/r124-physical-60s-pause-v2","status":"FAIL","tick":1400,"reason":"frame persistence deadline exceeded"}],
+  "storage_gate":"OPEN_DIRECT_DISK_LIVE_FAILS_TMPFS_NOT_POWERLOSS_DURABLE",
+  "observed_container":{"network":"none","rootfs_readonly":true,"memory_bytes":805306368,"pids_limit":64,"uid_gid":"1000:1000"},
+  "actual_panels_connected":false,
+  "network_publisher":false,
+  "model":"C172P_REFERENCE_UNVALIDATED",
+  "scope":"ISOLATED_SERVERHA_SOFTWARE_EXECUTION_NOT_AVIONICS_HARDWARE_ACCEPTANCE",
+  "open":["pilot command queue and authentication","DDP EDP graphical consumers","complete NAV WX airframe products","model validation","NAS restore storage watchdog and endurance","power touch golden and hardware gates"]
+}

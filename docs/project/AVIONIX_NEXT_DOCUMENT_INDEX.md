@@ -1,9 +1,23 @@
 # FUSO AVIONICS NEXT — indice documentale e regole di autorità
 
-Aggiornamento: 2026-09-22
+Aggiornamento: 2026-10-28
 Stato: baseline documentale WS0/G0, DEVELOPMENT / NON-CERT
 
 ## Repository autorevole
+
+Dossier completo di perimetro Standard/Professional R1-29:
+`reports/FUSO_AVIONICS_NEXT_PROGETTO_COMPLETO_2026-10-28.pdf`,con snapshot
+JSON nella stessa cartella. Include mappe,sottosistemi,71requisiti,planning
+e gap;non dichiara completato il software o l'acceptance. È una vista delle
+fonti sotto,non una nuova autorità prevalente. Rigenerazione dal repository:
+`python -m tools.project_status.project_dossier --output output/pdf/FUSO_AVIONICS_NEXT_PROGETTO_COMPLETO_2026-10-28.pdf --snapshot output/pdf/FUSO_AVIONICS_NEXT_SNAPSHOT_2026-10-28.json`.
+
+Definizione simulatore corrente: `docs/development/SIMULATOR_MASTER_SPEC_V1.md`
+e `config/simulation/development-plan-v1.json`, aggiornati R1-21 del2026-10-26.
+Dodici pacchetti,quattordici domini e sedici scenari minimi; specifica di
+sviluppo, non evidenza di acceptance o autorizzazione hardware. Prevale sulle
+descrizioni dimostrative di SYSTEM-SIMULATOR per gli obiettivi SIL, senza
+derogare ad ADR/stato/matrice o sostituire i contratti wire congelati.
 
 Il prodotto **FUSO AVIONICS NEXT**, con alias tecnico `EFIS NEXT`, è sviluppato in
 `sfuso68/efis-next-professional`. Il repository `sfuso68/efis-evolved` resta

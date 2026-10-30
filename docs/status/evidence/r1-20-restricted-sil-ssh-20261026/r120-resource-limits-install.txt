@@ -1,0 +1,1 @@
+49b14bfd10abb55b6aa464952eb4d83077e0acfd4a83680e55b6a5d90ea1b298  /usr/local/lib/efis-next/sil-r120/run-adapter.sh

@@ -628,6 +628,7 @@ void EmsController::persistRuntime() {
 
 QString EmsController::gearState() const {
     if (!landing_gear_installed_) return QStringLiteral("NOT INSTALLED");
+    if (!gearDataValid()) return QStringLiteral("NO DATA");
     return gear_nose_locked_ && gear_left_locked_ && gear_right_locked_
         ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("GEAR UNSAFE");
 }

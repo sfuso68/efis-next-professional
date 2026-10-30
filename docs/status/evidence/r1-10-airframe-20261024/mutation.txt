@@ -1,0 +1,28 @@
+********* Start testing of qmltestrunner *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by MSVC 2022), windows 11
+PASS   : qmltestrunner::AirframeValidity::initTestCase()
+PASS   : qmltestrunner::AirframeValidity::test_bad_age(unknown)
+PASS   : qmltestrunner::AirframeValidity::test_bad_age(nan)
+PASS   : qmltestrunner::AirframeValidity::test_bad_age(infinite)
+PASS   : qmltestrunner::AirframeValidity::test_configured_range()
+PASS   : qmltestrunner::AirframeValidity::test_engine_health_cannot_heal_airframe()
+FAIL!  : qmltestrunner::AirframeValidity::test_independent_channels() Compared values are not the same
+   Actual   (): true
+   Expected (): false
+C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\output\r110-mutation\tests\qml\tst_airframe_validity.qml(46) : failure location
+PASS   : qmltestrunner::AirframeValidity::test_missing_contract()
+PASS   : qmltestrunner::AirframeValidity::test_no_equipment()
+PASS   : qmltestrunner::AirframeValidity::test_scale(empty)
+PASS   : qmltestrunner::AirframeValidity::test_scale(one)
+PASS   : qmltestrunner::AirframeValidity::test_scale(duplicate)
+PASS   : qmltestrunner::AirframeValidity::test_scale(reversed)
+PASS   : qmltestrunner::AirframeValidity::test_scale(nan)
+PASS   : qmltestrunner::AirframeValidity::test_scale(text)
+PASS   : qmltestrunner::AirframeValidity::test_unavailable(LOST)
+PASS   : qmltestrunner::AirframeValidity::test_unavailable(FAIL)
+PASS   : qmltestrunner::AirframeValidity::test_unavailable(STALE)
+PASS   : qmltestrunner::AirframeValidity::test_unavailable(WAITING)
+PASS   : qmltestrunner::AirframeValidity::test_unavailable(empty)
+PASS   : qmltestrunner::AirframeValidity::cleanupTestCase()
+Totals: 20 passed, 1 failed, 0 skipped, 0 blacklisted, 295ms
+********* Finished testing of qmltestrunner *********

@@ -33,6 +33,12 @@ QtObject {
     property var engineCapabilities:({mixture_control:false})
     property string engineProfileName:"ROTAX 912 UL • GOLDEN FIXTURE"
     property bool landingGearInstalled:true
+    // Visual fixture only; never evidence of an installed airframe sensor.
+    property string airframeSourceState:typeof hmiGoldenDataState!=="undefined"?hmiGoldenDataState:"SIM"
+    property real airframeDataAgeMs:typeof hmiGoldenDataAgeMs!=="undefined"?hmiGoldenDataAgeMs:0
+    property bool gearDataValid:true
+    property bool flapAngleValid:true
+    property bool flapCommandedValid:true
     property bool gearNoseLocked:true
     property bool gearLeftLocked:true
     property bool gearRightLocked:true

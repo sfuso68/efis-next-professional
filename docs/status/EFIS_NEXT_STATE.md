@@ -1,10 +1,801 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-21, candidati N4/N5 e R1-04/N7/N8; date hardware invariate
+Aggiornamento: 2026-10-30, R1-31 servizio owner SIL e revoca lifecycle; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-31 — ammissione servita da RUNNING/PAUSED, senza executor
+
+IDs PRJ-004, VER-001. SessionAdmission si collega una volta in CREATED con
+manifesto e thread owner identici. Pump serve inbox e watchdog journal anche
+in PAUSED o prima di un tick dovuto, poi ricontrolla il watchdog prima dello
+step. Pause/resume/stop/errori revocano la lease; epoch nuova non ricrea la
+coda né riabilita comandi vecchi. Risultati conservati interrogabili; risposte
+volatile/bounded, non audit durevole. Il runner JSBSim usa pump nella pausa
+di banco. Nessun dequeue o mutazione FDM da questo nuovo ingresso.
+
+Verificato solo software locale: 16 nuovi test, 52 mirati PASS. Prima
+regressione 186 test con un ERROR per ACK recorder async oltre 100 ms:
+conservata, nessuna soglia cambiata. Suite async isolata 9/9 PASS e ripetizione
+186/186 PASS. Causa del primo timeout non determinata; ripetibilità timing
+Windows resta aperta, non si presenta il primo run come verde.
+Serverha: 193 test PASS, inclusi 11 JSBSim nativi, nuovo test di composizione
+admission/pausa/epoch con FDM reale ma clock/journal fixture (non timing live).
+Source d982f6dea8c5f8bfa6b2acffe57226778e390d23, archivio SHA256
+4c344564558e12de1938f98cf536b4a50b1bb8d6e73b7cb66fbcfcf10369388c,
+container senza rete/capability, sorgenti/runtime read-only. CMake configurato
+e 10/10 suite CTest Python PASS, nessun binario ricompilato. Review indipendente
+read-only senza bug concreti; aggiunti test negativi suggeriti. Primo test
+di scadenza correggeva un'attesa del test prima del successivo pump, non la
+semantica di expiry; log iniziale conservato. Evidenze:
+evidence/r1-31-sil-owner-service-20261030/verification.json.
+Nessun hardware avionico verificato, nessun deploy/merge/servizio/endpoint modificato. Gate WinError4551
+e warning path MSVC preesistenti non aggirati. P03 resta PARTIAL: mancano
+executor live, console/trasporto autenticato, riarmo epoch/dedup, audit
+interattivo durevole e fanout. Fonte: ../development/SIL_OWNER_SERVICE_V1.md.
+
+## R1-30 — piano concentrato e ingresso comandi SIL limitato
+
+IDs: PRJ-001, PRJ-004, VER-001. Piano in sei macroblocchi, tre filoni con
+ownership e tre campagne aggregate, più handoff Claude EMS preparato ma
+NON avviato. Un agente indipendente ha revisionato il controllo SIL in sola
+lettura; corretti accesso ai risultati dopo revoca e monotonia del tick.
+Implementati inbox cross-thread bounded, revoca separata, servizio owner
+della lease anche a tick fermo e ACK terminali conservati senza riesecuzione.
+La fixture ricontrolla la lease dopo INTENT, prima della mutazione FDM.
+Localmente 170 test Python PASS, inclusi 17 nuovi; CMake configurato e nove
+suite CTest Python PASS. Warning path MSVC preesistente invariato; nessun
+nuovo binario compilato. Il gate nativo Windows WinError4551 resta aperto,
+non aggirato e non sostituito da questi PASS. Serverha: 176 test PASS,
+inclusi 10 JSBSim nativi, container senza rete/capability, source e runtime
+read-only. Source 892b3930115b54e24eb143fbb27aca9b19bbb5e4, archivio SHA256
+4265ea26ca53b91be357d6faa7a567ce6713d6e23386e85fd55aea7e1280a7c8.
+Sono verifiche software su server reale, non collaudo avionico. Review finale
+read-only senza finding bloccanti nel perimetro dei componenti isolati.
+Evidenza: evidence/r1-30-sil-control-inbox-20261030/verification.json.
+
+Solo software: nessuna nuova prova hardware avionica o accettazione HMI,
+nessun deploy, merge, servizio, endpoint o autorizzazione attuatori modificato.
+Inbox non ancora collegato al loop SessionEngine: durante pausa la chiamata
+owner è una responsabilità del futuro integratore, non watchdog autonomo.
+Console autenticata, lifecycle/resume/epoch, audit interattivo durevole e
+fanout multi-panel restano aperti. P03 PARTIAL, nessun nuovo DONE.
+Piano: ../project/PARALLEL_EXECUTION_PLAN_2026-10-30.md.
+Specifica: ../development/SIL_CONTROL_INBOX_V1.md.
+
+## R1-29 — dossier Standard/Professional e mappa complessiva
+
+Implementato generatore PDF documentale riproducibile con snapshot JSON,
+conteggi derivati dalla matrice,hash delle fonti e dettaglio di tutti71requisiti.
+Include mappe fisica/software,profili Standard/Professional come target,
+nodi/release con date,moduli e peculiarità,pacchetti SIL,rischi,planning e
+attività interattive. Non attribuisce al prodotto una percentuale di sicurezza
+o un completamento del simulatore.4nuovi test di coerenza PASS;verifica
+grafica del PDF separata dalle prove avioniche. Nessun nuovo test hardware,
+audit live dei nodi,deployment o completamento funzionale dichiarato.
+Il gate Windows WinError4551 R1-28 resta aperto,non aggirato.
+Documento versionato: ../project/reports/FUSO_AVIONICS_NEXT_PROGETTO_COMPLETO_2026-10-28.pdf.
+Il dossier copre l'intero progetto ma fotografa implementazione ancora
+parziale:console live,fanout multi-panel,impianti/prodotti,catalogo/NAS e
+acceptance mantengono i propri gate. Requisiti e stati invariati.
+
+## R1-28 — archivio dati di sessione e restore esclusivo
+
+Implementati pack/restore di tre soli file di run,manifesto hash/config/
+modello/commit e completion marker;TAR non compresso bounded,allowlist fissa,
+rifiuto traversal/link/device/sparse/PAX/duplicati/trailer nascosti. Target
+solo nuovo,nessun overwrite o cleanup. Restore completo solo dopo fsync e
+verifica semantica trace;fallimenti conservati senza receipt di successo.
+Nessun asset modello/MSFS redistribuito,checksum non è autenticazione.
+Software locale:15nuovi/149totali PASS;serverha159test PASS,inclusi10JSBSim
+nativi e restore di sessione fisica con audit pilota. Source75d46dd,
+archivio SHA2560ac6edd46b94c00d810814a0f77fc966617cc2228ed382c45fc47143f7be157e.
+CTest locale11/12PASS:efis_sil_panel_replay_tests FAIL per WinError4551
+controllo applicazioni (4casiPOSIX già skip attesi). Non aggirata la policy,
+nessun nuovo binario renderer compilato;gate nativo Windows aperto.
+Warning path MSVC preesistente invariato. Primo test di sviluppo Windows
+ha rilevato ctime lstat/fstat non comparabili:confronto Windows ora basato
+su identità/size/mtime e payload completo;POSIX include ancora ctime.
+Run60s R1-27 archiviata e ripristinata in directory nuova sul secondoSSD,
+poi archivio copiato su Windows e restore indipendente PASS. Conservati
+6000tick/1201frame/3comandi;hash archive
+d70e5da8c71e8672c7942b8782c4a2c4ccd15a4e2ed7f4c8532b8377cc9ab5a5,
+truth ad860282513963e5234dad3185193fec55020accbce15dafb159305634544b2b,
+result408158a996efd851f62241b7af5bc54a6ed26425d3b0a724ecc179b7bb10e4e6.
+Queste sono prove software su server/workstation reali,non avionica in volo.
+Nessuna verifica hardware avionica,nessun nodo operativo modificato.
+P07TODO→PARTIAL nel piano SIL;catalogo/licenze/dataset/replica e restore NAS,
+dipendenze eseguibili,firma e power-loss restano aperti. Fonte:
+../development/SIL_SESSION_ARCHIVE_V1.md. Nessun nuovo DONE.
+Evidenza: evidence/r1-28-sil-run-restore-20261028/verification.json.
+
+## R1-27 — applicazione di una fixture pilota locale
+
+Implementato runner opt-in con piano congelato nel config/hash,coda R1-26,
+tre ingressi FDM C172P (aileron/elevator/throttle),audit ADMITTED/INTENT/
+APPLIED con readback della proprietà dopo step fisico. Lease massima5s e
+tick100;rilascio degli override al tick101 o scadenza wall. Fallback al
+pilota di banco,non neutralizzazione né comportamento approvato per aereo.
+Massimo16comandi,tutti ammessi al tick0/applicati nel primo secondo:
+NON console interattiva o piano pilota esteso. Solo cruise senza pausa.
+Default invariato;nessun endpoint/attuatore/credenziale modificato.
+Trace verifier ora correla gli eventi al piano congelato e respinge
+duplicati,ordine/valori/ACK alterati o applicazione incompleta. Integrità
+e readback degli ingressi NON equivalgono a oracle aerodinamico indipendente.
+Software locale:134test PASS,inclusi6nuovi;11/11CTest mirati PASS con binari
+nativi preesistenti,nessun renderer compilato. Warning path MSVC invariato.
+Serverha:143test PASS,inclusi9JSBSim nativi;confronto contro baseline prova
+variazione del rollio e rilascio al tick101,tre ingressi con readback e
+rifiuto di readback falso anche con hash ricalcolato. Primo pacchetto v1
+incompleto:142test con1FAIL/2ERROR per documento/script omessi;log conservato,
+nessuna deroga. Pacchetto v2 completo da0c2a1d5 verificato SHA256
+14b407e72656e1b3e148e3fd1b5666467a3314cc2236de711d13c7810d3735c7.
+Run reale software60s sul secondoSSD autorizzato:6000tick/1201frame,
+3comandi applicati,elapsed60.182762s,maxlag6.494672ms,ACKmax21.430394ms,
+2419record durevoli. Trace/audit PASS,hash
+ad860282513963e5234dad3185193fec55020accbce15dafb159305634544b2b.
+Container senza rete e sorgenti/runtime read-only;solo directory test
+scrivibile. Nessun consumer reale collegato,nessuna qualifica storage/volo.
+Nessuna verifica hardware avionica. P03PARTIAL:console/inbox autenticata,
+comandi distribuiti,lifecycle fermo,epoch/recovery e replay esecutivo restano
+aperti. P04fanout/P05impianti/P06prodotti/P07catalogo e acceptance P08–P12
+non sono chiusi da questa fixture. Non dichiarare simulatore completo.
+Quadro completo dei12pacchetti e criteri residui: SIMULATOR_COMPLETION_CHECKLIST.md.
+
+## R1-26 — P03 ammissione e dedup dei comandi
+
+Implementato componente isolato CommandQueue:16pending,256identità,
+512KiB complessivi,validazione P01,principal fornito dal chiamante fidato,
+lease monotona massima5s e scadenza tick,ordine/expiry/revoca e dedup senza
+eviction. Capacità storia esaurita o clock invertito revocano la coda.
+Consegna bytes immutabili una tantum;nessun APPLIED,nessuna applicazione
+fisica o autenticazione di rete dichiarata. Default runner invariato.
+Software locale:13nuovi test e128totali PASS;10/10CTest mirati PASS con
+binari nativi preesistenti,nessun renderer ricompilato. Warning path oggetti
+MSVC preesistente non risolto né derogato. Gli stessi13test della nuova coda
+PASS su serverha in container senza rete,source/runtime read-only,senza
+endpoint avionici. Source0441c7e,archivio SHA256
+44c64368a1a2e30228738dee092132ae735046a489d31db0f29a90bc36e2fe9c.
+È esecuzione software su server reale,non acceptance hardware o FDM pilotato.
+Nessuna verifica su hardware avionico,nessun nodo avionico/pannello modificato.
+P03PARTIAL:inbox autenticata multi-thread,executor/capability JSBSim,
+lifecycle fermo,audit/durabilità e ACK fisico,epoch/recovery restano aperti.
+Runbook: ../development/SIL_COMMAND_ADMISSION_V1.md. Nessun nuovo DONE.
+
+## R1-25 — writer separato e durabilità esplicita
+
+Implementata modalità opzionale async-test:writer processo spawn,coda16record/
+512KiB,batch massimo8,fsync e ACK cumulativo. Policy congelata nel config/hash:
+QUEUED_NOT_DURABLE,watchdog ACK100ms controllato ogni pump e durante pausa.
+Deadline fisica100ms invariata;default sync invariato. In async la distribuzione
+può precedere persistenza attestata,finestra massima osservata100ms:non
+spacciare il dato accodato per durevole. Errori/coda piena/timeout/crash
+portano FAILED. Solo risultato root dopo writer,copia,hash e fsync è completo.
+
+Verificato software locale:115test PASS,inclusi9nuovi per writer reale su
+file temporanei,hang,crash,errore disco iniettato,limiti/no-overwrite e
+stop engine prima dello step se watchdog scade. Nessun fault su storage
+operativo. Serverha:121test PASS,inclusi6JSBSim nativi;9/9CTest locali PASS
+senza nuovo renderer compilato. Source7276a156202a400e73fb2dc7760734cddeb948cc.
+Run async sul SSD di sistema FAIL per ACK oltre100ms,ultimo tick fisico240,
+senza risultato pubblico di successo. Dopo autorizzazione utente,creata sola
+directory isolata /srv/data/avionix-sil-test sul secondo SSD FIKWOT /dev/sdb
+btrfs;nessun cambiamento a mappe/archivi. Run60s PASS SOFTWARE ONLY:
+6000tick,1202frame,2epoch,60.328081s,maxlag5.036858ms,ACK massimo osservato
+24.870313ms,coda massima5record,2414record durevoli. Verifica integrità
+trace PASS,hash63de4cf30c2e2d7fa4cea80f2bb347004548db0742f4227bb8f0cbae844f2204.
+Una prova non dimostra endurance,power-loss o causa esclusiva del FAIL
+del disco di sistema. Ripetibilità/soak ancora aperti.
+Nessun pannello/firmware/wire/chiave/recorder operativo modificato.
+
+Aperti:finalizzazione parent ancora sincrona dopo la fisica,kernel I/O non
+interrompibile,power-loss/dir fsync e endurance. P02 e requisiti restano
+PARTIAL;nessun DONE. Non trasferire la policy test nel prodotto senza review
+e prove. Evidenza: evidence/r1-25-async-test-recorder-20261027/verification.json.
+
+## R1-24 — adapter fisico del nuovo motore di sessione
+
+Implementati session_jsbsim.py e session_trace.py: mapping esplicito raw
+fisica/mondo→ICD candidato,conservazione trace raw separata,epoch relativa
+e clock fisico totale. GNSS invalido resta nullo anche con verità fisica
+disponibile;CAS/IAS/TAS e quote distinte. Canali non modellati e riferimenti
+prodotto non pubblicati restano UNAVAILABLE;nessuna copia CHT/EGT aggregate.
+Corretto scheduling P02 per conservare fase deadline con jitter ordinario,
+senza accumulare il ritardo di risveglio a ogni tick. Limite100ms invariato.
+Verificatore trace controlla hash/config/identità/lifecycle/epoch/sequence,
+coppie raw/canonico e conteggi:integrità,NON oracle indipendente di fisica.
+
+Software locale:106test PASS (5nuovi rispettoR1-23),8/8CTest mirati PASS;
+configurazione CMake PASS con warning path MSVC preesistente,nessun nuovo
+renderer ricompilato. Serverha:111test PASS,inclusi5JSBSim reali;source-v2
+archiviato dal commit fec6507cacd797561ff3c9bb4bfb6b59b6501ed4,container
+senza rete/capability con source/runtime read-only. POSIX hardlink verificato.
+
+Due run live su /dev/sda2/ext4 si sono fermate correttamente per pipeline
+frame/persistenza>100ms a tick1260 e1400:FAIL conservati,nessuna soglia
+allargata e nessun result.json di successo. Diagnosi non identifica fsync
+come unica causa;CPU bassa osservata non è una qualifica del server.
+Prova diagnostica con journal tmpfs64MiB:60.120529s,6000tick/1202frame,
+2epoch per pausa a tick2500,maxlag3.460428ms;probe fast1200 ricevimenti,
+slow/absent non bloccano e slow registra1201overwrite. Non sono display.
+201frame GNSS indisponibili (inclusa emissione al resume),verità fisica
+preservata e recovery successivo verificati. Non prestazioni Asso/Rotax.
+Trace copiato dopo la run su disco in nuova directory:verifica server e
+ulteriore verifica dopo copia Windows PASS,hash4f6df98200e8ab09892d908aad650ad5609aa3e4c84fd08151d506d8052375f6.
+Tmpfs non è persistente a power loss:PASS dimostra fisica/scheduler e
+integrità della copia,NON qualifica della registrazione live su disco.
+Nessuna prova HMI,nessun pannello/Blackbox/Pixhawk/CAN modificato;solo
+esecuzione software isolata sul server reale,nessun deployment operativo.
+
+P01/P02 e requisiti progetto rimangono PARTIAL. Aperti:coda/lease/dedup e
+comandi pilota P03,codec/fanout P04,prodotti meteo/NAV/airframe completi,
+modelli validati,registrazione live su disco/watchdog storage,backup/restore NAS,hardware/power/touch/
+golden e endurance. R1-20 rimane il collegamento PFD precedente separato.
+Evidenza corrente: evidence/r1-24-jsbsim-session-engine-20261027/verification.json.
+
+## R1-23 — P02 lifecycle clock e latest-state software
+
+Implementata SessionEngine candidate owner-thread:manifest congelato,
+tick10ms/frame20Hz,lifecycle/pausa e nuova epoch alla ripresa conservando
+backend e contatore globale. Slot latest-state immutabili massimo8consumer;
+lock occupato non blocca producer,perdite/overwrite espliciti. Loop senza
+richieste consumer,nessun catch-up,limite100ms di ritardo accumulato. Journal
+test esclusivo append/fsync/hash;successo separato dal log e pubblicato solo
+dopo finalizzazione. Errori dati/clock/backend/storage portano a FAILED.
+
+Verificato SOLO software:19 test nuovi con backend contatore e clock virtuale,
+più82 regressioni locali PASS (101metodi);7/7 CTest mirati PASS.
+CMake configurato,binari nativi preesistenti,nessuna nuova build renderer;
+warning path oggetti MSVC preesistente ancora aperto. Nessuna prova di fisica JSBSim o
+durata reale implicita;backend fidato sincrono e I/O kernel appesa non sono
+interrompibili da questa classe. Nessun hard-real-time/power-cut qualificato.
+Tentativo hardlink Windows negato dal sandbox e fallito chiuso:corretto
+percorso Windows con rename esclusiva,nessun permesso allargato. POSIX
+hardlink non provato in questo incremento;log fallito conservato.
+Hardware in questo incremento:NESSUNO;nessun nodo contattato o modificato.
+
+P02 TODO→PARTIAL. Restano adapter JSBSim/mapping P01,watchdog/storage/replay,
+comandi autenticati/coda/dedup P03,codec/fanout P04 e prove multi-nodo.
+P01 e gate globali invariati;nessun nuovo DONE. R1-20/chiavi/wire/renderer/
+recorder/firmware/power/touch/golden non modificati. Runbook:
+../development/SIL_SESSION_ENGINE_V1.md. Evidenza:
+evidence/r1-23-sil-session-engine-20261026/verification.json.
+
+## R1-22 — P01 contratto sessione frame comandi e mappa gap
+
+Implementato candidato OFFLINE_OBJECTS_ONLY,schema sil-session.v1 e registro
+ICD JSON separato dai protocolli wire congelati. Manifest100/20Hz/node65000,
+sessione/epoch/hash/profilo non validato;frame atomico17flight/18engine/5airframe,
+provenienza/age/unità/null e sette riferimenti prodotto SIM. Comandi a lease
+e tick futuro bounded,controlli normalizzati,OBS/stazione/rotta/eventi solo
+da catalogo congelato;validazione restituisce NOT_APPLIED. ACK correlati
+con stato/motivo/tick coerenti. Parser respinge extra/duplicate/nonfinite.
+Mappa gap DDP/EDP/NAV/airframe/meteo in ../protocols/SIL_SESSION_ICD_V1.md.
+
+Verificato SOLO software:14 test nuovi e68 regressioni locali PASS (82 totali).
+Riconfigurazione CMake e6/6 CTest mirati PASS;nessuna nuova build C++/renderer.
+Warning MSVC preesistente sulla lunghezza path oggetti resta nella configurazione.
+Nessun nuovo producer,pilotaggio o fanout runtime implementato. Lifecycle,
+ordine tra frame,dedup/comandi realmente applicati,autenticazione/capability
+modello e collegamento ai codec restano P02/P03/P04. P01 passa TODO→PARTIAL,
+non DONE: review e mapping semantico aperti. La V1 non accetta dati validati
+del modello né dichiara fisiologicamente corretto un valore solo finito.
+
+Hardware verificato in questo incremento: NESSUNO;nessun nodo contattato.
+R1-20/SSH/renderer/puntatori/recorder invariati;nessuna revisione wire,servizio,
+firmware,parametro,endpoint o permesso esteso. Gate progetto invariati.
+Evidenza: evidence/r1-22-sil-session-contract-20261026/verification.json.
+Prossimo: P02 in ambiente software con questo contratto candidato,senza
+aggirare il protocollo live R1-20 o le review/acceptance necessarie ai nodi.
+
+## R1-21 — definizione completa del simulatore e sequenza di completamento
+
+Consolidati architettura e contratti da sviluppare in
+`../development/SIMULATOR_MASTER_SPEC_V1.md`: fisica,clock/lifecycle,
+pilotaggio di TEST,producer indipendente,fanout DDP/EDP,impianti/sensori,
+NAV/meteo/terreno,catalogo/restore e consumer di tutte le applicazioni.
+12 pacchetti dipendenti,14 domini e16 scenari minimi. UL/ULS e Asso/Pioneer
+distinti; no limiti/prestazioni approvati dedotti da dati simulati o somiglianza.
+Specificati controllo senza attuatori,PAUSE/epoch,fault e criteri di
+accettazione separati fisica/trasporto/consumer/HMI e software/hardware.
+
+Implementato SOLO supporto di pianificazione: JSON versionato,lint fail-closed,
+otto test nuovi e registrazione CTest; nessun nuovo runtime avionico o servizio.
+Verificato software:68 test Python locali PASS (8 piano +60 regressioni).
+Riconfigurazione CMake PASS e5/5 CTest mirati PASS,binari nativi già esistenti;
+nessuna nuova build renderer. Warning path oggetti MSVC preesistente ancora
+presente nella configurazione,non risolto né qualificato da questa prova.
+Le prove di struttura non provano modelli,fanout o prestazioni del simulatore.
+Verificato hardware in questo incremento: NESSUNO; restano valide come storico
+le prove R1-20, non estese ad altri moduli. Nessuna lettura/modifica di nodi,
+chiavi,firewall,retention,release,firmware o profili operativi.
+
+Aperto: P01 ICD sessione/frame/comandi e gap dei domini non trasportati,
+poi producer/PFD-EMS simultanei e sviluppi ordinati nel nuovo piano. Fonti
+indipendenti/tolleranze per modello,impianti UL/ULS,power,touch,golden,
+restore SIL NAS,endurance e acceptance umana rimangono gate distinti.
+La specifica completa NON equivale a simulatore completo; nessun DONE.
+Evidenza software: evidence/r1-21-simulator-definition-20261026/verification.json.
+
+## R1-20 — chiave dedicata e collegamento diretto SIL, Windows fuori dal flusso dati
+
+Autorizzazione esplicita: nuova chiave serverha→PFD limitata al banco SIL,
+senza shell interattiva, forwarding o accesso Pixhawk. Implementati dispatcher
+forced-command con soli SIL_CHECK_V1/SIL_FEED_V1, sudoers a due azioni fisse,
+adapter root-owned verificato SHA, processo DynamicUser distinto da efis,
+rete privata solo loopback, capability vuote e NoNewPrivileges. Limiti:
+128 MiB, swap0,16 task,CPU50%,140s; nessun daemon SIL permanente/autostart.
+Chiave privata creata SOLO su serverha,0600; authorized_keys preesistente
+preservato byte per byte e backup root protetto. Nessun riavvio sshd.
+Il bridge gira su serverha con source locale: Windows serve solo per gestione,
+non trasporta i frame e non è necessario alla durata della sessione avviata.
+
+SOFTWARE:60 test Windows,70 serverha (inclusi10 nativi JSBSim),4/4 CTest
+mirati PASS. Nessuna nuova build C++: adapter ARM64 precedente SHA7d1c5880
+invariato. Otto prove negative SSH reali PASS: comando vuoto/id/iniezione/
+argomenti extra/SFTP/PTY/TCP diretto/remote forwarding. Agent e X11 negati
+dalla policy restrict, non provati separatamente. visudo/sshd syntax PASS.
+
+HARDWARE: due sessioni dirette60s,1201 frame ciascuna PASS; RTT massimo
+61.275209ms e61.274087ms. Seconda sessione con limiti risorse attivi:
+lateness FDM max11.829301ms,source60.012962s,100Hz/output20Hz. Runtime PFD
+UID63330/capability0/NoNewPrivileges1/solo lo verificati. Log GUI finale:
+20Hz,accepted1185,rejected0,gaps0,socket_errors0; non equivale a1201 frame
+tutti renderizzati. Fine feed ripristina PFD normale; verifica finale UTC
+2026-10-26T21:39:46Z PFD PID1745346 attivo,recorder1419 invariato,power0x0.
+Nessun bench lasciato attivo. Renderer7051a47/puntatore release invariati.
+Credential e helper SIL persistono come autorizzato, non release avionica.
+
+Tentativi conservati: primo installer fermato prima della mutazione per
+directory backup assente; test path Windows corretto con as_posix; pacchetto
+server v2 privo della fixture mondo fallisce, ricreato v3 con70 test PASS.
+Non sono stati allargati limiti di freshness o permessi per ottenere PASS.
+
+APERTO: producer continuo, comandi pilota interattivi, fanout PFD/MFD/EMS,
+consumer GUI EDP/airframe/meteo/NAV completi, modelli reali validati,
+endurance/golden/power altri nodi e touch PFD già segnalato non funzionante.
+Queste prove non sono acceptance grafica, qualifica hard-real-time o volo.
+Stati requisiti invariati; nessun DONE di prodotto/merge/main/firmware.
+Runbook: ../development/SIL_RESTRICTED_SSH_V1.md.
+Evidenza: evidence/r1-20-restricted-sil-ssh-20261026/verification.json.
+La precedente richiesta di autorizzazione R1-19 è superata dalla conferma
+esplicita e dalle verifiche R1-20 qui documentate.
+
+## R1-19 — sessione fisica LIVE sul PFD, non più soltanto replay
+
+Implementati source STDIO JSBSim, bridge su due pipe SSH autenticate e adapter
+ARM64 challenge/nonce128bit. Una richiesta per frame viene controllata prima
+dello step; source100Hz/output20Hz, frame con identità/sessione/clock SIM.
+Adapter respinge nonce/clock/SIM errati, dati tardivi e replay accelerati;
+RTT<=250ms dal FreshnessBudget, intero RTT conservato nell'età pubblicata.
+Solo DDP canonico node65000 a127.0.0.1:49152 nel namespace privato del PFD.
+Nessun IP forwarding, NAT, porta LAN nuova o percorso Pixhawk/CAN/servi.
+
+SOFTWARE:57 metodi Windows PASS;67 serverha PASS, inclusi10 test nativi
+JSBSim (nuova prova live1s e timeout riga parziale). ARM64 build e10 test
+adapter PASS (4 live,6 replay). MSVC build e CTest mirato registrati
+nell'evidence bundle; gate golden/UI invariati. R1-18 aveva8 test nativi,
+non6: corretto metadato, totale59 invariato. Tentativo compile v1 const
+sample accessor fallito, corretto senza mutare il core; tentativi preservati.
+Warning GCC ddp_v2.cpp preesistente e warning path MSVC non risolti/waived.
+
+HARDWARE PFD.45: sessione LIVE60s v1 passata con1201frame e RTTmax141.451ms;
+successivo check ha fallito dopo3frame per deadline FDM>100ms: conservato,
+nessuna soglia aumentata. Ottimizzata lettura native da poll/read per byte
+a blocchi4096 limitati; non prova che fosse l'unica causa del jitter.
+Versione finale adapter v4: build/test10 PASS, check3s/61frame RTTmax55.951ms,
+ulteriore sessione LIVE60s/1201frame PASS. Source fisico60.0219s/maxlateness
+57.395ms; bridge RTTmax103.912ms. Log reale GUI20Hz/accepted1186/reject0/gap0/
+socket_errors0 nell'ultima finestra;1201 attestati dal bridge, NON tutti
+attestati come renderizzati. Marker SIM e SVS invalid durante fault GNSS
+in cattura reale; nessuna nuova acceptance grafica o touch.
+
+Source finale: serverha/r119-source-v3; adapter finale PFD/r119-build-v4,
+SHA7d1c5880e6e06d69f71b6c3fe26a8f67860a65fe2259f661c49ad960066f6167.
+Stesso renderer7051a47, screen/feed140s, timer root180s. Fine feed ripristina
+automaticamente PFD normale: osservato UTC2026-10-26T21:19:42Z PID1743673,
+recorder1419 invariato/power0x0. Nessun bench lasciato permanente o release
+sostituita. Source attesta fisica, non UI: nuovo manifesto connessione=null;
+booleano false nel primo manifesto live-v1 era metadato legacy, non misura.
+Conferma collegamento solo tramite bridge-report e log separati del display.
+
+RIMANE APERTO: dipendenza da Windows/SSH relay e jitter non qualificato,
+producer continuo indipendente dai consumer, pilotaggio interattivo, fanout
+simultaneo PFD/MFD/EMS, EDP/airframe/meteo/identità NAV nella GUI, modelli reali
+validati, power/golden/endurance e touch PFD. Accesso diretto serverha→PFD
+non già autorizzato con chiavi presenti; nessuna chiave copiata o permesso
+esteso. Chiesta autorizzazione per nuova chiave dedicata limitata al solo SIL.
+Nessun DONE/merge/main/firmware/attuatore/volo autorizzato da questo lavoro.
+Runbook: ../development/SIL_LIVE_BENCH_V1.md.
+Evidenza: evidence/r1-19-live-link-20261026/verification.json.
+
+## R1-18 — temporizzazione fisica e virata sul pannello, integrazione ancora PARZIALE
+
+Richiesta: sviluppo del simulatore e avvio con capacità reali. Corretto il
+percorso --realtime: attesa su deadline monotona PRIMA dello step fisico,
+arresto se ritardo >100 ms, timing nel manifesto e verifica fail-closed.
+Il launcher serverha accetta ora --realtime esplicito; nessun servizio globale.
+SOFTWARE: 51 test Windows e 59 serverha, inclusi otto test nativi JSBSim
+(conteggio corretto in R1-19; totale59 invariato),
+PASS sulla copia finale r118-world-source-v2. Overrun iniettato non produce
+manifesto COMPLETE; mutazioni di timing respinte. Non è qualifica hard-real-time.
+
+ESECUZIONE SERVER reale: copia v1, C172P reference JSBSim1.3.3, virata con
+vento, osservazioni meteo e radio fittizie; 60.006 s/6001 step/1201 frame,
+massimo ritardo3.589 ms, verificatore replay PASS. V1 preservata e legata
+all'archivio; v2 aggiunge guardia clock nonfinito/test e launcher opzionale,
+ha regressioni native PASS ma non è la sorgente della misura temporale v1.
+Dataset include perdita GNSS20–30s e fault radio/meteo dichiarati: non nominale.
+
+HARDWARE PFD.45: medesimo binario7051a47/SHA originale, nuovo replay verificato
+r118-turn-v1, node65000/loopback49152 in namespace solo lo. Preflight ARM64,
+stop-feed/ripresa originale e servizio del timer rollback PASS; recorder PID1419
+invariato, power0x0. Sessione riarmata UTC2026-10-26T13:35:11Z per900s,
+timer di backstop930s; NON deployment permanente. Ultima finestra osservata
+DDP20Hz/accepted2706/reject0/gap0/socket_errors0 e60Hz rendering. La cattura
+durante GNSS loss mostra SVS DATA INVALID; seconda cattura mostra terreno
+nuovamente disponibile: non spacciare il vuoto come terreno.
+Resta startup stall1680ms; non qualifica endurance o frametime massimo.
+
+NON COMPLETO: flusso fisico live server→pannelli, pilotaggio interattivo,
+EDP/EMS e airframe, prodotti meteo sui consumer grafici, identità NAV completa,
+profili Asso/Pioneer/Rotax validati. PFD è un REPLAY ciclico di60s riemesso per
+15min, non sessione live; server ha eseguito una prova temporizzata finita.
+Touch/MENU ancora FAIL segnalato, pur con11 tocchi kernel validi; nuova prova
+con mouse non ricevuta. MFD/Blackbox power-gated, nessuna modifica. Nessun
+comando Pixhawk/servi, modifica firmware, main o golden; nessun nuovo DONE.
+Evidenza: evidence/r1-18-realtime-pfd-20261026/verification.json.
+
+## Follow-up 2026-10-26 — touch PFD non accettato
+
+Operatore: schermo visibile, touch non risponde. Acceptance touch/MENU FAIL
+segnalata; causa NON ancora identificata, nessun DONE. Diagnostica SSH reale
+read-only: USB QDtech MPI7003 0484:5750 presente, touchscreen riconosciuto da
+libinput su seat0/event4 (event5 è il pulsante power), calibrazione identity.
+Sessione Wayland attiva; configurazione labwc associa questo dispositivo a
+HDMI-A-1, attivo 1024x600. Presenza/enumerazione non provano eventi fisici
+né consegna all'applicazione. Successivo log fornito dall'operatore: 11 coppie
+TOUCH_DOWN/TOUCH_UP, senza contatti rimasti aperti nel campione. I dieci tocchi
+successivi al primo sono a x=785–807/y=13–32 circa, compatibili con MENU nella
+cattura reale 1024x600 (rettangolo x=750–826/y=12–46). Percorso fisico fino
+a libinput verificato; risposta MENU ancora FAIL, non attribuita a guasto USB.
+Labwc ha aperto event4, configura mouseEmulation=yes; Qt usa Wayland. Questa
+configurazione osservata non prova la consegna degli eventi al client Qt.
+Restano aperti focus/consegna compositore-client e gestione click dell'app;
+nessuna correzione cieca di calibrazione o riavvio eseguita.
+PFD normale attivo PID 1618997, bench screen/feed inattivi, power 0x0.
+Journal root conferma scadenza naturale RuntimeMax il 25 ottobre 01:43:36
+locale: risultato timeout atteso del limite di banco; oggi app normale attiva.
+Journal utente storico non disponibile in questa interrogazione: non dedurre
+da questo controllo il tempo esatto di ripresa della UI normale. Nessuna
+riattivazione replay, modifica software/configurazione, riavvio o reset USB.
+
+## R1-17 — PFD reale collegato al replay, SOLO banco temporaneo e parziale
+
+Richiesta proprietario: collegare il pannello disponibile e iniziare a operare.
+PFD .45 read-only riconfermato 0x0/48.3°C; MFD/Blackbox esclusi per power gate.
+Scelta: NON distribuire un nuovo renderer/golden non approvato. Binario PFD
+immutabile 7051a47/SHA a64edcf2... invariato, temporaneamente eseguito da unità
+di banco con stato/settings/cache separati e simulatore locale DISABLED.
+Unità utente normale fermata soltanto durante la finestra, recorder PID 1419
+invariato. Nessuna modifica a symlink, unità permanenti, firmware o firewall.
+
+Implementato mittente Qt Core/Network efis-sil-panel-replay: soltanto
+127.0.0.1:49152/node65000, SHA atteso/preflight, nuova instance casuale e
+clock/sequenza di emissione, arresto su ritardo >100 ms e limite 900 s.
+Frame fisici verificati su serverha, copiati via file e riemessi: NON streaming
+live dal server e NON pilotaggio manuale. Replay nominale 60 s/1201 frame
+ciclico, senza fault, modello C172P REFERENCE_UNVALIDATED. Mapping esplicito
+di IAS ideale, quote, prua MAG, GNSS, OBS e CDI; VS indipendenti, EMS, meteo
+e airframe NON collegati. Etichetta NAV GPS1 rimane legacy, non prova ident VOR.
+
+Verificato: build ARM64 e sei test black-box PASS; MSVC build e CTest mirato
+5/5 PASS. PFD reale riceve 20 Hz, accepted crescente, reject/gaps/socket_errors
+zero nelle finestre osservate, marker SIM e cattura reale 1024x600. Terreno e
+texture locali riletti dai path già presenti, imagery 1326 tile/27 gap noti.
+Schermo/feed condividono un namespace di rete diverso dall'host, solo lo:
+nessun meteo Internet o accesso IP a Pixhawk/Blackbox. Root unità transitorie
+User=efis, timer 930 s e RuntimeMax 900 s; stop del feed ha ripristinato davvero
+l'unità utente originale. Servizio timer invocato nel drill con successo;
+scadenza naturale completa dei 900 s NON osservata in questo blocco.
+
+Sessione finale riarmata e osservata a UTC 2026-10-24T23:28:46Z (25 locale),
+screen PID 1618223, feed 1618228, 0x0; è una LEASE, non stato permanente.
+Guardia del timer copiata root:root0500 sotto /run/efis-sil-r117 root:root0700,
+non esecuzione differita come root di uno script rimasto scrivibile dall'utente.
+Evidenza evidence/r1-17-pfd-sil-bench-20261025/verification.json. Touch/MENU:
+chiesta conferma umana, NON ancora verificati in questa nuova sessione.
+Difetti OPEN: startup/callback stall fino a circa 1.6 s, UI installata legacy
+mostra ancora impianti dimostrativi e zeri EMS sotto FAIL, sorgenti NAV non
+complete, limiti C172P assenti volutamente/V-SPEEDS UNAVAILABLE. Non usare
+quei dati come prova di integrazione. Golden/nuova release e gate di volo
+restano aperti; nessun nuovo DONE. Runbook SIL aggiornato con comandi.
+
+## R1-16 — mondo meteo/NAV offline implementato, integrazione display APERTA
+
+Requisito proprietario consolidato in AVX-G5-02: la stessa sessione serverha
+deve simulare ambiente meteorologico, prodotti informativi meteo e navigazione
+GNSS/VOR/DME/NDB/ILS, piano di volo e indicazioni coerenti sui veri EFIS NEXT.
+Piano dettagliato nel backlog, sezione «SIL-WX/NAV». Non basta animare radar,
+CDI o numeri: vento/atmosfera influenzano il modello fisico; segnali NAV sono
+calcolati rispetto alle stazioni, con copertura/guasti/validità espliciti.
+Implementato tools/simulation/sil_world.py e --world opzionale nella sessione
+JSBSim: vento per quota/raffiche armoniche e pressione/temperatura applicati al
+FDM, sensori aria/compasso espliciti, geometria VOR/TO-FROM/CDI/DME obliquo,
+NDB/ADF, ILS front-course/GS con inviluppo didattico, GNSS con offset/perdita,
+route leg/XTK/DTK/direct-to/ETA verso waypoint e nearest dei soli punti rotta.
+Radiofari SIM fittizi, nessun database operativo di frequenze approvato.
+Prodotti METAR e TAF sintetici (TAF solo persistenza, NON FM/TEMPO/BECMG),
+radar analitico georeferenziato/PNG, stati current/stale/expired/offline/skew;
+mondo fisico e osservazioni ritardate separati. Nessuna nuova UI esterna.
+
+Verificato SOLO SOFTWARE: 66 test Windows (29 mondo + 18 sessione + 19 MSFS),
+53 serverha (29 mondo + 18 sessione + 6 JSBSim reali), CTest mirato 4/4 PASS.
+Vento cambia davvero GS/traiettoria; ripetizione byte-identica nello stesso
+runtime e replay NAV mutato respinto anche ricalcolando hash dei frame.
+Sorgente isolata serverha world-source-v6 e sessioni nuove con manifesti,
+hash/config e radar, copie precedenti preservate. Evidenza in
+evidence/r1-16-sil-world-20261025/verification.json.
+
+NON completo: publisher e adapter dei renderer per questi nuovi gruppi,
+cache/prodotti attraverso consumer reali, TAF evoluti, terrain masking/RF,
+ghiaccio/stocastica meteo, database/procedure reali, nearest aeroporti/alternati,
+approccio/RNAV completo, guida missione e catalogo/NAS. Il C172P resta modello
+reference non validato per Asso/Pioneer/Rotax. Nessuna nuova verifica hardware,
+emissione RF, comando attuatori, servizio o attivazione; power/golden invariati.
+NAV-001/002/003, WX-001/002 e VER-001 restano PARTIAL, nessun nuovo DONE.
+
+## R1-15 — collegamento SIL: adapter/consumer verificati, pannelli NON commutati
+
+Inventario SSH read-only PFD/MFD/EMS/Blackbox riconfermato: PFD è attivo come
+servizio utente (PID 1495), MFD PID 1328, EMS PID 948 e Blackbox PID 1294.
+EMS realmente attivo è ems-a0be9a5-main-v1 / source completo a0be9a52494ea7ccb5a3890e94d03b671162383b,
+manifesto e /proc/exe verificati: registro release aggiornato come osservazione,
+NON nuovo deployment. PFD/EMS 0x0; MFD/Blackbox 0x50000. MFD registra ulteriori
+undervoltage questo boot, ultimo 25 ottobre 00:02:26→28 normalizzato (journal
+locale): gate PWR-001 ancora aperto, nessun carico/reboot/PSU cambiato.
+
+Implementato target opzionale Qt Core efis-sil-wire-check: adapter offline di
+un sottoinsieme JSBSim nei tipi core, codec e due consumer DDP più uno EDP
+canonici reali, identità SIM 65000 separata dalla Blackbox operativa 47.
+GCC/Qt Core serverha build e 5 test black-box PASS; quattro replay da 1201 frame
+ciascuno accettati dai tre consumer, SIM/clock/CRC/duplicati/identità/STALE/LOST
+verificati. MSVC build/link del target PASS e CTest 3/3 PASS. Sono classi codec
+e consumer, NON renderer/pannelli né LAN reale. Nessun socket o publisher.
+
+Il mapping volutamente NON inventa IAS da CAS, quota indicata da geometrica
+o convenzione heading da TRUE; quei campi restano UNAVAILABLE, come i cilindri
+e impianti non modellati. Warning preesistente GCC ddp_v2 osservato, non risolto.
+Restano mapping aria/compasso, session publisher e ingresso SIM isolato con
+rollback, gate power/release/golden e prova simultanea dei display REALI.
+Broker MAVLink/CAN/recorder attuale e consumer delle porte operative invariati.
+Evidenza evidence/r1-15-sil-link-preflight-20261025/verification.json;
+runbook ../development/SIL_CANONICAL_LINK_PREFLIGHT_V1.md. Nessun DONE aggiunto.
+
+## R1-14 — JSBSim headless su serverha, sessione unica offline verificata
+
+Decisione proprietario: usare la grafica EFIS NEXT reale simultaneamente sui
+display, NON un visualizzatore esterno. Predisposto ed eseguito JSBSim 1.3.3
+con NumPy 2.3.4 nel solo runtime isolato serverha
+`/home/sfuso/avionix-sil-r114-20261025`, nessun pacchetto globale o servizio
+persistente. Container senza rete, non privilegiato, CPU/RAM limitate;
+runtime/sorgenti read-only. Nessun nodo avionico contattato o modificato.
+
+Implementati Backend fisico C172P, pilota di banco interno al FDM, clock
+integrazione 100 Hz/output 20 Hz, quattro scenari cruise/turn/engine-out/
+sensor-loss, frame unico volo/motore/airframe e replay con manifesto/checksum.
+Quattro sessioni permanenti di 60 s/1201 frame e wheel hash verificate.
+Quota nominale entro circa 0.59 ft, virata bank 18.78° a 35 s, taglio miscela
+porta flow a 0 e quota finale circa 4518 ft: dati del modello NON validati
+per l'aereo reale. CHT/EGT aggregate non copiate nei cilindri; elettrico,
+fuel-pressure e lock carrello non modellati sono UNAVAILABLE, non simulati
+come sani. CAS, heading TRUE e quota geometrica non mascherati da IAS/MAG/QNH.
+
+Verificato software su serverha reale: 26 test (18 offline + 8 con JSBSim),
+coerenza quota/VS e consumo/flow, doppio run byte-identico e replay alterato
+respinto. Windows 37 test (18 nuovi + 19 MSFS) PASS, CTest 2/2 PASS. Prova
+breve software, NON endurance/server worst-case né qualifica ARM64/volo.
+Evidenza `evidence/r1-14-serverha-sil-20261025/verification.json`.
+
+Ancora APERTI: adapter canonico FDM→core, mapping aria/quote/heading,
+publisher SIL DDP/EDP/airframe e isolamento sorgenti, sessione distribuita
+e prove sui renderer/pannelli REALI, catalogo server/NAS, missioni complete,
+profili Asso/Pioneer e due motori, dettaglio sonde/impianto elettrico/meteo.
+Le tre role_view sono viste di test OFFLINE: non provano display connessi.
+Nessun nuovo rendering, attivazione, merge o waiver power/golden. ID PRJ-004
+VERIFY-HW, EMS-002/VER-001 PARTIAL, AVX-G5-02 IN_PROGRESS invariati.
+Runbook e piano: `../development/SERVERHA_HEADLESS_SIL_V1.md`.
+
+## R1-13 — acquisizione locale MSFS, non ancora publisher verso EFIS
+
+Ripetizione interattiva del 2026-10-24 dopo «FS aperto», sorgente 634d3d5:
+la chiamata Open del nuovo client riesce, ma segue FAULT/MALFORMED_PACKET,
+zero frame dati accettati, exit 1 e summary FAIL. File originale preservato
+in evidence/r1-13-msfs-live-attempt-20261024/runtime.jsonl. Non è una sessione
+positiva; non è provato che FS abbia inviato dati corrotti: può essere un
+disallineamento del parser. Nei controlli immediatamente successivi FS non
+è più osservato fra i processi e la sonda C++ restituisce open 0x80004005.
+Nessun crash diagnosticato e nessun filtro del parser allentato. Richiesta
+nuova sessione FS mantenuta aperta per acquisire header/size e confrontarli
+con l'ABI SDK prima di correggere il decoder. Nessun nodo/servizio modificato.
+
+PC Windows WIN-9MB3K78GSR2, LAN servizio 192.168.1.33, Steam e SDK in
+`D:\MSFS 2024 SDK` confermati. Sonda C++ locale preliminare: SimConnect OPEN,
+12 frame PASS, posizione/IAS/quota/assetto/RPM del volo dichiarato C172.
+Questa osservazione non valida il modello aeromobile né profili Rotax.
+
+Implementato `tools/simulation/msfs_readonly.py`: sette sole SimVar, cinque
+API read-only/connessione locale, nessun socket/evento setter o inoltro;
+JSONL con SIM sempre, flight_approval=false, raw/unità, UUID, sequenze
+ricezione/output separate, UTC/monotono HOST_RECEIPT_NOT_SIM_TIME e age.
+WAITING/SIMULATED/STALE/LOST/FAULT, mascheramento value=null a stale/lost/fault,
+timeout iniziale e nessun fallback inventato; file nuovi esclusivi.
+Pitch/bank nativi MSFS non ancora convertiti al contratto EFIS.
+
+Verificato software: 19 test offline di parser, freshness/recovery, errori,
+ABI mock fixed-width, confini read-only, CLI e preservazione output PASS.
+Regressione combinata 66 test Python PASS; nuovo gate CTest registrato ed
+eseguito 1/1 PASS con configure Release/Python esplicito. Tentativi Debug
+incontrano C1902 MSVC/PDB già noto; nessuna policy di sicurezza modificata.
+Tentativo runtime del nuovo bridge: FS non più osservato in esecuzione,
+open 0x80004005, exit 1 e FAULT/FAIL con valori null: caso negativo corretto.
+Acquisizione positiva del tool finale e disconnect/pausa reali NOT_RUN;
+la sonda preliminare non li sostituisce. Nessun nodo avionico contattato,
+nessuna release/servizio/firewall/firmware modificato. ID PRJ-004 VERIFY-HW,
+EMS-002/VER-001 PARTIAL, AVX-G5-02 IN_PROGRESS invariati.
+
+Specifiche e prossimi gate: `../development/MSFS_READONLY_BRIDGE_V1.md`.
+Restano identità/modello/clock, assi/quote e canali aggiuntivi EMS verificati,
+registrazione/replay server/NAS e publisher SIL canonico isolato tramite
+Blackbox, NON collegamento diretto FS→display. Nessun merge o flight approval.
+CI sorgente precedente 1ae8373: Project Control 40126263266 SUCCESS;
+Core 40126263419 FAIL solo golden step 11, linux-core e sanitizers SUCCESS,
+build Qt/QML/weather PASS. Non sostituiti riferimenti/tolleranze golden.
+
+## R1-12 — motore autonomo e collegamento PFD, candidato software
+
+AVX-G5-02 IN_PROGRESS; PRJ-004 VERIFY-HW, EMS-002/VER-001 PARTIAL.
+MissionSimulator + MissionProfile + SimulationClock nel Core senza Qt:
+missione geodetica/durata calcolata, coerenza posizione/GS e quota/VS, vento,
+RPM/termica, fuel/esaurimento, alternatore/batteria, flap/transito carrello,
+dieci tipi di fault temporizzati, pausa/seek/speed riproducibili. Nuove quattro
+missioni `mission-*` selezionabili nella console PFD; demo precedente conservata.
+CLI offline con frame JSONL/validità/provenance e descrizione 18 parametri,
+sempre SYNTHETIC_UNVALIDATED e flight_approval=false. Nessuna nuova rete attiva.
+
+Verificato solo software: native C++ Linux + ASan/UBSan, sei CLI black-box,
+controller PFD Qt Core/Network reale senza display, mutazione VS respinta;
+88 esiti QML e 47 Python PASS, build Release MSVC PFD/EMS/CLI/test PASS.
+Evidenza `evidence/r1-12-autonomous-mission-20261024/verification.json`.
+Nessun nodo avionico contattato/deploy/hardware; serverha usato soltanto come
+ambiente di compilazione/test isolato. Warning GCC in ddp_v2.cpp invariato
+osservato nella build completa del Core, non risolto o dichiarato innocuo.
+
+NON completati: dinamica 6DoF/planata/stallo e profili reali dei due motori,
+clock/sessione distribuita EMS/Blackbox, catalogo/replay server/NAS, dati DEM e
+ostacoli integrati fisicamente, radio/meteo operativo. Meteo missione è
+UNAVAILABLE, IAS una proxy isotermica, taxi/pista geometricamente semplificati.
+In questo blocco MSFS2024 era previsto più avanti; installazione osservata
+successivamente in R1-13. Il motore autonomo resta privo di tale dipendenza.
+Ricognizione SDK e JSBSim registrata nel backlog, nessun backend esterno installato.
+CI precedente 2b48c57: Project Control 40120746821 SUCCESS; Core 40120746818
+FAIL solo confronto golden, core/sanitizer/build/QML PASS. Nuovo candidato da
+verificare in CI; niente merge/baseline cambiata, attivazioni power-blocked.
+
+## R1-11 — primo incremento simulatore, non ancora realistico
+
+AVX-G5-02 IN_PROGRESS, VER-001 PARTIAL. SystemSimulator usa ora la stessa
+tabella per portata e consumo integrato; niente consumo a motore spento e
+serbatoi riproducibili indipendentemente da pause/seek/cadenza. Quantità e
+portate restano dimostrative: non nuova validazione aeromobile/motore.
+Native Linux PASS (quattro scenari, integrale, reset/seek/clamp/provenance),
+mutazione integrale rifiutata; build/link MSVC PFD/EMS/test e 81 esiti QML PASS.
+Evidenza `evidence/r1-11-simulation-fuel-20261024/verification.json`. Container
+isolato su serverha per soli test, nessun servizio/nodo avionico modificato.
+
+Audit: quota/VS incoerenti, posizione non integrata da GS e in movimento a
+terra, frame/clock separati tra generatori PFD/EMS/Blackbox. Specifica comune,
+modelli validati e catalogo server sono ancora da realizzare; nessun dato
+FS2024 o archivio geografico acquisito. Il backlog riporta la sequenza restante.
+CI dfad7fc riconfermata: Project Control 40117795920 SUCCESS; Core 40117795910
+FAIL solo golden, core/sanitizer/build/QML SUCCESS. Nessun gate aggirato.
+
+## Requisito aperto — simulatore realistico e archivio dati server
+
+Richiesta proprietario 2026-10-24 registrata in
+`../project/AVIONIX_NEXT_EXECUTION_BACKLOG.md`, AVX-G5-02: ambiente SIL coerente
+per tutte le applicazioni, profili aeromobile/motore tracciabili, fault/replay
+e dataset geografici/operativi versionati su serverha con backup NAS e cache
+offline ai nodi per zona/piano di volo. Valutare bridge/fonti FS2024 e altri
+simulatori solo previa verifica tecnica e dei diritti d'uso/archiviazione;
+manuali dei costruttori prioritari per limiti. Stato IN_PROGRESS: base autonoma
+R1-12 verificata software, nessun modello reale/dataset esterno o servizio operativo. SIM sempre
+esplicito, nessun comando ad attuatori e nessuna equivalenza con prove reali.
+
+## R1-10 — validità airframe, dieci passi software nella PR #59
+
+Registro: `../project/R1_10_AIRFRAME_2026-10-24.md`. ID PRJ-004, EMS-002,
+VER-001 invariati. EDP V1 non trasporta carrello/flap: engine LIVE/SIM non
+valida l'airframe. EMS dedicato espone LOST, NO DATA e angoli NaN; PFD espone
+feedback soltanto dal simulatore completo esplicito, marcato SIM, inizializzato
+prima della pubblicazione e invalidato allo stop. Nessun nuovo adapter fisico.
+
+Pagina EMS: validità separate gear/misurato/comandato, whitelist sorgenti,
+età finita non negativa, STALE/LOST/FAIL e stati sconosciuti mascherati;
+scala da detent finiti ordinati, niente clamp ingannevole dei fuori scala.
+CAS AIRFRAME DATA UNAVAILABLE impedisce SYSTEM NORMAL con feedback assente.
+Banda PFD: eliminati PITOT ON, ICE OFF, TRIM 0.1, FLAPS UP e T/O OFF fissi;
+flap valido con SIM esplicito, altri segnali senza adapter mostrano trattino.
+
+Solo software: 81 esiti QML PASS (inclusi init/cleanup), 47 Python PASS,
+mutazione di gearValid rifiutata, build/link Release e AOT PFD/EMS PASS.
+18 catture Windows/software, esempi LOST e SIM allegati. Test C++ del controller
+esteso e compilato; esecuzione nativa locale non dichiarata (policy Windows).
+Evidenza `evidence/r1-10-airframe-20261024/`; nessun nodo avionico contattato,
+hardware verificato, release attivata o merge eseguito. Golden non sostituite.
+
+CI sul precedente f96b483: Project Control 39752056068 PASS; Core 39752055866
+FAIL solo confronto golden, con core/sanitizer/build e test Qt PASS. Questo
+non certifica R1-10: nuova CI e review Linux restano richieste. Rollout bloccato
+da power; trasporto/qualifica reale airframe e verticale EDP reale ancora aperti.
+
+## R1-09 — consolidamento nella stessa PR #59
+
+Registro unico: `../project/R1_09_CONSOLIDATION_2026-10-22.md`. Snapshot di
+otto PR #52–59 con SHA, CI e dipendenze in `evidence/r1-09-consolidation-20261022/`.
+Nessun merge: stack EMS #53→#56→#59 e meteo #55→#57→#58 ancora distinti;
+#54 indipendente, #52 senza run restituito dalla query. Main e release sui
+nodi non sono aggiornati da questo blocco. Il viewer serverha segue main.
+
+CI #59 su 0c83113: core/sanitizer/build/test Qt PASS, Project Control PASS,
+solo confronto golden FAIL. Artifact Linux 12411617225 verificato con SHA
+esterno; review di 800 LIVE/LOST rileva collisione CAS MESSAGES/LIMITS INDICATIVE.
+Due CHANGES_REQUIRED, altre 16 NOT_REVIEWED: NON revisione completa approvata.
+Follow-up corregge il CAS e aggiunge sei test geometrici. Nuovo rerender Linux
+necessario; le vecchie immagini non provano la correzione successiva.
+
+Implementato: preparatore offline che lega ZIP, commit/render source, run,
+artifact, riferimento e pixel; report non sovrascrivibile e fuori dal riferimento,
+18 decisioni esplicite. Anche ACCEPT totale non autorizza una baseline.
+Decoder PNG con limiti codificato/pixel/espansione, CRC e rifiuto APNG/corruzione;
+nessun PNG golden/manifesto/tolleranza modificato. Fixture DEGRADED a 600 ms.
+
+Verificato solo software: 60 esiti Qt PASS, 47 test Python PASS e sottoinsieme
+18 test Linux PASS in container isolato source read-only/rete disabilitata,
+build/link PFD+EMS/AOT MSVC PASS. 18 nuove catture Windows; due allegate CAS.
+Nessun nodo avionico contattato o modificato, nessun nuovo test hardware.
+Restano CI follow-up, artifact Linux aggiornato, review completa, font/touch
+ARM64, power, radar live qualificato ed EDP reale. ID PRJ-001/004, EMS-002,
+VER-001 invariati. Commit e push sulla stessa PR, non un'altra integrazione.
+
+## R1-08 candidato — intestazione EMS responsive e dati non inventati
+
+Registro dieci passi: `../project/R1_08_TEN_STEP_EMS_HEADER_2026-10-22.md`.
+Branch `fix/ems-responsive-header-r108-v1` su #56 `306d145`, distinto dallo
+stack meteo/controllo #55→#57→#58. #58 riconfermata Core/Project Control
+SUCCESS sul commit `2f1251a4ce05cd412a9066cce10679fe86d50d63`; non integrata.
+R1-07 verticale EDP reale non è completato né anticipato da questa numerazione.
+
+Implementato: EmsStatusHeader con dimensioni del testo misurate, logo senza
+coordinate x fisse, titolo/badge/clock separati, target setup >=44 px, long
+press 1,2 s e clock LOCAL con binding persistente. Rimossi OAT 24°C e QNH
+1013 codificati: nessun valore di sostituzione; serve futuro adapter valido.
+Componente incluso nei moduli QML PFD/EMS, non è redesign della banda PFD.
+
+Verificato solo software: build/link Release MSVC e QML AOT PFD+EMS PASS,
+54 esiti Qt Quick (18 combinazioni header più input/clock e regressioni) e
+37 Python PASS. 18 catture Windows/software generate, tre allegate; font
+offscreen espliciti per escludere quadratini/font condensato del primo
+tentativo. Evidenza `evidence/r1-08-ems-header-20261022/verification.json`.
+Non eseguiti nuovi binari Windows nativi; gate golden locale non registrato.
+
+Verificato su hardware reale: NULLA. Nessun nodo contattato, deploy, reboot,
+rete o firmware modificato. Golden Linux #56 NON aggiornata né approvata:
+nuovo rerender/review necessari, nessuna soglia allargata. CI di questo nuovo
+candidato da verificare. PRJ-004, EMS-002 e VER-001 restano invariati; power,
+leggibilità fisica, touch, font ARM64, input reali e acceptance aperti.
 
 ## R1-04 candidato — validità motore e baseline carburante
 

@@ -1,0 +1,25 @@
+Test project C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-ems-state-review
+      Start 30: efis_sil_development_plan_tests
+ 1/10 Test #30: efis_sil_development_plan_tests ...   Passed    0.17 sec
+      Start 31: efis_sil_session_contract_tests
+ 2/10 Test #31: efis_sil_session_contract_tests ...   Passed    0.17 sec
+      Start 32: efis_sil_session_engine_tests
+ 3/10 Test #32: efis_sil_session_engine_tests .....   Passed    0.50 sec
+      Start 33: efis_sil_jsbsim_adapter_tests
+ 4/10 Test #33: efis_sil_jsbsim_adapter_tests .....   Passed    0.21 sec
+      Start 34: efis_sil_session_archive_tests
+ 5/10 Test #34: efis_sil_session_archive_tests ....   Passed    2.93 sec
+      Start 35: efis_sil_pilot_fixture_tests
+ 6/10 Test #35: efis_sil_pilot_fixture_tests ......   Passed    0.18 sec
+      Start 36: efis_sil_command_queue_tests
+ 7/10 Test #36: efis_sil_command_queue_tests ......   Passed    0.19 sec
+      Start 37: efis_sil_control_inbox_tests
+ 8/10 Test #37: efis_sil_control_inbox_tests ......   Passed    0.19 sec
+      Start 38: efis_sil_session_control_tests
+ 9/10 Test #38: efis_sil_session_control_tests ....   Passed    0.21 sec
+      Start 39: efis_sil_async_journal_tests
+10/10 Test #39: efis_sil_async_journal_tests ......   Passed    2.13 sec
+
+100% tests passed, 0 tests failed out of 10
+
+Total Test time (real) =   6.89 sec

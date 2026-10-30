@@ -1,0 +1,14 @@
+Mon 26 Oct 21:10:56 UTC 2026
+MainPID=1742815
+PrivateNetwork=yes
+ActiveState=active
+
+MainPID=1742839
+PrivateNetwork=yes
+ActiveState=active
+Oct 26 22:10:41 efis-pfd-01 env[1742815]: 2026-10-26T22:10:41.756 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.67 snapshot_hz= 50.0 sequence= 348 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 179 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 22:10:46 efis-pfd-01 env[1742815]: 2026-10-26T22:10:46.756 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.67 snapshot_hz= 50.0 sequence= 598 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 279 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 22:10:51 efis-pfd-01 env[1742815]: 2026-10-26T22:10:51.756 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.66 snapshot_hz= 50.0 sequence= 848 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 379 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+MainPID=1419
+ActiveState=active
+throttled=0x0

@@ -25,6 +25,57 @@ int main() {
     require(dark.flight.air_data.indicated_airspeed_kt.value == 0.0,
             "cold aircraft must not indicate airspeed");
     require(dark.flight.air_data.indicated_airspeed_kt.is_simulated(), "flight data must be marked simulated");
+    const auto fuel_total = [](const SimulationFrame& frame) {
+        return frame.engine.fuel_left_gal.value + frame.engine.fuel_right_gal.value;
+    };
+    const auto near = [](double actual, double expected) {
+        return std::abs(actual - expected) < 1e-9;
+    };
+    const auto parked = nominal.sample(start + 10s, 10s);
+    require(near(fuel_total(dark), fuel_total(parked)) && parked.engine.fuel_flow_gph.value == 0.0,
+            "stopped cold aircraft must not consume fuel");
+    // Independent hand integral for the first three powered segments.
+    const auto climb_start = nominal.sample(start + 105s, 105s);
+    require(near(fuel_total(dark) - fuel_total(climb_start),
+                 (15.0 * 2.0 + 45.0 * 2.2 + 30.0 * 6.8) / 3600.0),
+            "tank depletion must equal integrated scenario fuel flow across phase boundaries");
+    const auto cruise_a = nominal.sample(start + 200s, 200s);
+    const auto cruise_b = nominal.sample(start + 210s, 210s);
+    require(near(fuel_total(cruise_a) - fuel_total(cruise_b),
+                 cruise_a.engine.fuel_flow_gph.value * 10.0 / 3600.0),
+            "constant-flow depletion must match indicated total flow, not a fixed provider rate");
+    const auto seek_back = nominal.sample(start + 900s, 200s);
+    require(near(fuel_total(seek_back), fuel_total(cruise_a)),
+            "backward seek and wall-clock changes must not accumulate extra fuel consumption");
+    SystemSimulator sparse;
+    require(near(fuel_total(sparse.sample(start, 210s)), fuel_total(cruise_b)),
+            "tank quantity must not depend on sampling history or polling frequency");
+    nominal.reset(ScenarioId::full_flight);
+    require(near(fuel_total(nominal.sample(start, 0ms)), fuel_total(dark)),
+            "scenario reset must restore the demonstration fuel quantity");
+    const auto stopped = nominal.sample(start + 580s, 580s);
+    const auto finished = nominal.sample(start + 600s, 600s);
+    require(stopped.engine.rpm.value == 0.0 && stopped.engine.fuel_flow_gph.value == 0.0 &&
+                near(fuel_total(stopped), fuel_total(finished)),
+            "shutdown and completion must not retain fuel flow or deplete tanks");
+    require(stopped.engine.fuel_left_gal.is_simulated() &&
+                near(stopped.engine.fuel_left_gal.raw, stopped.engine.fuel_left_gal.value),
+            "derived tank quantities must preserve SIM provenance and consistent raw values");
+    for (const auto scenario : {ScenarioId::full_flight, ScenarioId::engine_emergency,
+                               ScenarioId::electrical_failure, ScenarioId::sensor_degradation}) {
+        SystemSimulator sampled{scenario};
+        for (int second = 0; second <= 600; ++second) {
+            const auto frame = sampled.sample(start + std::chrono::seconds{second},
+                                              std::chrono::seconds{second});
+            require(std::isfinite(fuel_total(frame)) && fuel_total(frame) >= 0.0,
+                    "all scenarios must retain finite non-negative fuel quantities");
+        }
+        require(near(fuel_total(sampled.sample(start, 600s)), fuel_total(finished)),
+                "dense sampling and non-fuel faults must preserve nominal integrated consumption");
+        require(near(fuel_total(sampled.sample(start, -1s)), fuel_total(dark)) &&
+                    near(fuel_total(sampled.sample(start, 900s)), fuel_total(finished)),
+                "elapsed time outside scenario bounds must clamp fuel consistently");
+    }
     const auto takeoff = nominal.sample(start + 90s, 90s);
     require(takeoff.phase == FlightPhase::takeoff, "takeoff phase missing");
     require(takeoff.airframe.flap_angle_deg == 10.0, "takeoff flap setting missing");

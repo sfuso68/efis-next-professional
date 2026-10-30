@@ -1406,7 +1406,8 @@ void PfdController::cycleEngineFault() {
 }
 
 QString PfdController::systemSimulationScenario() const {
-    return QString::fromLatin1(efis::simulation::scenario_name(system_simulator_.scenario()));
+    return (system_simulation_coherent_ ? QStringLiteral("mission-") : QString{}) +
+        QString::fromLatin1(efis::simulation::scenario_name(system_simulation_coherent_ ? mission_simulator_.scenario() : system_simulator_.scenario()));
 }
 
 QString PfdController::systemSimulationPhase() const {
@@ -1415,27 +1416,34 @@ QString PfdController::systemSimulationPhase() const {
 
 bool PfdController::startSystemSimulation(const QString& scenario) {
     try {
-        system_simulator_.reset(efis::simulation::parse_scenario(
-            scenario.toStdString()));
+        const bool coherent=scenario.startsWith(QStringLiteral("mission-"));
+        const auto id=efis::simulation::parse_scenario((coherent ? scenario.mid(8) : scenario).toStdString());
+        if(coherent)mission_simulator_.reset(id);else system_simulator_.reset(id);
+        system_simulation_coherent_=coherent;
+        simulation_clock_=efis::simulation::SimulationClock{coherent ? mission_simulator_.duration() : system_simulator_.duration()};
+        simulation_clock_.set_speed(system_simulation_speed_);
+        simulation_clock_.set_paused(false);
     } catch (const std::exception&) {
         return false;
     }
+    system_frame_ = system_simulation_coherent_ ? mission_simulator_.sample(efis::MonoClock::now(), std::chrono::milliseconds{0}) : system_simulator_.sample(efis::MonoClock::now(), std::chrono::milliseconds{0});
     system_simulation_active_ = true;
     system_simulation_running_ = true;
-    system_simulation_elapsed_ms_ = 0.0;
     system_simulation_last_tick_ = efis::MonoClock::now();
     system_simulation_last_event_ = QStringLiteral("SCENARIO STARTED");
     qInfo().noquote() << "event=system_simulation_start scenario=" << scenario;
     emit simulationChanged();
+    emit snapshotChanged();
     return true;
 }
 
 void PfdController::toggleSystemSimulation() {
     if (!system_simulation_active_) {
-        startSystemSimulation(QStringLiteral("full-flight"));
+        startSystemSimulation(QStringLiteral("mission-full-flight"));
         return;
     }
     system_simulation_running_ = !system_simulation_running_;
+    simulation_clock_.set_paused(!system_simulation_running_);
     system_simulation_last_tick_ = efis::MonoClock::now();
     system_simulation_last_event_ = system_simulation_running_
         ? QStringLiteral("RESUMED") : QStringLiteral("PAUSED");
@@ -1445,24 +1453,28 @@ void PfdController::toggleSystemSimulation() {
 void PfdController::stopSystemSimulation() {
     system_simulation_active_ = false;
     system_simulation_running_ = false;
-    system_simulation_elapsed_ms_ = 0.0;
+    simulation_clock_.set_paused(true);
+    simulation_clock_.seek(std::chrono::milliseconds{0});
     system_simulation_last_event_ = QStringLiteral("STOPPED");
     qInfo().noquote() << "event=system_simulation_stop";
     emit simulationChanged();
+    emit snapshotChanged();
 }
 
 void PfdController::seekSystemSimulation(double progress) {
-    if (!system_simulation_active_) return;
+    if (!system_simulation_active_ || !std::isfinite(progress)) return;
     const double bounded = std::clamp(progress, 0.0, 1.0);
-    system_simulation_elapsed_ms_ = bounded *
-        static_cast<double>(system_simulator_.duration().count());
+    const auto duration=system_simulation_coherent_?mission_simulator_.duration():system_simulator_.duration();
+    simulation_clock_.seek(std::chrono::milliseconds{static_cast<std::int64_t>(bounded*static_cast<double>(duration.count()))});
     system_simulation_last_tick_ = efis::MonoClock::now();
     system_simulation_last_event_ = QStringLiteral("TIMELINE SEEK");
     emit simulationChanged();
 }
 
 void PfdController::setSystemSimulationSpeed(double speed) {
+    if(!std::isfinite(speed))return;
     system_simulation_speed_ = std::clamp(speed, 0.25, 20.0);
+    simulation_clock_.set_speed(system_simulation_speed_);
     system_simulation_last_event_ = QStringLiteral("SPEED CHANGED");
     emit simulationChanged();
 }
@@ -1481,16 +1493,9 @@ void PfdController::updateSnapshot() {
     if (system_simulation_active_) {
         if (system_simulation_last_tick_ == efis::MonoTime{})
             system_simulation_last_tick_ = now;
-        if (system_simulation_running_) {
-            const auto delta = std::chrono::duration<double, std::milli>(
-                now - system_simulation_last_tick_).count();
-            system_simulation_elapsed_ms_ += delta * system_simulation_speed_;
-        }
+        simulation_clock_.advance(std::chrono::duration_cast<std::chrono::nanoseconds>(now-system_simulation_last_tick_));
         system_simulation_last_tick_ = now;
-        const auto duration_ms = static_cast<double>(system_simulator_.duration().count());
-        system_simulation_elapsed_ms_ = std::clamp(system_simulation_elapsed_ms_, 0.0, duration_ms);
-        system_frame_ = system_simulator_.sample(
-            now, std::chrono::milliseconds{static_cast<long long>(system_simulation_elapsed_ms_)});
+        system_frame_ = system_simulation_coherent_ ? mission_simulator_.sample(now,simulation_clock_.time()) : system_simulator_.sample(now,simulation_clock_.time());
         snapshot_ = model_.normalize(system_frame_.flight, now);
         engine_snapshot_ = system_frame_.engine;
         if (!system_frame_.events.empty())

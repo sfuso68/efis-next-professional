@@ -1,0 +1,30 @@
+{
+  "schema": "fuso-avionics.sil-control-inbox-evidence.v1",
+  "date": "2026-10-30",
+  "source_commit": "892b3930115b54e24eb143fbb27aca9b19bbb5e4",
+  "source_archive_sha256": "4265ea26ca53b91be357d6faa7a567ce6713d6e23386e85fd55aea7e1280a7c8",
+  "status": "PARTIAL",
+  "implemented": ["bounded cross-thread immutable ingress", "revocation latch independent of FIFO capacity", "owner maintenance API at unchanged simulation tick", "shared pending/dispatched capacity", "trusted executor terminal outcome ledger", "closed-admission exact retry lookup", "lease recheck after fixture INTENT before mutation"],
+  "local_tests": {"status": "PASS", "methods": 170, "new_methods": 17, "focused_methods": 36, "new_native_build": false},
+  "ctest": {"status": "PASS_SUBSET_ONLY", "passed": 9, "total_selected": 9, "scope": "Python SIL suites only", "full_native_suite": "NOT_RUN", "inherited_gate": "R1-28 native Windows launch WinError4551 application control remains OPEN; no policy bypass", "cmake_warning": "pre-existing MSVC object path length warning unchanged"},
+  "server_tests": {"status": "PASS", "methods": 176, "native_jsbsim_methods": 10, "duration_seconds": 19.996, "host": "serverha", "network": "NONE", "source_runtime": "READ_ONLY", "container_image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93", "jsbsim": "1.3.3", "numpy": "2.3.4"},
+  "independent_review": {"mode": "READ_ONLY", "initial_findings": ["terminal results inaccessible through revoked ingress", "outcome tick failed to advance admission watermark"], "resolution": "owner bounded exact lookup and monotonic outcome watermark with regression tests", "final_blocking_findings": 0, "scope": "isolated components, not live console"},
+  "log_sha256": {
+    "cmake.txt": "eb68bad29d1ad8e52c2563b979d3bbd917e44e0d6945e80d53c5883be109dc4a",
+    "control-tests.txt": "b849e798f73203006bab6267e2af3d02cb78b5307844827583048c6b8ad4bc3c",
+    "ctest-python.txt": "f441c425ee69ee9fa9996076c56424b994e61bb57d1709679c9fb373113212f6",
+    "local-regression.txt": "f0dbc53b9b1158b73448e26444b0d405254e1fff333c00867e84b2694e1aba32",
+    "server-regression.txt": "332fdf0d6d30cc99218feeef26fd8368ab08bee57b52e58df5d246631a6ef4d3"
+  },
+  "status_generator_check": "PASS",
+  "dashboard_check": "PASS",
+  "project_control_check": "PASS",
+  "claude_code": "HANDOFF_PREPARED_NOT_STARTED",
+  "simulation_completion": "NOT_COMPLETE",
+  "hardware_acceptance": "NOT_RUN",
+  "operational_services_changed": false,
+  "deployment_performed": false,
+  "merge_performed": false,
+  "flight_approval": false,
+  "open": ["inbox owner integration during pause and before physics tick", "authenticated live transport and outcome query service", "lifecycle/resume and epoch dedup policy", "interactive audit and confirmed durability", "live executor and distributed panel fanout", "full systems NAV WX terrain catalogue and acceptance", "Windows native policy gate and actual panel/power qualification"]
+}
