@@ -1,5 +1,11 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-31/PRJ-004,VER-001: inbox nel pump owner RUNNING/PAUSED e revoca permanente
+ai confini lifecycle/epoch. Nessun executor live o endpoint. 16 nuovi test,
+52 mirati PASS; regressione locale186 ERROR timeout async iniziale, 9async
+isolati e186 ripetuti PASS, ripetibilità timing aperta. Prossimo: executor
+live con audit/capability e lifecycle autenticato, riarmo epoch e dedup.
+
 R1-30/PRJ-001,PRJ-004,VER-001: piano concentrato in sei macroblocchi e tre
 filoni, handoff Claude preparato non avviato. Inbox SIL bounded e outcome
 ledger software; 170 test locali e nove suite CTest Python PASS. Prossimo:

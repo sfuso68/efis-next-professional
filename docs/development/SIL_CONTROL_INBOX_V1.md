@@ -33,7 +33,11 @@ chiusura e tick monotono dopo un outcome, oltre al recheck dopo INTENT.
 Test: contesa, revoca con FIFO piena, pausa inattiva, retry, dispatch scaduto,
 monotonia, journal lento e assenza di scrittura FDM dopo lease scaduta.
 
-Restano aperti: servizio nel loop owner/pausa, autenticazione trasporto,
+Follow-up R1-31: `SIL_OWNER_SERVICE_V1.md` collega il servizio al pump owner
+RUNNING/PAUSED, con revoca permanente alle transizioni e nessun executor.
+La descrizione sopra fotografa il componente R1-30 isolato.
+
+Restano aperti: autenticazione trasporto,
 policy lifecycle/resume e dedup tra epoch, audit interattivo, executor live,
 durabilità confermata degli esiti e fanout multi-panel. Non allargare lease
 o endpoint esistenti e non collegare questo ingresso ad attuatori reali.

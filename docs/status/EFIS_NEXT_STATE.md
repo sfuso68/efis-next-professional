@@ -1,10 +1,31 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-30, R1-30 piano concentrato e fondazioni controllo SIL; release permanenti invariate
+Aggiornamento: 2026-10-30, R1-31 servizio owner SIL e revoca lifecycle; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-31 — ammissione servita da RUNNING/PAUSED, senza executor
+
+IDs PRJ-004, VER-001. SessionAdmission si collega una volta in CREATED con
+manifesto e thread owner identici. Pump serve inbox e watchdog journal anche
+in PAUSED o prima di un tick dovuto, poi ricontrolla il watchdog prima dello
+step. Pause/resume/stop/errori revocano la lease; epoch nuova non ricrea la
+coda né riabilita comandi vecchi. Risultati conservati interrogabili; risposte
+volatile/bounded, non audit durevole. Il runner JSBSim usa pump nella pausa
+di banco. Nessun dequeue o mutazione FDM da questo nuovo ingresso.
+
+Verificato solo software locale: 16 nuovi test, 52 mirati PASS. Prima
+regressione 186 test con un ERROR per ACK recorder async oltre 100 ms:
+conservata, nessuna soglia cambiata. Suite async isolata 9/9 PASS e ripetizione
+186/186 PASS. Causa del primo timeout non determinata; ripetibilità timing
+Windows resta aperta, non si presenta il primo run come verde.
+Test server/nativo di composizione da eseguire. Nessun hardware avionico
+verificato, nessun deploy/merge/servizio/endpoint modificato. Gate WinError4551
+e warning path MSVC preesistenti non aggirati. P03 resta PARTIAL: mancano
+executor live, console/trasporto autenticato, riarmo epoch/dedup, audit
+interattivo durevole e fanout. Fonte: ../development/SIL_OWNER_SERVICE_V1.md.
 
 ## R1-30 — piano concentrato e ingresso comandi SIL limitato
 

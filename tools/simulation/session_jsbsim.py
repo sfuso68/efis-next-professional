@@ -137,7 +137,7 @@ def run(directory, world, *, session_id, source_commit, scenario="turn", seconds
                 engine.pause()
                 pause_end=time.monotonic()+.1
                 while time.monotonic()<pause_end:
-                    if journal_mode=="async-test":journal.check()
+                    engine.pump()
                     time.sleep(.001)
                 engine.resume();paused=True
             if engine.poll("fast_probe") is not None:received+=1

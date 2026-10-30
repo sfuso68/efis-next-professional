@@ -1,7 +1,8 @@
 """Bounded, single-owner software SIL session; no network or actuator transport.
 
 Backend and journal are trusted injected objects. Consumer callbacks never run
-in the producer. This candidate is not yet the live JSBSim/R1-20 adapter.
+in the producer. Optional admission is owner-serviced; no command executor or
+network transport is supplied here.
 """
 import copy
 import hashlib
@@ -120,6 +121,7 @@ class SessionEngine:
         self.last_clock = None
         self.epoch_start = self.epoch_total_start = self.next_deadline = None
         self.maximum_lag_ns = 0
+        self._control = None
         self._event("CREATED")
 
     @property
@@ -146,15 +148,32 @@ class SessionEngine:
                                      simulated=True, flight_approval=False, **extra))
         except Exception:
             self.state, self.failure = "FAILED", "JOURNAL_FAILURE"
+            self._revoke_control()
             self.journal.close()
             raise
 
     def _fail(self, reason):
         self.state, self.failure = "FAILED", reason
+        self._revoke_control()
         try:
             self._event("FAILED", reason=reason)
         finally:
             self.journal.close()
+
+    def attach_admission(self, control):
+        """One exact-manifest owner component before validation; never replace it."""
+        from tools.simulation.session_control import SessionAdmission
+        self._owner()
+        if self.state != "CREATED" or self._control is not None:
+            raise ValueError("admission attachment boundary")
+        if not isinstance(control, SessionAdmission):
+            raise ValueError("session admission required")
+        control.bind(self.manifest)
+        self._control = control
+
+    def _revoke_control(self):
+        if self._control is not None:
+            self._control.revoke()
 
     def register(self, name):
         self._owner()
@@ -217,12 +236,19 @@ class SessionEngine:
 
     def pump(self):
         self._owner()
-        if self.state != "RUNNING":
+        if self.state not in ("RUNNING", "PAUSED"):
             return False
         try:
             check = getattr(self.journal, "check", None)
             if check is not None: check()
+            if self._control is not None:
+                self._control.service(current_tick=self.relative_tick, epoch=self._manifest["epoch"])
+            # Storage and lease maintenance continue while physics is paused.
+            # The caller still has to pump; this is not an autonomous watchdog.
+            if check is not None: check()
             now = self._now()
+            if self.state == "PAUSED":
+                return False
             if now < self.next_deadline:
                 return False
             expected = self.epoch_start + (self.total_ticks-self.epoch_total_start+1)*TICK_NS
@@ -255,6 +281,7 @@ class SessionEngine:
         self._owner()
         if self.state != "RUNNING":
             raise ValueError("pause transition")
+        self._revoke_control()
         self._event("PAUSED")
         self.state = "PAUSED"
 
@@ -263,6 +290,7 @@ class SessionEngine:
         if self.state != "PAUSED":
             raise ValueError("resume transition")
         try:
+            self._revoke_control()
             self._manifest["epoch"] += 1
             contract.manifest(self._manifest)
             self._event("EPOCH", parent_total_ticks=self.total_ticks)
@@ -276,6 +304,7 @@ class SessionEngine:
         self._owner()
         if self.state not in ("RUNNING", "PAUSED", "ARMED_TEST"):
             raise ValueError("stop transition")
+        self._revoke_control()
         self.state = "STOPPING"
         try:
             self._event("STOPPING")

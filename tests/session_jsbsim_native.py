@@ -8,6 +8,40 @@ from tools.simulation.session_trace import verify
 
 
 class RealSessionTests(unittest.TestCase):
+    def test_native_admission_owner_pause_epoch_never_executes_controls(self):
+        from tools.simulation.session_control import SessionAdmission
+        from tools.simulation.session_engine import SessionEngine, TICK_NS, encode
+        from tests.test_sil_session_engine import Clock, MemoryJournal
+        vectors=c.decode((c.ROOT/"tests/data/protocols/sil-session-v1-vectors.json").read_bytes())
+        manifest,request=vectors["manifest"],vectors["command"]
+        backend=s.Backend(self.world)
+        manifest["model_sha256"]=backend.model_digest["sha256"]
+        clock,journal=Clock(),MemoryJournal()
+        adapter=s.PhysicalAdapter(backend,"cruise",journal)
+        engine=SessionEngine(manifest,adapter,journal,clock=clock,max_ticks=100)
+        control=SessionAdmission(manifest,principal="instructor",lease_id="lease-001",
+                                 lease_until_tick=100,lease_duration_ns=1_000_000_000,clock=clock)
+        engine.attach_admission(control)
+        engine.register("probe");engine.validate();engine.arm_software_test();engine.start()
+        control.offer(encode(request),principal="instructor")
+        engine.pump()
+        self.assertEqual(control.commands.counts["pending"],1)
+        self.assertEqual(backend.test_controls,{})
+        clock.now=TICK_NS;engine.pump()
+        engine.pause();frames=engine.frames
+        clock.now+=2_000_000_000
+        self.assertFalse(engine.pump())
+        self.assertEqual((backend.ticks,engine.frames),(1,frames))
+        self.assertTrue(control.commands.closed)
+        engine.resume()
+        self.assertEqual(c.decode(engine.poll("probe"))["epoch"],1)
+        for _ in range(5):clock.now+=TICK_NS;engine.pump()
+        self.assertEqual(backend.ticks,6)
+        self.assertEqual(backend.test_controls,{})
+        self.assertEqual(control.lookup_outcome(encode(request),principal="instructor")["reason"],"NO_LEASE")
+        self.assertEqual(control.commands.counts["dispatched"],0)
+        engine.stop()
+
     def test_native_archive_restore_preserves_actual_fdm_and_pilot_audit(self):
         from tools.simulation.session_archive import pack, restore, FILES
         plan=[dict(apply_tick=10,control="aileron",value=.1)]
