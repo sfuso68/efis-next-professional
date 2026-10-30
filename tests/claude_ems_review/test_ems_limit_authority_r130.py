@@ -17,6 +17,7 @@ Dipendenze: solo la libreria standard Python 3 (nessun Qt, nessun pytest).
 
 import json
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -418,6 +419,101 @@ class FuelPressureHasNoConsumer(unittest.TestCase):
         body = text[start:text.index("readonly property color casColor", start)]
         self.assertNotIn("FUEL PRESS", body)
         self.assertIn("LOW FUEL PRESS", read(EMS_CONTROLLER))  # esiste solo come stringa di guasto
+
+
+MAIN_BASELINE = "4aea1e4edf8678c180e04171813d842ca6ff58a0"
+DECLARED_BASELINE = "9a0171ea51b5e02602179a15923fbd72e56d2e58"
+STACK_HEAD = "22de6c37e4a3da517b8903b8abd47e556895373e"
+
+
+def git(*args):
+    """Esegue git nel repository e restituisce (exit code, stdout)."""
+    result = subprocess.run(("git", "-C", str(ROOT)) + args,
+                            capture_output=True, text=True)
+    return result.returncode, result.stdout.strip()
+
+
+def has_object(revision):
+    return git("cat-file", "-e", revision + "^{commit}")[0] == 0
+
+
+class OpenStackRelationship(unittest.TestCase):
+    """C-0 e 7.1 — rapporto fra `main`, baseline dichiarata e stack aperto.
+
+    Salta se i branch dello stack non sono stati fetchati: la testa dello stack
+    non è raggiungibile da un clone che abbia ricevuto solo `main`, ed è
+    esattamente il motivo per cui la prima stesura della sezione 0 sbagliava.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        if not has_object(STACK_HEAD):
+            raise unittest.SkipTest(
+                "stack EMS non fetchato: eseguire "
+                "`git fetch origin fix/ems-responsive-header-r108-v1`")
+
+    def test_the_audit_baseline_is_this_checkout_of_main(self):
+        self.assertTrue(has_object(MAIN_BASELINE))
+
+    def test_the_declared_baseline_exists_and_lives_on_the_stack(self):
+        self.assertTrue(has_object(DECLARED_BASELINE),
+                        "la baseline dichiarata dal piano non è raggiungibile")
+        self.assertEqual(
+            git("merge-base", "--is-ancestor", DECLARED_BASELINE, STACK_HEAD)[0], 0,
+            "la baseline dichiarata non è antenato della testa dello stack")
+
+    def test_the_declared_baseline_is_not_in_main(self):
+        self.assertNotEqual(
+            git("merge-base", "--is-ancestor", DECLARED_BASELINE, MAIN_BASELINE)[0], 0,
+            "la baseline dichiarata è ora in main: la sezione 0 va rivista")
+
+    def test_the_governing_plan_and_handoff_are_only_on_the_stack(self):
+        for path in ("docs/project/PARALLEL_EXECUTION_PLAN_2026-10-30.md",
+                     "docs/project/CLAUDE_EMS_HANDOFF_2026-10-30.md"):
+            with self.subTest(document=path):
+                self.assertEqual(git("cat-file", "-e", f"{STACK_HEAD}:{path}")[0], 0,
+                                 "il documento non è sullo stack")
+                self.assertNotEqual(git("cat-file", "-e", f"{MAIN_BASELINE}:{path}")[0], 0,
+                                    "il documento è ora in main: la sezione 0 va rivista")
+
+    def test_the_collision_map_of_section_seven_still_holds(self):
+        free = (
+            "qml/EmsSetupOverlay.qml",
+            "qml/HmiDataStateBadge.qml",
+            "include/efis/core/types.hpp",
+            "include/efis/engine/engine_snapshot.hpp",
+            "src/protocol/edp_v1.cpp",
+        )
+        colliding = (
+            "qml/AdaptiveEmsView.qml",
+            "qml/ProfessionalSystemsDeck.qml",
+            "qml/EngineTemperatureBars.qml",
+            "qml/HmiArcGaugeV4.qml",
+            "qml/HmiCylinderMatrixV2.qml",
+            "qml/HmiElectricalSynoptic.qml",
+            "src/nodes/ems/ems_controller.cpp",
+            "src/nodes/ems/ems_controller.hpp",
+            "src/renderers/qt/pfd_controller.cpp",
+            "include/efis/core/derived_state.hpp",
+            "src/core/derived_state.cpp",
+        )
+        for path in free:
+            with self.subTest(expected="libero", file=path):
+                self.assertEqual(
+                    git("diff", "--quiet", f"{MAIN_BASELINE}..{STACK_HEAD}", "--", path)[0],
+                    0, "il file ora collide con lo stack")
+        for path in colliding:
+            with self.subTest(expected="collide", file=path):
+                self.assertNotEqual(
+                    git("diff", "--quiet", f"{MAIN_BASELINE}..{STACK_HEAD}", "--", path)[0],
+                    0, "il file non collide più con lo stack")
+
+    def test_the_stack_leaves_the_golden_fixture_limits_unchanged(self):
+        """La fixture golden conserva i limiti citati in 5.4 anche sullo stack."""
+        code, text = git("show", f"{STACK_HEAD}:qml/HmiGoldenController.qml")
+        self.assertEqual(code, 0)
+        self.assertIn("cht_max_c:135", text.replace(" ", ""))
+        self.assertIn("oil_temperature_max_c:130", text.replace(" ", ""))
 
 
 if __name__ == "__main__":

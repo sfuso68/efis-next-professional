@@ -18,19 +18,31 @@
 
 Segnalati e non corretti, come richiesto dall'incarico.
 
+> **Erratum R1-30-A, stesso giorno, commit successivo.** La prima stesura di
+> questa sezione dichiarava inesistenti la baseline `9a0171ea` e il piano di
+> esecuzione parallela. **Era un errore mio**: a quel punto il checkout aveva
+> ricevuto solo `main`, e i due oggetti vivono sullo stack EMS non integrato.
+> Dopo il fetch dei branch dello stack entrambi si risolvono. C-1, C-2 e C-5
+> sono quindi ritirati come difetti del repository e sostituiti da C-0, che
+> descrive il fatto reale. I finding della sezione 4 e gli esiti della sezione 5
+> non dipendevano da quell'errore e restano invariati.
+
 | # | Conflitto | Riscontro | Effetto sulla review |
 |---|---|---|---|
-| C-1 | La baseline d'ingresso indicata dal piano è `9a0171ea51b5e02602179a15923fbd72e56d2e58` | Quell'oggetto **non esiste** in questo repository: `git cat-file -t` → `could not get object info`; `git merge-base --is-ancestor` → exit 128 | La review è stata eseguita su `main` = `4aea1e4`. Ogni riferimento a riga è valido su `4aea1e4` |
-| C-2 | Il piano cita `docs/project/PARALLEL_EXECUTION_PLAN_2026-10-30.md` fra le letture obbligatorie | Il file **non esiste**. `grep -ril "parallel_execution"` su `docs/` e `tools/` non produce risultati | Lettura obbligatoria non eseguibile. Sostituita con `AVIONIX_NEXT_EXECUTION_BACKLOG.md`, `AVIONIX_NEXT_DOCUMENT_INDEX.md` e `AVIONIX_NEXT_DECISION_REGISTER.md` |
+| C-0 | Il contesto che governa questo incarico è raggiungibile **solo dallo stack non integrato** | `9a0171ea51b5e02602179a15923fbd72e56d2e58` esiste, è antenato di `22de6c3` con **2 commit** di distanza, e **non** è antenato di `main` (`git merge-base --is-ancestor … origin/main` → exit 1). `docs/project/PARALLEL_EXECUTION_PLAN_2026-10-30.md` è aggiunto da `892b393` sullo stack; `docs/project/CLAUDE_EMS_HANDOFF_2026-10-30.md` è lì accanto e corrisponde verbatim al testo dell'incarico | L'handoff prescrive «non assumere che main includa #59», ma il piano e l'handoff stesso **non sono in `main`**: da un checkout del solo `main` le due istruzioni — auditare `main` e leggere il piano — non sono soddisfacibili insieme. Risolto fetchando lo stack in sola lettura: piano e handoff letti integralmente, audit mantenuto su `main` = `4aea1e4`. Riproducibile con la classe `OpenStackRelationship` di `test_ems_limit_authority_r130.py` |
+| C-1 | ~~La baseline `9a0171ea` non esiste~~ | **Ritirato.** Vedi C-0: esiste, sullo stack | Nessuno. L'audit resta su `4aea1e4`, dichiarato in testa al documento |
+| C-2 | ~~Il piano di esecuzione parallela non esiste~~ | **Ritirato.** Vedi C-0: esiste, sullo stack, e il suo filone B corrisponde a questo incarico | Lettura obbligatoria eseguita |
 | C-3 | Il piano cita `EFIS_NEXT_STATE.md` e `EFIS_NEXT_MASTER_MATRIX.md` nella radice | I file sono in `docs/status/`. La radice non li contiene | Risolto senza ambiguità: letti i file in `docs/status/` |
-| C-4 | Il piano propone il branch `work/ems-gap-review-r130` | Il contratto di sessione assegna `claude/keen-curie-azwny9` e vieta di spingere altrove | Lavorato e consegnato su `claude/keen-curie-azwny9`. La differenza va sanata dall'integratore |
-| C-5 | «Il commit che aggiunge questo documento è il checkpoint R1-30» | Nessun commit di `main` aggiunge il documento del piano, e il checkpoint R1-30 non è in `main` | Il checkpoint R1-30 non è verificabile da questo checkout |
+| C-4 | Il piano propone il branch `work/ems-gap-review-r130` | Il contratto di sessione assegna `claude/keen-curie-azwny9` e vieta di spingere altrove | **Conflitto aperto.** Lavorato e consegnato su `claude/keen-curie-azwny9`. La differenza va sanata dall'integratore |
+| C-5 | «Il commit che aggiunge questo documento è il checkpoint R1-30» | Corretto: il commit esiste, **sullo stack**, non in `main` | Nessuno, una volta fetchato lo stack |
 | C-6 | «PR #59 draft impilata» | Confermato. #59 è draft, head `22de6c37e4a3da517b8903b8abd47e556895373e`, base `fix/engine-channel-validity-v1`. Lo stack EMS aperto è #53 → #56 → #59, oltre a #52. **Nessuno è in `main`** | Rispettata l'istruzione «non assumere che main includa #59». Ogni finding dichiara se è aperto su `main`, sullo stack, o su entrambi |
 
 **C-6 è il conflitto che cambia il significato della review.** Lo stack aperto
 chiude per conto proprio una parte dei difetti che un audit del solo `main`
 avrebbe elencato come aperti. Per non consegnare finding già risolti, ogni voce
 della sezione 4 è stata verificata **due volte**: su `4aea1e4` e su `22de6c3`.
+
+Resta aperto un solo conflitto di contratto, **C-4**, sul nome del branch.
 
 ---
 
@@ -53,6 +65,19 @@ Specifiche e registri: `docs/design/EMS_PROFESSIONAL_RPI4_V1.md`,
 `config/product/engine-source-intake-v1.json`,
 `config/product/engine-source-review-gate-v1.json`,
 `config/ui/avionix-ems-responsive-state-matrix-v1.json`.
+
+Letti dallo stack non integrato, in sola lettura, perché non presenti in `main`
+(vedi C-0): `docs/project/PARALLEL_EXECUTION_PLAN_2026-10-30.md` e
+`docs/project/CLAUDE_EMS_HANDOFF_2026-10-30.md`. Il piano assegna a questo
+lavoro il filone B — «EMS/config/HMI, Claude Code, da avviare dall'utente,
+primo incarico ristretto nel handoff collegato, checkout separato, patch/branch
+e report, senza deploy/merge» — e il macroblocco M3 con la campagna «parametri
+validi/invalidi, cambio unità, stale/loss, allarmi e layout», che coincide con
+l'ambito verificato nella sezione 4. Il piano riserva all'integratore
+`EFIS_NEXT_STATE.md`, la Master Matrix, il backlog e gli output generati, e
+prescrive che gli altri filoni consegnino proposte: è la ragione della forma
+della sezione 6. Confrontati inoltre, sullo stack, le righe `EMS-002` ed
+`EMS-003` della Master Matrix e i file EMS modificati dalle PR #52/#53/#56/#59.
 
 Gli snapshot storici in `docs/status/archive/` non sono stati usati per dedurre
 quale release sia attiva oggi, come prescrive `docs/status/README.md`.
@@ -856,11 +881,13 @@ e quello di OAT/QNH sono verificabili con `grep` sui due rami, come indicato.
 | Suite | Comando | Esito | Exit code |
 |---|---|---|---|
 | Nucleo motore, C++ | build: `g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -o /tmp/ems_core_behaviour_r130 tests/claude_ems_review/ems_core_behaviour_r130.cpp src/core/engine_runtime.cpp src/core/derived_state.cpp` poi `/tmp/ems_core_behaviour_r130` | **PASS** — `29 checks, 0 failures`. Build senza alcun warning | `0` |
-| Autorità limiti, stato osservato | `python3 tests/claude_ems_review/test_ems_limit_authority_r130.py` | **PASS** — `Ran 45 tests … OK` | `0` |
+| Autorità limiti, stato osservato | `python3 tests/claude_ems_review/test_ems_limit_authority_r130.py` | **PASS** — `Ran 51 tests … OK` | `0` |
 | Invarianti desiderati | `python3 tests/claude_ems_review/test_ems_gap_invariants_r130.py` | **FAIL atteso** — `Ran 39 tests … FAILED (failures=51)`. Ogni fallimento è l'evidenza di un finding | `1` |
 
-Dipendenze: GCC con C++20 e Python 3 con la sola libreria standard. Nessun Qt,
-nessuna rete, nessuna scrittura su disco, nessun hardware.
+Dipendenze: GCC con C++20 e Python 3 con la sola libreria standard, più `git`
+per la sola classe `OpenStackRelationship`, che verifica C-0 e la mappa delle
+collisioni della sezione 7 e si limita a uno skip se lo stack non è stato
+fetchato. Nessun Qt, nessuna rete, nessuna scrittura su disco, nessun hardware.
 
 ### 5.2 Software, NOT_RUN
 
@@ -925,11 +952,19 @@ stato non cambia.
 
 ### 6.1 `docs/status/EFIS_NEXT_MASTER_MATRIX.md`
 
+**Nota di coordinamento.** Lo stack aperto ha già aggiunto evidenza alle righe
+`EMS-002` ed `EMS-003` per i lavori N4/N5 e R1-04/N7-N8, fra cui la validità per
+canale su PFD ed EMS. Le proposte che seguono sono quindi **additive** a quel
+testo e non lo sostituiscono; vanno applicate dopo il merge dello stack, perché
+`docs/status/EFIS_NEXT_MASTER_MATRIX.md` e `EFIS_NEXT_STATE.md` sono fra i file
+che lo stack modifica.
+
+
 **EMS-002 — Nodo EMS software. Stato proposto: PARTIAL (invariato).**
 Aggiungere all'evidenza: «Audit indipendente R1-30 del 2026-10-30 su `main`
 `4aea1e4`, report `docs/reviews/CLAUDE_EMS_GAP_REVIEW_R130.md`, 16 finding
 (8 di priorità A). Tre suite isolate in `tests/claude_ems_review/`, non
-dichiarate in CMake: nucleo C++ 29/29 PASS, autorità limiti 45/45 PASS,
+dichiarate in CMake: nucleo C++ 29/29 PASS, autorità limiti 51/51 PASS,
 invarianti desiderati 39 casi / 51 fallimenti attesi. Il criterio "canali
 calibrati" **non** è soddisfatto: guadagno e offset sono calcolati, persistiti
 e mai applicati a un valore indicato, e `calibration_revision` non raggiunge
@@ -1018,10 +1053,13 @@ sistema; identità e capacità del velivolo scritte nel codice; dicitura
 `SIM FALLBACK` di ADR-011 calcolata e non mostrata sulla pagina EMS; validità
 per canale assente sugli otto canali dei cilindri; calibrazione mai applicata
 al valore indicato. La validità per canale è chiusa dallo stack EMS aperto
-#53/#56/#59 per i dieci canali scalari e resta aperta per i cilindri. Sei conflitti di baseline e contratto
-sono registrati nella sezione 0 della review e **non** sono stati corretti:
-fra questi, la baseline `9a0171ea` non esiste in questo repository e il piano di
-esecuzione parallela citato come lettura obbligatoria non è presente. L'audit non
+#53/#56/#59 per i dieci canali scalari e resta aperta per i cilindri. La
+sezione 0 registra i conflitti di baseline e contratto senza correggerli: la
+baseline dichiarata `9a0171ea`, il piano di esecuzione parallela e lo stesso
+handoff vivono **solo sullo stack non integrato** e non in `main`, quindi da un
+checkout del solo `main` l'istruzione di auditare `main` e quella di leggere il
+piano non sono soddisfacibili insieme; resta inoltre aperto il disallineamento
+fra il branch proposto dal piano e quello assegnato dalla sessione. L'audit non
 propone alcun valore di limite motore: intake e review gate restano
 rispettivamente `NOT_RUN` e `NO_GO` per il 912 UL e per il 912 ULS, e nessuna
 verifica hardware è stata eseguita.»
@@ -1030,23 +1068,71 @@ verifica hardware è stata eseguita.»
 
 ## 7. Proposta di assegnazione esclusiva per l'implementazione successiva
 
-L'incarico stabilisce che l'implementazione EMS richieda l'assegnazione di file
-di runtime esclusivi **dopo** questa review. I finding si raggruppano in quattro
-lotti che non si sovrappongono sui file, più due che non sono lavoro EMS.
+L'incarico, e il piano di esecuzione parallela che lo contiene, stabiliscono che
+per attivare il filone B in scrittura servano «checkout/branch separati e una
+lista di file esclusivi», **dopo** questa review. Questa sezione propone quella
+lista.
 
-| Lotto | Finding | File esclusivi | Precondizione |
+### 7.1 Collisione misurata con lo stack aperto
+
+Dato che lo stack #52/#53/#56/#59 non è integrato e tocca largamente la stessa
+superficie, la lista di file esclusivi non ha senso senza la mappa delle
+collisioni. Misurata con `git diff --name-only main..22de6c3`: su 16 file
+candidati, **11 sono già modificati dallo stack e 5 sono liberi**. La mappa è
+riprodotta dal caso `test_the_collision_map_of_section_seven_still_holds`, che
+fallisce se un file cambia lato.
+
+| File | Stato rispetto allo stack |
+|---|---|
+| `qml/EmsSetupOverlay.qml` | **libero** |
+| `qml/HmiDataStateBadge.qml` | **libero** |
+| `include/efis/core/types.hpp` | **libero** |
+| `include/efis/engine/engine_snapshot.hpp` | **libero** |
+| `src/protocol/edp_v1.cpp` | **libero** |
+| `qml/AdaptiveEmsView.qml` | collide |
+| `qml/ProfessionalSystemsDeck.qml` | collide |
+| `qml/EngineTemperatureBars.qml` | collide |
+| `qml/HmiArcGaugeV4.qml` | collide |
+| `qml/HmiCylinderMatrixV2.qml` | collide |
+| `qml/HmiElectricalSynoptic.qml` | collide |
+| `src/nodes/ems/ems_controller.cpp` | collide |
+| `src/nodes/ems/ems_controller.hpp` | collide |
+| `src/renderers/qt/pfd_controller.cpp` | collide |
+| `include/efis/core/derived_state.hpp` | collide |
+| `src/core/derived_state.cpp` | collide |
+
+Lo stack introduce inoltre `qml/EmsStatusHeader.qml` e una batteria di test QML
+EMS — `tests/qml/tst_engine_channel_validity.qml`,
+`tests/qml/tst_ems_engine_state.qml`, `tests/qml/tst_ems_header_layout.qml`,
+`tests/qml/tst_airframe_validity.qml` — oltre a
+`tests/test_ems_golden_review.py` e `tools/ui/prepare_ems_golden_review.py`.
+Un'eventuale implementazione successiva dovrebbe estendere quella batteria,
+non aprirne una terza accanto a `tests/claude_ems_review/`.
+
+### 7.2 Lotti proposti
+
+| Lotto | Finding | File | Precondizione |
 |---|---|---|---|
-| L1 — autorità e provenienza dei limiti | E-02, E-03, E-04 (presentazione), E-05, E-06 | `qml/AdaptiveEmsView.qml`, `qml/ProfessionalSystemsDeck.qml`, `qml/EngineTemperatureBars.qml`, `qml/HmiArcGaugeV4.qml`, `qml/EmsSetupOverlay.qml` | Nessuna. Non introduce limiti: rimuove i ripieghi e unifica le scale |
-| L2 — contatori e soglie | E-07, E-08 | `src/nodes/ems/ems_controller.cpp` (ctor, runtime, monitor perdita), `include/efis/core/derived_state.hpp`, `src/core/derived_state.cpp` | Conflitto con L4: richiede serializzazione su `ems_controller.cpp` |
-| L3 — etichettatura della simulazione e validità cilindri | E-09, E-10 (cilindri) | `qml/AdaptiveEmsView.qml`, `qml/HmiDataStateBadge.qml`, `qml/HmiCylinderMatrixV2.qml`, `src/nodes/ems/ems_controller.hpp` | **Dopo** il merge dello stack #53/#56/#59, per non riscrivere lo stesso confine due volte |
-| L4 — carburante, elettrico, log | E-11, E-12, E-14, E-15, E-16 | `src/nodes/ems/ems_controller.cpp`, `qml/HmiElectricalSynoptic.qml` | Conflitto con L2 su `ems_controller.cpp` |
-| Non lavoro EMS — contratto dati | E-01 (segnale liquido in `SignalId`/`EngineSnapshot`/EDP), E-04 (estensione `Unit`, `expected_unit`) | `include/efis/core/types.hpp`, `include/efis/engine/engine_snapshot.hpp`, `src/protocol/edp_v1.cpp` | **Richiede ADR.** Cambia il contratto G2, i vettori ICD e il conteggio dei campioni EDP |
-| Non lavoro EMS — autorità di verifica | E-02 (registro nel percorso di staging), 5.4 (fixture e golden) | `src/renderers/qt/pfd_controller.cpp`, `config/ui/`, `tests/golden/`, `config/product/` | Registri canonici e output generati: ownership dell'integratore |
+| **L0 — identità del velivolo** | E-05 (parte QML) | `qml/EmsSetupOverlay.qml` | **Nessuna.** È l'unico lotto EMS interamente su file liberi, e chiude la confusione UL/ULS sulla pagina di installazione. Avviabile subito |
+| L1 — autorità e provenienza dei limiti | E-02, E-03, E-04 (presentazione), E-06 | `qml/AdaptiveEmsView.qml`, `qml/ProfessionalSystemsDeck.qml`, `qml/EngineTemperatureBars.qml`, `qml/HmiArcGaugeV4.qml`, `src/nodes/ems/ems_controller.{hpp,cpp}` | **Dopo** il merge dello stack: tutti i file collidono. Non introduce limiti, rimuove i ripieghi e unifica le scale |
+| L2 — contatori e soglie | E-07, E-08 | `src/nodes/ems/ems_controller.cpp`, `include/efis/core/derived_state.hpp`, `src/core/derived_state.cpp` | Dopo lo stack; serializzare con L1 e L4 su `ems_controller.cpp` |
+| L3 — etichettatura della simulazione e validità cilindri | E-09, E-10 (cilindri) | `qml/AdaptiveEmsView.qml`, `qml/HmiDataStateBadge.qml`, `qml/HmiCylinderMatrixV2.qml`, `src/nodes/ems/ems_controller.hpp` | Dopo lo stack, che ha già riscritto questo confine per i canali scalari |
+| L4 — carburante, elettrico, log | E-11, E-12, E-14, E-15 (residui), E-16 (residui) | `src/nodes/ems/ems_controller.cpp`, `qml/HmiElectricalSynoptic.qml`, `qml/AdaptiveEmsView.qml` | Dopo lo stack; serializzare con L1 e L2 |
+| Non lavoro EMS — contratto dati | E-01, E-04 (estensione `Unit` e `expected_unit`) | `include/efis/core/types.hpp`, `include/efis/engine/engine_snapshot.hpp`, `src/protocol/edp_v1.cpp` | **Richiede ADR.** Cambia il contratto G2, i vettori ICD e il conteggio dei campioni EDP. I file sono liberi, la decisione non lo è |
+| Non lavoro EMS — autorità di verifica | E-02 (registro nel percorso di staging), 5.4 (fixture e golden) | `src/renderers/qt/pfd_controller.cpp`, `config/ui/`, `tests/golden/`, `config/product/` | Registri canonici e output generati: ownership dell'integratore, come stabilisce il piano |
 
-Osservazione per l'integratore: `src/nodes/ems/ems_controller.cpp` è il collo di
-bottiglia di tre lotti su quattro, e lo stack aperto lo sta già modificando.
-Assegnarlo a un solo lavoro per volta è la condizione perché il parallelismo
-non produca conflitti.
+### 7.3 Conseguenza per la sequenza
+
+Quattro dei cinque lotti EMS collidono con lo stack aperto, e
+`src/nodes/ems/ems_controller.cpp` è il collo di bottiglia di tre di essi.
+Ne segue una sola sequenza priva di conflitti:
+
+1. **ora**, in parallelo allo stack: L0, su file liberi;
+2. in parallelo ma fuori dal filone B: l'ADR per il contratto dati (E-01, E-04);
+3. **dopo il merge** dello stack: L1, poi L2 e L4 serializzati, poi L3.
+
+Avviare L1–L4 adesso produrrebbe esattamente i conflitti che il piano di
+esecuzione parallela esiste per evitare.
 
 ---
 

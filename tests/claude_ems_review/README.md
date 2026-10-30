@@ -36,8 +36,20 @@ così una deriva diventa visibile. Passa sulla baseline della review.
 python3 tests/claude_ems_review/test_ems_limit_authority_r130.py
 ```
 
-Atteso: `Ran 45 tests ... OK`, exit code `0`.
-Dipendenze: solo la libreria standard di Python 3.
+Atteso: `Ran 51 tests ... OK`, exit code `0`.
+Dipendenze: solo la libreria standard di Python 3, più `git` per la sola classe
+`OpenStackRelationship`.
+
+Quella classe verifica il rapporto fra `main`, la baseline dichiarata dal piano
+e la testa dello stack EMS aperto, e la mappa delle collisioni della sezione 7
+della review. Richiede che lo stack sia stato fetchato:
+
+```bash
+git fetch origin fix/ems-responsive-header-r108-v1
+```
+
+Senza quel fetch la classe si limita a segnalare uno skip e il resto della
+suite passa comunque (`OK (skipped=1)`, exit code `0`).
 
 ## 3. `test_ems_gap_invariants_r130.py` — invarianti desiderati
 
