@@ -246,7 +246,12 @@ class MetricLiteralsDriftFromTheirConversion(unittest.TestCase):
 
 
 class HardCodedAircraftFacts(unittest.TestCase):
-    """N7 — identita' motore e capacita' serbatoi scritte nel codice."""
+    """N7 — identita' motore e capacita' serbatoi scritte nel codice.
+
+    Il lotto L0 ha chiuso la parte su `qml/EmsSetupOverlay.qml`. La parte su
+    `qml/AdaptiveEmsView.qml` resta aperta perche' quel file collide con lo
+    stack #52/#53/#56/#59 e non e' assegnato a L0.
+    """
 
     def test_tank_capacity_is_a_literal_in_the_ems_summary(self):
         self.assertIn("tankCapacity:root.fuel(20)", read(EMS_VIEW))
@@ -258,12 +263,14 @@ class HardCodedAircraftFacts(unittest.TestCase):
         self.assertAlmostEqual(per_tank_gallon, 10.567, places=3)
         self.assertNotAlmostEqual(per_tank_gallon, 20.0, places=1)
 
-    def test_setup_overlay_hard_codes_the_engine_rating(self):
-        text = read(SETUP_OVERLAY)
-        self.assertIn('s:"4 CYL • 80 HP • 5800 RPM"', text)
-        self.assertIn('"ROTAX 912 UL"', text)
-        self.assertIn("ROTAX 912 UL • MAINTENANCE PROGRAM", text)
-        self.assertIn("PROFILE: ASSO-V-JOLLY-912-UL", text)
+    def test_setup_overlay_no_longer_hard_codes_the_engine_rating(self):
+        """Chiuso da L0. Il dettaglio e' in `test_ems_setup_overlay_contract_r130.py`."""
+        code = "\n".join(line.split("//")[0] for line in read(SETUP_OVERLAY).splitlines())
+        for literal in ('s:"4 CYL • 80 HP • 5800 RPM"', '"ROTAX 912 UL"',
+                        "ROTAX 912 UL • MAINTENANCE PROGRAM",
+                        "PROFILE: ASSO-V-JOLLY-912-UL"):
+            with self.subTest(literal=literal):
+                self.assertFalse(literal in code, "letterale riapparso")
 
     def test_golden_fixture_limits_differ_from_the_active_profile(self):
         match = re.search(r"property var engineLimits:\(\{([^}]*)\}\)", read(GOLDEN_CONTROLLER))

@@ -4,7 +4,7 @@
 - **Tipo:** review indipendente di sola lettura. Nessuna modifica a codice di
   runtime, schemi, protocolli, `tools/simulation/`, CMake, CI, registri
   canonici od output generati.
-- **Data:** 2026-10-30.
+- **Data:** 2026-10-30; sezione 8 aggiunta il 2026-10-31.
 - **Repository:** `sfuso68/efis-next-professional`.
 - **Branch di consegna:** `claude/keen-curie-azwny9`.
 - **HEAD esatto all'inizio del lavoro:** `4aea1e4edf8678c180e04171813d842ca6ff58a0`
@@ -86,14 +86,14 @@ quale release sia attiva oggi, come prescrive `docs/status/README.md`.
 
 ## 2. Confini rispettati
 
-Non modificati: codice di runtime, schemi, protocolli, `tools/simulation/`,
+Non modificati in nessuna fase: schemi, protocolli, `tools/simulation/`,
 `CMakeLists.txt`, workflow CI, registri canonici (`EFIS_NEXT_STATE.md`,
 `EFIS_NEXT_MASTER_MATRIX.md`, `config/product/*`, `config/active/*`), output
 generati, golden PNG, asset. Nessun accesso a Pixhawk, CAN, I2C, credenziali,
 hardware, servizi, release o alimentazione. Nessun deploy, merge, reset,
 rebase, force push o pulizia di archivi. Nessun asset proprietario MSFS.
 
-File aggiunti da questo lavoro, e nient'altro:
+**Review (sezioni 0–7), sola lettura.** File aggiunti, e nient'altro:
 
 ```
 docs/reviews/CLAUDE_EMS_GAP_REVIEW_R130.md
@@ -102,6 +102,19 @@ tests/claude_ems_review/ems_core_behaviour_r130.cpp
 tests/claude_ems_review/test_ems_limit_authority_r130.py
 tests/claude_ems_review/test_ems_gap_invariants_r130.py
 ```
+
+**Lotto L0 (sezione 8), autorizzato separatamente il 2026-10-31.** Un solo file
+di runtime modificato, assegnato in esclusiva, più il test che lo verifica:
+
+```
+qml/EmsSetupOverlay.qml                                        (modificato)
+tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py (aggiunto)
+```
+
+Il divieto di modificare codice di runtime appartiene al **primo incarico**, che
+era già chiuso e consegnato (`0d6852c`, poi `60c02ba`) quando L0 è stato
+autorizzato. Fuori da `qml/EmsSetupOverlay.qml` nessun file di runtime è stato
+toccato.
 
 I test **non** sono dichiarati in CMake né in CI, perché l'incarico lo vieta:
 sono quindi `NOT_RUN` in CI per costruzione e si eseguono a mano con i comandi
@@ -183,7 +196,7 @@ La colonna «Aperto su» distingue `main` (`4aea1e4`) dallo stack EMS
 | E-02 | Limiti di ripiego inventati, nessuna convalida nell'EMS, «VERIFIED» coniato da una stringa di 4 caratteri | A | entrambi | EMS-004, CFG-001, PRJ-004 |
 | E-03 | La scala MAP è diversa fra EMS e PFD/Canvas | A | entrambi | PRJ-004, EMS-002 |
 | E-04 | Litro e bar non esistono nel vocabolario unità; gli archi si spostano cambiando sistema | A | entrambi | CORE-002, EMS-002, CFG-001 |
-| E-05 | Capacità serbatoio e identità motore scritte nel codice | A | entrambi | CFG-001, EMS-004 |
+| E-05 | Capacità serbatoio e identità motore scritte nel codice | A | **parte setup chiusa da L0** (sez. 8); capacità serbatoio aperta su entrambi | CFG-001, EMS-004 |
 | E-06 | Un cambio di profilo non aggiorna limiti e identità | B | entrambi | CFG-001, EMS-002 |
 | E-07 | Ore motore: configurazione di profilo scartata, ore di volo a zero, matricola non confrontata | B | entrambi | EMS-002, PROD-005 |
 | E-08 | Tre soglie diverse per «motore in moto» | B | entrambi | EMS-002, ADR-017 |
@@ -414,6 +427,12 @@ richiede una ADR.
 ---
 
 ### E-05 — Capacità serbatoio e identità motore scritte nel codice — Priorità A
+
+> **Stato dopo il lotto L0 (sezione 8).** La parte su `qml/EmsSetupOverlay.qml`
+> è chiusa: identità, regime e sistemi del velivolo vengono ora dal controller,
+> e i campi che il controller non pubblica dichiarano l'assenza. Resta aperta la
+> capacità dei serbatoi in `qml/AdaptiveEmsView.qml`, che L0 non possiede. Il
+> testo che segue descrive la baseline `4aea1e4`.
 
 **File e riga.**
 - `qml/AdaptiveEmsView.qml:255` — `tankCapacity: root.fuel(20)`: capacità di
@@ -882,7 +901,8 @@ e quello di OAT/QNH sono verificabili con `grep` sui due rami, come indicato.
 |---|---|---|---|
 | Nucleo motore, C++ | build: `g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -o /tmp/ems_core_behaviour_r130 tests/claude_ems_review/ems_core_behaviour_r130.cpp src/core/engine_runtime.cpp src/core/derived_state.cpp` poi `/tmp/ems_core_behaviour_r130` | **PASS** — `29 checks, 0 failures`. Build senza alcun warning | `0` |
 | Autorità limiti, stato osservato | `python3 tests/claude_ems_review/test_ems_limit_authority_r130.py` | **PASS** — `Ran 51 tests … OK` | `0` |
-| Invarianti desiderati | `python3 tests/claude_ems_review/test_ems_gap_invariants_r130.py` | **FAIL atteso** — `Ran 39 tests … FAILED (failures=51)`. Ogni fallimento è l'evidenza di un finding | `1` |
+| Contratto L0, implementazione | `python3 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py` | **PASS** — `Ran 28 tests … OK`. Aggiunta con la sezione 8 | `0` |
+| Invarianti desiderati | `python3 tests/claude_ems_review/test_ems_gap_invariants_r130.py` | **FAIL atteso** — `Ran 39 tests … FAILED (failures=51)` sulla baseline, **48 dopo L0**. Ogni fallimento è l'evidenza di un finding | `1` |
 
 Dipendenze: GCC con C++20 e Python 3 con la sola libreria standard, più `git`
 per la sola classe `OpenStackRelationship`, che verifica C-0 e la mappa delle
@@ -1004,6 +1024,20 @@ dichiarare 80 HP. `engineLimits`, `engineProfileName`, `engineSerialNumber` ed
 non le aggiorna. Il profilo dichiara il carburante in litri mentre l'intera
 catena EMS è in galloni, e il vocabolario `Unit` non contiene litro né bar.»
 
+**CFG-001, aggiunta per il lotto L0.** Aggiungere all'evidenza: «2026-10-31,
+lotto L0 su `qml/EmsSetupOverlay.qml` (file assegnato in esclusiva, unico della
+superficie EMS non toccato dallo stack): rimossi identità motore, potenza,
+numero di cilindri, capacità dei serbatoi, modello del velivolo e chiave di
+profilo cablati nel QML. Identità, matricola, regime massimo con il proprio
+stato di provenienza, carrello, flap e detent derivano ora dalle proprietà
+pubblicate da `EmsController`; i campi che il controller non pubblica
+dichiarano `NOT PUBLISHED BY PROFILE` invece di nominare un motore. Un profilo
+illeggibile non produce più un campo vuoto. Verifica statica
+`tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py` 28/28 PASS;
+nessun QML istanziato e nessuna cattura, per assenza di Qt nell'ambiente:
+acceptance visiva sul pannello ancora aperta. Cilindri, potenza e capacità dei
+serbatoi restano non mostrati perché non sono sulla superficie del controller.»
+
 **PRJ-004 — Gate G3, contratto HMI SkyView/EMS. Stato proposto: VERIFY-HW
 (invariato).** Aggiungere all'evidenza: «Audit R1-30: la scala MAP non è la
 stessa fra il nodo EMS e il deck PFD/Canvas — 0–40 inHg con verde 5–34 contro
@@ -1113,7 +1147,7 @@ non aprirne una terza accanto a `tests/claude_ems_review/`.
 
 | Lotto | Finding | File | Precondizione |
 |---|---|---|---|
-| **L0 — identità del velivolo** | E-05 (parte QML) | `qml/EmsSetupOverlay.qml` | **Nessuna.** È l'unico lotto EMS interamente su file liberi, e chiude la confusione UL/ULS sulla pagina di installazione. Avviabile subito |
+| **L0 — identità del velivolo** | E-05 (parte QML) | `qml/EmsSetupOverlay.qml` | **IMPLEMENTATO il 2026-10-31**, vedi sezione 8. Era l'unico lotto EMS interamente su file liberi |
 | L1 — autorità e provenienza dei limiti | E-02, E-03, E-04 (presentazione), E-06 | `qml/AdaptiveEmsView.qml`, `qml/ProfessionalSystemsDeck.qml`, `qml/EngineTemperatureBars.qml`, `qml/HmiArcGaugeV4.qml`, `src/nodes/ems/ems_controller.{hpp,cpp}` | **Dopo** il merge dello stack: tutti i file collidono. Non introduce limiti, rimuove i ripieghi e unifica le scale |
 | L2 — contatori e soglie | E-07, E-08 | `src/nodes/ems/ems_controller.cpp`, `include/efis/core/derived_state.hpp`, `src/core/derived_state.cpp` | Dopo lo stack; serializzare con L1 e L4 su `ems_controller.cpp` |
 | L3 — etichettatura della simulazione e validità cilindri | E-09, E-10 (cilindri) | `qml/AdaptiveEmsView.qml`, `qml/HmiDataStateBadge.qml`, `qml/HmiCylinderMatrixV2.qml`, `src/nodes/ems/ems_controller.hpp` | Dopo lo stack, che ha già riscritto questo confine per i canali scalari |
@@ -1127,7 +1161,7 @@ Quattro dei cinque lotti EMS collidono con lo stack aperto, e
 `src/nodes/ems/ems_controller.cpp` è il collo di bottiglia di tre di essi.
 Ne segue una sola sequenza priva di conflitti:
 
-1. **ora**, in parallelo allo stack: L0, su file liberi;
+1. ~~**ora**, in parallelo allo stack: L0, su file liberi~~ — **fatto**, sezione 8;
 2. in parallelo ma fuori dal filone B: l'ADR per il contratto dati (E-01, E-04);
 3. **dopo il merge** dello stack: L1, poi L2 e L4 serializzati, poi L3.
 
@@ -1136,10 +1170,108 @@ esecuzione parallela esiste per evitare.
 
 ---
 
-## 8. Dichiarazione finale
+## 8. Lotto L0 — implementazione del 2026-10-31
+
+Autorizzato dall'utente dopo la consegna della review, con assegnazione in
+esclusiva del solo `qml/EmsSetupOverlay.qml`. È l'unico lotto EMS interamente
+su file che lo stack #52/#53/#56/#59 non modifica, quindi il solo avviabile
+senza attendere il merge.
+
+### 8.1 Che cosa cambia
+
+Il file non nomina più alcun motore e alcun velivolo. Dei sei campi della
+pagina ENGINE INSTALLATION, tre vengono ora dal controller e tre dichiarano
+l'assenza, perché `EmsController` non pubblica il dato:
+
+| Campo | Prima | Dopo |
+|---|---|---|
+| ENGINE | `controller.engineProfileName \|\| "ROTAX 912 UL"`, sottotitolo `"4 CYL • 80 HP • 5800 RPM"` | `engineProfileName`, con `rpm_max` dal profilo **seguito dal suo stato di provenienza**; cilindri e potenza dichiarati non pubblicati |
+| ENGINE SERIAL | `controller.engineSerialNumber \|\| "TO BE ENTERED"` | `engineSerialNumber` |
+| AIRFRAME SYSTEMS | `"RETRACT GEAR • FLAPS"`, detent `"0 / 10 / 15 / 20 / 30°"` | derivati da `landingGearInstalled`, `retractableGear`, `flapsInstalled` e `flapDetents` |
+| AIRFRAME | `"ASSO V JOLLY"` / `"PIONEER 300 EQUIVALENT"` | `NOT PUBLISHED BY PROFILE` |
+| CONFIGURATION | `"OWNER BUILD"` | `NOT PUBLISHED BY PROFILE` |
+| FUEL | `"2 × 40 L"` | `NOT PUBLISHED BY PROFILE` |
+
+Inoltre: l'intestazione del programma di manutenzione usa `engineProfileName`
+invece di `"ROTAX 912 UL • MAINTENANCE PROGRAM"`; la nota di manutenzione non
+assume più il costruttore e resta **più corta** dell'originale (123 caratteri
+contro 129); il piede mostra `OPERATIONAL PROFILE: ` più
+`operationalSelectedProfile`, che è il profilo che il controller pubblica
+davvero, invece del letterale `"PROFILE: ASSO-V-JOLLY-912-UL"` — il
+`profile_id` del profilo attivo non è sulla superficie Qt, e i due non sono la
+stessa cosa.
+
+### 8.2 Due scelte che vale la pena motivare
+
+**Un profilo illeggibile non produce più un campo vuoto.** `loadAircraftProfile`
+compone il nome come `manufacturer + " " + model`: su un JSON non analizzabile
+entrambi sono vuoti e il nome diventa **un singolo spazio**, che il vecchio
+ripiego `|| "ROTAX 912 UL"` non intercettava perché la stringa non è vuota. Il
+nuovo `textOr` fa `trim()` e dichiara l'assenza. È il caso peggiore registrato
+in E-05, chiuso.
+
+**Il regime massimo non si mostra mai nudo.** `engineRating()` affianca a
+`rpm_max` il valore di `limits.status`, che oggi è `INDICATIVE_UNVERIFIED`: il
+numero resta leggibile e porta con sé la propria provenienza. È la parte di
+E-02 raggiungibile da questo lotto senza toccare i quadranti, che collidono.
+
+**Nessuna etichetta non vincolata è stata introdotta.** L'audit stesso segnala
+l'overflow delle etichette, quindi il testo più lungo prodotto da L0 è stato
+accorciato a 64 caratteri e il delegate della griglia ha ricevuto `width` ed
+`elide`, che prima non aveva su nessuno dei due campi di testo.
+
+### 8.3 Che cosa L0 non chiude
+
+Cilindri, potenza, capacità dei serbatoi, modello e variante del velivolo
+**restano non mostrati**, perché `EmsController` non li pubblica: aggiungerli
+richiede `src/nodes/ems/ems_controller.{hpp,cpp}`, che appartiene a L1 e
+collide con lo stack. L0 ha quindi chiuso la metà di E-05 che conta per
+ADR-004 — smettere di affermare un'identità che il nodo non conosce — e ha
+lasciato aperta la metà che richiede di pubblicare il dato vero. Anche
+`tankCapacity: root.fuel(20)` in `qml/AdaptiveEmsView.qml` resta invariato.
+
+### 8.4 Verifica
+
+Nessun Qt in questo ambiente, quindi il QML non è stato istanziato e **non
+esiste alcuna cattura**: la verifica è statica e dichiarata tale.
+
+`python3 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py` →
+**PASS**, `Ran 28 tests … OK`, exit `0`. Copre: assenza dei letterali vietati e
+di ogni nome di motore nel testo mostrato; provenienza del regime massimo;
+derivazione di carrello, flap e detent dalle proprietà pubblicate; `trim()` sul
+nome; vincolo `width`/`elide` sulle etichette introdotte; bilanciamento dei
+delimitatori; e **risoluzione di ogni riferimento `controller.*` contro le
+`Q_PROPERTY` e le `Q_INVOKABLE` di `ems_controller.hpp`**, che è il solo modo di
+accorgersi senza Qt di un riferimento a una proprietà inesistente.
+
+Effetto sulle altre suite: `test_ems_gap_invariants_r130.py` passa da 51 a **48**
+fallimenti, perché `e05b`, `e05c` ed `e05d` diventano verdi; `e05a` resta rosso
+per la capacità dei serbatoi. `test_ems_limit_authority_r130.py` resta a 51 casi
+PASS, con il caso sui letterali del setup riscritto per registrare la chiusura.
+
+Contratto altrui non rotto: `tests/test_avionix_hmi_contract.py::test_ems_setup_exposes_read_only_edp_diagnostics`
+dipende da sedici metriche EDP e dalla stringa `"DATA LINK"` in questo file;
+tutte e diciassette sono state verificate presenti dopo la modifica, ed è un
+caso del test di L0. La suite nativa non è eseguibile qui per assenza di Qt:
+resta **NOT_RUN**.
+
+### 8.5 Confini rispettati da L0
+
+Un solo file di runtime, `qml/EmsSetupOverlay.qml`, 36 righe aggiunte e 9
+rimosse. Nessun tocco a `ems_controller`, schemi, protocolli, CMake, CI,
+registri canonici, golden od output generati. Nessun limite motore introdotto o
+modificato. La riga della matrice che ne deriva è nella sezione 6 come proposta
+testuale, non applicata.
+
+---
+
+## 9. Dichiarazione finale
 
 Il prodotto resta DEVELOPMENT / NON-CERT. Né il Rotax 912 UL né il Rotax 912
 ULS risultano validati da questo lavoro, e nessun limite motore è stato
-introdotto, corretto o approvato. Tutti gli esiti di questa review sono
-software e documentali; nessuna verifica hardware è stata eseguita, e una
-cattura sintetica non sostituisce l'acceptance sul display reale.
+introdotto, corretto o approvato. Tutti gli esiti di questa review e del lotto
+L0 sono software e documentali; nessuna verifica hardware è stata eseguita,
+nessun QML è stato istanziato e nessuna cattura è stata prodotta. Una cattura
+sintetica non sostituirebbe comunque l'acceptance sul display reale, e il lotto
+L0 cambia testo mostrato su un pannello: la sua acceptance visiva resta aperta
+e appartiene alla campagna C-BENCH.

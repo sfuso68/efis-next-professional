@@ -51,7 +51,24 @@ git fetch origin fix/ems-responsive-header-r108-v1
 Senza quel fetch la classe si limita a segnalare uno skip e il resto della
 suite passa comunque (`OK (skipped=1)`, exit code `0`).
 
-## 3. `test_ems_gap_invariants_r130.py` — invarianti desiderati
+## 3. `test_ems_setup_overlay_contract_r130.py` — lotto L0, implementato
+
+Verifica l'implementazione del finding E-05 su `qml/EmsSetupOverlay.qml`, il
+solo file assegnato in esclusiva al lotto L0. Senza Qt il QML non si può
+istanziare, quindi il test è statico: nessuna identità di motore o velivolo
+cablata, ogni riferimento `controller.*` risolto contro le `Q_PROPERTY` e le
+`Q_INVOKABLE` di `ems_controller.hpp`, delimitatori bilanciati, etichette nuove
+vincolate da `width` ed `elide`, e contratto DATA LINK di
+`tests/test_avionix_hmi_contract.py` intatto.
+
+```bash
+python3 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py
+```
+
+Atteso: `Ran 28 tests ... OK`, exit code `0`.
+Dipendenze: solo la libreria standard di Python 3.
+
+## 4. `test_ems_gap_invariants_r130.py` — invarianti desiderati
 
 Dichiara il comportamento che la review ritiene corretto. **Fallisce di
 proposito**: ogni fallimento è l'evidenza riproducibile di un finding, e il
@@ -61,8 +78,10 @@ nome del caso ne riporta l'identificativo (`e01a`, `e02c`, …).
 python3 tests/claude_ems_review/test_ems_gap_invariants_r130.py
 ```
 
-Atteso sulla baseline della review: `Ran 39 tests ... FAILED (failures=51)`,
-exit code `1`. Non è un gate di regressione; diventa verde quando i gap sono
+Atteso dopo il lotto L0: `Ran 39 tests ... FAILED (failures=48)`, exit code
+`1`. Erano 51 sulla baseline della review: i casi `e05b`, `e05c` ed `e05d` sono
+passati a verdi con L0, mentre `e05a` resta rosso perché la capacità dei
+serbatoi vive in `qml/AdaptiveEmsView.qml`, che L0 non possiede. Non è un gate di regressione; diventa verde quando i gap sono
 chiusi, e va aggiornato insieme alla chiusura.
 Dipendenze: solo la libreria standard di Python 3.
 
