@@ -1,6 +1,6 @@
 # Simulatore — quadro di completamento
 
-2026-11-01, R1-33. DEVELOPMENT / NON-CERT. Nessuna approvazione al volo.
+2026-11-01, R1-34. DEVELOPMENT / NON-CERT. Nessuna approvazione al volo.
 Il piano canonico macchina è config/simulation/development-plan-v1.json;
 questa vista esplicita i gap,non sostituisce Master Matrix o evidence bundle.
 Non calcolare avanzamento del prodotto dal numero dei test automatici.
@@ -9,7 +9,7 @@ Non calcolare avanzamento del prodotto dal numero dei test automatici.
 |---|---|---|
 | P01 contratto | Schema,validazione e vettori negativi,confini SIM | Review semantica e mapping completo dei prodotti |
 | P02 producer | JSBSim100Hz/frame20Hz,lifecycle/epoch,consumer non bloccanti,recorder test bounded | Soak,ripetibilità,power-loss e watchdog finalizzazione |
-| P03 comandi | Inbox bounded,revoca lifecycle,executor locale3ingressi con sidecar fsync;correlazione integrità audit e restore V2 | Console autenticata,missione pilotata,lifecycle remoto/riarmo epoch/dedup,audit ammissione/wall-time e replay fisico esecutivo |
+| P03 comandi | Inbox bounded,revoca lifecycle,executor locale3ingressi con sidecar fsync;correlazione integrità audit e restore V2;console stdio locale/contesto OS fidato,STOP prioritario e test pipe JSBSim reale | Acceptance interattiva SSH,missione pilotata,lifecycle/riarmo epoch/dedup durevole,audit ammissione/wall-time e replay fisico esecutivo |
 | P04 distribuzione | Checker DDP/EDP offline e precedente link PFD ristretto | Nuovo producer verso broker e PFD/MFD/EMS simultanei;source arbitration e correlazione sessione |
 | P05 impianti | Motore C172P reference,fuel/flow,flap parziale,canali mancanti null | Rete elettrica,sonde per cilindro,pressioni/carburante,airframe e guasti accoppiati |
 | P06 NAV/WX | Mondo analitico offline,VOR/NDB/ILS/DME/route/GNSS e prodotti WX sintetici | Prodotti attraversano parser/cache/HMI reali,TAF dinamico,identità NAV e propagazione RF realistica |

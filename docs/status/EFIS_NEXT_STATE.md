@@ -9,7 +9,7 @@ Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 ## R1-34 — console locale di banco SIL, senza servizi aggiuntivi
 
 IDs PRJ-004, VER-001. Scelta utente locale/SSH rispettata: nessuna porta,
-chiave, dashboard o servizio modificati. Controller bounded sul thread owner,
+chiave o servizio dashboard modificati. Controller bounded sul thread owner,
 tre ingressi FDM, STOP indipendente dalla FIFO, storia ID senza eviction,
 retry sull'originale, esiti incerti non rieseguiti. Runner stdio finito con
 JSBSim, config/policy congelate, input bounded e output latest-only su worker.
@@ -27,9 +27,9 @@ nativi; nuovo test usa pipe stdio reali, applica un comando, esegue100 tick e
 verifica audit/archive/restore V2. Source0b079dfc004835895582ac46c18a5acd0c475e3f,
 archive SHA256 ebea28c693dd775c77ff52bef9d8e16f0759ec6688b09f1217656d93415db3db.
 Container senza rete/capability e sorgenti/runtime read-only. Evidenza:
-evidence/r1-34-local-stdio-console-20261101/verification.json. Nessuna prova avionica
+evidence/r1-34-local-stdio-console-20261101/verification.json.
 I digest log R1-34 si riferiscono ai blob Git UTF-8/LF, non al checkout CRLF Windows.
-hardware/SSH interattiva/pannelli o deploy eseguiti. P03/M2 PARTIAL e nessun
+Nessuna prova avionica hardware/SSH interattiva/pannelli o deploy eseguiti. P03/M2 PARTIAL e nessun
 nuovo DONE. Gate timing Windows, power, modelli reali, lifecycle/dedup durabile,
 audit ammissione/wall, replay esecutivo e fanout aperti.
 Fonte: ../development/SIL_LOCAL_STDIO_CONSOLE_V1.md.

@@ -1,5 +1,14 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-34/PRJ-004,VER-001: console locale stdio candidata secondo scelta SSH
+senza servizi nuovi.24 nuovi/247 test locali selezionati,261 server con14
+JSBSim nativi e14 suite CTest Python PASS; controllo3ingressi,STOP prioritario,
+retry sull'identità originale,errori senza falso COMPLETE e output latest-only.
+Audit/restore V2 attraversati da pipe reali nel test nativo,non acceptance
+pilota SSH/pannelli. Source0b079df; evidence/r1-34-local-stdio-console-20261101.
+Prossimi: identità/dedup lifecycle e riarmo esplicito,audit ammissione/wall,
+fanout isolato e campagne aggregate. P03/M2 PARTIAL,nessun hardware/deploy/merge.
+
 R1-33/PRJ-004,VER-001: correlazione integrità sidecar e policy congelata,
 versione archive/restore V2 con quattro payload, V1 sempre fail-closed.
 20 nuovi/227 test locali,236 server con13 JSBSim nativi e12 suite CTest Python
