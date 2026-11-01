@@ -15,7 +15,14 @@ passivamente, versione mancante NOT_OBSERVED; backup dichiara query attiva
 PARAM_REQUEST_LIST e incompatibilità observer. Helper parser/ricezione passivo,
 fixture CLI confinata a UDP loopback letterale. ADR-015 invariata.
 11 nuovi test confine+7 quarantena=18 locali PASS; con6 Project Control24 PASS.
-Ripetizione Linux e sintassi YAML da consolidare sul commit. Solo software;
+Linux isolato18/18 PASS (dipendenze fake,nessun pymavlink/device/socket);
+sourcec6c68926fb36b80f2eccc0932129a1ab000355bf,archive SHA256
+6fb134898a01bdd4035005da36a57bb33c5d92358bfcb8efa165edb6a303bfc5.
+Python syntax AST e generator/status-update check PASS. Parser YAML assente
+su workstation/serverha: sintassi non dichiarata PASS e CI remota da verificare,
+nessuna dipendenza installata. Evidenza: evidence/audit-n1-option-b-20261101.
+Branch PR52 non contiene il generatore dashboard del filone PR59: nessun
+dashboard aggiornato o deploy dichiarato da questo checkout. Solo software;
 nessun Pixhawk/nodo avionico contattato o scrittura parametro/deploy/merge.
 Nuova riga PIX-004 PARTIAL censisce il confine manutentivo (72 righe totali).
 Copie remote e integrazione main ancora da verificare; nessun nuovo DONE.
@@ -27,8 +34,9 @@ PARAM_SET; nessuna importazione pymavlink o override. ADR-015 invariata.
 Sette test comportamentali Windows e sette Linux isolati PASS, log in
 evidence/audit-n1-20261021. Nessun test Pixhawk, deploy o verifica copie remote;
 la correzione è candidata, non attestazione di ritiro su tutti i nodi.
-Stati globali invariati. N11 sugli altri tool attivi resta aperto.
-Ordine successivo: N4/N5, N2/N6, N3, N7/N8, N9/N10, N11–N13; dettagli in
+Nel checkpoint originario gli stati globali erano invariati; il follow-up sopra
+aggiunge PIX-004. N11 su integrazione/altri tool e copie remote resta aperto.
+Ordine previsto nel checkpoint originario: N4/N5, N2/N6, N3, N7/N8, N9/N10, N11–N13; dettagli in
 [RIANALISI_2026-10-21_TRACKING.md](RIANALISI_2026-10-21_TRACKING.md).
 Le campagne complete/hardware restano rinviate; verifiche mirate ai fix
 mantenute. Nessun merge, reboot, modifica ADR, bus, rete o hardware eseguito.

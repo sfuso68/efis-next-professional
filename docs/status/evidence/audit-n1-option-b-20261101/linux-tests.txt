@@ -1,0 +1,30 @@
+n1-option-b-source-v1.tar: OK
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import yaml,sys; yaml.safe_load(open(sys.argv[1]))
+    ^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'yaml'
+CI_YAML_SYNTAX=BLOCKED_MISSING_PARSER_OR_INVALID
+test_audit_passive_with_armed_heartbeat_and_missing_version (test_mavlink_tool_boundaries.ToolBoundaryTests.test_audit_passive_with_armed_heartbeat_and_missing_version) ... ok
+test_audit_unsolicited_version_is_observed_without_request (test_mavlink_tool_boundaries.ToolBoundaryTests.test_audit_unsolicited_version_is_observed_without_request) ... ok
+test_backup_collect_only_requests_parameter_list (test_mavlink_tool_boundaries.ToolBoundaryTests.test_backup_collect_only_requests_parameter_list) ... ok
+test_backup_firmware_wait_never_uses_mav_send (test_mavlink_tool_boundaries.ToolBoundaryTests.test_backup_firmware_wait_never_uses_mav_send) ... ok
+test_backup_manifest_explicitly_reports_active_query_and_missing_version (test_mavlink_tool_boundaries.ToolBoundaryTests.test_backup_manifest_explicitly_reports_active_query_and_missing_version) ... ok
+test_fixture_endpoint_only_literal_loopback_udp (test_mavlink_tool_boundaries.ToolBoundaryTests.test_fixture_endpoint_only_literal_loopback_udp) ... ok
+test_parameter_receive_known_typeerror_bounded_timeout_and_invalid_values (test_mavlink_tool_boundaries.ToolBoundaryTests.test_parameter_receive_known_typeerror_bounded_timeout_and_invalid_values) ... ok
+test_parameter_receive_retains_parser_without_transmission_or_cache (test_mavlink_tool_boundaries.ToolBoundaryTests.test_parameter_receive_retains_parser_without_transmission_or_cache) ... ok
+test_scoped_source_send_allowlist (test_mavlink_tool_boundaries.ToolBoundaryTests.test_scoped_source_send_allowlist) ... ok
+test_stub_rejects_remote_endpoint_before_connection_factory (test_mavlink_tool_boundaries.ToolBoundaryTests.test_stub_rejects_remote_endpoint_before_connection_factory) ... ok
+test_unexpected_receive_error_is_not_hidden (test_mavlink_tool_boundaries.ToolBoundaryTests.test_unexpected_receive_error_is_not_hidden) ... ok
+test_audit_argument_cannot_enable_io_or_leak_device_credentials (test_mavlink_write_quarantine.QuarantineTests.test_audit_argument_cannot_enable_io_or_leak_device_credentials) ... ok
+test_cli_refusal_never_constructs_connection_or_opens_files (test_mavlink_write_quarantine.QuarantineTests.test_cli_refusal_never_constructs_connection_or_opens_files) ... ok
+test_cli_refuses_every_legacy_write_override_without_dependencies (test_mavlink_write_quarantine.QuarantineTests.test_cli_refuses_every_legacy_write_override_without_dependencies) ... ok
+test_direct_api_does_not_touch_armed_or_unarmed_link (test_mavlink_write_quarantine.QuarantineTests.test_direct_api_does_not_touch_armed_or_unarmed_link) ... ok
+test_dry_run_is_also_inert_not_a_parameter_query (test_mavlink_write_quarantine.QuarantineTests.test_dry_run_is_also_inert_not_a_parameter_query) ... ok
+test_help_has_no_network_dependency (test_mavlink_write_quarantine.QuarantineTests.test_help_has_no_network_dependency) ... ok
+test_import_never_loads_pymavlink (test_mavlink_write_quarantine.QuarantineTests.test_import_never_loads_pymavlink) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 1.248s
+
+OK

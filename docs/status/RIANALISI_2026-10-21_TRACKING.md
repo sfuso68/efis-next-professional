@@ -13,7 +13,8 @@ Follow-up 2026-11-01, opzione B confermata: PR52 riutilizzata; audit e backup
 non emettono più COMMAND_LONG. Audit passivo applicativo; backup attivo
 PARAM_REQUEST_LIST, esplicitamente non observer. Helper passivo conserva parser
 senza query/writer; fixture CLI UDP limitata a127.0.0.1.18 test mirati locali
-e24 includendo Project Control PASS. Linux/CI da consolidare. PIX-004 PARTIAL
+e24 includendo Project Control PASS. Linux isolato18 PASS; parser YAML assente,
+CI remota da verificare;sourcec6c6892,evidence/audit-n1-option-b-20261101. PIX-004 PARTIAL
 censisce il confine. ADR-015 invariata, nessun hardware/deploy/merge o remote
 inventory. Non equivale a ritiro su main/altri branch o copie installate.
 

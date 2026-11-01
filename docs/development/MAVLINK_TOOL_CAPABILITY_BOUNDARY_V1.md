@@ -45,7 +45,10 @@ sola richiesta lista, parser/timeout, rifiuto endpoint remoto prima della
 connection factory e allowlist AST dei metodi send nei quattro entrypoint.
 Non è una dimostrazione formale contro codice Python arbitrario/riflessione.
 Suite aggiunta al workflow Project Control. Nessuna dipendenza installata.
-Ripetizione Linux sul commit e sintassi YAML da registrare nell'evidenza.
+Ripetizione Linux isolata18 PASS,sourcec6c6892; evidenza e digest Git LF in
+docs/status/evidence/audit-n1-option-b-20261101. Sintassi Python AST PASS.
+Parser YAML non disponibile localmente o su serverha; controllo parser BLOCKED,
+CI remota da verificare. Nessuna installazione dipendenze o full build nativa.
 
 Riga PIX-004 introdotta per censire questo confine manutentivo, PARTIAL:
 implementazione candidata non significa ritiro delle copie già installate.

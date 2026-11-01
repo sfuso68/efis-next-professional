@@ -1,0 +1,67 @@
+{
+  "schema": "efis-next.n1-option-b.v1",
+  "date": "2026-11-01",
+  "finding": "N1",
+  "related": "N11 scoped follow-up",
+  "requirements": [
+    "PIX-002",
+    "PIX-004"
+  ],
+  "status": "PARTIAL_SOURCE_CANDIDATE_NOT_DEPLOYED",
+  "decision": "OPTION_B_USER_CONFIRMED",
+  "pull_request": 52,
+  "source_commit": "c6c68926fb36b80f2eccc0932129a1ab000355bf",
+  "source_archive_sha256": "6fb134898a01bdd4035005da36a57bb33c5d92358bfcb8efa165edb6a303bfc5",
+  "adr_015_changed": false,
+  "writer": "EXISTING_INERT_TOMBSTONE_RETAINED_FROM_PR52",
+  "implemented": [
+    "audit passive at application level, no COMMAND_LONG request",
+    "backup PARAM_REQUEST_LIST-only active query classification, passive firmware wait and missing-version status",
+    "passive parameter parsing/receive helpers without query or write API",
+    "fixture CLI literal loopback UDP restriction",
+    "source-send allowlist and behavioral tripwires registered in Project Control workflow",
+    "PIX-004 PARTIAL tracks maintenance boundary, total requirements72"
+  ],
+  "local_tests": {
+    "methods": 24,
+    "quarantine_methods": 7,
+    "new_boundary_methods": 11,
+    "project_control_methods": 6,
+    "status": "PASS"
+  },
+  "linux_tests": {
+    "methods": 18,
+    "status": "PASS",
+    "seconds": 1.248,
+    "pymavlink": "FAKE_INJECTED_NO_PACKAGE_OR_HARDWARE",
+    "network": "NONE",
+    "source": "READ_ONLY",
+    "image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93"
+  },
+  "python_syntax": "PASS_AST",
+  "workflow_yaml_parser": "BLOCKED_MISSING_LOCAL_AND_SERVERHA_PARSER_NO_INSTALL",
+  "remote_ci": "NOT_VERIFIED",
+  "project_status_generator": "PASS",
+  "status_update_check": "PASS",
+  "log_sha256_scope": "COMMITTED_UTF8_LF_GIT_BLOBS",
+  "log_sha256": {
+    "local-tests.txt": "360e9d2659c8ce05bce5255edd16f11130c8536f56a9e1dd3c6260cd60785498",
+    "linux-tests.txt": "17c029b65afa6b9a000f7605bdb5cfe34bed60cd16e1ed6d666852abd9235cf7"
+  },
+  "hardware_connection": "NOT_RUN",
+  "installed_copy_inventory": "NOT_RUN",
+  "historical_udp_backup_harness": "NOT_RUN",
+  "full_native_build_or_ctest": "NOT_RUN",
+  "deployment": false,
+  "merge": false,
+  "maintenance_write_authorized": false,
+  "flight_approval": false,
+  "limitations": [
+    "PR52 not merged into main or PR59, no installed copies retired by this task",
+    "active backup query remains distinct from passive observer and requires separate authorized access",
+    "application passive receive is not kernel O_RDONLY or a security sandbox",
+    "source AST/tripwire checks are scoped regressions, not proof against arbitrary malicious Python",
+    "fixture MAVLink generation is distinct from production observer path",
+    "document reconciliation and CI/merge review remain before integration"
+  ]
+}
