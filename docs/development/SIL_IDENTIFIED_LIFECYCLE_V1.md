@@ -81,8 +81,11 @@ due timeout preesistenti di frame persistence>100ms prima di arrivare ai fault
 iniettati nei test runner; log conservati. Suite runner isolata3 PASS.
 I soli unit test di failure injection ora usano clock fixture per raggiungere
 il confine iniettato, non come evidenza timing. Nessuna soglia runtime cambiata.
-Regressione finale264 PASS. CTest Python/server da completare sul sorgente
-congelato. Gate Windows nativo WinError4551 e warning path restano aperti.
+Regressione finale264 PASS;15/15 suite CTest Python PASS. Serverha279 PASS,
+inclusi15 JSBSim nativi; nuovo runner clock reale,pausa/ripresa,100 tick,
+nessun riarmo e restore V2 verificati. Source6483f45, evidenze e fallimenti:
+docs/status/evidence/r1-35-identified-lifecycle-20261101/verification.json.
+Gate Windows nativo WinError4551 e warning path restano aperti.
 
 P03/M2 PARTIAL: riarmo sicuro/dedup durevole, audit ammissione/wall,
 replay fisico esecutivo, fanout e consumer simultanei, modelli/impianti completi

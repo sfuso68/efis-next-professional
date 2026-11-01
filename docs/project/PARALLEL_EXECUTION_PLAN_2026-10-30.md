@@ -121,4 +121,6 @@ nel truth, correlazione con transizioni effettive e restore V2. RESUME non
 riarma la vecchia lease: riarmo multi-lease ancora un gate separato.
 17 nuovi metodi,264 locali finali PASS dopo fixture clock dei soli test fault;
 due run iniziali con timeout100ms conservati, timing non qualificato.
-CTest/server del commit da completare, nessun deploy o prova avionica.
+15 suite CTest Python e279 test server PASS inclusi15 JSBSim nativi;
+source6483f45 ed evidence/r1-35-identified-lifecycle-20261101. Review finale
+senza blocker nel delta. Nessun deploy o prova avionica.

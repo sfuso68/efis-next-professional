@@ -1,5 +1,15 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-35/PRJ-004,VER-001: pausa/ripresa identificate opt-in,storia condivisa e
+audit nel truth con verifica transizioni/ID; nessun rinnovo lease/riarmo.
+17 nuovi/264 locali finali e15 suite CTest Python PASS; due campagne con2
+timeout100ms nei test fault conservate,solo quei unit test usano ora clock
+fixture; runtime/soglie invariati. Server279 PASS con15 JSBSim nativi,
+nuovo runner lifecycle clock reale e restore V2;source6483f45. Evidenza:
+evidence/r1-35-identified-lifecycle-20261101. P03 resta PARTIAL: riarmo sicuro,
+dedup/recovery durevole,audit ammissione/wall e fanout sono i prossimi gate.
+Nessun hardware/deploy/merge o acceptance SSH pilota.
+
 R1-34/PRJ-004,VER-001: console locale stdio candidata secondo scelta SSH
 senza servizi nuovi.24 nuovi/247 test locali selezionati,261 server con14
 JSBSim nativi e14 suite CTest Python PASS; controllo3ingressi,STOP prioritario,

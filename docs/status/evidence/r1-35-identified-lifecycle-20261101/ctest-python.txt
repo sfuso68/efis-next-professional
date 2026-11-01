@@ -1,0 +1,35 @@
+Test project C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-ems-state-review
+      Start 29: efis_sil_world_tests
+ 1/15 Test #29: efis_sil_world_tests ...............   Passed    0.42 sec
+      Start 30: efis_sil_development_plan_tests
+ 2/15 Test #30: efis_sil_development_plan_tests ....   Passed    0.17 sec
+      Start 31: efis_sil_session_contract_tests
+ 3/15 Test #31: efis_sil_session_contract_tests ....   Passed    0.18 sec
+      Start 32: efis_sil_session_engine_tests
+ 4/15 Test #32: efis_sil_session_engine_tests ......   Passed    0.45 sec
+      Start 33: efis_sil_jsbsim_adapter_tests
+ 5/15 Test #33: efis_sil_jsbsim_adapter_tests ......   Passed    0.19 sec
+      Start 34: efis_sil_session_archive_tests
+ 6/15 Test #34: efis_sil_session_archive_tests .....   Passed    2.96 sec
+      Start 35: efis_sil_pilot_fixture_tests
+ 7/15 Test #35: efis_sil_pilot_fixture_tests .......   Passed    0.18 sec
+      Start 36: efis_sil_command_queue_tests
+ 8/15 Test #36: efis_sil_command_queue_tests .......   Passed    0.19 sec
+      Start 37: efis_sil_control_inbox_tests
+ 9/15 Test #37: efis_sil_control_inbox_tests .......   Passed    0.19 sec
+      Start 38: efis_sil_session_control_tests
+10/15 Test #38: efis_sil_session_control_tests .....   Passed    0.22 sec
+      Start 39: efis_sil_control_execution_tests
+11/15 Test #39: efis_sil_control_execution_tests ...   Passed    1.13 sec
+      Start 40: efis_sil_control_audit_tests
+12/15 Test #40: efis_sil_control_audit_tests .......   Passed    4.91 sec
+      Start 41: efis_sil_local_console_tests
+13/15 Test #41: efis_sil_local_console_tests .......   Passed    1.35 sec
+      Start 42: efis_sil_console_lifecycle_tests
+14/15 Test #42: efis_sil_console_lifecycle_tests ...   Passed    2.41 sec
+      Start 43: efis_sil_async_journal_tests
+15/15 Test #43: efis_sil_async_journal_tests .......   Passed    2.15 sec
+
+100% tests passed, 0 tests failed out of 15
+
+Total Test time (real) =  17.15 sec

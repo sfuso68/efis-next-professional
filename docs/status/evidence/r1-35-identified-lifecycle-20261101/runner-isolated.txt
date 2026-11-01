@@ -1,0 +1,8 @@
+test_channel_factory_error_cannot_finalize_success (tests.test_console_runner.ConsoleRunnerTests.test_channel_factory_error_cannot_finalize_success) ... ok
+test_channel_start_publish_and_keyboard_failure_leave_incomplete_evidence (tests.test_console_runner.ConsoleRunnerTests.test_channel_start_publish_and_keyboard_failure_leave_incomplete_evidence) ... ok
+test_explicit_stop_can_complete_zero_ticks_and_closed_audit (tests.test_console_runner.ConsoleRunnerTests.test_explicit_stop_can_complete_zero_ticks_and_closed_audit) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.462s
+
+OK

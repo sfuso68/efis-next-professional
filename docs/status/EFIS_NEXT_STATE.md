@@ -21,7 +21,15 @@ Solo software:17 nuovi metodi e regressione finale264 PASS. Due regressioni
 precedenti conservano2 timeout frame persistence>100ms nei test runner prima
 del fault iniettato; runner isolato3 PASS. Clock fixture introdotto solo nei
 unit test failure injection, non nel runtime; soglie intatte e timing Windows
-ancora aperto. CTest/server ancora da completare sul commit congelato.
+ancora aperto. CMake configurato,15/15 suite CTest Python PASS. Serverha279
+test PASS inclusi15 JSBSim nativi; nuovo runner con clock reale esegue pausa,
+ripresa,100 tick fisici, nessun riarmo e trace/archive/restore V2.
+Source6483f45250692dc1010296237e43cd2bedbeb189; archive SHA256
+3a459866d404ac806904d947554510448d9d58c6dfe517c2d7c39694110bc31c.
+Container senza rete/capability, source/runtime read-only. Evidenza e fallimenti
+conservati in evidence/r1-35-identified-lifecycle-20261101/verification.json;
+digest log sui blob Git LF. Review indipendente: corrette transizioni senza
+coppia audit e collisioni ID fra domini; ultimo controllo senza blocker.
 Nessuna verifica hardware avionica, deploy, servizio, rete, chiave o merge.
 P03/M2 PARTIAL; riarmo/dedup durevole/audit wall/fanout/pannelli aperti.
 Fonte: ../development/SIL_IDENTIFIED_LIFECYCLE_V1.md.

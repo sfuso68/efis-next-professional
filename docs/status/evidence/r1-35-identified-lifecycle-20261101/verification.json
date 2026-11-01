@@ -1,0 +1,87 @@
+{
+  "schema": "fuso-avionics.identified-lifecycle-evidence.v1",
+  "date": "2026-11-01",
+  "status": "PARTIAL",
+  "source_commit": "6483f45250692dc1010296237e43cd2bedbeb189",
+  "source_archive_sha256": "3a459866d404ac806904d947554510448d9d58c6dfe517c2d7c39694110bc31c",
+  "implemented": [
+    "opt-in identified local PAUSE/RESUME with expected session/epoch",
+    "shared bounded identity history, cached outcomes and conflict rejection",
+    "truth lifecycle intent/result correlation and unaudited transition rejection",
+    "cross-audit observed identity/capacity checks",
+    "canonical TAR 10752-byte zero padding restore correction"
+  ],
+  "local_tests": {
+    "new_methods": 17,
+    "final_selected": 264,
+    "status": "PASS_WITH_OPEN_TIMING_GATE",
+    "initial_campaigns": [
+      {
+        "methods": 264,
+        "errors": 2,
+        "reason": "frame persistence deadline exceeded before injected runner failure"
+      },
+      {
+        "methods": 264,
+        "errors": 2,
+        "reason": "same pre-injection deadline failures"
+      }
+    ],
+    "isolated_runner_methods": 3,
+    "isolated_runner_status": "PASS",
+    "unit_fixture_change": "Only failure-injection runner tests use virtual clock; runtime deadlines unchanged"
+  },
+  "ctest": {
+    "selected_passed": 15,
+    "total_selected": 15,
+    "scope": "PYTHON_SIL_ONLY",
+    "native_windows": "INHERITED_WINERROR4551_OPEN",
+    "new_native_build": false,
+    "cmake_warning": "PREEXISTING_MSVC_OBJECT_PATH"
+  },
+  "server_tests": {
+    "methods": 279,
+    "native_jsbsim_methods": 15,
+    "status": "PASS",
+    "seconds": 25.171,
+    "new_native": "real-clock JSBSim runner lifecycle opt-in, pause/resume,100 physical ticks, no control rearm, trace and V2 archive/restore",
+    "network": "NONE",
+    "source_runtime": "READ_ONLY",
+    "image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93"
+  },
+  "independent_review": {
+    "mode": "READ_ONLY",
+    "corrected": [
+      "deleting an entire lifecycle pair could hide unaudited transitions",
+      "cross-domain input/lifecycle ID reuse not rejected offline"
+    ],
+    "final_scoped_blockers": 0
+  },
+  "log_sha256_scope": "COMMITTED_UTF8_LF_GIT_BLOBS_NOT_WINDOWS_CRLF_CHECKOUT",
+  "log_sha256": {
+    "initial-local-failure.txt": "0a57018d661c0274610909e83718d2be94d49e1819921647a74b4aa7db18bbfd",
+    "repeated-local-failure.txt": "1e857a5556773ec6c58045a5883ff813a1196c453748f1a384769a2486f0789d",
+    "runner-isolated.txt": "d1a28dd5f89bb49e1e35bd5050fa891413c1196a3722cfed6f4c1c7d12b5640b",
+    "local-regression.txt": "fe073414d4ad290d82efbc10e0e6645ff137d6c29abae6d3d5ff23bfc9cc9a34",
+    "server-regression.txt": "62652f320602f2016ee49616b73313b028bfc4299bc99fc4d811e76d3f82cf05",
+    "cmake.txt": "ce653e413be1768e1111d78fb9046ca8d5a69f9b3b7b45ac6449f1143aece1b9",
+    "ctest-python.txt": "2fc318bdc2e3bc3cee6574747d89ec0517219fc68d3786484e02c2f3ad922e63",
+    "initial-lifecycle-failure.txt": "9c32eb34cf38191c30a5756d7be3582d7d0bde6bf9c239e3ec915eed16ada976"
+  },
+  "hardware_acceptance": "NOT_RUN",
+  "interactive_ssh_pilot_acceptance": "NOT_RUN",
+  "flight_approval": false,
+  "deploy_performed": false,
+  "merge_performed": false,
+  "new_network_services": false,
+  "simulation_completion": "NOT_COMPLETE",
+  "limitations": [
+    "NO control lease renewal/rearm; resume leaves old executor revoked",
+    "in-memory dedup only; no restart/crash recovery",
+    "async lifecycle intent append does NOT attest durability before transition",
+    "sidecar lacks input admission-only failures; shared history check is observed lower bound only",
+    "no wall-lease proof, authenticity, executive physics replay or model validation",
+    "Windows persistence timing reproducibility OPEN with failures preserved",
+    "real panels,fanout,models/systems,endurance,power-loss and NAS restore remain OPEN"
+  ]
+}

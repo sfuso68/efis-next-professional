@@ -1,0 +1,43 @@
+test_cross_action_identity_conflicts_share_history (tests.test_console_lifecycle.LifecycleTests.test_cross_action_identity_conflicts_share_history) ... ok
+test_default_console_still_refuses_lifecycle (tests.test_console_lifecycle.LifecycleTests.test_default_console_still_refuses_lifecycle) ... ok
+test_exact_fields_and_types_rejected_before_audit_or_mutation (tests.test_console_lifecycle.LifecycleTests.test_exact_fields_and_types_rejected_before_audit_or_mutation) ... ok
+test_intent_write_failure_cannot_pause_or_claim_success (tests.test_console_lifecycle.LifecycleTests.test_intent_write_failure_cannot_pause_or_claim_success) ... ok
+test_pause_resume_cached_across_epoch_never_reapply_or_rearm (tests.test_console_lifecycle.LifecycleTests.test_pause_resume_cached_across_epoch_never_reapply_or_rearm) ... ok
+test_result_write_failure_never_becomes_invalid_input_or_retried (tests.test_console_lifecycle.LifecycleTests.test_result_write_failure_never_becomes_invalid_input_or_retried) ... ok
+test_shared_history_exhaustion_stops_without_transition (tests.test_console_lifecycle.LifecycleTests.test_shared_history_exhaustion_stops_without_transition) ... ok
+test_stale_epoch_session_and_wrong_state_rejections_are_retained (tests.test_console_lifecycle.LifecycleTests.test_stale_epoch_session_and_wrong_state_rejections_are_retained) ... 
+  test_stale_epoch_session_and_wrong_state_rejections_are_retained (tests.test_console_lifecycle.LifecycleTests.test_stale_epoch_session_and_wrong_state_rejections_are_retained) (reason='REJECTED_STATE') ... FAIL
+test_stop_latched_during_intent_prevents_resume (tests.test_console_lifecycle.LifecycleTests.test_stop_latched_during_intent_prevents_resume) ... ok
+test_complete_trace_and_v2_restore_preserve_lifecycle (tests.test_console_lifecycle.LifecycleTraceTests.test_complete_trace_and_v2_restore_preserve_lifecycle) ... ERROR
+test_missing_policy_or_unresolved_intent_cannot_be_accepted (tests.test_console_lifecycle.LifecycleTraceTests.test_missing_policy_or_unresolved_intent_cannot_be_accepted) ... ok
+test_missing_result_duplicate_identity_and_reordered_intent_rejected (tests.test_console_lifecycle.LifecycleTraceTests.test_missing_result_duplicate_identity_and_reordered_intent_rejected) ... ok
+test_resealed_result_or_tick_changes_fail_closed (tests.test_console_lifecycle.LifecycleTraceTests.test_resealed_result_or_tick_changes_fail_closed) ... ok
+
+======================================================================
+ERROR: test_complete_trace_and_v2_restore_preserve_lifecycle (tests.test_console_lifecycle.LifecycleTraceTests.test_complete_trace_and_v2_restore_preserve_lifecycle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tests\test_console_lifecycle.py", line 135, in test_complete_trace_and_v2_restore_preserve_lifecycle
+    restore(self.parent/"run.tar",self.parent/"restored",live=True)
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\session_archive.py", line 162, in restore
+    c.require(1024<=len(tail)<=10240 and not any(tail),"archive footer/trailing payload")
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\session_contract.py", line 18, in require
+    raise ValueError(reason)
+ValueError: archive footer/trailing payload
+
+======================================================================
+FAIL: test_stale_epoch_session_and_wrong_state_rejections_are_retained (tests.test_console_lifecycle.LifecycleTests.test_stale_epoch_session_and_wrong_state_rejections_are_retained) (reason='REJECTED_STATE')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tests\test_console_lifecycle.py", line 56, in test_stale_epoch_session_and_wrong_state_rejections_are_retained
+    reply=self.send(obj);self.assertEqual(reply["outcome"],reason)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'REJECTED_EPOCH' != 'REJECTED_STATE'
+- REJECTED_EPOCH
++ REJECTED_STATE
+
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.307s
+
+FAILED (failures=1, errors=1)
