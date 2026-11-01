@@ -26,6 +26,33 @@ Rectangle {
     function linkColor(state) { var s=String(state); return s==="LIVE"?setup.green:(s==="SIM"?setup.cyan:setup.amber) }
     function busState(bus) { var m=String(controller.electricalTestMode||"NORMAL"); if(m==="ESSENTIAL BUS ISOLATED"&&bus==="ESSENTIAL")return "ISOLATED"; if(m==="MAIN BUS LOW"&&(bus==="MAIN"||bus==="AVIONICS"))return "LOW VOLTAGE"; return m==="ALTERNATOR OFFLINE"?"BATTERY SUPPLY":"POWERED" }
     function loadPowered(load) { return load.installed && setup.busState(String(load.bus))!=="ISOLATED" }
+    // Un campo che il controller non pubblica si dichiara assente. ADR-004
+    // vieta di sostituirlo con un valore plausibile, e la targhetta di un
+    // motore e' il caso peggiore: 912 UL e 912 ULS condividono il nome e non
+    // la potenza, quindi un valore cablato nomina il motore sbagliato appena
+    // il profilo cambia. Cilindri, potenza, capacita' dei serbatoi e modello
+    // del velivolo non sono sulla superficie di EmsController: finche' non lo
+    // sono, questa pagina dice di non saperli.
+    readonly property string unpublished: "NOT PUBLISHED BY PROFILE"
+    function textOr(name) { var v=controller[name]; v=(v===undefined||v===null)?"":String(v).trim(); return v.length?v:setup.unpublished }
+    function limitStatus() { return String(setup.mapOr("engineLimits").status||"NOT CONFIGURED").toUpperCase() }
+    function engineRating() {
+        var rpm=Number(setup.mapOr("engineLimits").rpm_max)
+        // Il regime massimo arriva dal profilo, mai senza la sua provenienza.
+        var rated=isFinite(rpm)&&rpm>0?(Math.round(rpm)+" RPM MAX • "+setup.limitStatus()):"RPM MAX NOT PUBLISHED"
+        return "CYL / POWER NOT PUBLISHED • "+rated
+    }
+    function airframeSystems() {
+        var parts=[]
+        if(controller.landingGearInstalled===true) parts.push(controller.retractableGear===true?"RETRACT GEAR":"FIXED GEAR")
+        if(controller.flapsInstalled===true) parts.push("FLAPS")
+        return parts.length?parts.join(" • "):setup.unpublished
+    }
+    function flapDetentText() {
+        var detents=setup.listOr("flapDetents"); var out=[]
+        for(var i=0;i<detents.length;i++) { var value=Number(detents[i]); if(isFinite(value)) out.push(value) }
+        return out.length?(out.join(" / ")+"°"):("FLAP DETENTS "+setup.unpublished)
+    }
 
     Rectangle { id: top; anchors { left:parent.left; right:parent.right; top:parent.top } height:54*setup.uiScale; color:"#07131C"; border.color:setup.line
         Text { x:18*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"EFIS"; color:"white"; font.pixelSize:18*setup.uiScale; font.bold:true }
@@ -53,16 +80,16 @@ Rectangle {
 
         Grid { visible:setup.section===0; y:58*setup.uiScale; columns:2; spacing:12*setup.uiScale
             Repeater { model:[
-                {k:"AIRFRAME",v:"ASSO V JOLLY",s:"PIONEER 300 EQUIVALENT"},
-                {k:"ENGINE",v:(controller.engineProfileName||"ROTAX 912 UL"),s:"4 CYL • 80 HP • 5800 RPM"},
-                {k:"ENGINE SERIAL",v:(controller.engineSerialNumber||"TO BE ENTERED"),s:"REQUIRED BEFORE ACTIVATION"},
-                {k:"CONFIGURATION",v:"OWNER BUILD",s:"DOCUMENT CHECK REQUIRED"},
-                {k:"FUEL",v:"2 × 40 L",s:"LEVEL SENSORS TO CONFIRM"},
-                {k:"AIRFRAME SYSTEMS",v:"RETRACT GEAR • FLAPS",s:"0 / 10 / 15 / 20 / 30°"}]
+                {k:"AIRFRAME",v:setup.unpublished,s:"MODEL AND VARIANT ARE NOT ON THE EMS SURFACE"},
+                {k:"ENGINE",v:setup.textOr("engineProfileName"),s:setup.engineRating()},
+                {k:"ENGINE SERIAL",v:setup.textOr("engineSerialNumber"),s:"REQUIRED BEFORE ACTIVATION"},
+                {k:"CONFIGURATION",v:setup.unpublished,s:"DOCUMENT CHECK REQUIRED"},
+                {k:"FUEL",v:setup.unpublished,s:"TANK CAPACITY AND LEVEL SENSORS TO CONFIRM"},
+                {k:"AIRFRAME SYSTEMS",v:setup.airframeSystems(),s:setup.flapDetentText()}]
                 delegate:Rectangle { required property var modelData; width:385*setup.uiScale; height:88*setup.uiScale; color:setup.panel; border.color:setup.line
                     Text { x:12*setup.uiScale; y:9*setup.uiScale; text:modelData.k; color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
-                    Text { x:12*setup.uiScale; y:32*setup.uiScale; text:modelData.v; color:"white"; font.pixelSize:17*setup.uiScale; font.bold:true }
-                    Text { x:12*setup.uiScale; y:65*setup.uiScale; text:modelData.s; color:"#9EADB4"; font.pixelSize:7*setup.uiScale }
+                    Text { x:12*setup.uiScale; y:32*setup.uiScale; width:361*setup.uiScale; elide:Text.ElideRight; text:modelData.v; color:"white"; font.pixelSize:17*setup.uiScale; font.bold:true }
+                    Text { x:12*setup.uiScale; y:65*setup.uiScale; width:361*setup.uiScale; elide:Text.ElideRight; text:modelData.s; color:"#9EADB4"; font.pixelSize:7*setup.uiScale }
                 }
             }
         }
@@ -212,7 +239,7 @@ Rectangle {
         OperationalProfileSetup { visible:setup.section===6; y:34*setup.uiScale; width:parent.width; height:parent.height-34*setup.uiScale; controller:setup.controller; uiScale:setup.uiScale; workflowPage:setup.operationalPreviewPage }
         Item { visible:setup.section===4; y:58*setup.uiScale; width:parent.width; height:parent.height-58*setup.uiScale
             Rectangle { anchors { left:parent.left; right:parent.right; top:parent.top } height:46*setup.uiScale; color:"#10232D"; border.color:setup.line
-                Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"ROTAX 912 UL • MAINTENANCE PROGRAM"; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }
+                Text { x:12*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:setup.textOr("engineProfileName")+" • MAINTENANCE PROGRAM"; color:"white"; font.pixelSize:10*setup.uiScale; font.bold:true }
                 Text { anchors.centerIn:parent; text:"ENGINE  "+setup.numberOr("engineHours").toFixed(2)+" H"; color:setup.cyan; font.pixelSize:10*setup.uiScale; font.bold:true }
                 Text { anchors { right:parent.right; rightMargin:12*setup.uiScale; verticalCenter:parent.verticalCenter } text:String(controller.maintenanceStatus||"PROGRAM REQUIRED"); color:text==="CURRENT"?setup.green:setup.amber; font.pixelSize:9*setup.uiScale; font.bold:true }
                 Rectangle { x:555*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; width:130*setup.uiScale; height:29*setup.uiScale; radius:3*setup.uiScale; color:"#15303C"; border.color:setup.cyan
@@ -235,7 +262,7 @@ Rectangle {
                     }
                 } }
             }
-            Text { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; bottomMargin:5*setup.uiScale } text:"Intervals must be confirmed against the applicable Rotax maintenance manual, engine serial number, fuel and operating conditions. BLACKBOX  "+String(controller.blackBoxState||"OFFLINE")+"  •  "+String(controller.blackBoxRecords||0)+" RECORDS"; color:setup.amber; horizontalAlignment:Text.AlignHCenter; font.pixelSize:6*setup.uiScale }
+            Text { anchors { left:parent.left; right:parent.right; bottom:parent.bottom; bottomMargin:5*setup.uiScale } text:"Intervals must be confirmed against the applicable engine maintenance manual, serial number, fuel and operating conditions. BLACKBOX  "+String(controller.blackBoxState||"OFFLINE")+"  •  "+String(controller.blackBoxRecords||0)+" RECORDS"; color:setup.amber; horizontalAlignment:Text.AlignHCenter; font.pixelSize:6*setup.uiScale }
         }
         Rectangle { visible:setup.showFuelHistory; anchors.centerIn:parent; width:700*setup.uiScale; height:350*setup.uiScale; z:30; radius:6*setup.uiScale; color:"#F006151E"; border.width:2; border.color:setup.cyan
             Text { x:16*setup.uiScale; y:14*setup.uiScale; text:"BLACKBOX • "+String(controller.centralBlackBoxState||"OFFLINE"); color:String(controller.centralBlackBoxState)==="ONLINE"?"white":setup.amber; font.pixelSize:14*setup.uiScale; font.bold:true }
@@ -289,6 +316,6 @@ Rectangle {
     }
     Rectangle { id:footer; anchors { left:parent.left; right:parent.right; bottom:parent.bottom } height:42*setup.uiScale; color:"#07131C"; border.color:setup.line
         Text { x:14*setup.uiScale; anchors.verticalCenter:parent.verticalCenter; text:"SETUP MODE • aircraft on ground • changes require verification"; color:setup.amber; font.pixelSize:8*setup.uiScale }
-        Text { anchors { right:parent.right; rightMargin:14*setup.uiScale; verticalCenter:parent.verticalCenter } text:"PROFILE: ASSO-V-JOLLY-912-UL"; color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
+        Text { anchors { right:parent.right; rightMargin:14*setup.uiScale; verticalCenter:parent.verticalCenter } text:"OPERATIONAL PROFILE: "+setup.textOr("operationalSelectedProfile"); color:setup.cyan; font.pixelSize:8*setup.uiScale; font.bold:true }
     }
 }
