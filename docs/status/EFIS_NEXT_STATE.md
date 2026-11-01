@@ -1,10 +1,34 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-30, R1-31 servizio owner SIL e revoca lifecycle; release permanenti invariate
+Aggiornamento: 2026-11-01, R1-32 executor locale SIL opt-in e audit sidecar; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-32 — esecuzione locale SIL, readback e sidecar sincrono
+
+IDs PRJ-004, VER-001. Aggiunto executor opt-in al pump owner, limitato a tre
+ingressi FDM: aileron/elevator/throttle. Capability e conflitti di batch
+verificati prima di scrivere; INTENT con fsync e lease/deadline ricontrollate
+prima della mutazione e dello step; APPLIED solo dopo readback e fsync esito.
+Sidecar esclusivo bounded (1024 record/1 MiB), niente overwrite o endpoint.
+Release rimuove override prima dell'I/O, non neutralizza l'aereo; errore clear
+è terminale. Esiti incerti dopo inizio fisica non producono falsi ACK e
+bloccano retry; APPLIED noti non vengono degradati dalla revoca successiva.
+Replay/pack legacy rifiutano risultati `control_execution`, evitando di
+esportare senza audit. Default admission-only e fixture precedenti invariati.
+
+Verificato solo software locale: 21 nuovi test (20 executor + 1 archive),
+207 totali PASS. Review indipendente ha rilevato ultimo recheck autorità,
+chiusura sidecar su clear failure e ritardo I/O del rilascio: corretti con
+regressioni; ultimo review senza blocker. Test nativo nuovo e regressione
+server ancora da eseguire. Nessun hardware avionico verificato, deploy,
+merge, servizio, rete o firmware modificato. Il timeout timing Windows
+R1-31 e il gate nativo WinError4551 restano aperti, non aggirati.
+P03 resta PARTIAL: console/trasporto autenticato, lifecycle/riarmo epoch,
+replay/restore sidecar, fanout e acceptance restano mancanti.
+Fonte: ../development/SIL_LIVE_EXECUTOR_V1.md.
 
 ## R1-31 — ammissione servita da RUNNING/PAUSED, senza executor
 

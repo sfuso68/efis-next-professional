@@ -22,14 +22,26 @@ class SessionAdmission:
         self.commands = CommandQueue(manifest, **queue_options)
         self.inbox = ControlInbox()
         self._latest = b"[]\n"
+        self.executor = None
+
+    def enable_execution(self, backend, audit_path):
+        """Explicit local SIL opt-in before binding; no transport capability."""
+        from tools.simulation.control_execution import ControlExecutor
+        self._owner_check()
+        c.require(not self._bound and self.executor is None, "executor attachment boundary")
+        self.executor = ControlExecutor(self, backend, audit_path)
 
     def _owner_check(self):
         if threading.get_ident() != self._owner:
             raise RuntimeError("session admission requires owner")
 
-    def bind(self, manifest):
+    def bind(self, manifest, backend=None):
         self._owner_check()
         c.require(not self._bound and manifest == self._manifest, "admission binding")
+        if self.executor is not None:
+            c.require(getattr(backend, "backend", backend) is self.executor.backend,
+                      "executor FDM binding")
+            c.require(getattr(backend, "pilot", None) is None, "conflicting pilot fixture")
         self._bound = True
 
     def offer(self, raw, *, principal):
@@ -43,7 +55,9 @@ class SessionAdmission:
     def revoke(self):
         self._owner_check()
         self.inbox.revoke()
+        if self.executor is not None:self.executor.invalidate_inflight()
         self.commands.revoke()
+        if self.executor is not None:self.executor.release()
 
     def service(self, *, current_tick, epoch):
         self._owner_check()
@@ -54,6 +68,27 @@ class SessionAdmission:
         replies = self.inbox.service(self.commands, current_tick=current_tick)
         # At most MAX_PER_SERVICE responses, overwritten rather than accumulated.
         self._latest = encode(replies)
+        if self.commands.closed and self.executor is not None:self.executor.release()
+
+    def before_step(self, tick, guard):
+        self._owner_check()
+        if self.executor is not None:self.executor.before_step(tick, guard)
+
+    def after_step(self, tick):
+        self._owner_check()
+        if self.executor is not None:
+            self.executor.after_step(tick)
+            # Producer revoke arriving during physics must preserve known
+            # APPLIED outcomes before releasing authority/overrides.
+            if self.inbox.revoked:self.revoke()
+
+    def authorize_step(self, tick):
+        self._owner_check()
+        return self.executor.authorize_step(tick) if self.executor is not None else False
+
+    def physical_step_started(self):
+        self._owner_check()
+        if self.executor is not None:self.executor.physical_step_started()
 
     def latest_replies(self):
         """Owner-only immutable snapshot, not execution/durability evidence."""

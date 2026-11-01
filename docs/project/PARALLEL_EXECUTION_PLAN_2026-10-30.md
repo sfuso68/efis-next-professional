@@ -86,3 +86,10 @@ regressione Windows conserva un timeout async>100ms, timing non qualificato.
 Il prossimo lavoro del filone A è executor live/capability/readback con audit,
 poi lifecycle autenticato e riarmo/dedup tra epoch. Non scambiare questo
 collegamento owner con la chiusura di M2. Filone B ancora solo handoff.
+
+Checkpoint R1-32 (2026-11-01): executor locale opt-in per tre ingressi SIL,
+readback e audit sidecar sincrono bounded; esiti incerti non rieseguiti.
+207 test locali PASS. Il replay/pack legacy rifiuta esplicitamente questa
+nuova modalità: non ignorare il sidecar. Prossimo filone A: contratto completo
+audit live/replay/restore, trasporto e lifecycle autenticati, riarmo epoch e
+fanout. Non completati M2 o simulatore; nessun deploy o nuova prova hardware.

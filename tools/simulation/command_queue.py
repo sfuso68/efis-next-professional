@@ -32,6 +32,7 @@ class CommandQueue:
         self._last_ns = self._last_tick = 0
         self._deadline = self._now() + lease_duration_ns
         self._history, self._pending, self._dispatched = {}, {}, {}
+        self._uncertain = set()
         self._bytes = self._sequence = 0
         self.closed = False
 
@@ -119,6 +120,8 @@ class CommandQueue:
         identity = request["command_id"]
         if identity in self._history:
             previous, ack = self._history[identity]
+            if previous == canonical and identity in self._uncertain:
+                raise RuntimeError("execution outcome uncertain; retry forbidden")
             return copy.deepcopy(ack) if previous == canonical else self._ack(request, "DUPLICATE_CONFLICT")
         if len(self._history) >= self.MAX_HISTORY or self._bytes+len(canonical) > self.MAX_BYTES:
             self.revoke()
@@ -203,10 +206,33 @@ class CommandQueue:
         previous = self._history.get(identity)
         if previous is None or previous[0] != encode(request):
             return None
+        if identity in self._uncertain:
+            raise RuntimeError("execution outcome uncertain; no truthful ACK available")
         return copy.deepcopy(previous[1])
+
+    def mark_uncertain(self, request):
+        """Owner invalidates an in-flight result after physics may have started.
+
+        No invented frozen ICD enum or false REJECTED/APPLIED. Exact retries
+        and lookups fail explicitly; known terminal outcomes are unchanged.
+        The set shares the existing bounded, non-evicted history identities.
+        """
+        self._owner_check()
+        identity = request["command_id"]
+        if identity not in self._dispatched:return False
+        c.require(encode(request) == self._history[identity][0], "uncertain request mismatch")
+        self._uncertain.add(identity)
+        del self._dispatched[identity]
+        return True
+
+    @property
+    def binding(self):
+        self._owner_check()
+        return dict(manifest=copy.deepcopy(self._context), authority_id=self._principal,
+                    lease_id=self._lease_id, lease_until_tick=self._until_tick)
 
     @property
     def counts(self):
         self._owner_check()
         return dict(pending=len(self._pending), dispatched=len(self._dispatched),
-                    history=len(self._history), bytes=self._bytes)
+                    history=len(self._history), bytes=self._bytes, uncertain=len(self._uncertain))

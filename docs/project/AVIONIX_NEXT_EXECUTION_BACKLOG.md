@@ -1,5 +1,12 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-32/PRJ-004,VER-001: executor locale opt-in per tre ingressi FDM con
+INTENT/readback/APPLIED fsync, rilascio override e esiti incerti senza retry.
+Sidecar esclusivo bounded; trace/pack legacy rifiutano nuova modalità finché
+replay/restore non sono implementati. 21 nuovi/207 test locali PASS; nessun
+deploy o hardware. Prossimo: validare nativo e completare contratto audit,
+replay/restore live e trasporto/lifecycle autenticati, riarmo epoch e fanout.
+
 R1-31/PRJ-004,VER-001: inbox nel pump owner RUNNING/PAUSED e revoca permanente
 ai confini lifecycle/epoch. Nessun executor live o endpoint. 16 nuovi test,
 52 mirati PASS; regressione locale186 ERROR timeout async iniziale, 9async

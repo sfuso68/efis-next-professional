@@ -27,6 +27,10 @@ class ControlInbox:
         """Separate coalescing latch; never consumes ordinary FIFO capacity."""
         self._revoked.set()
 
+    @property
+    def revoked(self):
+        return self._revoked.is_set()
+
     def offer(self, raw, *, principal):
         c.require(type(raw) is bytes and 1 <= len(raw) <= self.MAX_MESSAGE_BYTES,
                   "immutable bounded command bytes required")

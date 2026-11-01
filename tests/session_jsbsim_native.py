@@ -8,6 +8,47 @@ from tools.simulation.session_trace import verify
 
 
 class RealSessionTests(unittest.TestCase):
+    def test_native_live_executor_late_command_readback_and_pause_release(self):
+        import hashlib
+        from tools.simulation.session_control import SessionAdmission
+        from tools.simulation.session_engine import SessionEngine, TICK_NS, encode
+        from tests.test_sil_session_engine import Clock, MemoryJournal
+        vectors=c.decode((c.ROOT/"tests/data/protocols/sil-session-v1-vectors.json").read_bytes())
+        manifest=vectors["manifest"]
+        backend=s.Backend(self.world)
+        manifest["model_sha256"]=backend.model_digest["sha256"]
+        clock,journal=Clock(),MemoryJournal()
+        adapter=s.PhysicalAdapter(backend,"cruise",journal)
+        engine=SessionEngine(manifest,adapter,journal,clock=clock,max_ticks=100)
+        control=SessionAdmission(manifest,principal="instructor",lease_id="lease-001",
+                 lease_until_tick=100,lease_duration_ns=1_000_000_000,clock=clock)
+        audit_path=self.root/"native-live-audit.jsonl"
+        control.enable_execution(backend,audit_path)
+        self.addCleanup(control.executor.audit.close)
+        engine.attach_admission(control)
+        engine.validate();engine.arm_software_test();engine.start()
+        for _ in range(5):clock.now+=TICK_NS;engine.pump()
+        request=dict(vectors["command"],command_id="native-late",sequence=1,
+                     apply_tick=6,expires_tick=7,action="SET_CONTROL",
+                     args=dict(control="aileron",value=.2))
+        raw=encode(request)
+        control.offer(raw,principal="instructor");engine.pump()
+        clock.now+=TICK_NS;engine.pump()
+        self.assertEqual(backend.read("fcs/aileron-cmd-norm"),.2)
+        self.assertEqual(control.lookup_outcome(raw,principal="instructor")["status"],"APPLIED")
+        control.offer(raw,principal="instructor");engine.pump()
+        self.assertEqual(control.executor.applied,1)
+        engine.pause()
+        self.assertEqual(backend.test_controls,{})
+        self.assertTrue(control.executor.audit.closed)
+        engine.resume();clock.now+=TICK_NS;engine.pump();engine.stop()
+        self.assertEqual(backend.ticks,7)
+        self.assertEqual(journal.result["control_execution"]["sha256"],
+                         hashlib.sha256(audit_path.read_bytes()).hexdigest())
+        rows=[c.decode(line) for line in audit_path.read_bytes().splitlines()]
+        self.assertEqual([r["event"] for r in rows],["BOUND","INTENT","APPLIED","RELEASED"])
+        self.assertEqual(rows[2]["readback"],.2)
+
     def test_native_admission_owner_pause_epoch_never_executes_controls(self):
         from tools.simulation.session_control import SessionAdmission
         from tools.simulation.session_engine import SessionEngine, TICK_NS, encode

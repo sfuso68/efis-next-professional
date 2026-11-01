@@ -68,6 +68,15 @@ class SessionArchiveTests(unittest.TestCase):
         for name in a.FILES:self.assertEqual((self.run/name).read_bytes(),(destination/name).read_bytes())
         self.assertTrue((destination/"restore-complete.json").is_file())
 
+    def test_live_sidecar_result_is_not_silently_exported_without_audit(self):
+        path=self.run/"result.json"
+        result=c.decode(path.read_bytes())
+        result["control_execution"]={"scope":"SYNC_SIDECAR_NOT_REPLAY_ARCHIVABLE"}
+        path.write_bytes(encode(result))
+        with self.assertRaisesRegex(ValueError,"sidecar replay/archive unsupported"):
+            a.pack(self.run,self.archive)
+        self.assertFalse(self.archive.exists())
+
     def test_existing_archive_and_destination_are_preserved(self):
         a.pack(self.run,self.archive);original=self.archive.read_bytes()
         with self.assertRaises(FileExistsError):a.pack(self.run,self.archive)

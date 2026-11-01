@@ -168,12 +168,29 @@ class SessionEngine:
             raise ValueError("admission attachment boundary")
         if not isinstance(control, SessionAdmission):
             raise ValueError("session admission required")
-        control.bind(self.manifest)
+        control.bind(self.manifest, self.backend)
         self._control = control
 
     def _revoke_control(self):
         if self._control is not None:
-            self._control.revoke()
+            try:
+                self._control.revoke()
+            except Exception:
+                self.state, self.failure = "FAILED", "CONTROL_RELEASE_FAILURE"
+                self.journal.close()
+                raise
+
+    def _guard_step(self, expected):
+        check = getattr(self.journal, "check", None)
+        if check is not None:check()
+        self._check_step_lag(expected)
+
+    def _check_step_lag(self, expected):
+        """No journal I/O after final authority check while overrides are live."""
+        now = self._now()
+        lag = now-expected
+        self.maximum_lag_ns = max(self.maximum_lag_ns, lag)
+        if lag > MAX_LAG_NS:raise ValueError("producer deadline exceeded")
 
     def register(self, name):
         self._owner()
@@ -257,9 +274,20 @@ class SessionEngine:
             if lag > MAX_LAG_NS:
                 raise ValueError("producer deadline exceeded")
             # One physical step per call, no burst/catch-up, never skip an FDM tick.
+            if self._control is not None:
+                self._control.before_step(self.relative_tick+1, lambda:self._guard_step(expected))
+            self._guard_step(expected)
+            if self._control is not None:
+                released = self._control.authorize_step(self.relative_tick+1)
+                # Release can fsync after authority was cleared. It may not
+                # hide a writer timeout or authorize a late physical step.
+                if released:self._guard_step(expected)
+            self._check_step_lag(expected)
+            if self._control is not None:self._control.physical_step_started()
             self.backend.step()
             self.total_ticks += 1
             self.relative_tick += 1
+            if self._control is not None:self._control.after_step(self.relative_tick)
             after_step = self._now()
             if after_step - expected > MAX_LAG_NS:
                 raise ValueError("backend deadline exceeded")
@@ -309,11 +337,14 @@ class SessionEngine:
         try:
             self._event("STOPPING")
             self._event("END_OF_DATA", frames=self.frames, maximum_lag_ns=self.maximum_lag_ns)
-            self.journal.finish(dict(schema="fuso-avionics.sil-session-result.v1",
+            report = dict(schema="fuso-avionics.sil-session-result.v1",
                 status="COMPLETE_SOFTWARE_ONLY", session_id=self._manifest["session_id"],
                 simulated=True, flight_approval=False, frames=self.frames,
                 total_ticks=self.total_ticks, maximum_lag_ns=self.maximum_lag_ns,
-                hardware_acceptance="NOT_IMPLIED"))
+                hardware_acceptance="NOT_IMPLIED")
+            if self._control is not None and self._control.executor is not None:
+                report["control_execution"] = self._control.executor.audit.metadata()
+            self.journal.finish(report)
             self.state = "COMPLETE"
         except Exception:
             self.state, self.failure = "FAILED", "JOURNAL_FINALIZATION_FAILURE"

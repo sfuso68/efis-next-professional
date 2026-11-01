@@ -12,6 +12,7 @@ from tools.simulation.pilot_fixture import Audit
 def verify(directory):
     root=Path(directory)
     result=c.decode((root/"result.json").read_bytes())
+    c.require("control_execution" not in result, "live control sidecar replay/archive unsupported")
     c.require(result["status"]=="COMPLETE_SOFTWARE_ONLY" and result["simulated"] is True
               and result["flight_approval"] is False,"not a completed SIM run")
     digest=hashlib.sha256();count=frames=0;pending=None;manifest=None
