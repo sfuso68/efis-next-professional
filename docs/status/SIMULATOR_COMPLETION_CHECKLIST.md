@@ -1,9 +1,13 @@
 # Simulatore — quadro di completamento
 
-2026-11-01, R1-35. DEVELOPMENT / NON-CERT. Nessuna approvazione al volo.
+2026-11-01, R1-36. DEVELOPMENT / NON-CERT. Nessuna approvazione al volo.
 Il piano canonico macchina è config/simulation/development-plan-v1.json;
 questa vista esplicita i gap,non sostituisce Master Matrix o evidence bundle.
 Non calcolare avanzamento del prodotto dal numero dei test automatici.
+
+R1-36 aggiunge soltanto il preflight candidato del riarmo: PASS_PLAN_ONLY /
+NOT_ARMED. Non rinnova lease né consuma piani. Audit/archive multi-lease e
+integrazione owner restano aperti; P03 non è promosso a completato.
 
 | Pacchetto | Dimostrato | Mancante per chiusura |
 |---|---|---|

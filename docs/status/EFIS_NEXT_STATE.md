@@ -18,7 +18,13 @@ autenticata; consumo owner atomico e nuova verifica al tempo d'uso mancanti.
 Non è il riarmo runtime e non lo abilita nella console esistente.
 
 Solo software locale:16 nuovi metodi,vettore candidato e280 test selezionati
-PASS. CMake configurato; CTest e server sul commit congelato da consolidare.
+PASS. CMake configurato,16/16 suite CTest Python PASS. Serverha296 test PASS,
+inclusi16 JSBSim nativi; nuovo caso con FDM reale e clock/journal fixture
+verifica che piano,epoch,backend,autorità revocata e audit chiuso non mutino.
+Non è un test di riarmo o real-time. Sourcebc8f9687547ad21c4a12f213080e1a86726a583a,
+archive SHA256213c8f6a90edcec51f337188cd082a0584f5741fc7b5157099a63801019c9898.
+Container senza rete/capability,source/runtime read-only. Evidenza:
+evidence/r1-36-rearm-preflight-20261101/verification.json,digest log Git LF.
 Nessuna verifica hardware avionica/deploy/merge/rete/chiavi/servizi; codice
 runtime corrente invariato. Restano audit/archive multi-lease versionati,
 integrazione owner con ricontrolli e consumo atomico, recovery/dedup durabile,

@@ -1,0 +1,37 @@
+Test project C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-ems-state-review
+      Start 29: efis_sil_world_tests
+ 1/16 Test #29: efis_sil_world_tests ...............   Passed    0.41 sec
+      Start 30: efis_sil_development_plan_tests
+ 2/16 Test #30: efis_sil_development_plan_tests ....   Passed    0.17 sec
+      Start 31: efis_sil_session_contract_tests
+ 3/16 Test #31: efis_sil_session_contract_tests ....   Passed    0.18 sec
+      Start 32: efis_sil_session_engine_tests
+ 4/16 Test #32: efis_sil_session_engine_tests ......   Passed    0.39 sec
+      Start 33: efis_sil_jsbsim_adapter_tests
+ 5/16 Test #33: efis_sil_jsbsim_adapter_tests ......   Passed    0.18 sec
+      Start 34: efis_sil_session_archive_tests
+ 6/16 Test #34: efis_sil_session_archive_tests .....   Passed    1.67 sec
+      Start 35: efis_sil_pilot_fixture_tests
+ 7/16 Test #35: efis_sil_pilot_fixture_tests .......   Passed    0.25 sec
+      Start 36: efis_sil_command_queue_tests
+ 8/16 Test #36: efis_sil_command_queue_tests .......   Passed    0.24 sec
+      Start 37: efis_sil_control_inbox_tests
+ 9/16 Test #37: efis_sil_control_inbox_tests .......   Passed    0.27 sec
+      Start 38: efis_sil_session_control_tests
+10/16 Test #38: efis_sil_session_control_tests .....   Passed    0.32 sec
+      Start 39: efis_sil_control_execution_tests
+11/16 Test #39: efis_sil_control_execution_tests ...   Passed    0.74 sec
+      Start 40: efis_sil_control_audit_tests
+12/16 Test #40: efis_sil_control_audit_tests .......   Passed    2.03 sec
+      Start 41: efis_sil_local_console_tests
+13/16 Test #41: efis_sil_local_console_tests .......   Passed    0.85 sec
+      Start 42: efis_sil_console_lifecycle_tests
+14/16 Test #42: efis_sil_console_lifecycle_tests ...   Passed    1.20 sec
+      Start 43: efis_sil_rearm_preflight_tests
+15/16 Test #43: efis_sil_rearm_preflight_tests .....   Passed    1.33 sec
+      Start 44: efis_sil_async_journal_tests
+16/16 Test #44: efis_sil_async_journal_tests .......   Passed    3.22 sec
+
+100% tests passed, 0 tests failed out of 16
+
+Total Test time (real) =  13.50 sec

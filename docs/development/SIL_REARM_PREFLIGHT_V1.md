@@ -86,3 +86,14 @@ tests/data/protocols/sil-rearm-preflight-v1-vectors.json.
 
 Il riarmo runtime resta disabilitato, P03/M2 PARTIAL. Test di pianificazione
 non chiudono sicurezza, hardware, timing, modello, fanout o acceptance pilota.
+
+## Verifica del candidato
+
+16 nuovi metodi,280 test locali e16 suite CTest Python PASS. Serverha296
+test PASS inclusi16 JSBSim nativi: il nuovo caso usa FDM reale con clock e
+journal fixture e verifica assenza di mutazioni del modello,della epoch,
+della coda revocata e dell'audit chiuso. Non è prova di riarmo o timing.
+Sourcebc8f968; evidenza completa e hash log canonici Git LF in
+docs/status/evidence/r1-36-rearm-preflight-20261101/verification.json.
+Container senza rete e con source/runtime read-only; nessun deploy o nuovo
+test hardware avionico. I gate Windows/power e WinError4551 restano aperti.

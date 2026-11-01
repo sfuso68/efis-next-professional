@@ -130,3 +130,9 @@ preflight puro plan-only,senza istanziare code/executor o consumare ID.
 16 nuovi metodi/280 locali selezionati PASS. Integrazione runtime ancora
 bloccata finché non esistono audit/archive multi-lease,verifica e consumo
 owner atomico e recovery fail-closed. P03/M2 PARTIAL,nessun deploy/hardware.
+
+Verifica R1-36:16 suite CTest Python e296 test server PASS,inclusi16 JSBSim
+nativi. Nuovo caso non-mutazione FDM reale/clock fixture,non test riarmo.
+Sourcebc8f968,evidence/r1-36-rearm-preflight-20261101. Prossimo pacchetto:
+audit/archive multi-lease versionati con mutazioni negative; poi consumo
+atomico owner e solo in seguito comando locale di attivazione esplicita.

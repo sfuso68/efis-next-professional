@@ -1,0 +1,61 @@
+{
+  "schema": "fuso-avionics.rearm-preflight-evidence.v1",
+  "date": "2026-11-01",
+  "status": "PARTIAL_PLAN_ONLY",
+  "source_commit": "bc8f9687547ad21c4a12f213080e1a86726a583a",
+  "source_archive_sha256": "213c8f6a90edcec51f337188cd082a0584f5741fc7b5157099a63801019c9898",
+  "implemented": [
+    "offline candidate multi-lease policy, bounded snapshot and request validators",
+    "pure deterministic preflight with NOT_ARMED result, no state consumption",
+    "blocked unsafe state, unresolved commands, stale bindings, lease reuse and full history",
+    "strict bounded three-file CLI and reference vectors"
+  ],
+  "local_tests": {
+    "new_methods": 16,
+    "selected_methods": 280,
+    "status": "PASS"
+  },
+  "ctest": {
+    "selected_passed": 16,
+    "total_selected": 16,
+    "scope": "PYTHON_SIL_ONLY",
+    "native_windows": "INHERITED_WINERROR4551_OPEN",
+    "new_native_build": false,
+    "cmake_warning": "PREEXISTING_MSVC_OBJECT_PATH"
+  },
+  "server_tests": {
+    "methods": 296,
+    "native_jsbsim_methods": 16,
+    "status": "PASS",
+    "seconds": 27.492,
+    "new_native_scope": "real JSBSim with fixture clock/main journal: preflight leaves paused FDM, manifest, revoked authority and closed audit unchanged",
+    "network": "NONE",
+    "source_runtime": "READ_ONLY",
+    "image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93"
+  },
+  "log_sha256_scope": "COMMITTED_UTF8_LF_GIT_BLOBS_NOT_WINDOWS_CRLF_CHECKOUT",
+  "log_sha256": {
+    "local-regression.txt": "141c6870e3d101f90cab32efd8612ed10be0db06ea44767a1b6399e75fb48528",
+    "server-regression.txt": "872e802a4179d00bf6e2564eee2e20feb66e882e370c7cdf697122adc3ee76cd",
+    "cmake.txt": "c8115cfe17bae314bd70555cc14b3bd05aa1ab9600efb84d204368c4477bf683",
+    "ctest-python.txt": "ba7ab1df6872251058d5c3dbb2506ca1c4dbbf13cb9fa09e8d183eef2e42dadc"
+  },
+  "hardware_acceptance": "NOT_RUN",
+  "interactive_pilot_acceptance": "NOT_RUN",
+  "flight_approval": false,
+  "runtime_rearm_implemented": false,
+  "deploy_performed": false,
+  "merge_performed": false,
+  "new_network_services": false,
+  "simulation_completion": "NOT_COMPLETE",
+  "limitations": [
+    "PASS_PLAN_ONLY is not runtime rearm, approval or authenticated attestation",
+    "snapshot and audit/history digests are caller assertions, not independently verified byte evidence",
+    "no atomic plan consumption, reservation, crash recovery or dedup store",
+    "old single-lease runtime unchanged; no authority renewal or activation API",
+    "future owner must acquire actual snapshot and recheck immediately before consumption/activation",
+    "versioned multi-lease audit/archive and verifier still required",
+    "Windows timing reproducibility, power-loss, full models/systems, fanout and real panels remain OPEN"
+  ],
+  "next": "Define and test multi-lease audit/archive before integrating owner activation"
+}

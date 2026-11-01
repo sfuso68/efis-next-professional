@@ -1,5 +1,14 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-36/PRJ-004,VER-001: contratto candidato e preflight multi-lease offline;
+PASS_PLAN_ONLY/NOT_ARMED,nessuna attivazione o rinnovo runtime.16 nuovi/280
+locali,16 suite CTest Python e296 server PASS con16 JSBSim nativi. Nuovo test
+di non-mutazione FDM reale con clock fixture,non prova di riarmo. Sourcebc8f968,
+evidence/r1-36-rearm-preflight-20261101. Prossimo: audit/archive multi-lease
+versionati e verificatore,poi ricontrolli/consumo atomico owner e attivazione.
+Snapshot oggi caller-asserted;nessuna reservation/dedup durevole o recovery.
+P03/M2 PARTIAL,nessun hardware/deploy/merge. Gate timing/power invariati.
+
 R1-35/PRJ-004,VER-001: pausa/ripresa identificate opt-in,storia condivisa e
 audit nel truth con verifica transizioni/ID; nessun rinnovo lease/riarmo.
 17 nuovi/264 locali finali e15 suite CTest Python PASS; due campagne con2
