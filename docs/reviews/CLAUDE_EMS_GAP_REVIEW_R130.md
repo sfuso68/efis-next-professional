@@ -208,6 +208,8 @@ La colonna «Aperto su» distingue `main` (`4aea1e4`) dallo stack EMS
 | E-14 | Due formule di autonomia divergenti; una divide per una portata inventata | B | entrambi (pannello FUEL) | EMS-002 |
 | E-15 | Il carburante a bordo viene inizializzato dalla simulazione e persistito | B | solo `main` | EMS-001, EMS-002 |
 | E-16 | OAT e QNH inventati nell'intestazione EMS; log eventi senza rotazione; trend saturati a 3000 rpm | A (solo `main`) / B / C | OAT-QNH: solo `main`; resto: entrambi | EMS-002, BBX-002 |
+| E-17 | `RuntimeStore` serializza campi senza escape: un ritorno a capo nella matricola inietta righe che vincono su quelle reali | B | entrambi | EMS-002, PROD-005 |
+| E-18 | Il checksum dello store rileva la corruzione, non l'alterazione; nessun controllo di plausibilità sui totali | C | entrambi | EMS-002, PROD-005 |
 
 ---
 
@@ -540,10 +542,21 @@ azzera in silenzio i contatori.
 
 `test_ems_gap_invariants_r130.py` casi `e07a`, `e07b`, `e07c` FAIL.
 
-**Nota positiva.** `RuntimeStore` è fail-closed in modo corretto: checksum
-FNV-1a, scrittura su file temporaneo, rotazione `.bak`, e una violazione porta
-a `INTEGRITY FAULT` che **blocca** anche i salvataggi successivi
-(`src/nodes/ems/ems_controller.cpp:83-86,601`). Da conservare.
+**Nota positiva, ora misurata.** `RuntimeStore` è fail-closed sull'ingresso
+malformato: checksum FNV-1a, scrittura su file temporaneo, rotazione `.bak`, e
+una violazione porta a `INTEGRITY FAULT` che **blocca** anche i salvataggi
+successivi (`src/nodes/ems/ems_controller.cpp:83-86,601`). Da conservare.
+
+Nella prima stesura questa era una lettura del codice. È stata verificata il
+2026-11-01 con `tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp`:
+dieci casi di rifiuto su dieci, fra cui schema non supportato, campo mancante e
+valore non numerico **con checksum ricalcolato correttamente**, più round trip
+esatto di tutti e nove i campi e rotazione `.bak` leggibile. La lode regge.
+
+La verifica ha però trovato due limiti che la lettura non aveva visto, ed è il
+motivo per cui vale eseguire i test invece di fidarsi del codice: **E-17** ed
+**E-18**. La frase «fail-closed in modo corretto» va quindi letta come riferita
+all'ingresso malformato, non all'alterazione né all'iniezione.
 
 **File minimi da cambiare.** `src/nodes/ems/ems_controller.cpp` (ordine di
 inizializzazione, confronto matricola, ingresso `airborne` o rimozione del
@@ -893,6 +906,91 @@ e quello di OAT/QNH sono verificabili con `grep` sui due rami, come indicato.
 
 ---
 
+### E-17 — `RuntimeStore` serializza campi senza escape — Priorità B
+
+**File e riga.**
+- `src/core/engine_runtime_store.cpp:9` — `payload()` scrive coppie
+  `chiave=valore`, una per riga, **senza alcun escape**, e fra i valori ci sono
+  due stringhe libere: `profile_id` ed `engine_serial`.
+- `src/core/engine_runtime_store.cpp:13` — `load()` ricostruisce la mappa con
+  `f.emplace(...)`, che **conserva la prima occorrenza** di una chiave e scarta
+  le successive.
+- `src/nodes/ems/ems_controller.cpp:606-607` — i due valori arrivano da
+  `profile_id_` ed `engine_serial_number_`, cioè dai campi `profile_id` e
+  `serial_number` del profilo, che sono stringhe JSON e possono legalmente
+  contenere un ritorno a capo.
+
+**Comportamento osservato.** Poiché matricola e profilo sono scritti **prima**
+dei totali, una riga iniettata attraverso uno di quei campi precede il campo
+reale e vince:
+
+| Matricola salvata | Effetto misurato |
+|---|---|
+| `AB\nCD` | la matricola si carica come `AB`: troncata in silenzio, nessun errore |
+| `X\nengine_hours=999` | il contaore legge **999** invece dei 7,25 salvati |
+| `X\nrevision=1` | la revisione legge **1** invece di 42 |
+| `X\nschema=2` | il record si carica: il guardiano dello schema **non scatta** |
+
+**Perché il controllo d'integrità non se ne accorge.** Il checksum viene
+calcolato sul corpo che contiene già l'iniezione, quindi il file è perfettamente
+coerente con se stesso. Non è un difetto del controllo d'integrità: è un difetto
+del serializzatore, e si corregge sul lato scrittura.
+
+**Comportamento atteso.** Un valore che contiene il separatore di riga viene
+rifiutato in scrittura, oppure codificato in modo reversibile. In lettura, una
+chiave ripetuta è un errore e non una precedenza implicita, e il guardiano dello
+schema legge l'ultima dichiarazione o rifiuta il doppione.
+
+**Conseguenza operativa.** Le ore motore alimentano il programma di manutenzione
+(`src/nodes/ems/ems_controller.cpp:594`). Un contaore che torna indietro o
+avanza senza che nulla lo segnali sposta le scadenze di servizio. Oggi il
+profilo attivo dichiara `serial_number: "TO_BE_ENTERED"` e il percorso non è
+esercitato, ma la matricola è un dato che l'operatore inserirà.
+
+**Evidenza riproducibile, eseguita.**
+`ems_runtime_store_integrity_r130.cpp` → 29/29 PASS, exit 0, casi
+`a newline in a text field truncates it silently`,
+`a field injected through the serial overrides the saved engine hours`,
+`the same path overrides the saved revision`,
+`an injected schema line does not reach the unsupported-schema guard`.
+
+**File minimi da cambiare.** `src/core/engine_runtime_store.cpp`,
+`include/efis/core/engine_runtime_store.hpp`. **Entrambi liberi:** lo stack
+aperto non li tocca.
+
+---
+
+### E-18 — Il checksum rileva la corruzione, non l'alterazione — Priorità C
+
+**File e riga.** `src/core/engine_runtime_store.cpp:8` — il checksum è FNV-1a a
+64 bit senza alcun segreto. `:12` lo verifica in lettura.
+
+**Comportamento osservato.** Chiunque possa scrivere il file può ricalcolare il
+valore: un record alterato con checksum ricalcolato si carica senza alcuna
+segnalazione, il contaore legge il valore alterato, e `revision` resta quella
+salvata, quindi nessun campo testimonia la modifica. Separatamente, lo store non
+applica alcun controllo di plausibilità ai totali: un `engine_hours = -5` si
+carica e raggiunge il chiamante invariato.
+
+**Comportamento atteso, e limite di questa osservazione.** Il progetto **non
+dichiara da nessuna parte** che lo store sia a prova di manomissione, quindi
+questo non è un requisito mancato: è una proprietà da enunciare, perché lo stato
+`INTEGRITY FAULT` esposto dall'interfaccia (`ems_controller.hpp:86`) può essere
+letto come più forte di quanto sia. La correzione minima non è crittografica: è
+documentare che il controllo copre la corruzione accidentale, e aggiungere un
+rifiuto per totali non finiti o negativi, che oggi passerebbero.
+
+**Evidenza riproducibile, eseguita.** Stessa suite, casi
+`an altered record with a recomputed checksum loads cleanly`,
+`the hour meter reads the altered value, not the saved one`,
+`the revision is unchanged, so nothing signals the edit`,
+`a negative hour total is accepted by the store`.
+
+**File minimi da cambiare.** `src/core/engine_runtime_store.cpp` per il
+controllo di plausibilità; per il resto è una precisazione documentale.
+
+---
+
 ## 5. Esiti dei test — PASS / FAIL / NOT_RUN, software e hardware
 
 ### 5.1 Software, eseguito in questa sessione
@@ -903,6 +1001,7 @@ e quello di OAT/QNH sono verificabili con `grep` sui due rami, come indicato.
 | Autorità limiti, stato osservato | `python3 tests/claude_ems_review/test_ems_limit_authority_r130.py` | **PASS** — `Ran 52 tests … OK` | `0` |
 | Contratto L0, implementazione | `python3 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py` | **PASS** — `Ran 28 tests … OK`. Aggiunta con la sezione 8 | `0` |
 | Costo del contratto dati | `python3 tests/claude_ems_review/test_ems_contract_cost_r130.py` | **PASS** — `Ran 17 tests … OK`. Evidenza della proposta di ADR | `0` |
+| Integrità di `RuntimeStore`, C++ | build: `g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -o /tmp/store_r130 tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp src/core/engine_runtime_store.cpp` poi `/tmp/store_r130` | **PASS** — `29 checks, 0 failures`. Verifica E-07 e trova E-17 ed E-18 | `0` |
 | Invarianti desiderati | `python3 tests/claude_ems_review/test_ems_gap_invariants_r130.py` | **FAIL atteso** — `Ran 39 tests … FAILED (failures=51)` sulla baseline, **48 dopo L0**. Ogni fallimento è l'evidenza di un finding | `1` |
 
 Dipendenze: GCC con C++20 e Python 3 con la sola libreria standard, più `git`
@@ -983,10 +1082,11 @@ che lo stack modifica.
 
 **EMS-002 — Nodo EMS software. Stato proposto: PARTIAL (invariato).**
 Aggiungere all'evidenza: «Audit indipendente R1-30 del 2026-10-30 su `main`
-`4aea1e4`, report `docs/reviews/CLAUDE_EMS_GAP_REVIEW_R130.md`, 16 finding
-(8 di priorità A). Tre suite isolate in `tests/claude_ems_review/`, non
-dichiarate in CMake: nucleo C++ 29/29 PASS, autorità limiti 52/52 PASS,
-invarianti desiderati 39 casi / 51 fallimenti attesi. Il criterio "canali
+`4aea1e4`, report `docs/reviews/CLAUDE_EMS_GAP_REVIEW_R130.md`, 18 finding
+(8 di priorità A). Sei suite isolate in `tests/claude_ems_review/`, non
+dichiarate in CMake: nucleo C++ 29/29 PASS, integrità dello store 29/29 PASS,
+autorità limiti 52/52 PASS, contratto L0 28/28 PASS, costo del contratto dati
+17/17 PASS, invarianti desiderati 39 casi / 48 fallimenti attesi. Il criterio "canali
 calibrati" **non** è soddisfatto: guadagno e offset sono calcolati, persistiti
 e mai applicati a un valore indicato, e `calibration_revision` non raggiunge
 alcun campione. La dicitura `SIM FALLBACK • LINK LOST` richiesta da ADR-011 è
@@ -995,7 +1095,14 @@ Lo stato delle barre elettriche deriva dal solo selettore di guasti di banco.
 `flight_hours` non può avanzare, e il riferimento tach del profilo è scartato
 sul ramo di recupero.»
 Aggiungere ai rischi: «la validità per canale è chiusa dallo stack #53/#56/#59
-per i dieci canali scalari e resta aperta per gli otto canali dei cilindri.»
+per i dieci canali scalari e resta aperta per gli otto canali dei cilindri. Il
+serializzatore di `RuntimeStore` scrive coppie chiave=valore senza escape e la
+lettura usa `emplace`, che conserva la prima occorrenza: un ritorno a capo in
+`profile_id` o `engine_serial` inietta righe che precedono e sostituiscono i
+totali reali, cambiando contaore e revisione senza che il checksum possa
+rilevarlo, perché è calcolato sul corpo già iniettato. Verificato eseguendo
+`tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp`, 29/29 PASS, che
+conferma anche dieci rifiuti su dieci per ingresso malformato.»
 
 **EMS-004 — Limiti motore da manuale. Stato proposto: TODO (invariato).**
 Aggiungere all'evidenza: «Audit R1-30: i valori di ripiego dei limiti sono
@@ -1060,8 +1167,14 @@ i campioni, e `engine_integration_input` è fail-closed per `unavailable`,
 valle, al confine di presentazione Qt, e non in questa riga.»
 
 **PROD-005 — Update/rollback software. Stato proposto: DONE (invariato).**
-Aggiungere ai rischi: «Audit R1-30: `RuntimeStore` confronta soltanto
-`profile_id` e non la matricola, che pure registra. Un motore sostituito con lo
+Aggiungere ai rischi: «Audit R1-30: il checksum dello stato ore è FNV-1a senza
+segreto, quindi rileva la corruzione accidentale e non l'alterazione: un record
+modificato con checksum ricalcolato si carica senza segnalazione e `revision`
+resta invariata. Lo store non applica alcun controllo di plausibilità ai totali
+e accetta un valore negativo. Nulla nel progetto dichiara una resistenza alla
+manomissione, quindi non è un requisito mancato, ma lo stato `INTEGRITY FAULT`
+esposto all'interfaccia può essere letto come più forte di quanto sia.
+`RuntimeStore` confronta inoltre soltanto `profile_id` e non la matricola, che pure registra. Un motore sostituito con lo
 stesso `profile_id` eredita le ore del precedente; un cambio di `profile_id`
 azzera i contatori in silenzio. Le ore motore alimentano il programma di
 manutenzione.»
@@ -1079,7 +1192,7 @@ Aggiungere, nella sezione dedicata al nodo EMS, un paragrafo di questo tenore:
 
 «**Audit indipendente EMS R1-30, 2026-10-30.** Review di sola lettura su `main`
 `4aea1e4`, in `docs/reviews/CLAUDE_EMS_GAP_REVIEW_R130.md`, con test isolati in
-`tests/claude_ems_review/` non dichiarati in CMake. Sedici finding, otto di
+`tests/claude_ems_review/` non dichiarati in CMake. Diciotto finding, otto di
 priorità A: temperatura liquido inesistente e alias della temperatura olio;
 limiti di ripiego inventati e divergenti fra i due display, con `VERIFIED`
 coniato da una stringa libera; scala MAP diversa fra EMS e PFD/Canvas;
@@ -1088,7 +1201,12 @@ sistema; identità e capacità del velivolo scritte nel codice; dicitura
 `SIM FALLBACK` di ADR-011 calcolata e non mostrata sulla pagina EMS; validità
 per canale assente sugli otto canali dei cilindri; calibrazione mai applicata
 al valore indicato. La validità per canale è chiusa dallo stack EMS aperto
-#53/#56/#59 per i dieci canali scalari e resta aperta per i cilindri. La
+#53/#56/#59 per i dieci canali scalari e resta aperta per i cilindri. Due
+finding ulteriori, trovati il 2026-11-01 eseguendo per la prima volta
+`RuntimeStore` invece di leggerlo, riguardano il suo serializzatore: un ritorno
+a capo in un campo di testo inietta righe che vincono su quelle reali e può
+cambiare il contaore senza che il controllo d'integrità possa accorgersene,
+perché il checksum è calcolato sul corpo già iniettato. La
 sezione 0 registra i conflitti di baseline e contratto senza correggerli: la
 baseline dichiarata `9a0171ea`, il piano di esecuzione parallela e lo stesso
 handoff vivono **solo sullo stack non integrato** e non in `main`, quindi da un
@@ -1112,14 +1230,16 @@ lista.
 
 Dato che lo stack #52/#53/#56/#59 non è integrato e tocca largamente la stessa
 superficie, la lista di file esclusivi non ha senso senza la mappa delle
-collisioni. Misurata con `git diff --name-only main..22de6c3`: su 16 file
-candidati, **11 sono già modificati dallo stack e 5 sono liberi**. La mappa è
+collisioni. Misurata con `git diff --name-only main..<testa dello stack>`: su 18 file
+candidati, **11 sono già modificati dallo stack e 7 sono liberi**. La mappa è
 riprodotta dal caso `test_the_collision_map_of_section_seven_still_holds`, che
 fallisce se un file cambia lato.
 
 | File | Stato rispetto allo stack |
 |---|---|
 | `qml/EmsSetupOverlay.qml` | **libero** |
+| `src/core/engine_runtime_store.cpp` | **libero** |
+| `include/efis/core/engine_runtime_store.hpp` | **libero** |
 | `qml/HmiDataStateBadge.qml` | **libero** |
 | `include/efis/core/types.hpp` | **libero** |
 | `include/efis/engine/engine_snapshot.hpp` | **libero** |
@@ -1150,6 +1270,7 @@ non aprirne una terza accanto a `tests/claude_ems_review/`.
 |---|---|---|---|
 | **L0 — identità del velivolo** | E-05 (parte QML) | `qml/EmsSetupOverlay.qml` | **IMPLEMENTATO il 2026-10-31**, vedi sezione 8. Era l'unico lotto EMS interamente su file liberi |
 | L1 — autorità e provenienza dei limiti | E-02, E-03, E-04 (presentazione), E-06 | `qml/AdaptiveEmsView.qml`, `qml/ProfessionalSystemsDeck.qml`, `qml/EngineTemperatureBars.qml`, `qml/HmiArcGaugeV4.qml`, `src/nodes/ems/ems_controller.{hpp,cpp}` | **Dopo** il merge dello stack: tutti i file collidono. Non introduce limiti, rimuove i ripieghi e unifica le scale |
+| **L5 — serializzazione dello store** | E-17, E-18 | `src/core/engine_runtime_store.cpp`, `include/efis/core/engine_runtime_store.hpp` | **Nessuna.** Secondo lotto interamente su file liberi, avviabile subito come L0. Non dipende dal merge |
 | L2 — contatori e soglie | E-07, E-08 | `src/nodes/ems/ems_controller.cpp`, `include/efis/core/derived_state.hpp`, `src/core/derived_state.cpp` | Dopo lo stack; serializzare con L1 e L4 su `ems_controller.cpp` |
 | L3 — etichettatura della simulazione e validità cilindri | E-09, E-10 (cilindri) | `qml/AdaptiveEmsView.qml`, `qml/HmiDataStateBadge.qml`, `qml/HmiCylinderMatrixV2.qml`, `src/nodes/ems/ems_controller.hpp` | Dopo lo stack, che ha già riscritto questo confine per i canali scalari |
 | L4 — carburante, elettrico, log | E-11, E-12, E-14, E-15 (residui), E-16 (residui) | `src/nodes/ems/ems_controller.cpp`, `qml/HmiElectricalSynoptic.qml`, `qml/AdaptiveEmsView.qml` | Dopo lo stack; serializzare con L1 e L2 |
@@ -1163,6 +1284,7 @@ Quattro dei cinque lotti EMS collidono con lo stack aperto, e
 Ne segue una sola sequenza priva di conflitti:
 
 1. ~~**ora**, in parallelo allo stack: L0, su file liberi~~ — **fatto**, sezione 8;
+   e **L5**, l'altro lotto su file liberi, ancora da assegnare;
 2. in parallelo ma fuori dal filone B: l'ADR per il contratto dati (E-01, E-04)
    — **proposta consegnata**, `CLAUDE_EMS_COOLANT_AND_UNITS_ADR_PROPOSAL_R130.md`,
    in attesa di decisione dell'integratore;

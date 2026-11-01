@@ -27,7 +27,31 @@ g++ -std=c++20 -Wall -Wextra -Wpedantic -I include \
 Atteso: `29 checks, 0 failures`, exit code `0`.
 Dipendenze: GCC con C++20. Nessun Qt, nessuna rete.
 
-## 2. `test_ems_limit_authority_r130.py` — stato osservato
+## 2. `ems_runtime_store_integrity_r130.cpp` — integrità dello store, eseguibile
+
+Mette alla prova `RuntimeStore`, che il finding E-07 della review definiva
+fail-closed sulla base di una lettura del codice. Copre i casi che
+`tests/engine_runtime_store_tests.cpp` lascia scoperti: round trip esatto di
+tutti i campi, rifiuto di schema, campo mancante e valore non numerico **con
+checksum ricalcolato**, rotazione `.bak`, e il serializzatore non protetto che
+ha prodotto i finding E-17 ed E-18.
+
+```bash
+g++ -std=c++20 -Wall -Wextra -Wpedantic -I include \
+  -o /tmp/ems_store_integrity_r130 \
+  tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp \
+  src/core/engine_runtime_store.cpp
+```
+
+```bash
+/tmp/ems_store_integrity_r130
+```
+
+Atteso: `29 checks, 0 failures`, exit code `0`. Scrive solo sotto una directory
+temporanea propria, che rimuove al termine.
+Dipendenze: GCC con C++20. Nessun Qt, nessuna rete.
+
+## 3. `test_ems_limit_authority_r130.py` — stato osservato
 
 Fotografa i numeri e le strutture presenti oggi nelle sorgenti e nei registri,
 così una deriva diventa visibile. Passa sulla baseline della review.
@@ -51,7 +75,7 @@ git fetch origin fix/ems-responsive-header-r108-v1
 Senza quel fetch la classe si limita a segnalare uno skip e il resto della
 suite passa comunque (`OK (skipped=1)`, exit code `0`).
 
-## 3. `test_ems_setup_overlay_contract_r130.py` — lotto L0, implementato
+## 4. `test_ems_setup_overlay_contract_r130.py` — lotto L0, implementato
 
 Verifica l'implementazione del finding E-05 su `qml/EmsSetupOverlay.qml`, il
 solo file assegnato in esclusiva al lotto L0. Senza Qt il QML non si può
@@ -68,7 +92,7 @@ python3 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py
 Atteso: `Ran 28 tests ... OK`, exit code `0`.
 Dipendenze: solo la libreria standard di Python 3.
 
-## 4. `test_ems_contract_cost_r130.py` — costo del contratto dati
+## 5. `test_ems_contract_cost_r130.py` — costo del contratto dati
 
 Rende riproducibili i numeri della sezione 2 di
 `docs/reviews/CLAUDE_EMS_COOLANT_AND_UNITS_ADR_PROPOSAL_R130.md`: disposizione
@@ -84,7 +108,7 @@ python3 tests/claude_ems_review/test_ems_contract_cost_r130.py
 Atteso: `Ran 17 tests ... OK`, exit code `0`.
 Dipendenze: solo la libreria standard di Python 3.
 
-## 5. `test_ems_gap_invariants_r130.py` — invarianti desiderati
+## 6. `test_ems_gap_invariants_r130.py` — invarianti desiderati
 
 Dichiara il comportamento che la review ritiene corretto. **Fallisce di
 proposito**: ogni fallimento è l'evidenza riproducibile di un finding, e il
