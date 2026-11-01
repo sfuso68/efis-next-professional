@@ -62,7 +62,8 @@ class SyncControlAudit:
 
     def metadata(self):
         c.require(self.closed, "control audit still open")
-        return dict(scope="SYNC_SIDECAR_NOT_REPLAY_ARCHIVABLE", file=self.path.name,
+        from tools.simulation.control_audit import SCOPE
+        return dict(schema=SCHEMA, scope=SCOPE, file=self.path.name,
                     sha256=self.digest.hexdigest(), records=self.records, bytes=self.bytes)
 
 

@@ -1,5 +1,11 @@
 # AVIONIX NEXT — backlog esecutivo per gate
 
+R1-33/PRJ-004,VER-001: correlazione integrità sidecar e policy congelata,
+versione archive/restore V2 con quattro payload, V1 sempre fail-closed.
+20 nuovi/227 test locali PASS. Integrità non equivale a replay esecutivo,
+wall lease o admission proof; console/auth/lifecycle/epoch/fanout e hardware
+aperti. Prossimo: nativo/restore, poi contratto completo controllo sessione.
+
 R1-32/PRJ-004,VER-001: executor locale opt-in per tre ingressi FDM con
 INTENT/readback/APPLIED fsync, rilascio override e esiti incerti senza retry.
 Sidecar esclusivo bounded; trace/pack legacy rifiutano nuova modalità finché

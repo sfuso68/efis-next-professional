@@ -15,9 +15,12 @@ import tarfile
 from tools.simulation import session_contract as c
 from tools.simulation.session_engine import encode
 from tools.simulation.session_trace import verify
+from tools.simulation.control_audit import FILE as CONTROL_FILE, MAX_BYTES as MAX_CONTROL
 
 FILES = ("truth.jsonl", "result.json", "probe-report.json")
 MEMBERS = ("archive-manifest.json", *FILES, "archive-complete.json")
+LIVE_FILES = (*FILES, CONTROL_FILE)
+LIVE_MEMBERS = ("archive-manifest.json", *LIVE_FILES, "archive-complete.json")
 MAX_ARCHIVE = 128 * 1024 * 1024
 MAX_FILE = 64 * 1024 * 1024
 
@@ -33,27 +36,32 @@ def fingerprint(info):
     return base if os.name == "nt" else (*base,info.st_ctime_ns)
 
 
-def regular(path):
+def regular(path, limit=MAX_FILE):
     info = path.lstat()
     c.require(stat.S_ISREG(info.st_mode) and not path.is_symlink(), "regular file required")
-    c.require(info.st_size <= MAX_FILE, "file size limit")
+    c.require(info.st_size <= limit, "file size limit")
     return info
 
 
-def read_file(path):
-    before = regular(path)
+def read_file(path, limit=MAX_FILE):
+    before = regular(path,limit)
     with path.open("rb") as stream:
         c.require(fingerprint(os.fstat(stream.fileno())) == fingerprint(before), "source changed before read")
-        data = stream.read(MAX_FILE+1)
+        data = stream.read(limit+1)
         c.require(fingerprint(os.fstat(stream.fileno())) == fingerprint(before), "source changed during read")
-    c.require(len(data) == before.st_size and len(data) <= MAX_FILE, "source length changed")
+    c.require(len(data) == before.st_size and len(data) <= limit, "source length changed")
     return data
 
 
-def validate_manifest(m):
+def file_limit(name, live):
+    return MAX_FILE if name=="truth.jsonl" else MAX_CONTROL if live and name==CONTROL_FILE else 65536
+
+
+def validate_manifest(m, *, live=False):
     c.exact(m, "schema simulated flight_approval session_id source_commit config_sha256 model_sha256 "
             "profile_status included_assets license_review files")
-    c.require(m["schema"] == "fuso-avionics.sil-archive.v1" and m["simulated"] is True
+    version=2 if live else 1
+    c.require(m["schema"] == f"fuso-avionics.sil-archive.v{version}" and m["simulated"] is True
               and m["flight_approval"] is False, "archive boundary")
     c.token(m["session_id"])
     c.require(isinstance(m["source_commit"],str) and len(m["source_commit"])==40
@@ -62,15 +70,16 @@ def validate_manifest(m):
     c.require(m["profile_status"] in ("SYNTHETIC_FIXTURE", "REFERENCE_UNVALIDATED")
               and m["included_assets"] == [] and m["license_review"] == "MODEL_ASSETS_NOT_INCLUDED",
               "model redistribution/validation not authorized")
-    c.require(isinstance(m["files"],dict) and set(m["files"]) == set(FILES), "archive file allowlist")
+    c.require(isinstance(m["files"],dict) and set(m["files"]) == set(LIVE_FILES if live else FILES),
+              "archive file allowlist")
     for name, item in m["files"].items():
         c.exact(item,"bytes sha256")
-        c.integer(item["bytes"],1,MAX_FILE if name=="truth.jsonl" else 65536)
+        c.integer(item["bytes"],1,file_limit(name,live))
         c.digest(item["sha256"])
     return m
 
 
-def run_binding(data, manifest):
+def run_binding(data, manifest, *, live=False):
     first = data["truth.jsonl"].split(b"\n",1)[0]
     config = c.decode(first)
     c.require(config["kind"] == "RUN_CONFIGURATION", "missing run configuration")
@@ -78,6 +87,8 @@ def run_binding(data, manifest):
     for key in ("session_id","source_commit","config_sha256","model_sha256","profile_status"):
         c.require(source[key] == manifest[key], "archive/run binding")
     result = c.decode(data["result.json"])
+    c.require(("control_execution" in result)==live
+              and ("control_policy" in config["configuration"])==live,"archive control mode mismatch")
     probe = c.decode(data["probe-report.json"])
     c.require(result["session_id"] == source["session_id"] and result["simulated"] is True
               and result["flight_approval"] is False and result["status"] == "COMPLETE_SOFTWARE_ONLY",
@@ -87,22 +98,24 @@ def run_binding(data, manifest):
               and probe["frames"] == result["frames"], "probe/result binding")
 
 
-def pack(run, archive):
+def pack(run, archive, *, live=False):
     root, destination = Path(run), Path(archive)
     c.require(root.is_dir() and not root.is_symlink(), "source directory required")
     # Read only the explicit allowlist; no private writer paths or assets.
-    files = {name:read_file(root/name) for name in FILES}
-    verification = verify(root)
+    files = {name:read_file(root/name,file_limit(name,live)) for name in (LIVE_FILES if live else FILES)}
+    verification = verify(root,allow_control_audit=live)
     # Bind the exact bytes archived to the successful verifier observation.
-    c.require(all(read_file(root/name) == data for name,data in files.items()), "run changed during verification")
+    c.require(all(read_file(root/name,file_limit(name,live)) == data for name,data in files.items()),
+              "run changed during verification")
     source = c.manifest(c.decode(files["truth.jsonl"].split(b"\n",1)[0])["manifest"])
     m = {key:source[key] for key in ("session_id","source_commit","config_sha256","model_sha256","profile_status")}
-    m.update(schema="fuso-avionics.sil-archive.v1",simulated=True,flight_approval=False,
+    version=2 if live else 1
+    m.update(schema=f"fuso-avionics.sil-archive.v{version}",simulated=True,flight_approval=False,
              included_assets=[],license_review="MODEL_ASSETS_NOT_INCLUDED",
              files={name:dict(bytes=len(data),sha256=sha(data)) for name,data in files.items()})
-    validate_manifest(m); run_binding(files,m)
+    validate_manifest(m,live=live); run_binding(files,m,live=live)
     manifest = encode(m)
-    complete = encode(dict(schema="fuso-avionics.sil-archive-complete.v1",manifest_sha256=sha(manifest)))
+    complete = encode(dict(schema=f"fuso-avionics.sil-archive-complete.v{version}",manifest_sha256=sha(manifest)))
     with destination.open("xb") as output:
         with tarfile.open(fileobj=output,mode="w",format=tarfile.USTAR_FORMAT) as tar:
             for name,data in (("archive-manifest.json",manifest),*files.items(),("archive-complete.json",complete)):
@@ -121,23 +134,24 @@ def hash_file(path):
     return h.hexdigest()
 
 
-def restore(archive, directory):
+def restore(archive, directory, *, live=False):
     source, destination = Path(archive), Path(directory)
     info = source.lstat()
     c.require(stat.S_ISREG(info.st_mode) and not source.is_symlink() and info.st_size <= MAX_ARCHIVE,
               "archive type/size")
+    members=LIVE_MEMBERS if live else MEMBERS
     with source.open("rb") as raw:
         c.require(fingerprint(os.fstat(raw.fileno())) == fingerprint(info), "archive changed before read")
         files = {}; expected_offset=0
         # Uncompressed tar only; never extractall, never restore mode/uid/path metadata.
         with tarfile.open(fileobj=raw,mode="r:") as tar:
             for index, member in enumerate(tar):
-                c.require(index<len(MEMBERS) and member.name==MEMBERS[index]
+                c.require(index<len(members) and member.name==members[index]
                           and member.isreg() and not member.issparse() and not member.pax_headers,
                           "archive member/order/type")
                 c.require(member.offset==expected_offset and member.offset_data==expected_offset+512,
                           "archive hidden header")
-                limit = MAX_FILE if member.name=="truth.jsonl" else 65536
+                limit = file_limit(member.name,live)
                 c.integer(member.size,1,limit)
                 data = tar.extractfile(member).read(limit+1)
                 c.require(len(data)==member.size,"archive member truncated")
@@ -149,24 +163,25 @@ def restore(archive, directory):
         raw.seek(0); archive_digest=hashlib.sha256()
         for block in iter(lambda:raw.read(1024*1024),b""):archive_digest.update(block)
         c.require(fingerprint(os.fstat(raw.fileno())) == fingerprint(info), "archive changed during read")
-    c.require(tuple(files)==MEMBERS,"archive incomplete")
-    m = validate_manifest(c.decode(files.pop("archive-manifest.json")))
+    c.require(tuple(files)==members,"archive incomplete")
+    m = validate_manifest(c.decode(files.pop("archive-manifest.json")),live=live)
     complete = c.decode(files.pop("archive-complete.json"))
     c.exact(complete,"schema manifest_sha256")
-    c.require(complete["schema"]=="fuso-avionics.sil-archive-complete.v1"
+    version=2 if live else 1
+    c.require(complete["schema"]==f"fuso-avionics.sil-archive-complete.v{version}"
               and complete["manifest_sha256"]==sha(encode(m)),"archive completion digest")
     for name,data in files.items():
         c.require(len(data)==m["files"][name]["bytes"] and sha(data)==m["files"][name]["sha256"],
                   "archive payload digest")
-    run_binding(files,m)
+    run_binding(files,m,live=live)
     # All archive/path/hash checks precede any write. Existing target is NEVER reused.
     destination.mkdir(parents=False,exist_ok=False)
     for name,data in files.items():
         with (destination/name).open("xb") as output:
             c.require(output.write(data)==len(data),"short restore write")
             output.flush(); os.fsync(output.fileno())
-    verification = verify(destination)
-    report = dict(schema="fuso-avionics.sil-restore.v1",status="PASS_SOFTWARE_ONLY",
+    verification = verify(destination,allow_control_audit=live)
+    report = dict(schema=f"fuso-avionics.sil-restore.v{version}",status="PASS_SOFTWARE_ONLY",
                   archive_sha256=archive_digest.hexdigest(),session_id=m["session_id"],trace=verification,
                   simulated=True,flight_approval=False,hardware_acceptance=False)
     with (destination/"restore-complete.json").open("xb") as output:
@@ -179,9 +194,12 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest="action",required=True)
     p=sub.add_parser("pack");p.add_argument("--run",type=Path,required=True);p.add_argument("--archive",type=Path,required=True)
+    p.add_argument("--live-control",action="store_true",help="explicit v2 including complete control audit")
     p=sub.add_parser("restore");p.add_argument("--archive",type=Path,required=True);p.add_argument("--directory",type=Path,required=True)
+    p.add_argument("--live-control",action="store_true",help="explicit v2, never fallback to legacy")
     args=parser.parse_args()
-    try:print(json.dumps(pack(args.run,args.archive) if args.action=="pack" else restore(args.archive,args.directory)))
+    try:print(json.dumps(pack(args.run,args.archive,live=args.live_control) if args.action=="pack"
+                         else restore(args.archive,args.directory,live=args.live_control)))
     except (ValueError,OSError,KeyError,TypeError,tarfile.TarError) as exc:parser.exit(2,f"SIL archive FAILED: {exc}\n")
 
 

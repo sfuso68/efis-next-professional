@@ -8,6 +8,20 @@ from tools.simulation.session_trace import verify
 
 
 class RealSessionTests(unittest.TestCase):
+    def test_native_live_audit_and_v2_archive_restore(self):
+        from tests.live_control_fixture import run_live
+        from tools.simulation.session_archive import pack,restore,LIVE_FILES
+        backend=s.Backend(self.world)
+        original=self.root/"live-original"
+        run_live(original,backend=backend)
+        trace=verify(original,allow_control_audit=True)
+        self.assertEqual(trace["control_execution"]["applied"],2)
+        exported=pack(original,self.root/"live-v2.tar",live=True)
+        restored=restore(self.root/"live-v2.tar",self.root/"live-restored",live=True)
+        self.assertEqual(exported["archive_sha256"],restored["archive_sha256"])
+        for name in LIVE_FILES:self.assertEqual((original/name).read_bytes(),
+                                               (self.root/"live-restored"/name).read_bytes())
+
     def test_native_live_executor_late_command_readback_and_pause_release(self):
         import hashlib
         from tools.simulation.session_control import SessionAdmission

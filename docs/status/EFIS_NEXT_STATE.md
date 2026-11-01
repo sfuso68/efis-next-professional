@@ -1,10 +1,32 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-11-01, R1-32 executor locale SIL opt-in e audit sidecar; release permanenti invariate
+Aggiornamento: 2026-11-01, R1-33 integrità audit live e archivio/restore V2; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-33 — verifica audit e archive/restore V2 espliciti
+
+IDs PRJ-004, VER-001. Implementato parser sidecar bounded con schema esatto,
+policy congelata nel config hash, manifesto/lease identici, correlazione
+INTENT/APPLIED/readback, ID/sequenze unici, fasi per tick e rilascio completo
+senza incertezza. Trace collega gli eventi alla prima finestra RUNNING;
+risultato e config devono entrambi dichiarare controllo live. CLI esplicita
+--live-control e letture risultato/truth/sidecar regolari bounded.
+Archivio V2 include quattro payload fissi e audit; V1 rimane invariata e
+rifiuta la nuova modalità. Nessun fallback su sidecar mancante o file legacy.
+Restore non sovrascrive e pubblica receipt solo dopo verifica semantica.
+
+Solo software locale: 20 nuovi test, 227 totali PASS. Review indipendente:
+corretti riuso sequenza e ordine di batch impossibile con mutazioni resealed;
+ultimo controllo senza blocker. Test nativo aggiunto, server da eseguire.
+Si tratta di integrità/correlazione, NON replay fisico esecutivo o prova
+ammissione/wall lease: il sidecar non contiene quei timestamp/eventi.
+Nessun hardware avionico verificato o deploy/merge/endpoint/servizio modificato.
+Restano console/trasporto/lifecycle autenticati, riarmo epoch, audit completo,
+fanout, replica NAS e acceptance. Stato P03/P07 PARTIAL, nessun nuovo DONE.
+Fonte: ../development/SIL_LIVE_AUDIT_ARCHIVE_V2.md. Gate Windows e power aperti.
 
 ## R1-32 — esecuzione locale SIL, readback e sidecar sincrono
 
