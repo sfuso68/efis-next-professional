@@ -1,12 +1,25 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-10-21, limitato al fix N1; le osservazioni hardware conservano le proprie date
+Aggiornamento: 2026-11-01, limitato al follow-up N1/decisione B su PR52; le osservazioni hardware conservano le proprie date
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline integrata esaminata all'ingresso del fix N1: `origin/main` `1cc0a78682741872e19082ae84dae936370e3d7e`
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
 
 ## Priorità correttiva: rianalisi 2026-10-21
+
+Conferma opzione B 2026-11-01: ripresa PR52 esistente, non duplicazione sul
+branch SIL/PR59 (ultimo HEADd5d5937, non integrato qui). Writer già quarantinato
+nel candidato; completata rimozione COMMAND_LONG da audit/backup. Audit attende
+passivamente, versione mancante NOT_OBSERVED; backup dichiara query attiva
+PARAM_REQUEST_LIST e incompatibilità observer. Helper parser/ricezione passivo,
+fixture CLI confinata a UDP loopback letterale. ADR-015 invariata.
+11 nuovi test confine+7 quarantena=18 locali PASS; con6 Project Control24 PASS.
+Ripetizione Linux e sintassi YAML da consolidare sul commit. Solo software;
+nessun Pixhawk/nodo avionico contattato o scrittura parametro/deploy/merge.
+Nuova riga PIX-004 PARTIAL censisce il confine manutentivo (72 righe totali).
+Copie remote e integrazione main ancora da verificare; nessun nuovo DONE.
+Fonte: ../development/MAVLINK_TOOL_CAPABILITY_BOUNDARY_V1.md.
 
 PIX-002/N1: nel branch safety/mavlink-write-quarantine-v1 ritirato il writer
 parametri non autorizzato: CLI e API rifiutano senza connessioni, query o

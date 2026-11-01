@@ -9,6 +9,14 @@ riallineamento forzato dei riferimenti è stato eseguito.
 
 ## N1 — correzione software candidata, non distribuita
 
+Follow-up 2026-11-01, opzione B confermata: PR52 riutilizzata; audit e backup
+non emettono più COMMAND_LONG. Audit passivo applicativo; backup attivo
+PARAM_REQUEST_LIST, esplicitamente non observer. Helper passivo conserva parser
+senza query/writer; fixture CLI UDP limitata a127.0.0.1.18 test mirati locali
+e24 includendo Project Control PASS. Linux/CI da consolidare. PIX-004 PARTIAL
+censisce il confine. ADR-015 invariata, nessun hardware/deploy/merge o remote
+inventory. Non equivale a ritiro su main/altri branch o copie installate.
+
 ID PIX-002. set_mavlink_parameter.py è una tombstone di quarantena: non importa
 pymavlink, non crea connessioni, non effettua query o trasmissioni e non contiene
 un generatore PARAM_SET. Ogni CLI legacy, inclusi --commit e --allow-protected,
@@ -47,7 +55,7 @@ siano state ritirate. Tutte le attivazioni rimangono bloccate fino a PSU review.
 | N3 | TODO | Posizione validata, rimozione coordinate operative di default |
 | N7 + N8 | TODO | Inizializzazione fuel e valori EMS subordinati a validità per canale |
 | N9 + N10 | TODO | Freshness osservativa/provider distinta dal fetch, gate consumer |
-| N11 | TODO | Riclassificare o ritirare i tool query che emettono COMMAND_LONG |
+| N11 | PARTIAL | Audit/backup riclassificati e COMMAND_LONG rimossi nel candidato; integrazione/copertura altri strumenti e copie remote aperte |
 | N12 + N13 | TODO | Gate controllo progetto su sé stesso e prove non circolari |
 
 TODO significa aperto nel piano, non prova che ogni dettaglio sia stato ancora

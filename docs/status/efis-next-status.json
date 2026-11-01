@@ -65,8 +65,8 @@
       "progress": 50.0
     },
     "PIX": {
-      "items": 3,
-      "progress": 41.7
+      "items": 4,
+      "progress": 43.8
     },
     "PRJ": {
       "items": 4,
@@ -105,12 +105,12 @@
     "PAN-002",
     "PAN-003"
   ],
-  "requirements": 71,
+  "requirements": 72,
   "status_counts": {
     "BLOCKED": 2,
     "DONE": 4,
     "LEGACY": 2,
-    "PARTIAL": 38,
+    "PARTIAL": 39,
     "TODO": 14,
     "VERIFY-HW": 11
   },
@@ -127,5 +127,5 @@
     "GS-002",
     "PWR-001"
   ],
-  "weighted_progress": 46.8
+  "weighted_progress": 46.9
 }

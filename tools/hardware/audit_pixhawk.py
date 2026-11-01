@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Read-only MAVLink identity and health audit for a connected autopilot."""
+"""Passive application-level MAVLink audit: waits, never requests a message.
+
+No outgoing MAVLink construction. This is not a kernel-enforced RX-only
+transport and does not authorize a return path through the observer gateway.
+AUTOPILOT_VERSION may be absent and must remain explicitly unobserved.
+"""
 import argparse
 import json
 import time
@@ -28,17 +33,11 @@ def main():
     if heartbeat is None:
         raise SystemExit("no MAVLink heartbeat received")
 
-    connection.mav.command_long_send(
-        connection.target_system,
-        connection.target_component,
-        mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE,
-        0,
-        mavutil.mavlink.MAVLINK_MSG_ID_AUTOPILOT_VERSION,
-        0, 0, 0, 0, 0, 0,
-    )
-
     result = {
         "schema": "efis-next.pixhawk-audit.v1",
+        "observation_mode": "PASSIVE_APPLICATION_RX_ONLY",
+        "transmitted_messages": [],
+        "version_status": "NOT_OBSERVED",
         "device": args.device,
         "target_system": connection.target_system,
         "target_component": connection.target_component,
@@ -58,6 +57,7 @@ def main():
         if message is None or message.get_type() == "BAD_DATA":
             continue
         if message.get_type() == "AUTOPILOT_VERSION":
+            result["version_status"] = "OBSERVED"
             result["version"] = {
                 "flight": version_string(message.flight_sw_version),
                 "middleware": version_string(message.middleware_sw_version),

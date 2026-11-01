@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Copia di sicurezza completa dei parametri dell'autopilota. Sola lettura.
+"""Backup parametri con query attive non mutanti: NON osservazione passiva.
 
 Punto 3 delle priorita' P0 dell'handoff: creare un backup aggiornato dei
 parametri del Pixhawk dopo gli interventi su GNSS, CAN e sensore aria. I backup
 esistenti risalgono al 20 agosto 2026 e precedono quelle modifiche, quindi
 oggi non descrivono piu' la configurazione reale.
 
-Lo strumento chiede l'elenco dei parametri e lo scrive. Non ne modifica nessuno,
-non invia comandi e non tocca il firmware.
+Lo strumento trasmette PARAM_REQUEST_LIST e scrive il backup locale. Non invia
+PARAM_SET o COMMAND_LONG e non modifica firmware o parametri. Non è compatibile
+con il percorso observer unidirezionale ADR-015: richiede un canale di lettura
+attiva separatamente autorizzato, non un ritorno via Blackbox/FLIGHT-DATA.
+La versione firmware è soltanto attesa passivamente e può essere non osservata.
 
 Produce due file, non uno.
 
@@ -112,10 +115,7 @@ def collect(link, timeout: float, quiet_after: float):
 
 
 def firmware_of(link, timeout: float):
-    link.mav.command_long_send(
-        link.target_system, link.target_component,
-        mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE, 0,
-        mavutil.mavlink.MAVLINK_MSG_ID_AUTOPILOT_VERSION, 0, 0, 0, 0, 0, 0)
+    """Passive wait only. Missing unsolicited version is not a failure to hide."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         message = link.recv_match(type="AUTOPILOT_VERSION", blocking=True, timeout=0.5)
@@ -173,6 +173,11 @@ def main() -> int:
 
     manifest = {
         "schema": "efis-next.parameter-backup.v1",
+        "access_mode": "ACTIVE_PARAMETER_QUERY_NON_MUTATING",
+        "transmitted_message_types": ["PARAM_REQUEST_LIST"],
+        "observer_path_compatible": False,
+        "firmware_query_mode": "PASSIVE_WAIT",
+        "firmware_status": "OBSERVED" if firmware is not None else "NOT_OBSERVED",
         "captured_utc": datetime.now(timezone.utc).isoformat(),
         "device": args.device,
         "target_system": link.target_system,

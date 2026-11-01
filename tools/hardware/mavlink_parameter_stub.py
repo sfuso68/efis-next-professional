@@ -29,6 +29,7 @@ Guasti che sa simulare:
 from __future__ import annotations
 
 import argparse
+import re
 import time
 
 from pymavlink import mavutil
@@ -140,9 +141,17 @@ class ParameterStub:
                 self.handle(message)
 
 
+def loopback_endpoint(value):
+    """CLI fixture only: literal loopback UDP, no DNS, TCP, serial or wildcard."""
+    match=re.fullmatch(r"(?:udpin|udpout):127\.0\.0\.1:([0-9]{1,5})",value)
+    if match is None or not 1024<=int(match[1])<=65535:
+        raise argparse.ArgumentTypeError("fixture requires udpin/udpout:127.0.0.1:1024..65535")
+    return value
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--endpoint", default="udpin:127.0.0.1:14560",
+    parser.add_argument("--endpoint", type=loopback_endpoint,default="udpin:127.0.0.1:14560",
                         help="estremo MAVLink su cui restare in ascolto")
     parser.add_argument("--ignore-writes", action="store_true")
     parser.add_argument("--silent-writes", action="store_true")
@@ -150,11 +159,6 @@ def main() -> int:
     parser.add_argument("--clamp-writes", type=float, default=None)
     parser.add_argument("--drop-reads", type=int, default=0)
     options = parser.parse_args()
-
-    if not options.endpoint.startswith(("udpin:", "udpout:", "tcpin:", "tcp:")):
-        raise SystemExit(
-            "il banco accetta soltanto estremi di rete: puntarlo a una seriale "
-            "significherebbe parlare all'autopilota vero")
 
     link = mavutil.mavlink_connection(options.endpoint, source_system=1,
                                       source_component=1, dialect="ardupilotmega")
