@@ -89,7 +89,8 @@ collegamento owner con la chiusura di M2. Filone B ancora solo handoff.
 
 Checkpoint R1-32 (2026-11-01): executor locale opt-in per tre ingressi SIL,
 readback e audit sidecar sincrono bounded; esiti incerti non rieseguiti.
-207 test locali PASS. Il replay/pack legacy rifiuta esplicitamente questa
+207 test locali e 215 server univoci (12 JSBSim nativi) PASS; 11 suite CTest
+Python PASS, nessun nuovo binario/pannello. Il replay/pack legacy rifiuta esplicitamente questa
 nuova modalità: non ignorare il sidecar. Prossimo filone A: contratto completo
 audit live/replay/restore, trasporto e lifecycle autenticati, riarmo epoch e
 fanout. Non completati M2 o simulatore; nessun deploy o nuova prova hardware.

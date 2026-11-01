@@ -22,8 +22,18 @@ esportare senza audit. Default admission-only e fixture precedenti invariati.
 Verificato solo software locale: 21 nuovi test (20 executor + 1 archive),
 207 totali PASS. Review indipendente ha rilevato ultimo recheck autorità,
 chiusura sidecar su clear failure e ritardo I/O del rilascio: corretti con
-regressioni; ultimo review senza blocker. Test nativo nuovo e regressione
-server ancora da eseguire. Nessun hardware avionico verificato, deploy,
+regressioni; ultimo review senza blocker, inclusi i percorsi di esito incerto.
+Serverha: 215 test univoci PASS, inclusi 12 JSBSim nativi. Nuovo test offre
+un comando dopo avvio, verifica readback/ACK e hash sidecar, rilascio in pausa
+e nessun riarmo dopo epoch; clock/journal principale fixture, non timing live.
+Source 5825974222ad474b20137cea094d25d2ea1e67c0, archivio SHA256
+6715968b75c856a3a107d7ff9e0f16354f287db693e1744de7a221ad39fb3012.
+Container senza rete/capability, source/runtime read-only. Primo run 246 PASS
+conteneva 31 ripetizioni per modulo duplicato nella CLI: log conservato ma
+conteggio canonico solo 215 dalla ripetizione deduplicata. CMake configurato,
+11/11 suite CTest Python PASS; nessun binario compilato, warning MSVC path
+preesistente invariato. Evidenza: evidence/r1-32-sil-local-executor-20261101/verification.json.
+Nessun hardware avionico verificato, deploy,
 merge, servizio, rete o firmware modificato. Il timeout timing Windows
 R1-31 e il gate nativo WinError4551 restano aperti, non aggirati.
 P03 resta PARTIAL: console/trasporto autenticato, lifecycle/riarmo epoch,

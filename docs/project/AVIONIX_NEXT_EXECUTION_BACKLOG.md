@@ -3,8 +3,9 @@
 R1-32/PRJ-004,VER-001: executor locale opt-in per tre ingressi FDM con
 INTENT/readback/APPLIED fsync, rilascio override e esiti incerti senza retry.
 Sidecar esclusivo bounded; trace/pack legacy rifiutano nuova modalità finché
-replay/restore non sono implementati. 21 nuovi/207 test locali PASS; nessun
-deploy o hardware. Prossimo: validare nativo e completare contratto audit,
+replay/restore non sono implementati. 21 nuovi/207 test locali, 215 test server
+univoci (12 JSBSim nativi) e 11 suite CTest Python PASS; nessun deploy o hardware.
+Prossimo: completare contratto audit,
 replay/restore live e trasporto/lifecycle autenticati, riarmo epoch e fanout.
 
 R1-31/PRJ-004,VER-001: inbox nel pump owner RUNNING/PAUSED e revoca permanente
