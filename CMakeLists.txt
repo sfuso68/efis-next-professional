@@ -462,6 +462,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_console_lifecycle)
         set_tests_properties(efis_sil_console_lifecycle_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_rearm_preflight_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_rearm_preflight)
+        set_tests_properties(efis_sil_rearm_preflight_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
         add_test(NAME efis_sil_async_journal_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_async_journal)
         set_tests_properties(efis_sil_async_journal_tests PROPERTIES

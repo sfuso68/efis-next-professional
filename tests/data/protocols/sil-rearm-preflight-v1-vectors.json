@@ -1,0 +1,78 @@
+{
+  "scope": "OFFLINE_PLAN_ONLY_NOT_ACTIVATION",
+  "flight_approval": false,
+  "policy": {
+    "schema": "fuso-avionics.sil-rearm-preflight.v1",
+    "kind": "POLICY",
+    "mode": "FROZEN_LEASE_CATALOGUE_PLAN_ONLY",
+    "session_id": "bench",
+    "authority_id": "local-console",
+    "model_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "source_commit": "2222222222222222222222222222222222222222",
+    "leases": [
+      {
+        "lease_id": "lease-0",
+        "epoch": 0,
+        "wall_limit_ns": 5000000000,
+        "tick_limit": 500
+      },
+      {
+        "lease_id": "lease-1",
+        "epoch": 1,
+        "wall_limit_ns": 5000000000,
+        "tick_limit": 500
+      },
+      {
+        "lease_id": "lease-2",
+        "epoch": 2,
+        "wall_limit_ns": 5000000000,
+        "tick_limit": 500
+      }
+    ]
+  },
+  "snapshot": {
+    "schema": "fuso-avionics.sil-rearm-preflight.v1",
+    "kind": "SNAPSHOT",
+    "session_id": "bench",
+    "authority_id": "local-console",
+    "epoch": 0,
+    "state": "PAUSED",
+    "revision": 7,
+    "config_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "model_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "source_commit": "2222222222222222222222222222222222222222",
+    "current_lease_id": "lease-0",
+    "used_leases": [
+      "lease-0"
+    ],
+    "revoked": true,
+    "audit_closed": true,
+    "audit_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "pending": 0,
+    "dispatched": 0,
+    "uncertain": 0,
+    "history_ids": [
+      "old-input"
+    ],
+    "history_bytes": 1024,
+    "history_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+    "simulated": true,
+    "flight_approval": false
+  },
+  "request": {
+    "schema": "fuso-avionics.sil-rearm-preflight.v1",
+    "kind": "PLAN_REARM",
+    "command_id": "plan-1",
+    "resume_command_id": "resume-1",
+    "session_id": "bench",
+    "expected_epoch": 0,
+    "expected_revision": 7,
+    "previous_lease_id": "lease-0",
+    "next_lease_id": "lease-1",
+    "expected_config_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "expected_history_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+    "policy_sha256": "dc534aae8d1ffbde38d0742d555d591dfa80d3075d9739f8b6290a471fcea401",
+    "confirmed": true
+  },
+  "expected_validation": "PASS_PLAN_ONLY"
+}

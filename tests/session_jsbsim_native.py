@@ -8,6 +8,39 @@ from tools.simulation.session_trace import verify
 
 
 class RealSessionTests(unittest.TestCase):
+    def test_native_rearm_preflight_never_changes_paused_revoked_fdm(self):
+        from tests.test_rearm_preflight import fixture
+        from tests.test_sil_session_engine import Clock,MemoryJournal
+        from tools.simulation.session_engine import SessionEngine,TICK_NS
+        from tools.simulation.session_control import SessionAdmission
+        from tools.simulation import rearm_preflight as rearm
+        manifest=c.decode((c.ROOT/"tests/data/protocols/sil-session-v1-vectors.json").read_bytes())["manifest"]
+        backend=s.Backend(self.world);manifest["model_sha256"]=backend.model_digest["sha256"]
+        journal=MemoryJournal();clock=Clock()
+        engine=SessionEngine(manifest,s.PhysicalAdapter(backend,"cruise",journal),journal,clock=clock)
+        control=SessionAdmission(manifest,principal="local-console",lease_id="lease-0",
+                    lease_until_tick=100,lease_duration_ns=1_000_000_000,clock=clock)
+        control.enable_execution(backend,self.root/"rearm-preflight-audit.jsonl")
+        self.addCleanup(control.executor.audit.close)
+        engine.attach_admission(control);engine.validate();engine.arm_software_test();engine.start()
+        for _ in range(5):clock.now+=TICK_NS;engine.pump()
+        engine.pause()
+        p,snap,request=fixture()
+        p.update(session_id=manifest["session_id"],model_sha256=manifest["model_sha256"],source_commit=manifest["source_commit"])
+        snap.update(session_id=manifest["session_id"],state=engine.state,epoch=engine.manifest["epoch"],
+            model_sha256=manifest["model_sha256"],source_commit=manifest["source_commit"],config_sha256=manifest["config_sha256"],
+            revoked=control.commands.closed,audit_closed=control.executor.audit.closed,
+            audit_sha256=control.executor.audit.metadata()["sha256"],history_ids=[],history_bytes=0)
+        request.update(session_id=manifest["session_id"],expected_config_sha256=manifest["config_sha256"],policy_sha256=rearm.sha(p))
+        previous=(backend.ticks,engine.manifest,control.commands.binding,control.executor.audit.metadata())
+        result=rearm.plan(p,snap,request)
+        self.assertEqual(result["validation"],"PASS_PLAN_ONLY")
+        self.assertEqual(result["execution"],"NOT_ARMED")
+        self.assertEqual(previous,(backend.ticks,engine.manifest,control.commands.binding,control.executor.audit.metadata()))
+        self.assertTrue(control.commands.closed);self.assertTrue(control.executor.released)
+        self.assertEqual(engine.state,"PAUSED");self.assertEqual(backend.test_controls,{})
+        engine.stop()
+
     def test_native_identified_console_pause_resume_never_rearms_controls(self):
         from tools.simulation.owner_console import run
         from tools.simulation.session_archive import pack,restore

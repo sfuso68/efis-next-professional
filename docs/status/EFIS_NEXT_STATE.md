@@ -1,10 +1,29 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-11-01, R1-35 pausa/ripresa SIL identificate; release permanenti invariate
+Aggiornamento: 2026-11-01, R1-36 preflight riarmo SIL plan-only; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-36 — prerequisito riarmo: contratto e preflight offline, non attivazione
+
+IDs PRJ-004, VER-001. Aggiunto candidato multi-lease con catalogo2..8 lease,
+epoch contigue,limiti wall<=5s/tick<=500, conferma e ID piano/ripresa nuovi.
+Preflight puro/CLI bounded blocca stato non PAUSED,autorità/audit aperti,
+pending/dispatched/incerti,identità/hash/revisione cambiati,riuso/salto lease
+e storia globale piena. Esito PASS_PLAN_ONLY/NOT_ARMED; non prenota ID né
+crea/rinnova autorità. Snapshot/hash sono asserzioni del chiamante,non prova
+autenticata; consumo owner atomico e nuova verifica al tempo d'uso mancanti.
+Non è il riarmo runtime e non lo abilita nella console esistente.
+
+Solo software locale:16 nuovi metodi,vettore candidato e280 test selezionati
+PASS. CMake configurato; CTest e server sul commit congelato da consolidare.
+Nessuna verifica hardware avionica/deploy/merge/rete/chiavi/servizi; codice
+runtime corrente invariato. Restano audit/archive multi-lease versionati,
+integrazione owner con ricontrolli e consumo atomico, recovery/dedup durabile,
+fanout/pannelli/modelli e gate timing Windows/power. P03/M2 PARTIAL,nessun DONE.
+Fonte: ../development/SIL_REARM_PREFLIGHT_V1.md.
 
 ## R1-35 — pausa/ripresa identificate, vecchia lease sempre revocata
 

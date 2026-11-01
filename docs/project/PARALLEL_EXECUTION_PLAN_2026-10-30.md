@@ -124,3 +124,9 @@ due run iniziali con timeout100ms conservati, timing non qualificato.
 15 suite CTest Python e279 test server PASS inclusi15 JSBSim nativi;
 source6483f45 ed evidence/r1-35-identified-lifecycle-20261101. Review finale
 senza blocker nel delta. Nessun deploy o prova avionica.
+
+Checkpoint R1-36: prima del riarmo, contratto candidato multi-lease e
+preflight puro plan-only,senza istanziare code/executor o consumare ID.
+16 nuovi metodi/280 locali selezionati PASS. Integrazione runtime ancora
+bloccata finché non esistono audit/archive multi-lease,verifica e consumo
+owner atomico e recovery fail-closed. P03/M2 PARTIAL,nessun deploy/hardware.
