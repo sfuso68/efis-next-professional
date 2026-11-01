@@ -101,8 +101,9 @@ revoca/pausa, input non valido, esiti incerti, output bloccato/short write,
 EOF/fault, startup parziale e failure injection runner con fixture proprietà.
 Regressione selezionata 247 PASS; CMake configure e 14 suite CTest Python
 PASS. Nessuna nuova build nativa Windows: WinError4551 e warning path restano.
-Test JSBSim nativo aggiunto: stdio tramite pipe locali, comando reale, 100 tick,
-audit e archive/restore V2; esito server da registrare nell'evidence bundle.
+Serverha261 test PASS inclusi14 JSBSim nativi. Nuovo test: stdio tramite pipe
+locali, comando reale,100 tick, audit e archive/restore V2. Source0b079df;
+evidence/r1-34-local-stdio-console-20261101/verification.json nello status.
 Non equivale a prova interattiva SSH di un pilota, durata lunga, power-loss,
 panelli simultanei o verifica hardware avionica. M2/P03 rimangono PARTIAL.
 

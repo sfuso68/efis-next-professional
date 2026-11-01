@@ -110,7 +110,8 @@ collegamento a Pixhawk/attuatori è autorizzato da questa scelta.
 Checkpoint R1-34: candidato console locale stdio, processo finito e nessun
 listener; STOP prioritario, controllo tre ingressi, lookup/storia bounded,
 errori senza falsa finalizzazione, output non bloccante per il thread fisico.
-24 nuovi test,247 locali selezionati e14 suite CTest Python PASS. Ripetizione
-JSBSim reale sul commit ancora da registrare. M2 non concluso: lifecycle e
+24 nuovi test,247 locali selezionati e14 suite CTest Python PASS. Server261
+PASS inclusi14 JSBSim nativi, source0b079df; nuovo stdio/audit/restore V2.
+Review finale delta senza blocker. M2 non concluso: lifecycle e
 riarmo con dedup, audit temporale/ammissione e fanout rimangono aperti.
 Non installata sui pannelli, nessun cambio rete o nuova acceptance hardware.

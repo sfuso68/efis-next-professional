@@ -21,8 +21,13 @@ frame di volo live. Lease max5s senza rinnovo; lifecycle/riarmo non esposti.
 Solo software locale: 24 nuovi test PASS, regressione selezionata247 PASS e
 14/14 suite CTest Python PASS; configure CMake, nessuna build nativa Windows.
 Review read-only ha rilevato finalizzazione erronea su errore, cleanup startup
-e invisibilità backpressure: corretti con regressioni. Test server JSBSim
-aggiunto, ancora da verificare sul commit congelato; nessuna prova avionica
+e invisibilità backpressure: corretti con regressioni, incluse risposte e
+metadata ingress in un solo snapshot. Serverha261 test PASS, inclusi14 JSBSim
+nativi; nuovo test usa pipe stdio reali, applica un comando, esegue100 tick e
+verifica audit/archive/restore V2. Source0b079dfc004835895582ac46c18a5acd0c475e3f,
+archive SHA256 ebea28c693dd775c77ff52bef9d8e16f0759ec6688b09f1217656d93415db3db.
+Container senza rete/capability e sorgenti/runtime read-only. Evidenza:
+evidence/r1-34-local-stdio-console-20261101/verification.json. Nessuna prova avionica
 hardware/SSH interattiva/pannelli o deploy eseguiti. P03/M2 PARTIAL e nessun
 nuovo DONE. Gate timing Windows, power, modelli reali, lifecycle/dedup durabile,
 audit ammissione/wall, replay esecutivo e fanout aperti.
