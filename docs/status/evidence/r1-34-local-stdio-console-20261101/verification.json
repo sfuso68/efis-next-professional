@@ -43,11 +43,12 @@
     ],
     "final_delta_blockers": 0
   },
+  "log_sha256_scope": "COMMITTED_UTF8_LF_GIT_BLOBS_NOT_WINDOWS_CRLF_CHECKOUT",
   "log_sha256": {
-    "cmake.txt": "0c68705fc6461afcc198ad922839b1ad4bafd103a0c77d36982a8f7014a2d013",
-    "ctest-python.txt": "85e87ff80f48e461342eb4e108c1fa3c98722c617e2802cb86552334d7201454",
-    "local-regression.txt": "5cdebf1ff0da05f09e88978f16393e198eaacd61222153ec1d54fb240d1678d1",
-    "server-regression.txt": "a2be294a35e4479ca6ec57f624a31e6f4bdac4ca2446057206be7a18308c737f"
+    "cmake.txt": "f1cab0e54fe35b5e54e4aadb155a2be292f3ce8c07de3bbf62b67bf62911e008",
+    "ctest-python.txt": "fc936dba85e062dabfe1e70d14e893ffceb17d2938892e3ccc6ad640d2987d61",
+    "local-regression.txt": "0315794c3dfb172834199b367b608b4ebac75dedf2b39307fe03d4b16ea250fd",
+    "server-regression.txt": "93cf5802533b88f30824cc53d02626979c97f1a5947e34d5961cd5b13ea5de61"
   },
   "hardware_acceptance": "NOT_RUN",
   "interactive_ssh_pilot_acceptance": "NOT_RUN",

@@ -28,6 +28,7 @@ verifica audit/archive/restore V2. Source0b079dfc004835895582ac46c18a5acd0c475e3
 archive SHA256 ebea28c693dd775c77ff52bef9d8e16f0759ec6688b09f1217656d93415db3db.
 Container senza rete/capability e sorgenti/runtime read-only. Evidenza:
 evidence/r1-34-local-stdio-console-20261101/verification.json. Nessuna prova avionica
+I digest log R1-34 si riferiscono ai blob Git UTF-8/LF, non al checkout CRLF Windows.
 hardware/SSH interattiva/pannelli o deploy eseguiti. P03/M2 PARTIAL e nessun
 nuovo DONE. Gate timing Windows, power, modelli reali, lifecycle/dedup durabile,
 audit ammissione/wall, replay esecutivo e fanout aperti.
