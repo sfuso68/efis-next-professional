@@ -35,7 +35,7 @@ Segnalati e non corretti, come richiesto dall'incarico.
 | C-3 | Il piano cita `EFIS_NEXT_STATE.md` e `EFIS_NEXT_MASTER_MATRIX.md` nella radice | I file sono in `docs/status/`. La radice non li contiene | Risolto senza ambiguità: letti i file in `docs/status/` |
 | C-4 | Il piano propone il branch `work/ems-gap-review-r130` | Il contratto di sessione assegna `claude/keen-curie-azwny9` e vieta di spingere altrove | **Conflitto aperto.** Lavorato e consegnato su `claude/keen-curie-azwny9`. La differenza va sanata dall'integratore |
 | C-5 | «Il commit che aggiunge questo documento è il checkpoint R1-30» | Corretto: il commit esiste, **sullo stack**, non in `main` | Nessuno, una volta fetchato lo stack |
-| C-7 | Il gate `project-control` esige l'aggiornamento della Master Matrix nella stessa PR; il piano lo vieta a questo filone | `tools/project_status/check_status_update.py` fallisce con exit 2 su qualunque modifica sotto `include/efis/`, `src/`, `qml/` e altri prefissi se `docs/status/EFIS_NEXT_MASTER_MATRIX.md` non è fra i file cambiati. Riprodotto in locale sui tre file di runtime di L0 e L5. Il piano di esecuzione parallela riserva però quel file all'integratore: «Gli altri consegnano proposte di aggiornamento, senza modificare quei file condivisi» | **Conflitto aperto, non corretto.** Il gate resta rosso sulla PR 60 per costruzione. Non ho modificato la matrice per tre ragioni: il piano lo vieta, lo stack aperto **modifica già quel file** e una mia modifica creerebbe un conflitto sul registro dell'integratore, e la sezione 6 contiene già il testo da applicare. Il conflitto nasce dal fatto che l'incarico originale era di sola lettura, dove non si presenta: si è aperto quando L0 e L5 sono stati autorizzati |
+| C-7 | Il gate `project-control` esige l'aggiornamento della Master Matrix nella stessa PR; il piano lo vieta a questo filone | `tools/project_status/check_status_update.py` fallisce con exit 2 su qualunque modifica sotto `include/efis/`, `src/`, `qml/` e altri prefissi se `docs/status/EFIS_NEXT_MASTER_MATRIX.md` non è fra i file cambiati. Riprodotto in locale sui tre file di runtime di L0 e L5. Il piano di esecuzione parallela riserva però quel file all'integratore: «Gli altri consegnano proposte di aggiornamento, senza modificare quei file condivisi» | **Risolto per decisione del proprietario il 2026-11-01: il gate resta rosso.** La matrice non è stata modificata per tre ragioni: il piano lo vieta a questo filone, lo stack aperto **modifica già quel file** e una modifica qui creerebbe un conflitto sul registro dell'integratore, e la sezione 6 contiene già il testo da applicare. L'integratore applicherà quelle righe al merge, quando la matrice è comunque nelle sue mani per lo stack. Il conflitto nasce dal fatto che l'incarico originale era di sola lettura, dove non si presenta: si è aperto quando L0 e L5 sono stati autorizzati |
 | C-6 | «PR #59 draft impilata» | Confermato. #59 è draft, head `22de6c37e4a3da517b8903b8abd47e556895373e`, base `fix/engine-channel-validity-v1`. Lo stack EMS aperto è #53 → #56 → #59, oltre a #52. **Nessuno è in `main`** | Rispettata l'istruzione «non assumere che main includa #59». Ogni finding dichiara se è aperto su `main`, sullo stack, o su entrambi |
 
 **C-6 è il conflitto che cambia il significato della review.** Lo stack aperto
@@ -43,10 +43,11 @@ chiude per conto proprio una parte dei difetti che un audit del solo `main`
 avrebbe elencato come aperti. Per non consegnare finding già risolti, ogni voce
 della sezione 4 è stata verificata **due volte**: su `4aea1e4` e su `22de6c3`.
 
-Restano aperti due conflitti di contratto: **C-4** sul nome del branch, e
-**C-7** fra il gate `project-control` e l'ownership della Master Matrix, che si
-è manifestato quando ai lotti L0 e L5 è stata data autorizzazione a modificare
-codice di runtime.
+Resta aperto un conflitto di contratto, **C-4**, sul nome del branch. **C-7** —
+il gate `project-control` contro l'ownership della Master Matrix — è stato
+deciso dal proprietario il 2026-11-01: il gate resta rosso sulla PR 60 e
+l'integratore applica la sezione 6 al merge. La PR 60 non è quindi mergeabile a
+gate verdi, ed è una conseguenza voluta, non un difetto da inseguire.
 
 ---
 
