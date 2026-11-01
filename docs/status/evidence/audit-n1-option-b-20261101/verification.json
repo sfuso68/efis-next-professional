@@ -41,6 +41,11 @@
   "python_syntax": "PASS_AST",
   "workflow_yaml_parser": "BLOCKED_MISSING_LOCAL_AND_SERVERHA_PARSER_NO_INSTALL",
   "remote_ci": "NOT_VERIFIED",
+  "mergeability_observation": {
+    "head": "8b1939861c89ebf6e65dbd7ccacb17f9193a17c2",
+    "github_mergeable": false,
+    "conflict_resolution": "NOT_PERFORMED"
+  },
   "project_status_generator": "PASS",
   "status_update_check": "PASS",
   "log_sha256_scope": "COMMITTED_UTF8_LF_GIT_BLOBS",

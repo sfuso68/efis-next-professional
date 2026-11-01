@@ -26,6 +26,9 @@ dashboard aggiornato o deploy dichiarato da questo checkout. Solo software;
 nessun Pixhawk/nodo avionico contattato o scrittura parametro/deploy/merge.
 Nuova riga PIX-004 PARTIAL censisce il confine manutentivo (72 righe totali).
 Copie remote e integrazione main ancora da verificare; nessun nuovo DONE.
+GitHub dopo push HEAD8b19398 segnala PR52 mergeable=false: integrazione bloccata
+da divergenze/conflitti da risolvere, non basta attendere la CI. Nessun merge,
+rebase o risoluzione dei conflitti eseguiti in questo lotto.
 Fonte: ../development/MAVLINK_TOOL_CAPABILITY_BOUNDARY_V1.md.
 
 PIX-002/N1: nel branch safety/mavlink-write-quarantine-v1 ritirato il writer
