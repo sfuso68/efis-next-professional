@@ -58,6 +58,7 @@
     "final_scoped_blockers": 0
   },
   "log_sha256_scope": "COMMITTED_UTF8_LF_GIT_BLOBS_NOT_WINDOWS_CRLF_CHECKOUT",
+  "log_formatting": "Initial lifecycle failure diagnostic line stripped of one trailing space; failures and content otherwise preserved",
   "log_sha256": {
     "initial-local-failure.txt": "0a57018d661c0274610909e83718d2be94d49e1819921647a74b4aa7db18bbfd",
     "repeated-local-failure.txt": "1e857a5556773ec6c58045a5883ff813a1196c453748f1a384769a2486f0789d",
@@ -66,7 +67,7 @@
     "server-regression.txt": "62652f320602f2016ee49616b73313b028bfc4299bc99fc4d811e76d3f82cf05",
     "cmake.txt": "ce653e413be1768e1111d78fb9046ca8d5a69f9b3b7b45ac6449f1143aece1b9",
     "ctest-python.txt": "2fc318bdc2e3bc3cee6574747d89ec0517219fc68d3786484e02c2f3ad922e63",
-    "initial-lifecycle-failure.txt": "9c32eb34cf38191c30a5756d7be3582d7d0bde6bf9c239e3ec915eed16ada976"
+    "initial-lifecycle-failure.txt": "79970d31d6fef8cdbde024b82fe6c635861eb9b22320733b959a289176d2cb48"
   },
   "hardware_acceptance": "NOT_RUN",
   "interactive_ssh_pilot_acceptance": "NOT_RUN",
