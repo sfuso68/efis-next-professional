@@ -36,7 +36,7 @@ così una deriva diventa visibile. Passa sulla baseline della review.
 python3 tests/claude_ems_review/test_ems_limit_authority_r130.py
 ```
 
-Atteso: `Ran 51 tests ... OK`, exit code `0`.
+Atteso: `Ran 52 tests ... OK`, exit code `0`.
 Dipendenze: solo la libreria standard di Python 3, più `git` per la sola classe
 `OpenStackRelationship`.
 
@@ -68,7 +68,23 @@ python3 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py
 Atteso: `Ran 28 tests ... OK`, exit code `0`.
 Dipendenze: solo la libreria standard di Python 3.
 
-## 4. `test_ems_gap_invariants_r130.py` — invarianti desiderati
+## 4. `test_ems_contract_cost_r130.py` — costo del contratto dati
+
+Rende riproducibili i numeri della sezione 2 di
+`docs/reviews/CLAUDE_EMS_COOLANT_AND_UNITS_ADR_PROPOSAL_R130.md`: disposizione
+congelata di EDP V1, costo esatto di un canale aggiuntivo (36 byte, datagramma
+694 → 730), hash del vettore congelato, e il fatto che l'enumerazione delle
+unità sia congelata dal validatore ICD. Verifica inoltre che la proposta non
+introduca alcuna soglia e non si assegni un numero ADR.
+
+```bash
+python3 tests/claude_ems_review/test_ems_contract_cost_r130.py
+```
+
+Atteso: `Ran 17 tests ... OK`, exit code `0`.
+Dipendenze: solo la libreria standard di Python 3.
+
+## 5. `test_ems_gap_invariants_r130.py` — invarianti desiderati
 
 Dichiara il comportamento che la review ritiene corretto. **Fallisce di
 proposito**: ogni fallimento è l'evidenza riproducibile di un finding, e il
@@ -84,6 +100,15 @@ passati a verdi con L0, mentre `e05a` resta rosso perché la capacità dei
 serbatoi vive in `qml/AdaptiveEmsView.qml`, che L0 non possiede. Non è un gate di regressione; diventa verde quando i gap sono
 chiusi, e va aggiornato insieme alla chiusura.
 Dipendenze: solo la libreria standard di Python 3.
+
+## Nota sulla testa dello stack
+
+`OpenStackRelationship`, in `test_ems_limit_authority_r130.py`, misura le
+collisioni sulla testa corrente del branch `origin/fix/ems-responsive-header-r108-v1`
+quando il ref è disponibile, e conserva `22de6c3` come riferimento dell'audit.
+Un caso dedicato segnala se lo stack torna a toccare un file della superficie
+EMS, perché in quel caso le colonne «aperto su» della sezione 4 della review
+vanno riverificate.
 
 ## Nota sul ramo di esecuzione
 

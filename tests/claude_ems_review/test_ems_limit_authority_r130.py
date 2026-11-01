@@ -430,7 +430,13 @@ class FuelPressureHasNoConsumer(unittest.TestCase):
 
 MAIN_BASELINE = "4aea1e4edf8678c180e04171813d842ca6ff58a0"
 DECLARED_BASELINE = "9a0171ea51b5e02602179a15923fbd72e56d2e58"
-STACK_HEAD = "22de6c37e4a3da517b8903b8abd47e556895373e"
+# Testa dello stack contro cui la review ha misurato le chiusure e le
+# collisioni. Il branch avanza, quindi i casi che riguardano la superficie EMS
+# usano la testa corrente quando il ref e' disponibile, e questa resta il
+# riferimento dell'audit.
+AUDIT_STACK_HEAD = "22de6c37e4a3da517b8903b8abd47e556895373e"
+STACK_BRANCH = "origin/fix/ems-responsive-header-r108-v1"
+STACK_HEAD = AUDIT_STACK_HEAD
 
 
 def git(*args):
@@ -458,6 +464,9 @@ class OpenStackRelationship(unittest.TestCase):
             raise unittest.SkipTest(
                 "stack EMS non fetchato: eseguire "
                 "`git fetch origin fix/ems-responsive-header-r108-v1`")
+        # Se il branch e' disponibile si misura sulla sua testa corrente.
+        code, resolved = git("rev-parse", "--verify", "--quiet", STACK_BRANCH)
+        cls.current_head = resolved if code == 0 and resolved else STACK_HEAD
 
     def test_the_audit_baseline_is_this_checkout_of_main(self):
         self.assertTrue(has_object(MAIN_BASELINE))
@@ -504,16 +513,38 @@ class OpenStackRelationship(unittest.TestCase):
             "include/efis/core/derived_state.hpp",
             "src/core/derived_state.cpp",
         )
+        head = self.current_head
         for path in free:
             with self.subTest(expected="libero", file=path):
                 self.assertEqual(
-                    git("diff", "--quiet", f"{MAIN_BASELINE}..{STACK_HEAD}", "--", path)[0],
+                    git("diff", "--quiet", f"{MAIN_BASELINE}..{head}", "--", path)[0],
                     0, "il file ora collide con lo stack")
         for path in colliding:
             with self.subTest(expected="collide", file=path):
                 self.assertNotEqual(
-                    git("diff", "--quiet", f"{MAIN_BASELINE}..{STACK_HEAD}", "--", path)[0],
+                    git("diff", "--quiet", f"{MAIN_BASELINE}..{head}", "--", path)[0],
                     0, "il file non collide più con lo stack")
+
+    def test_the_ems_surface_has_not_moved_since_the_audit_head(self):
+        """Le chiusure dichiarate dalla review restano misurate sul vero stato.
+
+        Se lo stack torna a toccare un file EMS, le colonne "aperto su" della
+        sezione 4 vanno riverificate: questo caso lo segnala.
+        """
+        if self.current_head == AUDIT_STACK_HEAD:
+            self.skipTest("la testa dello stack coincide con quella dell'audit")
+        surface = ("qml/AdaptiveEmsView.qml", "qml/ProfessionalSystemsDeck.qml",
+                   "qml/EngineTemperatureBars.qml", "qml/EmsSetupOverlay.qml",
+                   "qml/HmiCylinderMatrixV2.qml", "qml/HmiElectricalSynoptic.qml",
+                   "qml/HmiGoldenController.qml",
+                   "src/nodes/ems/ems_controller.cpp", "src/nodes/ems/ems_controller.hpp",
+                   "src/renderers/qt/pfd_controller.cpp", "src/protocol/edp_v1.cpp",
+                   "include/efis/core/types.hpp", "include/efis/engine/engine_snapshot.hpp",
+                   "include/efis/core/derived_state.hpp", "src/core/derived_state.cpp")
+        moved = [path for path in surface
+                 if git("diff", "--quiet", f"{AUDIT_STACK_HEAD}..{self.current_head}",
+                        "--", path)[0] != 0]
+        self.assertEqual(moved, [], f"superficie EMS mossa sullo stack: {moved}")
 
     def test_the_stack_leaves_the_golden_fixture_limits_unchanged(self):
         """La fixture golden conserva i limiti citati in 5.4 anche sullo stack."""

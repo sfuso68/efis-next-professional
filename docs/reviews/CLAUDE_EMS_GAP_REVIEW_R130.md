@@ -900,8 +900,9 @@ e quello di OAT/QNH sono verificabili con `grep` sui due rami, come indicato.
 | Suite | Comando | Esito | Exit code |
 |---|---|---|---|
 | Nucleo motore, C++ | build: `g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -o /tmp/ems_core_behaviour_r130 tests/claude_ems_review/ems_core_behaviour_r130.cpp src/core/engine_runtime.cpp src/core/derived_state.cpp` poi `/tmp/ems_core_behaviour_r130` | **PASS** — `29 checks, 0 failures`. Build senza alcun warning | `0` |
-| Autorità limiti, stato osservato | `python3 tests/claude_ems_review/test_ems_limit_authority_r130.py` | **PASS** — `Ran 51 tests … OK` | `0` |
+| Autorità limiti, stato osservato | `python3 tests/claude_ems_review/test_ems_limit_authority_r130.py` | **PASS** — `Ran 52 tests … OK` | `0` |
 | Contratto L0, implementazione | `python3 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py` | **PASS** — `Ran 28 tests … OK`. Aggiunta con la sezione 8 | `0` |
+| Costo del contratto dati | `python3 tests/claude_ems_review/test_ems_contract_cost_r130.py` | **PASS** — `Ran 17 tests … OK`. Evidenza della proposta di ADR | `0` |
 | Invarianti desiderati | `python3 tests/claude_ems_review/test_ems_gap_invariants_r130.py` | **FAIL atteso** — `Ran 39 tests … FAILED (failures=51)` sulla baseline, **48 dopo L0**. Ogni fallimento è l'evidenza di un finding | `1` |
 
 Dipendenze: GCC con C++20 e Python 3 con la sola libreria standard, più `git`
@@ -984,7 +985,7 @@ che lo stack modifica.
 Aggiungere all'evidenza: «Audit indipendente R1-30 del 2026-10-30 su `main`
 `4aea1e4`, report `docs/reviews/CLAUDE_EMS_GAP_REVIEW_R130.md`, 16 finding
 (8 di priorità A). Tre suite isolate in `tests/claude_ems_review/`, non
-dichiarate in CMake: nucleo C++ 29/29 PASS, autorità limiti 51/51 PASS,
+dichiarate in CMake: nucleo C++ 29/29 PASS, autorità limiti 52/52 PASS,
 invarianti desiderati 39 casi / 51 fallimenti attesi. Il criterio "canali
 calibrati" **non** è soddisfatto: guadagno e offset sono calcolati, persistiti
 e mai applicati a un valore indicato, e `calibration_revision` non raggiunge
@@ -1152,7 +1153,7 @@ non aprirne una terza accanto a `tests/claude_ems_review/`.
 | L2 — contatori e soglie | E-07, E-08 | `src/nodes/ems/ems_controller.cpp`, `include/efis/core/derived_state.hpp`, `src/core/derived_state.cpp` | Dopo lo stack; serializzare con L1 e L4 su `ems_controller.cpp` |
 | L3 — etichettatura della simulazione e validità cilindri | E-09, E-10 (cilindri) | `qml/AdaptiveEmsView.qml`, `qml/HmiDataStateBadge.qml`, `qml/HmiCylinderMatrixV2.qml`, `src/nodes/ems/ems_controller.hpp` | Dopo lo stack, che ha già riscritto questo confine per i canali scalari |
 | L4 — carburante, elettrico, log | E-11, E-12, E-14, E-15 (residui), E-16 (residui) | `src/nodes/ems/ems_controller.cpp`, `qml/HmiElectricalSynoptic.qml`, `qml/AdaptiveEmsView.qml` | Dopo lo stack; serializzare con L1 e L2 |
-| Non lavoro EMS — contratto dati | E-01, E-04 (estensione `Unit` e `expected_unit`) | `include/efis/core/types.hpp`, `include/efis/engine/engine_snapshot.hpp`, `src/protocol/edp_v1.cpp` | **Richiede ADR.** Cambia il contratto G2, i vettori ICD e il conteggio dei campioni EDP. I file sono liberi, la decisione non lo è |
+| Non lavoro EMS — contratto dati | E-01, E-04 (estensione `Unit` e `expected_unit`) | `include/efis/core/types.hpp`, `include/efis/engine/engine_snapshot.hpp`, `src/protocol/edp_v1.cpp` | **Richiede ADR.** Cambia il contratto G2, i vettori ICD e il conteggio dei campioni EDP. I file sono liberi, la decisione non lo è. **Proposta scritta il 2026-11-01:** `CLAUDE_EMS_COOLANT_AND_UNITS_ADR_PROPOSAL_R130.md`, con il costo misurato e tre righe per il registro decisioni |
 | Non lavoro EMS — autorità di verifica | E-02 (registro nel percorso di staging), 5.4 (fixture e golden) | `src/renderers/qt/pfd_controller.cpp`, `config/ui/`, `tests/golden/`, `config/product/` | Registri canonici e output generati: ownership dell'integratore, come stabilisce il piano |
 
 ### 7.3 Conseguenza per la sequenza
@@ -1162,7 +1163,9 @@ Quattro dei cinque lotti EMS collidono con lo stack aperto, e
 Ne segue una sola sequenza priva di conflitti:
 
 1. ~~**ora**, in parallelo allo stack: L0, su file liberi~~ — **fatto**, sezione 8;
-2. in parallelo ma fuori dal filone B: l'ADR per il contratto dati (E-01, E-04);
+2. in parallelo ma fuori dal filone B: l'ADR per il contratto dati (E-01, E-04)
+   — **proposta consegnata**, `CLAUDE_EMS_COOLANT_AND_UNITS_ADR_PROPOSAL_R130.md`,
+   in attesa di decisione dell'integratore;
 3. **dopo il merge** dello stack: L1, poi L2 e L4 serializzati, poi L3.
 
 Avviare L1–L4 adesso produrrebbe esattamente i conflitti che il piano di
