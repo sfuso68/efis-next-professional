@@ -1033,12 +1033,34 @@ per la sola classe `OpenStackRelationship`, che verifica C-0 e la mappa delle
 collisioni della sezione 7 e si limita a uno skip se lo stack non è stato
 fetchato. Nessun Qt, nessuna rete, nessuna scrittura su disco, nessun hardware.
 
-### 5.2 Software, NOT_RUN
+### 5.2 Software eseguito dalla CI del repository
+
+Non eseguibile in questo ambiente, ma eseguito dalla CI sulla PR 60 allo head
+`79079e1`. Sostituisce la voce «CTest del repository» che le stesure precedenti
+elencavano fra i `NOT_RUN`.
+
+| Gate | Esito | Che cosa prova |
+|---|---|---|
+| `linux-sanitizers` | **PASS** — `100% tests passed out of 63`, 21,57 s, con AddressSanitizer e UndefinedBehaviorSanitizer | Fra i 63 c'è `Test #62: efis_engine_runtime_store_tests`, cioè il test preesistente dello store eseguito con i sanitizer **contro il `engine_runtime_store.cpp` modificato da L5** |
+| `linux-core` | **PASS** | Build e CTest su toolchain completo |
+| `linux-qt-golden` | **PASS** | Conferma che L0 non altera i pixel delle golden: la fixture `HmiGoldenMain.qml` non referenzia `EmsSetupOverlay`, come previsto in 8.4 |
+| `project-control` | **FAIL, atteso e deciso** | Vedi C-7: il gate esige l'aggiornamento della Master Matrix, che il piano riserva all'integratore. Un solo commento sulla PR, nessun rilancio: il fallimento è deterministico e riprodotto in locale |
+
+La verifica di L5 è quindi più forte di quanto la sezione 9.3 potesse dichiarare
+da sola: oltre ai 44 controlli della suite dell'audit, il test preesistente
+passa sotto sanitizer su un toolchain che qui non era disponibile.
+
+Resta vero che **L0 non è stato verificato dinamicamente**: `linux-qt-golden`
+dimostra che non ha rotto le golden, non che la pagina di setup mostri i campi
+giusti, perché quella pagina non è fra ciò che le golden renderizzano. La sua
+acceptance resta in C-BENCH.
+
+### 5.2a Software, NOT_RUN
 
 | Che cosa | Perché |
 |---|---|
-| CTest del repository | Richiede Qt6, assente in questo ambiente: `qmake6` non presente, nessun pacchetto CMake Qt in `/usr/lib/x86_64-linux-gnu/cmake`. Non è stato tentato alcun aggiramento |
-| Le tre suite dell'audit in CI | Per costruzione: l'incarico vieta di modificare CMake e CI, quindi non sono dichiarate |
+| CTest in questo ambiente | Richiede Qt6, assente: `qmake6` non presente, nessun pacchetto CMake Qt in `/usr/lib/x86_64-linux-gnu/cmake`. Non è stato tentato alcun aggiramento. **Eseguita dalla CI**, vedi 5.2 |
+| Le sei suite dell'audit in CI | Per costruzione: l'incarico vieta di modificare CMake e CI, quindi non sono dichiarate |
 | Suite Python esistenti del repository | `pytest` assente; non installato, per non alterare l'ambiente |
 | Rendering dei quadranti e golden EMS | Richiedono Qt e, per gli strumenti, `eglfs`. Vedi 5.3 |
 | E-15 in esecuzione | Richiede il nodo Qt avviato; verificato per lettura |
