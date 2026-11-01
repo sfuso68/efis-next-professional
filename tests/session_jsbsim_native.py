@@ -8,6 +8,32 @@ from tools.simulation.session_trace import verify
 
 
 class RealSessionTests(unittest.TestCase):
+    def test_native_local_stdio_console_audited_run_and_v2_restore(self):
+        import os
+        from tools.simulation.owner_console import run, StdioChannel
+        from tools.simulation.session_archive import pack, restore
+        ri, wi = os.pipe();ro, wo = os.pipe();channels=[]
+        def factory(*args):
+            channel=StdioChannel(*args);channels.append(channel);return channel
+        try:
+            os.write(wi, b'{"action":"SET_CONTROL","command_id":"console-native",'
+                         b'"sequence":1,"control":"aileron","value":0.2}\n')
+            report=run(self.root/"console",self.world,session_id="console-native",
+                       source_commit="0"*40,seconds=1,input_fd=ri,output_fd=wo,channel_factory=factory)
+            self.assertEqual(report["status"], "COMPLETE")
+            self.assertEqual(report["total_ticks"], 100)
+            trace=verify(self.root/"console",allow_control_audit=True)
+            self.assertEqual(trace["control_execution"]["applied"], 1)
+            pack(self.root/"console",self.root/"console.tar",live=True)
+            receipt=restore(self.root/"console.tar",self.root/"console-restored",live=True)
+            self.assertTrue(receipt["archive_sha256"])
+        finally:
+            # Release daemon input reader after owner ended. No real device.
+            os.close(wi)
+            for channel in channels:
+                if channel.reader.ident is not None:channel.reader.join(1)
+            os.close(ri);os.close(wo);os.close(ro)
+
     def test_native_live_audit_and_v2_archive_restore(self):
         from tests.live_control_fixture import run_live
         from tools.simulation.session_archive import pack,restore,LIVE_FILES

@@ -1,10 +1,32 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-11-01, R1-33 integrità audit live e archivio/restore V2; release permanenti invariate
+Aggiornamento: 2026-11-01, R1-34 console locale stdio SIL candidata; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-34 — console locale di banco SIL, senza servizi aggiuntivi
+
+IDs PRJ-004, VER-001. Scelta utente locale/SSH rispettata: nessuna porta,
+chiave, dashboard o servizio modificati. Controller bounded sul thread owner,
+tre ingressi FDM, STOP indipendente dalla FIFO, storia ID senza eviction,
+retry sull'originale, esiti incerti non rieseguiti. Runner stdio finito con
+JSBSim, config/policy congelate, input bounded e output latest-only su worker.
+Errori I/O/avvio/interruzione producono FAILED, non COMPLETE inventato; cleanup
+indipendente e join finito anche con avvio thread parziale. EOF/arresto normale
+possono completare una run breve, non provano durata piena. STATUS non è un
+frame di volo live. Lease max5s senza rinnovo; lifecycle/riarmo non esposti.
+
+Solo software locale: 24 nuovi test PASS, regressione selezionata247 PASS e
+14/14 suite CTest Python PASS; configure CMake, nessuna build nativa Windows.
+Review read-only ha rilevato finalizzazione erronea su errore, cleanup startup
+e invisibilità backpressure: corretti con regressioni. Test server JSBSim
+aggiunto, ancora da verificare sul commit congelato; nessuna prova avionica
+hardware/SSH interattiva/pannelli o deploy eseguiti. P03/M2 PARTIAL e nessun
+nuovo DONE. Gate timing Windows, power, modelli reali, lifecycle/dedup durabile,
+audit ammissione/wall, replay esecutivo e fanout aperti.
+Fonte: ../development/SIL_LOCAL_STDIO_CONSOLE_V1.md.
 
 ## R1-33 — verifica audit e archive/restore V2 espliciti
 

@@ -454,6 +454,10 @@ if(EFIS_BUILD_TESTS)
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_control_audit tests.test_live_session_archive)
         set_tests_properties(efis_sil_control_audit_tests PROPERTIES
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
+        add_test(NAME efis_sil_local_console_tests
+            COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_local_console tests.test_stdio_console tests.test_console_runner)
+        set_tests_properties(efis_sil_local_console_tests PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 60)
         add_test(NAME efis_sil_async_journal_tests
             COMMAND ${Python3_EXECUTABLE} -m unittest tests.test_async_journal)
         set_tests_properties(efis_sil_async_journal_tests PROPERTIES

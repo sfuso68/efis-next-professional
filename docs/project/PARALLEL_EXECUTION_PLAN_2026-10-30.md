@@ -106,3 +106,11 @@ i gate fisici/credenziali. Claude resta non avviato da questa sessione.
 Scelta utente 2026-11-01: prossima console locale su serverha tramite SSH,
 senza nuovi servizi di rete. Il cruscotto monitor resta read-only. Nessun
 collegamento a Pixhawk/attuatori è autorizzato da questa scelta.
+
+Checkpoint R1-34: candidato console locale stdio, processo finito e nessun
+listener; STOP prioritario, controllo tre ingressi, lookup/storia bounded,
+errori senza falsa finalizzazione, output non bloccante per il thread fisico.
+24 nuovi test,247 locali selezionati e14 suite CTest Python PASS. Ripetizione
+JSBSim reale sul commit ancora da registrare. M2 non concluso: lifecycle e
+riarmo con dedup, audit temporale/ammissione e fanout rimangono aperti.
+Non installata sui pannelli, nessun cambio rete o nuova acceptance hardware.
