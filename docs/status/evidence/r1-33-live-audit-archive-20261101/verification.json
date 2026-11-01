@@ -1,0 +1,68 @@
+{
+  "schema": "fuso-avionics.live-audit-archive-evidence.v1",
+  "date": "2026-11-01",
+  "status": "PARTIAL",
+  "source_commit": "bd085c23870d286600cab7c46c667beb918a6e09",
+  "source_archive_sha256": "de6e7f61b9d4bbf68ce2bed3ab4584db93d47eef15351f56507fd4aaef64bcfe",
+  "implemented": [
+    "bounded exact audit state machine and metadata",
+    "frozen policy binding and initial physical epoch correlation",
+    "unique IDs/sequences and ordered per-tick phases",
+    "explicit four-payload v2 archive and semantic restore",
+    "legacy mode refuses either configuration or result live marker",
+    "bounded regular checked trace files and opt-in verifier CLI"
+  ],
+  "local_tests": {
+    "methods": 227,
+    "new_methods": 20,
+    "status": "PASS"
+  },
+  "ctest": {
+    "selected_passed": 12,
+    "total_selected": 12,
+    "scope": "Python SIL only",
+    "new_native_build": false,
+    "full_native_windows": "NOT_RUN_INHERITED_WINERROR4551_OPEN",
+    "warning": "pre-existing MSVC object path"
+  },
+  "server_tests": {
+    "methods": 236,
+    "native_jsbsim_methods": 13,
+    "status": "PASS",
+    "seconds": 20.997,
+    "new_native": "real JSBSim fixture-clock live audit and v2 archive/restore four-file equality",
+    "network": "NONE",
+    "source_runtime": "READ_ONLY",
+    "image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93"
+  },
+  "independent_review": {
+    "mode": "READ_ONLY",
+    "corrected": [
+      "duplicate sequence across IDs",
+      "impossible same-step audit phase"
+    ],
+    "final_blockers": 0
+  },
+  "log_sha256": {
+    "audit-archive-tests.txt": "d504d47ef537fb35080ecc2652d679d64410cbbc6fec2ae6a1d7a437ab30998d",
+    "cmake.txt": "6d2ec3637cfefcf22d52bb239d6f6b80f3a8860fd2744372f4be293af462941a",
+    "ctest-python.txt": "3dfb2c70e676be0c08f9bdd8607d7084c6fd849dfdcc266e5d2397aeb2d32e07",
+    "local-regression.txt": "9760dd4f062b73e85b3508ffbf521a7af31baa0307e5ec5238d6be5dbb9d58e5",
+    "server-regression.txt": "305b1211b7f2fe4e80ee9886b922ce95962fc13dc033d2e617689787124db7f3"
+  },
+  "status_generator_check": "PASS",
+  "dashboard_check": "PASS",
+  "project_control_check": "PASS",
+  "hardware_acceptance": "NOT_RUN",
+  "flight_approval": false,
+  "deploy_performed": false,
+  "merge_performed": false,
+  "simulation_completion": "NOT_COMPLETE",
+  "limitations": [
+    "integrity correlation only, NOT executive FDM replay or model validation",
+    "no admission events or wall timestamps, no wall lease proof",
+    "no authenticity signature or power-loss qualification",
+    "local SSH console chosen by user but not yet implemented",
+    "lifecycle auth/rearm epoch/fanout/full systems and hardware gates OPEN"
+  ]
+}

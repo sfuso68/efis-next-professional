@@ -20,7 +20,13 @@ Restore non sovrascrive e pubblica receipt solo dopo verifica semantica.
 
 Solo software locale: 20 nuovi test, 227 totali PASS. Review indipendente:
 corretti riuso sequenza e ordine di batch impossibile con mutazioni resealed;
-ultimo controllo senza blocker. Test nativo aggiunto, server da eseguire.
+ultimo controllo senza blocker. Serverha 236 test PASS, inclusi 13 JSBSim
+nativi e nuovo roundtrip di quattro file con FDM reale/clock fixture. Non è
+prova real-time o hardware. Source bd085c23870d286600cab7c46c667beb918a6e09,
+archivio SHA256 de6e7f61b9d4bbf68ce2bed3ab4584db93d47eef15351f56507fd4aaef64bcfe.
+Container senza rete/capability, sorgenti/runtime read-only. CMake configurato
+e 12/12 suite CTest Python PASS; nessun nuovo binario, warning path invariato.
+Evidenza: evidence/r1-33-live-audit-archive-20261101/verification.json.
 Si tratta di integrità/correlazione, NON replay fisico esecutivo o prova
 ammissione/wall lease: il sidecar non contiene quei timestamp/eventi.
 Nessun hardware avionico verificato o deploy/merge/endpoint/servizio modificato.

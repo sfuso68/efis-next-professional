@@ -96,8 +96,13 @@ audit live/replay/restore, trasporto e lifecycle autenticati, riarmo epoch e
 fanout. Non completati M2 o simulatore; nessun deploy o nuova prova hardware.
 
 Checkpoint R1-33: audit live correlato a policy/manifesto/epoch, parser rigoroso
-e archivio/restore V2 espliciti con quattro file. 227 test locali PASS. Non è
+e archivio/restore V2 espliciti con quattro file. 227 test locali,236 server
+(13 JSBSim nativi) e12 suite CTest Python PASS. Non è
 replay fisico esecutivo né prova wall-time/ammissione. Il gate di controllo
 sessione resta: policy autenticazione e lifecycle, riarmo con dedup, audit
 completo, quindi console e fanout. Continuare per campagne senza abbassare
 i gate fisici/credenziali. Claude resta non avviato da questa sessione.
+
+Scelta utente 2026-11-01: prossima console locale su serverha tramite SSH,
+senza nuovi servizi di rete. Il cruscotto monitor resta read-only. Nessun
+collegamento a Pixhawk/attuatori è autorizzato da questa scelta.

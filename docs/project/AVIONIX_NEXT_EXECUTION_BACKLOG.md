@@ -2,7 +2,8 @@
 
 R1-33/PRJ-004,VER-001: correlazione integrità sidecar e policy congelata,
 versione archive/restore V2 con quattro payload, V1 sempre fail-closed.
-20 nuovi/227 test locali PASS. Integrità non equivale a replay esecutivo,
+20 nuovi/227 test locali,236 server con13 JSBSim nativi e12 suite CTest Python
+PASS. Integrità non equivale a replay esecutivo,
 wall lease o admission proof; console/auth/lifecycle/epoch/fanout e hardware
 aperti. Prossimo: nativo/restore, poi contratto completo controllo sessione.
 

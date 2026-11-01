@@ -1,0 +1,29 @@
+Test project C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-ems-state-review
+      Start 30: efis_sil_development_plan_tests
+ 1/12 Test #30: efis_sil_development_plan_tests ....   Passed    0.18 sec
+      Start 31: efis_sil_session_contract_tests
+ 2/12 Test #31: efis_sil_session_contract_tests ....   Passed    0.20 sec
+      Start 32: efis_sil_session_engine_tests
+ 3/12 Test #32: efis_sil_session_engine_tests ......   Passed    0.44 sec
+      Start 33: efis_sil_jsbsim_adapter_tests
+ 4/12 Test #33: efis_sil_jsbsim_adapter_tests ......   Passed    0.19 sec
+      Start 34: efis_sil_session_archive_tests
+ 5/12 Test #34: efis_sil_session_archive_tests .....   Passed    1.35 sec
+      Start 35: efis_sil_pilot_fixture_tests
+ 6/12 Test #35: efis_sil_pilot_fixture_tests .......   Passed    0.19 sec
+      Start 36: efis_sil_command_queue_tests
+ 7/12 Test #36: efis_sil_command_queue_tests .......   Passed    0.20 sec
+      Start 37: efis_sil_control_inbox_tests
+ 8/12 Test #37: efis_sil_control_inbox_tests .......   Passed    0.19 sec
+      Start 38: efis_sil_session_control_tests
+ 9/12 Test #38: efis_sil_session_control_tests .....   Passed    0.22 sec
+      Start 39: efis_sil_control_execution_tests
+10/12 Test #39: efis_sil_control_execution_tests ...   Passed    0.56 sec
+      Start 40: efis_sil_control_audit_tests
+11/12 Test #40: efis_sil_control_audit_tests .......   Passed    1.62 sec
+      Start 41: efis_sil_async_journal_tests
+12/12 Test #41: efis_sil_async_journal_tests .......   Passed    2.17 sec
+
+100% tests passed, 0 tests failed out of 12
+
+Total Test time (real) =   7.53 sec
