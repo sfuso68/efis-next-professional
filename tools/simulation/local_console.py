@@ -5,6 +5,7 @@ only enqueue bytes or latch STOP; only the engine owner mutates lifecycle/FDM.
 This module is not a runnable console, authentication service or flight API.
 """
 from collections import deque
+import copy
 import threading
 
 from tools.simulation import session_contract as c
@@ -19,14 +20,16 @@ class LocalConsole:
     MAX_HISTORY = 256
     MAX_HISTORY_BYTES = 524288
 
-    def __init__(self, engine, admission):
+    def __init__(self, engine, admission, *, lifecycle=False):
         engine._owner()
         admission._owner_check()
         c.require(engine._control is admission and admission.executor is not None,
                   "console requires attached SIL executor")
         c.require(engine.state == "RUNNING", "console attachment requires running engine")
+        c.require(type(lifecycle) is bool,"console lifecycle opt-in")
         self.engine, self.admission = engine, admission
         self.binding = admission.commands.binding
+        self.lifecycle, self._lifecycle_index = lifecycle, 0
         self._owner = threading.get_ident()
         self._lock, self._stop, self._fault = threading.Lock(), threading.Event(), threading.Event()
         self._items = deque()
@@ -73,12 +76,52 @@ class LocalConsole:
         entry = self._history.get(identity)
         if entry is None:return dict(console="UNKNOWN_ID", command_id=identity)
         _, canonical, initial = entry
+        if isinstance(initial,dict):return copy.deepcopy(initial)
         if canonical is None:return dict(console=initial, command_id=identity)
         try:
             ack = self.admission.lookup_outcome(canonical, principal=self.binding["authority_id"])
         except RuntimeError:
             return dict(console="UNCERTAIN_NO_RETRY", command_id=identity)
         return dict(console=initial, command_id=identity, ack=ack)
+
+    def _lifecycle(self, obj):
+        from tools.simulation import console_lifecycle as life
+        life.request(obj)
+        identity, shorthand = obj["command_id"], encode(obj)
+        previous = self._history.get(identity)
+        if previous is not None:
+            if previous[0] != shorthand:return dict(console="DUPLICATE_CONFLICT", command_id=identity)
+            return self._lookup(identity)
+        if len(self._history)>=self.MAX_HISTORY or self._history_bytes+len(shorthand)>self.MAX_HISTORY_BYTES:
+            self.request_stop();return dict(console="HISTORY_FULL_STOP_REQUESTED")
+        # Reserve before I/O. Unknown execution after intent/result failure is
+        # retained as uncertain and causes FAILED; never retried automatically.
+        self._history[identity]=[shorthand,None,dict(console="UNCERTAIN_NO_RETRY",command_id=identity)]
+        self._history_bytes+=len(shorthand)
+        before=life.state(self.engine)
+        result=life.outcome(obj,before,self.binding["manifest"]["session_id"])
+        try:
+            self.engine.journal.append(life.record(self._lifecycle_index,"INTENT",obj,before,None,None,
+                                       self.binding["manifest"]["session_id"]))
+            self._lifecycle_index+=1
+            # STOP observed after intent never allows a lifecycle transition.
+            if self._stop.is_set():raise RuntimeError("stop interrupted lifecycle")
+            if result=="APPLIED":
+                if obj["action"]=="PAUSE":self.engine.pause()
+                else:self.engine.resume()
+            after=life.state(self.engine)
+            self.engine.journal.append(life.record(self._lifecycle_index,"RESULT",obj,before,after,result,
+                                       self.binding["manifest"]["session_id"]))
+            self._lifecycle_index+=1
+        except BaseException as exc:
+            self.request_stop(failed=True)
+            if self.engine.state in ("RUNNING","PAUSED","ARMED_TEST"):
+                self.engine._fail("CONSOLE_LIFECYCLE_FAILURE")
+            raise RuntimeError("lifecycle outcome uncertain; run failed") from exc
+        reply=dict(console="LIFECYCLE_RESULT",command_id=identity,outcome=result,
+                   before=before,after=after,durability="NOT_ATTESTED_UNTIL_RUN_VERIFIED")
+        self._history[identity][2]=reply
+        return copy.deepcopy(reply)
 
     def _command(self, obj):
         c.exact(obj, "action command_id sequence control value")
@@ -123,12 +166,14 @@ class LocalConsole:
         c.require(isinstance(obj, dict), "console object")
         action = obj.get("action")
         if action == "SET_CONTROL":return self._command(obj)
+        if action in ("PAUSE","RESUME") and self.lifecycle:return self._lifecycle(obj)
         if action == "LOOKUP":
             c.exact(obj, "action command_id");c.token(obj["command_id"])
             return self._lookup(obj["command_id"])
         c.exact(obj, "action")
         if action == "STATUS":
             return dict(console="STATUS", state=self.engine.state,
+                        epoch=self.engine.manifest["epoch"], session_id=self.binding["manifest"]["session_id"],
                         relative_tick=self.engine.relative_tick, total_ticks=self.engine.total_ticks,
                         control_closed=self.admission.commands.closed,
                         history=len(self._history), history_bytes=self._history_bytes)

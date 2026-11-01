@@ -1,10 +1,30 @@
 # FUSO AVIONICS NEXT — Stato corrente sintetico
 
-Aggiornamento: 2026-11-01, R1-34 console locale stdio SIL candidata; release permanenti invariate
+Aggiornamento: 2026-11-01, R1-35 pausa/ripresa SIL identificate; release permanenti invariate
 Repository autorevole: `sfuso68/efis-next-professional`
 Baseline sorgente N4/N5: `main` `4aea1e4edf8678c180e04171813d842ca6ff58a0` (PR #49)
 C12 integrato: PR #29, source `a907a87ed58cb6899ccc43937cdfed35be79517a`, merge `61070b8d990c01ca58943a6370402623f4320ce7`
 Stato prodotto: DEVELOPMENT / NON-CERT / NON APPROVATO AL VOLO
+
+## R1-35 — pausa/ripresa identificate, vecchia lease sempre revocata
+
+IDs PRJ-004, VER-001. Opt-in locale --lifecycle con policy congelata e richieste
+legate a ID/sessione/epoch. Storia condivisa con input FDM, retry senza nuova
+transizione anche dopo cambio epoch, conflitti/rifiuti conservati. INTENT e
+RESULT nel truth; errori/incertezza falliscono la run, non falsi INVALID o
+COMPLETE. Verifica semantica delle transizioni, coppie mancanti, identità e
+limiti osservati fra audit. Async non attesta durabilità immediata; ingress
+input completo e recovery restano mancanti. RESUME NON riarma i controlli.
+Ripristino TAR corretto per padding canonico10752, senza allentare anti-payload.
+
+Solo software:17 nuovi metodi e regressione finale264 PASS. Due regressioni
+precedenti conservano2 timeout frame persistence>100ms nei test runner prima
+del fault iniettato; runner isolato3 PASS. Clock fixture introdotto solo nei
+unit test failure injection, non nel runtime; soglie intatte e timing Windows
+ancora aperto. CTest/server ancora da completare sul commit congelato.
+Nessuna verifica hardware avionica, deploy, servizio, rete, chiave o merge.
+P03/M2 PARTIAL; riarmo/dedup durevole/audit wall/fanout/pannelli aperti.
+Fonte: ../development/SIL_IDENTIFIED_LIFECYCLE_V1.md.
 
 ## R1-34 — console locale di banco SIL, senza servizi aggiuntivi
 

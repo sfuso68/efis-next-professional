@@ -8,6 +8,32 @@ from tools.simulation.session_trace import verify
 
 
 class RealSessionTests(unittest.TestCase):
+    def test_native_identified_console_pause_resume_never_rearms_controls(self):
+        from tools.simulation.owner_console import run
+        from tools.simulation.session_archive import pack,restore
+        class Channel:
+            overwritten=0
+            ingress=(0,"NONE")
+            def __init__(self,console,*_):self.console=console;self.sent=False
+            def publish(self,_):
+                if self.console.engine.state=="PAUSED" and not self.sent:
+                    self.sent=True
+                    self.console.offer(s.encode(dict(action="RESUME",command_id="resume-native",
+                        session_id="lifecycle-native",expected_epoch=0)))
+            def start(self):
+                self.console.offer(s.encode(dict(action="PAUSE",command_id="pause-native",
+                    session_id="lifecycle-native",expected_epoch=0)))
+            def close(self):pass
+        report=run(self.root/"lifecycle",self.world,session_id="lifecycle-native",source_commit="0"*40,
+                   seconds=1,lifecycle=True,channel_factory=Channel)
+        self.assertEqual(report["total_ticks"],100)
+        self.assertEqual(report["epoch"],1)
+        trace=verify(self.root/"lifecycle",allow_control_audit=True)
+        self.assertEqual(trace["console_lifecycle"]["completed"],2)
+        self.assertEqual(trace["control_execution"]["applied"],0)
+        pack(self.root/"lifecycle",self.root/"lifecycle.tar",live=True)
+        restore(self.root/"lifecycle.tar",self.root/"lifecycle-restored",live=True)
+
     def test_native_local_stdio_console_audited_run_and_v2_restore(self):
         import os
         from tools.simulation.owner_console import run, StdioChannel

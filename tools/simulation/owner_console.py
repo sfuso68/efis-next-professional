@@ -104,10 +104,12 @@ def publish_snapshot(channel, packet, last_generation):
 
 
 def run(directory, world, *, session_id, source_commit, input_fd=0, output_fd=1,
-        seconds=10, journal_mode="async-test", channel_factory=StdioChannel):
+        seconds=10, journal_mode="async-test", channel_factory=StdioChannel, lifecycle=False):
     """Finite cooperative owner loop. Kernel/fsync stalls are NOT preempted."""
     c.token(session_id);c.integer(seconds, 1, 60);config_digest(world)
     c.require(journal_mode in ("sync", "async-test"), "journal mode")
+    c.require(type(lifecycle) is bool,"console lifecycle opt-in")
+    from tools.simulation.console_lifecycle import MODE
     backend = Backend(copy.deepcopy(world))
     lease_ticks = min(seconds*100, 500)
     configuration = dict(world=world, scenario="cruise", seconds=seconds, pause_tick=None,
@@ -117,7 +119,7 @@ def run(directory, world, *, session_id, source_commit, input_fd=0, output_fd=1,
         control_policy=execution_policy("local-console", "local-console-lease", lease_ticks),
         console_policy=dict(mode="LOCAL_STDIO_V1", max_line=4096, max_messages=16,
                             max_per_service=4, max_history=256, max_history_bytes=524288,
-                            wall_cap_seconds=seconds+60, lifecycle="STOP_ONLY", eof="STOP"))
+                            wall_cap_seconds=seconds+60, lifecycle=MODE if lifecycle else "STOP_ONLY", eof="STOP"))
     manifest = dict(schema=c.SCHEMA, kind="MANIFEST", session_id=session_id, epoch=0,
         simulated=True, flight_approval=False, mode="LIVE", epoch_utc=world["epoch_utc"],
         integration_hz=100, output_hz=20, source_node=65000,
@@ -136,7 +138,7 @@ def run(directory, world, *, session_id, source_commit, input_fd=0, output_fd=1,
         control.enable_execution(backend, Path(directory)/FILE)
         engine.attach_admission(control)
         engine.validate();engine.arm_software_test();engine.start()
-        console = LocalConsole(engine, control)
+        console = LocalConsole(engine, control, lifecycle=lifecycle)
         channel = channel_factory(console, input_fd, output_fd)
         channel.publish(console.latest());channel.start()
         started = time.monotonic();last_ingress = 0
@@ -180,13 +182,14 @@ def main():
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--seconds", type=int, default=10)
     parser.add_argument("--journal-mode", choices=("sync", "async-test"), default="async-test")
+    parser.add_argument("--lifecycle",action="store_true",help="identified PAUSE/RESUME only; NEVER control rearm")
     args = parser.parse_args()
     try:
         c.require(args.world.is_file() and not args.world.is_symlink(), "regular world required")
         with args.world.open("rb") as stream:raw=stream.read(65537)
         c.require(len(raw)<=65536, "world size")
         run(args.directory, c.decode(raw), session_id=args.session_id, source_commit=args.source_commit,
-            seconds=args.seconds, journal_mode=args.journal_mode)
+            seconds=args.seconds, journal_mode=args.journal_mode,lifecycle=args.lifecycle)
     except (ValueError, OSError, RuntimeError, ImportError) as exc:
         parser.exit(2, f"Local SIL console FAILED: {exc}\n")
     except KeyboardInterrupt:parser.exit(130, "Local SIL console interrupted; inspect run evidence\n")

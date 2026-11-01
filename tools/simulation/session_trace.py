@@ -10,6 +10,7 @@ from tools.simulation import session_contract as c
 from tools.simulation.session_engine import encode
 from tools.simulation.session_jsbsim import normalize
 from tools.simulation.pilot_fixture import Audit
+from tools.simulation.console_lifecycle import TraceAudit, MODE
 
 MAX_TRUTH = 64*1024*1024
 
@@ -39,7 +40,7 @@ def verify(directory, *, allow_control_audit=False):
               and result["flight_approval"] is False,"not a completed SIM run")
     digest=hashlib.sha256();count=frames=0;pending=None;manifest=None
     phase="NEW";offset=0;last_sequence=-1;last_mono=-1;last_total=0;pilot=None
-    initial_manifest=None;control_policy=None;control_epoch_end=None
+    initial_manifest=None;control_policy=None;control_epoch_end=None;life=None
     with checked_stream(root/"truth.jsonl",MAX_TRUTH) as stream:
         while True:
             raw=stream.readline(65537)
@@ -63,9 +64,19 @@ def verify(directory, *, allow_control_audit=False):
                 c.require(manifest["epoch"]==0,"initial epoch")
                 c.require(hashlib.sha256(encode(r["configuration"])).hexdigest()==manifest["config_sha256"],"configuration digest")
                 pilot=Audit(r["configuration"].get("pilot_fixture"),manifest)
+                console_policy=r["configuration"].get("console_policy",{})
+                c.require(isinstance(console_policy,dict),"console policy object")
+                mode=console_policy.get("lifecycle")
+                c.require(mode in (None,"STOP_ONLY",MODE),"console lifecycle policy")
+                c.require(mode!=MODE or has_control,"lifecycle requires control audit")
+                life=TraceAudit(mode==MODE)
                 continue
             c.require(manifest is not None and r["session_id"]==manifest["session_id"]
                 and r["simulated"] is True and r["flight_approval"] is False,"trace identity/SIM")
+            if r["kind"]=="CONSOLE_LIFECYCLE":
+                life.accept(r,phase=phase,epoch=manifest["epoch"],session_id=manifest["session_id"],
+                            last_total=last_total,unpaired=pending is not None)
+                continue
             if r["kind"]=="PILOT_FIXTURE":
                 c.require(pending is None and r["epoch"]==0 and manifest["epoch"]==0
                     and last_total<=r["total_ticks"]<=last_total+5,"pilot frame/epoch order")
@@ -76,6 +87,7 @@ def verify(directory, *, allow_control_audit=False):
                 pending=r;continue
             c.require(r["kind"]=="SESSION_EVENT","unknown trace record")
             event=r["event"]
+            life.transition(event)
             if event=="EPOCH":
                 c.require(phase=="PAUSED" and pending is None and r["epoch"]==manifest["epoch"]+1,"epoch order")
                 c.require(r["total_ticks"]==last_total,"pause advanced physical clock")
@@ -112,18 +124,21 @@ def verify(directory, *, allow_control_audit=False):
                         control_epoch_end=last_total
     c.require(phase=="ENDED" and pending is None,"incomplete lifecycle")
     applied=pilot.finish()
+    lifecycle_report=life.finish()
     c.require(result["session_id"]==manifest["session_id"] and result["truth_records"]==count
         and result["truth_sha256"]==digest.hexdigest() and result["frames"]==frames
         and result["total_ticks"]==last_total,"trace result digest/count")
     report=dict(status="PASS",frames=frames,total_ticks=last_total,epochs=manifest["epoch"]+1,
                 pilot_commands_applied=applied,
                 scope="TRACE_INTEGRITY_NOT_MODEL_VALIDATION",flight_approval=False)
+    if life.enabled:report["console_lifecycle"]=lifecycle_report
     if has_control:
         from tools.simulation.control_audit import FILE,MAX_BYTES,verify_bytes
         with checked_stream(root/FILE,MAX_BYTES) as audit_stream:
             data=audit_stream.read(MAX_BYTES+1)
         report["control_execution"]=verify_bytes(data,result["control_execution"],initial_manifest,
                                                control_policy,epoch_end_tick=control_epoch_end)
+        life.controls(data)
     return report
 
 

@@ -115,3 +115,10 @@ PASS inclusi14 JSBSim nativi, source0b079df; nuovo stdio/audit/restore V2.
 Review finale delta senza blocker. M2 non concluso: lifecycle e
 riarmo con dedup, audit temporale/ammissione e fanout rimangono aperti.
 Non installata sui pannelli, nessun cambio rete o nuova acceptance hardware.
+
+Checkpoint R1-35: pausa/ripresa identificate opt-in, dedup condivisa e audit
+nel truth, correlazione con transizioni effettive e restore V2. RESUME non
+riarma la vecchia lease: riarmo multi-lease ancora un gate separato.
+17 nuovi metodi,264 locali finali PASS dopo fixture clock dei soli test fault;
+due run iniziali con timeout100ms conservati, timing non qualificato.
+CTest/server del commit da completare, nessun deploy o prova avionica.

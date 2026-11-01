@@ -7,6 +7,8 @@ from unittest.mock import patch
 from tests.live_control_fixture import FixtureFdm
 from tools.simulation import session_contract as c
 from tools.simulation.owner_console import run
+from tools.simulation.session_engine import SessionEngine
+from tests.test_sil_session_engine import Clock
 
 
 class ConsoleRunnerTests(unittest.TestCase):
@@ -17,7 +19,12 @@ class ConsoleRunnerTests(unittest.TestCase):
         self.backend=FixtureFdm();self.backend.model_digest=dict(sha256="0"*64)
 
     def attempt(self, factory):
-        with patch("tools.simulation.owner_console.Backend", return_value=self.backend):
+        # Failure-path unit tests must reach the injected boundary independent
+        # of host fsync jitter. Native server tests retain the real clock and
+        # unchanged deadlines; this fixture is explicitly NOT timing evidence.
+        def engine(*args, **kwargs):return SessionEngine(*args,clock=Clock(),**kwargs)
+        with patch("tools.simulation.owner_console.Backend", return_value=self.backend), \
+             patch("tools.simulation.owner_console.SessionEngine",side_effect=engine):
             return run(self.root,self.world,session_id="runner-test",source_commit="0"*40,
                        channel_factory=factory,journal_mode="sync",seconds=1)
 

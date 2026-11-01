@@ -159,7 +159,10 @@ def restore(archive, directory, *, live=False):
                 expected_offset=member.offset_data+((member.size+511)//512)*512
         raw.seek(expected_offset)
         tail=raw.read(MAX_ARCHIVE+1)
-        c.require(1024<=len(tail)<=10240 and not any(tail),"archive footer/trailing payload")
+        # Two mandatory zero blocks can cross a 10-KiB record boundary.
+        # tarfile's canonical maximum padding is therefore 10 KiB + 512 B.
+        c.require(1024<=len(tail)<=tarfile.RECORDSIZE+512 and len(tail)%512==0
+                  and not any(tail),"archive footer/trailing payload")
         raw.seek(0); archive_digest=hashlib.sha256()
         for block in iter(lambda:raw.read(1024*1024),b""):archive_digest.update(block)
         c.require(fingerprint(os.fstat(raw.fileno())) == fingerprint(info), "archive changed during read")
