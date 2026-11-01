@@ -30,11 +30,14 @@ Dipendenze: GCC con C++20. Nessun Qt, nessuna rete.
 ## 2. `ems_runtime_store_integrity_r130.cpp` — integrità dello store, eseguibile
 
 Mette alla prova `RuntimeStore`, che il finding E-07 della review definiva
-fail-closed sulla base di una lettura del codice. Copre i casi che
-`tests/engine_runtime_store_tests.cpp` lascia scoperti: round trip esatto di
-tutti i campi, rifiuto di schema, campo mancante e valore non numerico **con
-checksum ricalcolato**, rotazione `.bak`, e il serializzatore non protetto che
-ha prodotto i finding E-17 ed E-18.
+fail-closed sulla base di una lettura del codice. Aveva prodotto i finding E-17
+ed E-18; dopo il lotto L5 verifica la loro correzione.
+
+Copre: round trip esatto di tutti i campi e delle sequenze ostili (un ritorno a
+capo, una riga `engine_hours=999` iniettata, il delimitatore del checksum
+dentro la matricola), dodici casi di rifiuto, rotazione `.bak`, rifiuto in
+scrittura dei totali non plausibili, compatibilità con i file di stato scritti
+prima di L5, e il limite residuo di E-18 tenuto misurato.
 
 ```bash
 g++ -std=c++20 -Wall -Wextra -Wpedantic -I include \
@@ -47,9 +50,17 @@ g++ -std=c++20 -Wall -Wextra -Wpedantic -I include \
 /tmp/ems_store_integrity_r130
 ```
 
-Atteso: `29 checks, 0 failures`, exit code `0`. Scrive solo sotto una directory
+Atteso: `44 checks, 0 failures`, exit code `0`. Scrive solo sotto una directory
 temporanea propria, che rimuove al termine.
 Dipendenze: GCC con C++20. Nessun Qt, nessuna rete.
+
+Il test preesistente dello store non è stato modificato e resta verde; va
+eseguito accanto a questo per dimostrare che L5 non lo rompe:
+
+```bash
+g++ -std=c++20 -I include -o /tmp/existing_store \
+  tests/engine_runtime_store_tests.cpp src/core/engine_runtime_store.cpp && /tmp/existing_store
+```
 
 ## 3. `test_ems_limit_authority_r130.py` — stato osservato
 

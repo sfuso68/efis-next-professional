@@ -111,6 +111,15 @@ qml/EmsSetupOverlay.qml                                        (modificato)
 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py (aggiunto)
 ```
 
+**Lotto L5 (sezione 9), autorizzato il 2026-11-01.** Due file di runtime
+assegnati in esclusiva, più il test che li verifica:
+
+```
+src/core/engine_runtime_store.cpp                              (modificato)
+include/efis/core/engine_runtime_store.hpp                     (modificato)
+tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp   (aggiunto, poi riscritto)
+```
+
 Il divieto di modificare codice di runtime appartiene al **primo incarico**, che
 era già chiuso e consegnato (`0d6852c`, poi `60c02ba`) quando L0 è stato
 autorizzato. Fuori da `qml/EmsSetupOverlay.qml` nessun file di runtime è stato
@@ -208,8 +217,8 @@ La colonna «Aperto su» distingue `main` (`4aea1e4`) dallo stack EMS
 | E-14 | Due formule di autonomia divergenti; una divide per una portata inventata | B | entrambi (pannello FUEL) | EMS-002 |
 | E-15 | Il carburante a bordo viene inizializzato dalla simulazione e persistito | B | solo `main` | EMS-001, EMS-002 |
 | E-16 | OAT e QNH inventati nell'intestazione EMS; log eventi senza rotazione; trend saturati a 3000 rpm | A (solo `main`) / B / C | OAT-QNH: solo `main`; resto: entrambi | EMS-002, BBX-002 |
-| E-17 | `RuntimeStore` serializza campi senza escape: un ritorno a capo nella matricola inietta righe che vincono su quelle reali | B | entrambi | EMS-002, PROD-005 |
-| E-18 | Il checksum dello store rileva la corruzione, non l'alterazione; nessun controllo di plausibilità sui totali | C | entrambi | EMS-002, PROD-005 |
+| E-17 | `RuntimeStore` serializza campi senza escape: un ritorno a capo nella matricola inietta righe che vincono su quelle reali | B | **chiuso da L5** (sez. 9) | EMS-002, PROD-005 |
+| E-18 | Il checksum dello store rileva la corruzione, non l'alterazione; nessun controllo di plausibilità sui totali | C | plausibilità **chiusa da L5**; il limite del checksum resta, dichiarato | EMS-002, PROD-005 |
 
 ---
 
@@ -908,6 +917,9 @@ e quello di OAT/QNH sono verificabili con `grep` sui due rami, come indicato.
 
 ### E-17 — `RuntimeStore` serializza campi senza escape — Priorità B
 
+> **Chiuso dal lotto L5 il 2026-11-01 (sezione 9).** Il testo che segue descrive
+> il difetto come misurato sulla baseline; la verifica della correzione è in 9.3.
+
 **File e riga.**
 - `src/core/engine_runtime_store.cpp:9` — `payload()` scrive coppie
   `chiave=valore`, una per riga, **senza alcun escape**, e fra i valori ci sono
@@ -962,6 +974,12 @@ aperto non li tocca.
 
 ### E-18 — Il checksum rileva la corruzione, non l'alterazione — Priorità C
 
+> **Parzialmente chiuso dal lotto L5 (sezione 9).** Il controllo di plausibilità
+> sui totali è stato aggiunto e il limite del checksum è ora dichiarato
+> nell'intestazione dello store. La parte crittografica **non** è stata fatta,
+> deliberatamente: il progetto non dichiara una resistenza alla manomissione, e
+> un rimedio del genere è una decisione architetturale, non un lotto.
+
 **File e riga.** `src/core/engine_runtime_store.cpp:8` — il checksum è FNV-1a a
 64 bit senza alcun segreto. `:12` lo verifica in lettura.
 
@@ -1001,7 +1019,8 @@ controllo di plausibilità; per il resto è una precisazione documentale.
 | Autorità limiti, stato osservato | `python3 tests/claude_ems_review/test_ems_limit_authority_r130.py` | **PASS** — `Ran 52 tests … OK` | `0` |
 | Contratto L0, implementazione | `python3 tests/claude_ems_review/test_ems_setup_overlay_contract_r130.py` | **PASS** — `Ran 28 tests … OK`. Aggiunta con la sezione 8 | `0` |
 | Costo del contratto dati | `python3 tests/claude_ems_review/test_ems_contract_cost_r130.py` | **PASS** — `Ran 17 tests … OK`. Evidenza della proposta di ADR | `0` |
-| Integrità di `RuntimeStore`, C++ | build: `g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -o /tmp/store_r130 tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp src/core/engine_runtime_store.cpp` poi `/tmp/store_r130` | **PASS** — `29 checks, 0 failures`. Verifica E-07 e trova E-17 ed E-18 | `0` |
+| Integrità di `RuntimeStore`, C++ | build: `g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -o /tmp/store_r130 tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp src/core/engine_runtime_store.cpp` poi `/tmp/store_r130` | **PASS** — `44 checks, 0 failures`. Verificava E-07 e aveva trovato E-17/E-18; dopo L5 verifica la correzione | `0` |
+| Test preesistente dello store | `g++ -std=c++20 -I include -o /tmp/existing_store tests/engine_runtime_store_tests.cpp src/core/engine_runtime_store.cpp` poi `/tmp/existing_store` | **PASS** — `engine runtime store tests passed`. Non è mio: eseguito per dimostrare che L5 non lo rompe | `0` |
 | Invarianti desiderati | `python3 tests/claude_ems_review/test_ems_gap_invariants_r130.py` | **FAIL atteso** — `Ran 39 tests … FAILED (failures=51)` sulla baseline, **48 dopo L0**. Ogni fallimento è l'evidenza di un finding | `1` |
 
 Dipendenze: GCC con C++20 e Python 3 con la sola libreria standard, più `git`
@@ -1100,9 +1119,15 @@ serializzatore di `RuntimeStore` scrive coppie chiave=valore senza escape e la
 lettura usa `emplace`, che conserva la prima occorrenza: un ritorno a capo in
 `profile_id` o `engine_serial` inietta righe che precedono e sostituiscono i
 totali reali, cambiando contaore e revisione senza che il checksum possa
-rilevarlo, perché è calcolato sul corpo già iniettato. Verificato eseguendo
-`tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp`, 29/29 PASS, che
-conferma anche dieci rifiuti su dieci per ingresso malformato.»
+rilevarlo, perché è calcolato sul corpo già iniettato. **Corretto il
+2026-11-01 dal lotto L5:** i due campi di testo sono codificati in scrittura, una
+chiave ripetuta e una riga senza separatore sono errori, il delimitatore del
+checksum è ancorato a inizio riga e i totali non plausibili sono rifiutati in
+lettura e in scrittura. Verificato con
+`tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp`, 44/44 PASS, che
+copre round trip delle sequenze ostili, dodici casi di rifiuto, compatibilità con
+i file scritti prima di L5 e il limite residuo del checksum; il test preesistente
+`tests/engine_runtime_store_tests.cpp` resta invariato e PASS.»
 
 **EMS-004 — Limiti motore da manuale. Stato proposto: TODO (invariato).**
 Aggiungere all'evidenza: «Audit R1-30: i valori di ripiego dei limiti sono
@@ -1270,7 +1295,7 @@ non aprirne una terza accanto a `tests/claude_ems_review/`.
 |---|---|---|---|
 | **L0 — identità del velivolo** | E-05 (parte QML) | `qml/EmsSetupOverlay.qml` | **IMPLEMENTATO il 2026-10-31**, vedi sezione 8. Era l'unico lotto EMS interamente su file liberi |
 | L1 — autorità e provenienza dei limiti | E-02, E-03, E-04 (presentazione), E-06 | `qml/AdaptiveEmsView.qml`, `qml/ProfessionalSystemsDeck.qml`, `qml/EngineTemperatureBars.qml`, `qml/HmiArcGaugeV4.qml`, `src/nodes/ems/ems_controller.{hpp,cpp}` | **Dopo** il merge dello stack: tutti i file collidono. Non introduce limiti, rimuove i ripieghi e unifica le scale |
-| **L5 — serializzazione dello store** | E-17, E-18 | `src/core/engine_runtime_store.cpp`, `include/efis/core/engine_runtime_store.hpp` | **Nessuna.** Secondo lotto interamente su file liberi, avviabile subito come L0. Non dipende dal merge |
+| **L5 — serializzazione dello store** | E-17, E-18 | `src/core/engine_runtime_store.cpp`, `include/efis/core/engine_runtime_store.hpp` | **IMPLEMENTATO il 2026-11-01**, vedi sezione 9. Era il secondo lotto interamente su file liberi |
 | L2 — contatori e soglie | E-07, E-08 | `src/nodes/ems/ems_controller.cpp`, `include/efis/core/derived_state.hpp`, `src/core/derived_state.cpp` | Dopo lo stack; serializzare con L1 e L4 su `ems_controller.cpp` |
 | L3 — etichettatura della simulazione e validità cilindri | E-09, E-10 (cilindri) | `qml/AdaptiveEmsView.qml`, `qml/HmiDataStateBadge.qml`, `qml/HmiCylinderMatrixV2.qml`, `src/nodes/ems/ems_controller.hpp` | Dopo lo stack, che ha già riscritto questo confine per i canali scalari |
 | L4 — carburante, elettrico, log | E-11, E-12, E-14, E-15 (residui), E-16 (residui) | `src/nodes/ems/ems_controller.cpp`, `qml/HmiElectricalSynoptic.qml`, `qml/AdaptiveEmsView.qml` | Dopo lo stack; serializzare con L1 e L2 |
@@ -1284,7 +1309,7 @@ Quattro dei cinque lotti EMS collidono con lo stack aperto, e
 Ne segue una sola sequenza priva di conflitti:
 
 1. ~~**ora**, in parallelo allo stack: L0, su file liberi~~ — **fatto**, sezione 8;
-   e **L5**, l'altro lotto su file liberi, ancora da assegnare;
+   e ~~**L5**, l'altro lotto su file liberi~~ — **fatto**, sezione 9;
 2. in parallelo ma fuori dal filone B: l'ADR per il contratto dati (E-01, E-04)
    — **proposta consegnata**, `CLAUDE_EMS_COOLANT_AND_UNITS_ADR_PROPOSAL_R130.md`,
    in attesa di decisione dell'integratore;
@@ -1390,7 +1415,100 @@ testuale, non applicata.
 
 ---
 
-## 9. Dichiarazione finale
+## 9. Lotto L5 — implementazione del 2026-11-01
+
+Autorizzato dopo la consegna di E-17 ed E-18, con assegnazione in esclusiva di
+`src/core/engine_runtime_store.cpp` e
+`include/efis/core/engine_runtime_store.hpp`. Erano i due file di runtime che
+lo stack #52/#53/#56/#59 non modifica, quindi il secondo lotto avviabile senza
+attendere il merge.
+
+### 9.1 Che cosa cambia
+
+| Difetto | Correzione |
+|---|---|
+| Un ritorno a capo in `profile_id` o `engine_serial` troncava il campo e iniettava righe | I due valori sono **codificati in scrittura** (`\\`, `\n`, `\r`) e decodificati in lettura, quindi round trip esatto di qualunque testo |
+| `emplace` conservava la prima occorrenza, perciò un campo iniettato vinceva | Una **chiave ripetuta è un errore**: `load` solleva un'eccezione invece di stabilire una precedenza implicita |
+| Una riga senza `=` veniva ignorata in silenzio | È un errore |
+| `rfind("checksum=")` cercava la sequenza anche in mezzo al testo | Il delimitatore è **ancorato a inizio riga** (`"\nchecksum="`) |
+| Un totale negativo o non finito si caricava e raggiungeva il chiamante | Rifiutato **in lettura e in scrittura**: un `nan` non viene nemmeno persistito |
+| `stoull` avvolgeva un contatore con segno in un numero enorme | Un valore con segno è rifiutato |
+| Il guardiano dello schema era aggirabile per iniezione | Non più: l'iniezione non è più possibile, e la chiave ripetuta è comunque un errore |
+
+L'intestazione dichiara ora le due proprietà che un chiamante deve conoscere:
+quali forme `load` rifiuta, e che il checksum copre la corruzione accidentale e
+**non** l'alterazione deliberata, perché non vi entra alcun segreto e
+`revision` non cambia per una modifica esterna.
+
+### 9.2 Due scelte che vale la pena motivare
+
+**Codificare invece di rifiutare.** Rifiutare in scrittura un valore con un
+ritorno a capo sarebbe stato più breve, ma `persistRuntime` cattura l'eccezione
+e si limita a `WRITE FAULT`: un profilo con un carattere di troppo avrebbe
+smesso di salvare le ore, silenziosamente, per sempre. La codifica conserva il
+dato e non introduce un modo nuovo di perdere il contaore.
+
+**Nessun rimedio crittografico.** La parte di E-18 che riguarda la manomissione
+resta aperta per scelta. Il progetto non dichiara da nessuna parte una
+resistenza alla manomissione, un MAC richiede una chiave e un posto dove
+tenerla, e questo è materia di ADR, non di un lotto su due file. L'intervento
+di L5 è dichiarare il limite e chiudere ciò che non lo richiede.
+
+### 9.3 Verifica
+
+**Eseguita**, a differenza di L0: lo store non dipende da Qt.
+
+```bash
+g++ -std=c++20 -Wall -Wextra -Wpedantic -I include \
+  -o /tmp/ems_store_integrity_r130 \
+  tests/claude_ems_review/ems_runtime_store_integrity_r130.cpp \
+  src/core/engine_runtime_store.cpp
+```
+
+`/tmp/ems_store_integrity_r130` → **44 checks, 0 failures**, exit `0`, build
+senza alcun warning sotto `-Wall -Wextra -Wpedantic`.
+
+I casi che prima documentavano i difetti ora verificano la correzione: le sette
+sequenze ostili — fra cui `X\nengine_hours=999`, `X\nrevision=1`,
+`X\nschema=2` e una matricola che contiene il delimitatore del checksum —
+**fanno round trip come il testo che sono**, e ore e revisione salvate non
+vengono sostituite. Dodici casi di rifiuto coprono checksum assente, malformato
+e sbagliato, schema non supportato, campo mancante, valore non numerico, riga
+senza separatore, chiave ripetuta, totale negativo, totale non finito,
+contatore con segno, escape sconosciuto ed escape troncato. Quattro casi
+verificano che un file scritto **prima** di L5 si carichi ancora invariato, che
+è la ragione per cui la codifica è stata scelta retrocompatibile. Due casi
+tengono misurato il limite residuo di E-18 invece di lasciarlo dimenticare.
+
+**Test non mio, eseguito per dimostrare che L5 non lo rompe:**
+`tests/engine_runtime_store_tests.cpp` → `engine runtime store tests passed`,
+exit `0`, invariato.
+
+### 9.4 Effetto sul chiamante
+
+L'API pubblica non cambia, quindi `src/nodes/ems/ems_controller.hpp`, il solo
+altro file che include lo store, compila invariato. Cambia il comportamento in
+un caso che l'integratore deve conoscere: un profilo che dichiarasse un valore
+iniziale negativo o non finito in `runtime_tracking` porterebbe ora `save` a
+sollevare un'eccezione, e il controllore la traduce in `WRITE FAULT`
+(`ems_controller.cpp:611-614`) invece di persistere un totale impossibile. Il
+profilo attivo dichiara 0.0 per tutti e quattro, quindi oggi il caso non è
+esercitato. Il nodo EMS non è stato avviato: Qt non è disponibile qui, e il
+comportamento a runtime sul pannello resta da osservare nella campagna
+C-BENCH.
+
+### 9.5 Confini rispettati da L5
+
+Due file di runtime, quelli assegnati. Nessun tocco a `ems_controller`, schemi,
+protocolli, CMake, CI, registri canonici, golden od output generati. Il formato
+del file di stato cambia soltanto nella codifica dei due campi di testo, resta
+`schema=1` perché la rappresentazione dei valori già scrivibili è identica, e i
+file esistenti continuano a caricarsi. Nessun limite motore introdotto. La riga
+di matrice che ne deriva è nella sezione 6 come proposta testuale.
+
+---
+
+## 10. Dichiarazione finale
 
 Il prodotto resta DEVELOPMENT / NON-CERT. Né il Rotax 912 UL né il Rotax 912
 ULS risultano validati da questo lavoro, e nessun limite motore è stato
@@ -1399,4 +1517,6 @@ L0 sono software e documentali; nessuna verifica hardware è stata eseguita,
 nessun QML è stato istanziato e nessuna cattura è stata prodotta. Una cattura
 sintetica non sostituirebbe comunque l'acceptance sul display reale, e il lotto
 L0 cambia testo mostrato su un pannello: la sua acceptance visiva resta aperta
-e appartiene alla campagna C-BENCH.
+e appartiene alla campagna C-BENCH. Il lotto L5 è invece verificato da un test
+eseguito, perché lo store non dipende da Qt, ma nemmeno quello è stato esercitato
+sul nodo reale.
