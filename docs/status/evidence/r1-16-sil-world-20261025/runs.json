@@ -1,0 +1,42 @@
+{
+  "runs": [
+    {
+      "altitude_ft_at_60s": 5010.245979126543,
+      "directory": "/runs/world-weather-nav-reference-v3",
+      "flight_approval": false,
+      "flow_gph_at_60s": 5.7336156059895895,
+      "frames": 1201,
+      "frames_sha256": "e5802b5f30412da8a2e5b7051843fbe3f087e9e1a186a129984fda887c3f842f",
+      "gnss_state_at_25s": "UNAVAILABLE",
+      "gs_kt_at_50s": 83.18074332730303,
+      "meteo_state_at_40s": "EXPIRED",
+      "meteo_transport_at_50s": "OFFLINE",
+      "radar_metadata_sha256": "1315c6842975d05d5e912bf55b8487b36923bf41f8774e17fe690eb09ae94c5c",
+      "radar_png_sha256": "6b2d0d420345d078fbb84079269c445117024cdd3d7c607b734a62f8635e631c",
+      "scenario": "cruise",
+      "simulated": true,
+      "verification": "PASS",
+      "vor_state_at_25s": "SIMULATED",
+      "world_config_sha256": "f9296942c9bab6f8738e3b0b3c6c55b49908b0a122805b5103155ede47dcf9bb"
+    },
+    {
+      "altitude_ft_at_60s": 4533.688050087541,
+      "directory": "/runs/world-weather-nav-engineout-v3",
+      "flight_approval": false,
+      "flow_gph_at_60s": 0.0,
+      "frames": 1201,
+      "frames_sha256": "90e5075da08ba30cfa95d204238d903869df13572a7b531df6226db02c7d3afe",
+      "gnss_state_at_25s": "UNAVAILABLE",
+      "gs_kt_at_50s": 72.44862083781842,
+      "meteo_state_at_40s": "EXPIRED",
+      "meteo_transport_at_50s": "OFFLINE",
+      "radar_metadata_sha256": "1315c6842975d05d5e912bf55b8487b36923bf41f8774e17fe690eb09ae94c5c",
+      "radar_png_sha256": "6b2d0d420345d078fbb84079269c445117024cdd3d7c607b734a62f8635e631c",
+      "scenario": "engine-out",
+      "simulated": true,
+      "verification": "PASS",
+      "vor_state_at_25s": "SIMULATED",
+      "world_config_sha256": "f9296942c9bab6f8738e3b0b3c6c55b49908b0a122805b5103155ede47dcf9bb"
+    }
+  ]
+}

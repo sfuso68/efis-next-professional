@@ -1,0 +1,24 @@
+test_capture_invalid_arguments_do_not_connect (tests.test_msfs_readonly.MsfsReadOnlyTests.test_capture_invalid_arguments_do_not_connect) ... ok
+test_capture_stall_quit_and_connect_failure_not_pass (tests.test_msfs_readonly.MsfsReadOnlyTests.test_capture_stall_quit_and_connect_failure_not_pass) ... ok
+test_capture_success_and_close (tests.test_msfs_readonly.MsfsReadOnlyTests.test_capture_success_and_close) ... ok
+test_clock_and_configuration_fail_closed (tests.test_msfs_readonly.MsfsReadOnlyTests.test_clock_and_configuration_fail_closed) ... ok
+test_corrupt_sizes_requests_and_payloads_rejected (tests.test_msfs_readonly.MsfsReadOnlyTests.test_corrupt_sizes_requests_and_payloads_rejected) ... ok
+test_ctypes_bindings_are_fixed_width_local_only_and_read_only (tests.test_msfs_readonly.MsfsReadOnlyTests.test_ctypes_bindings_are_fixed_width_local_only_and_read_only) ... ok
+test_data_before_open_rejected (tests.test_msfs_readonly.MsfsReadOnlyTests.test_data_before_open_rejected) ... ok
+test_dispatch_errors_not_silently_treated_as_empty (tests.test_msfs_readonly.MsfsReadOnlyTests.test_dispatch_errors_not_silently_treated_as_empty) ... ok
+test_exact_data_layout_and_sim_metadata (tests.test_msfs_readonly.MsfsReadOnlyTests.test_exact_data_layout_and_sim_metadata) ... ok
+test_exception_quit_and_malformed_are_terminal_and_masked (tests.test_msfs_readonly.MsfsReadOnlyTests.test_exception_quit_and_malformed_are_terminal_and_masked) ... ok
+test_freshness_boundaries_mask_values_preserve_origin (tests.test_msfs_readonly.MsfsReadOnlyTests.test_freshness_boundaries_mask_values_preserve_origin) ... ok
+test_invalid_cli_arguments_fail_before_loading_dll (tests.test_msfs_readonly.MsfsReadOnlyTests.test_invalid_cli_arguments_fail_before_loading_dll) ... ok
+test_json_serialization_rejects_nan (tests.test_msfs_readonly.MsfsReadOnlyTests.test_json_serialization_rejects_nan) ... ok
+test_no_data_times_out_and_output_is_not_source_heartbeat (tests.test_msfs_readonly.MsfsReadOnlyTests.test_no_data_times_out_and_output_is_not_source_heartbeat) ... ok
+test_nonfinite_and_geographic_values_rejected_atomically (tests.test_msfs_readonly.MsfsReadOnlyTests.test_nonfinite_and_geographic_values_rejected_atomically) ... ok
+test_only_allowlisted_sdk_apis_no_publisher (tests.test_msfs_readonly.MsfsReadOnlyTests.test_only_allowlisted_sdk_apis_no_publisher) ... ok
+test_output_existing_file_not_overwritten_or_connected (tests.test_msfs_readonly.MsfsReadOnlyTests.test_output_existing_file_not_overwritten_or_connected) ... ok
+test_platform_and_absolute_dll_path_required (tests.test_msfs_readonly.MsfsReadOnlyTests.test_platform_and_absolute_dll_path_required) ... ok
+test_unknown_message_ignored_without_refresh (tests.test_msfs_readonly.MsfsReadOnlyTests.test_unknown_message_ignored_without_refresh) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.020s
+
+OK

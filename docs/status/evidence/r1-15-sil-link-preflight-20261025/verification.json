@@ -1,0 +1,52 @@
+{
+  "schema": "fuso-avionics.development-verification.v1",
+  "date": "2026-10-25",
+  "block": "R1-15",
+  "base_commit": "277b81cbde9afc7d8a90e12c377f80df3218be3e",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "requirements": ["PRJ-004", "EMS-002", "VER-001", "BBX-003", "PWR-001"],
+  "status": "PARTIAL_ACTIVATION_BLOCKED",
+  "flight_approval": false,
+  "software": {
+    "scope": "Offline partial JSBSim adapter using existing canonical DDP/EDP codec and consumer classes; not renderer or LAN acceptance",
+    "serverha_gcc_qt_build": "PASS",
+    "linux_black_box_tests": 5,
+    "reference_replays": 4,
+    "frames_per_replay_per_consumer": 1201,
+    "consumers": ["PFD DDP", "MFD DDP", "EMS EDP"],
+    "msvc_project_target_build": "PASS",
+    "windows_ctest": "3/3 PASS: 19 MSFS, 18 session and 5 wire-check test methods",
+    "ci_yaml_parse_and_gate": "PASS",
+    "remote_ci_for_this_candidate": "NOT_RUN_AT_EVIDENCE_CREATION",
+    "source_node": 65000,
+    "instance": 11415,
+    "identity_scope": "Fixed offline fixture, not a production publisher identity",
+    "sockets": "NONE",
+    "negative_checks": ["CRC", "duplicate", "foreign identity", "STALE", "LOST"],
+    "unavailable_mapping": ["IAS", "indicated QNH altitude", "pressure altitude", "heading convention", "independent vertical speed sensors", "individual cylinder temperatures"],
+    "source_archive_sha256": "afde5f1b9c3437b50b150956b058bb342e1b11b3e86280974d0d453044c01276",
+    "linux_binary_sha256": "9046dc700152013774d7dae7a161268aae97f87148e488f4fc7bfb74b101cf43",
+    "warnings_open": ["Existing GCC -Wfree-nonheap-object in ddp_v2.cpp", "MSVC object path-length warning on unrelated target"]
+  },
+  "hardware_read_only_inventory": {
+    "observed_utc": "2026-10-24T22:19:57/58Z",
+    "PFD": {"address": "192.168.1.45", "service": "user efis-pfd.service", "pid": 1495, "release_path": "/home/efis/efis-next-releases/pfdrec-7051a47-retention-v1", "throttled": "0x0"},
+    "MFD": {"address": "192.168.1.49", "service": "efis-next-mfd-direct.service", "pid": 1328, "restarts": 0, "release_path": "/home/pi/efis-next-release-mfd-3432402-v1", "throttled": "0x50000", "latest_observed_undervoltage_journal_local": "2026-10-25 00:02:26", "normalised_journal_local": "2026-10-25 00:02:28"},
+    "EMS": {"address": "192.168.1.36", "service": "efis-ems.service", "pid": 948, "restarts": 0, "release_path": "/opt/efis-next-ems-releases/ems-a0be9a5-main-v1", "source_commit": "a0be9a52494ea7ccb5a3890e94d03b671162383b", "manifest_sha256": "9bd369facf5a348ec83d9dd6f9eaa388f7dc90f9b839861a62cd67528095e625", "simulation_mode": true, "throttled": "0x0", "deployment_performed_this_block": false},
+    "Blackbox": {"address": "192.168.1.47", "service": "efis-blackbox-broker.service", "pid": 1294, "restarts": 0, "release_path": "/opt/efis-blackbox-releases/blackbox-7655799-v1", "throttled": "0x50000", "limited_kernel_query": "No match; not power qualification"}
+  },
+  "not_performed": ["Node activation", "Service restart", "Hardware or firewall modification", "UDP injection", "Actual simultaneous display acceptance", "Power qualification", "New ARM64 build acceptance"],
+  "remaining": ["Explicit airdata and heading sensor mapping", "Session publisher with fresh instance and emission clock", "Isolated Blackbox SIM ingress and arbitration", "Automatic rollback and bounded bench window", "MFD and Blackbox power qualification", "Release and golden gates", "Actual PFD/MFD/EMS simultaneous acceptance"],
+  "digest_convention": "SHA256 over UTF-8 content with CRLF normalised to LF; archive/binary hashes are raw bytes",
+  "artifacts": {
+    "tools/simulation/jsbsim_wire_check.cpp": "aa3af6dee43ecb7d6498beae80dd2671450f6fbe141d231be53a1383bd197ce7",
+    "tests/jsbsim_wire_check_tests.py": "d696ee752e08af77e4a61af105f96642017a0e01a5ab639477e4b51599cfe5ce",
+    "CMakeLists.txt": "f40ccb0c835e0b193fa5956b05100b050995116888db96d8544c2edd4d88830d",
+    ".github/workflows/efis-core-ci.yml": "cd3cac09788d8eb0fb0378e5f5d9e1f9a02b2a5fc5515b2d28b231c6bc83da65",
+    "docs/development/SIL_CANONICAL_LINK_PREFLIGHT_V1.md": "da6653e2566359dc09a8f888d8259867a81427d56a7fd1d43182e1709e125b1c",
+    "docs/status/evidence/r1-15-sil-link-preflight-20261025/native.txt": "3cb227c881397a5a7bc222568ae1c814eda997977cdda2198a900e3c838e3ada",
+    "docs/status/evidence/r1-15-sil-link-preflight-20261025/msvc.txt": "7f36855ceba9f664166262876a3d82dfd9c31fddc0833604618095a7d5bab5d7",
+    "docs/status/evidence/r1-15-sil-link-preflight-20261025/ctest.txt": "0d002a9d01a538fa4f2114894ba543373cf94de347ffc4bee04e30a5b45b2511",
+    "docs/status/evidence/r1-15-sil-link-preflight-20261025/ci-syntax.txt": "ca11b0a1334969d1be73a8cd69a8d344ae02c2da28113f01299b3eeb3ca213c3"
+  }
+}

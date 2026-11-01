@@ -1,0 +1,17 @@
+-- Configuring done (18.0s)
+CMake Warning in CMakeLists.txt:
+  The object file directory
+
+    C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-ems-state-review/CMakeFiles/efis-instruments-qt.dir/./
+
+  has 168 characters.  The maximum full path to an object file is 250
+  characters (see CMAKE_OBJECT_PATH_MAX).  Object file
+
+    build-ems-state-review/.qt/rcc/qrc_efis-instruments-qt_raw_qml_0_extra_qmldirs.cpp.obj
+
+  cannot be safely placed under this directory.  The build may not work
+  correctly.
+
+
+-- Generating done (1.6s)
+-- Build files have been written to: C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-ems-state-review

@@ -1,0 +1,27 @@
+[1/136] Copying efis-pfd-qt qml sources into build dir
+[2/136] Building CXX object CMakeFiles\efis-mission-simulator.dir\src\apps\mission_simulator_main.cpp.obj
+[3/136] Building CXX object CMakeFiles\efis_core.dir\src\simulation\mission_simulator.cpp.obj
+[4/136] Linking CXX static library efis_core.lib
+[5/136] Automatic MOC and UIC for target efis_mission_simulator_tests
+[6/135] Linking CXX executable efis-mission-simulator.exe
+[7/135] Linking CXX executable efis_system_simulator_tests.exe
+[8/135] Linking CXX executable efis-ems-qt.exe
+[9/135] Automatic MOC and UIC for target efis_pfd_aircraft_profile_tests
+[10/135] Building CXX object CMakeFiles\efis_mission_simulator_tests.dir\tests\mission_simulator_tests.cpp.obj
+[11/135] Running qmlimportscanner for efis-pfd-qt
+[12/135] Automatic MOC and UIC for target efis-pfd-qt
+[13/135] Running AUTOMOC file extraction for target efis-pfd-qt
+[14/135] Running moc --collect-json for target efis-pfd-qt
+[15/27] Generating .rcc/qmlcache/efis-pfd-qt_qml/SystemSimulatorOverlay_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/SystemSimulatorOverlay_qml.cpp.aotstats
+[16/27] Running rcc for resource efis-pfd-qt_raw_qml_0
+[17/27] Building CXX object CMakeFiles\efis_pfd_aircraft_profile_tests.dir\tests\pfd_aircraft_profile_tests.cpp.obj
+[18/27] Building CXX object CMakeFiles\efis_pfd_aircraft_profile_tests.dir\efis_pfd_aircraft_profile_tests_autogen\mocs_compilation.cpp.obj
+[19/27] Building CXX object CMakeFiles\efis_pfd_aircraft_profile_tests.dir\src\renderers\qt\pfd_controller.cpp.obj
+[20/27] Building CXX object CMakeFiles\efis-pfd-qt.dir\src\renderers\qt\main.cpp.obj
+[21/27] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.qt\rcc\qrc_efis-pfd-qt_raw_qml_0.cpp.obj
+[22/27] Linking CXX executable efis_pfd_aircraft_profile_tests.exe
+[23/27] Building CXX object CMakeFiles\efis-pfd-qt.dir\efis-pfd-qt_autogen\mocs_compilation.cpp.obj
+[24/27] Linking CXX executable efis_mission_simulator_tests.exe
+[25/27] Building CXX object CMakeFiles\efis-pfd-qt.dir\src\renderers\qt\pfd_controller.cpp.obj
+[26/27] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\SystemSimulatorOverlay_qml.cpp.obj
+[27/27] Linking CXX executable efis-pfd-qt.exe

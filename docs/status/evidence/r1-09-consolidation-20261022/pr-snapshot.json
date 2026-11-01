@@ -1,0 +1,202 @@
+{
+  "schema": "avionix-next.candidate-pr-snapshot.v1",
+  "date": "2026-10-22",
+  "scope": "Snapshot before R1-09 follow-up commit; not continuous monitoring or node inventory",
+  "pull_requests": [
+    {
+      "number": 52,
+      "url": "https://github.com/sfuso68/efis-next-professional/pull/52",
+      "title": "safety: retire unauthorized MAVLink parameter writer (audit N1)",
+      "head": "safety/mavlink-write-quarantine-v1",
+      "head_sha": "bdca5c2103d5543b1939af846c7a102c2aea474c",
+      "base": "main",
+      "base_sha": "4aea1e4edf8678c180e04171813d842ca6ff58a0",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "ci": []
+    },
+    {
+      "number": 53,
+      "url": "https://github.com/sfuso68/efis-next-professional/pull/53",
+      "title": "fix(ems): isolate engine presentation from flight state — audit N4/N5",
+      "head": "fix/ems-engine-state-isolation-v1",
+      "head_sha": "3004218d8ed3e6bc9edc9c3b0c4aa3aad5adc12a",
+      "base": "main",
+      "base_sha": "4aea1e4edf8678c180e04171813d842ca6ff58a0",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "ci": [
+        {
+          "name": "EFIS Project Control",
+          "id": 39662291447,
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "EFIS Core CI",
+          "id": 39662291432,
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "number": 54,
+      "url": "https://github.com/sfuso68/efis-next-professional/pull/54",
+      "title": "fix(weather): radar expiry visibility and primary STALE cue — R1-02 / N2 N6",
+      "head": "fix/weather-radar-presentation-v1",
+      "head_sha": "7c9c815009328e6d86587280565ce8dd2c151357",
+      "base": "main",
+      "base_sha": "4aea1e4edf8678c180e04171813d842ca6ff58a0",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "ci": [
+        {
+          "name": "EFIS Core CI",
+          "id": 39665015212,
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "EFIS Project Control",
+          "id": 39665015197,
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "number": 55,
+      "url": "https://github.com/sfuso68/efis-next-professional/pull/55",
+      "title": "R1-03 / N3: gate radar on valid real position and invalidate late replies",
+      "head": "fix/weather-position-validity-v1",
+      "head_sha": "14b93268218ee60f21067ecdd70ad746abfb62fb",
+      "base": "main",
+      "base_sha": "4aea1e4edf8678c180e04171813d842ca6ff58a0",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "ci": [
+        {
+          "name": "EFIS Core CI",
+          "id": 39667558632,
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "EFIS Project Control",
+          "id": 39667558505,
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "number": 56,
+      "url": "https://github.com/sfuso68/efis-next-professional/pull/56",
+      "title": "R1-04 / N7–N8: engine channel validity and guarded fuel baseline",
+      "head": "fix/engine-channel-validity-v1",
+      "head_sha": "306d145491a71406516832e23377f1f4f31ff447",
+      "base": "fix/ems-engine-state-isolation-v1",
+      "base_sha": "3004218d8ed3e6bc9edc9c3b0c4aa3aad5adc12a",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "ci": [
+        {
+          "name": "EFIS Core CI",
+          "id": 39671281524,
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "name": "EFIS Project Control",
+          "id": 39671281723,
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "number": 57,
+      "url": "https://github.com/sfuso68/efis-next-professional/pull/57",
+      "title": "R1-05 / N9–N10: observation freshness, independent METAR/TAF and fail-closed radar",
+      "head": "fix/weather-observation-freshness-v1",
+      "head_sha": "71732b5a8232cc7e5e3cab2757f079beb785426c",
+      "base": "fix/weather-position-validity-v1",
+      "base_sha": "14b93268218ee60f21067ecdd70ad746abfb62fb",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "ci": [
+        {
+          "name": "EFIS Project Control",
+          "id": 39672840988,
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "EFIS Core CI",
+          "id": 39672841039,
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "number": 58,
+      "url": "https://github.com/sfuso68/efis-next-professional/pull/58",
+      "title": "R1-06: passive MAVLink audits, consistent project-control gate and release CLI tests",
+      "head": "work/project-control-audit-r106-v1",
+      "head_sha": "2f1251a4ce05cd412a9066cce10679fe86d50d63",
+      "base": "fix/weather-observation-freshness-v1",
+      "base_sha": "71732b5a8232cc7e5e3cab2757f079beb785426c",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "ci": [
+        {
+          "name": "EFIS Core CI",
+          "id": 39743278411,
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "EFIS Project Control",
+          "id": 39743278359,
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "number": 59,
+      "url": "https://github.com/sfuso68/efis-next-professional/pull/59",
+      "title": "R1-08: responsive EMS header and no fabricated OAT/QNH",
+      "head": "fix/ems-responsive-header-r108-v1",
+      "head_sha": "0c83113aa4529b038d05cf171a15f9da6f131c54",
+      "base": "fix/engine-channel-validity-v1",
+      "base_sha": "306d145491a71406516832e23377f1f4f31ff447",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "ci": [
+        {
+          "name": "EFIS Core CI",
+          "id": 39745779697,
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "name": "EFIS Project Control",
+          "id": 39745779712,
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

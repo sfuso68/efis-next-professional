@@ -122,10 +122,14 @@ class AvionixHmiContractTests(unittest.TestCase):
 
     def test_secondary_modules_receive_age(self):
         ems = (ROOT / "qml/AdaptiveEmsView.qml").read_text(encoding="utf-8")
-        for component in ("HmiCylinderMatrixV2", "HmiAirframePanel",
+        for component in ("HmiCylinderMatrixV2",
                           "HmiFuelStatus", "HmiElectricalSynoptic"):
             start = ems.index(component)
             self.assertIn("dataAgeMs:root.dataAgeMs", ems[start:start + 900])
+        airframe = ems[ems.index("HmiAirframePanel {"):ems.index("HmiCylinderMatrixV2 {", ems.index("HmiAirframePanel {"))]
+        self.assertIn("dataAgeMs:controller.airframeDataAgeMs", airframe)
+        self.assertIn('controller.airframeSourceState || "LOST"', airframe)
+        self.assertNotIn("root.normalizedDataState", airframe)
 
     def test_operational_ems_exposes_edp_state_and_age(self):
         header = (ROOT / "src/nodes/ems/ems_controller.hpp").read_text(encoding="utf-8")

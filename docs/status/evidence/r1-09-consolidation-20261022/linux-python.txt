@@ -1,0 +1,23 @@
+test_cli_never_overwrites_or_writes_inside_reference (tests.test_ems_golden_review.GoldenReviewTests.test_cli_never_overwrites_or_writes_inside_reference) ... ok
+test_complete_candidate_is_only_pending_and_source_unchanged (tests.test_ems_golden_review.GoldenReviewTests.test_complete_candidate_is_only_pending_and_source_unchanged) ... ok
+test_duplicate_json_fields_rejected (tests.test_ems_golden_review.GoldenReviewTests.test_duplicate_json_fields_rejected) ... ok
+test_even_all_accepted_reviews_do_not_authorize_baseline (tests.test_ems_golden_review.GoldenReviewTests.test_even_all_accepted_reviews_do_not_authorize_baseline) ... ok
+test_png_crc_size_and_inflate_bombs_fail_closed (tests.test_ems_golden_review.GoldenReviewTests.test_png_crc_size_and_inflate_bombs_fail_closed) ... ok
+test_review_is_bound_to_each_pixel_and_full_commit (tests.test_ems_golden_review.GoldenReviewTests.test_review_is_bound_to_each_pixel_and_full_commit) ... ok
+test_symlink_and_oversized_zip_entries_rejected (tests.test_ems_golden_review.GoldenReviewTests.test_symlink_and_oversized_zip_entries_rejected) ... ok
+test_wrong_external_digest_rejected (tests.test_ems_golden_review.GoldenReviewTests.test_wrong_external_digest_rejected) ... ok
+test_wrong_platform_age_order_and_digest_rejected (tests.test_ems_golden_review.GoldenReviewTests.test_wrong_platform_age_order_and_digest_rejected) ... ok
+test_zip_paths_duplicates_and_missing_image_rejected (tests.test_ems_golden_review.GoldenReviewTests.test_zip_paths_duplicates_and_missing_image_rejected) ... ok
+test_batch20_all_golden_controls_fail_closed (tests.test_hmi_golden_tools.HmiGoldenToolsTests.test_batch20_all_golden_controls_fail_closed) ... ok
+test_complete_manifest_passes_and_tamper_fails (tests.test_hmi_golden_tools.HmiGoldenToolsTests.test_complete_manifest_passes_and_tamper_fails) ... ok
+test_degraded_is_a_canonical_golden_state (tests.test_hmi_golden_tools.HmiGoldenToolsTests.test_degraded_is_a_canonical_golden_state) ... ok
+test_manifest_can_be_built_from_direct_captures (tests.test_hmi_golden_tools.HmiGoldenToolsTests.test_manifest_can_be_built_from_direct_captures) ... ok
+test_none_fast_path_preserves_previous_row_for_up_filter (tests.test_hmi_golden_tools.HmiGoldenToolsTests.test_none_fast_path_preserves_previous_row_for_up_filter) ... ok
+test_png_dimensions (tests.test_hmi_golden_tools.HmiGoldenToolsTests.test_png_dimensions) ... ok
+test_skyview_matrix_includes_full_hd (tests.test_hmi_golden_tools.HmiGoldenToolsTests.test_skyview_matrix_includes_full_hd) ... ok
+test_visual_difference_has_explicit_tolerance_metrics (tests.test_hmi_golden_tools.HmiGoldenToolsTests.test_visual_difference_has_explicit_tolerance_metrics) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 4.430s
+
+OK

@@ -1,0 +1,94 @@
+{
+  "schema": "fuso-avionics.sil-local-executor-evidence.v1",
+  "date": "2026-11-01",
+  "status": "PARTIAL",
+  "source_commit": "5825974222ad474b20137cea094d25d2ea1e67c0",
+  "source_archive_sha256": "6715968b75c856a3a107d7ff9e0f16354f287db693e1744de7a221ad39fb3012",
+  "implemented": [
+    "opt-in local owner FDM executor with exact backend binding",
+    "three supported controls with batch capability and conflict validation",
+    "synchronous exclusive bounded intent/result sidecar",
+    "post-intent and final pre-physics authority/deadline checks",
+    "property readback before fsynced APPLIED and retained outcome",
+    "override release before I/O and sidecar close on cleanup failure",
+    "explicit uncertain outcomes after possible execution, no automatic retry",
+    "legacy trace/archive rejection of new live sidecar results"
+  ],
+  "local_tests": {
+    "status": "PASS",
+    "methods": 207,
+    "new_methods": 21,
+    "executor_new_methods": 20,
+    "archive_guard_new_methods": 1,
+    "focused_methods": 49,
+    "seconds": 4.454
+  },
+  "ctest": {
+    "status": "PASS_SUBSET_ONLY",
+    "selected_passed": 11,
+    "selected_total": 11,
+    "scope": "Python SIL suites",
+    "full_native_suite": "NOT_RUN",
+    "new_native_build": false,
+    "cmake": "PASS_WITH_PREEXISTING_MSVC_OBJECT_PATH_WARNING"
+  },
+  "server_tests": {
+    "status": "PASS",
+    "unique_methods": 215,
+    "native_jsbsim_methods": 12,
+    "seconds": 20.384,
+    "new_native_method": "late command actual FDM readback, cached ACK, pause release, epoch continuation and sidecar hash",
+    "timing_scope": "fixture clock and memory main journal; sidecar uses real file fsync; NOT realtime scheduling, endurance or power-loss acceptance",
+    "first_run": {
+      "methods_including_duplicate": 246,
+      "status": "PASS",
+      "duplicate_methods": 31,
+      "note": "CLI repeated test_jsbsim_session module; excluded duplicates from canonical count; preserved log"
+    },
+    "host": "serverha",
+    "network": "NONE",
+    "capabilities": "ALL_DROPPED",
+    "source_runtime": "READ_ONLY",
+    "container_image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93",
+    "jsbsim": "1.3.3",
+    "numpy": "2.3.4"
+  },
+  "independent_review": {
+    "mode": "READ_ONLY",
+    "findings_corrected": [
+      "authority recheck after last setter/watchdog before physical step",
+      "sidecar close even if override clearing fails",
+      "deadline/watchdog after synchronous release I/O"
+    ],
+    "additional_safety_decision": "unresolved possibly executed IDs are explicitly uncertain, never false REJECTED/APPLIED or automatically retried",
+    "final_blockers": 0
+  },
+  "log_sha256": {
+    "cmake.txt": "e6d7e34184bb71807ba8693db0de16a6a37e2aec80ab3d74c130a291d1c2b0ac",
+    "ctest-python.txt": "d4ddfcbecbf17031bd528b3097e7062e90f13ca31d35cef2801c2affcf60840c",
+    "executor-tests.txt": "608c001b3cd55f5c33c03cffd1ac69b151dfcae356aac6bb476199b06a41cd4f",
+    "local-regression.txt": "7a2b6d1599125e741e1f2b9ac682a6b8d3911bde3768406000e920f776d7b698",
+    "server-first-duplicate.txt": "01d9e79b184436e3be6a4b5f2a27775a971966dfd64dd5c961b260a5c0929aaa",
+    "server-regression.txt": "0a080f303750072cf60c9794f1f501dc827ae111b5a06667c4a0d38cb75d7108"
+  },
+  "status_generator_check": "PASS",
+  "dashboard_check": "PASS",
+  "project_control_check": "PASS",
+  "operational_services_changed": false,
+  "network_endpoints_added": false,
+  "deploy_performed": false,
+  "merge_performed": false,
+  "hardware_acceptance": "NOT_RUN",
+  "flight_approval": false,
+  "simulation_completion": "NOT_COMPLETE",
+  "open": [
+    "authenticated console transport and lifecycle",
+    "complete interactive admission/execution audit contract",
+    "live replay and restore sidecar; legacy archive explicitly unsupported",
+    "lease rearm after epoch and run-wide ID policy",
+    "fanout and simultaneous actual consumers",
+    "full systems models NAV WX terrain catalogues and aircraft references",
+    "inherited R1-31 Windows async timing repeatability and native WinError4551",
+    "actual hardware power HIL display and flight acceptance"
+  ]
+}

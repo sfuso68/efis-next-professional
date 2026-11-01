@@ -1,0 +1,11 @@
+BENCH_REPLAY_PREFLIGHT=PASS frames=1201 source_node=65000 mode=CHECK_ONLY
+R118_PREFLIGHT=PASS
+R118_ACTIVE=TEMPORARY_15_MINUTES_TURN_REPLAY_NOT_LIVE
+EMS_WEATHER_AIRFRAME=NOT_CONNECTED
+FLIGHT_APPROVAL=false
+Mon 26 Oct 13:35:11 UTC 2026
+MainPID=1419
+ActiveState=active
+/home/efis/efis-next-releases/pfdrec-7051a47-retention-v1
+a64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854  /home/efis/efis-next-current/bin/efis-pfd-qt
+throttled=0x0

@@ -1,0 +1,18 @@
+{
+  "schema": "fuso-avionics.msfs-live-attempt.v1",
+  "date": "2026-10-24",
+  "source_commit": "634d3d5c5b1a570a08a80e5e6e1f76a5e13743a2",
+  "status": "FAIL",
+  "open_call_succeeded": true,
+  "accepted_source_frames": 0,
+  "parser_reason": "MALFORMED_PACKET",
+  "exit_code": 1,
+  "followup_cpp_probe": "CONNECT_FAIL=0x80004005",
+  "followup_simulator_process_observed": false,
+  "crash_diagnosed": false,
+  "cause": "UNRESOLVED_NEED_RAW_HEADER_AND_SIZE_VS_SDK_ABI",
+  "filters_relaxed": false,
+  "avionics_nodes_contacted": false,
+  "flight_approval": false,
+  "runtime_sha256_lf": "6205a3712551f87e8dbb58dd8b3352cf3b954eb094849700aeaaecaa525d82b8"
+}

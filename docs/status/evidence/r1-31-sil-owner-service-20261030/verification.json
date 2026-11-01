@@ -1,0 +1,110 @@
+{
+  "schema": "fuso-avionics.sil-owner-service-evidence.v1",
+  "date": "2026-10-30",
+  "source_commit": "d982f6dea8c5f8bfa6b2acffe57226778e390d23",
+  "source_archive_sha256": "4c344564558e12de1938f98cf536b4a50b1bb8d6e73b7cb66fbcfcf10369388c",
+  "status": "PARTIAL",
+  "implemented": [
+    "single-owner exact-manifest attach once in CREATED",
+    "bounded admission service in RUNNING and PAUSED pump",
+    "writer watchdog before and after service",
+    "admission latency included before physics deadline check",
+    "permanent lifecycle/epoch/failure lease revocation",
+    "retained old-epoch outcome lookup without rearm",
+    "shared owner pump in native runner pause"
+  ],
+  "execution_scope": "ADMISSION_ONLY_NO_DEQUEUE_NO_EXECUTOR",
+  "local_tests": {
+    "new_methods": 16,
+    "focused_final": {
+      "methods": 52,
+      "status": "PASS"
+    },
+    "first_focused": {
+      "methods": 52,
+      "failures": 1,
+      "status": "FAIL",
+      "cause": "test expected expiry before next owner pump; assertion corrected, expiry rule unchanged"
+    },
+    "first_regression": {
+      "methods": 186,
+      "errors": 1,
+      "status": "FAIL",
+      "cause": "async real writer durability ACK exceeded unchanged 100ms deadline"
+    },
+    "isolated_async": {
+      "methods": 9,
+      "status": "PASS"
+    },
+    "repeated_regression": {
+      "methods": 186,
+      "status": "PASS",
+      "seconds": 5.383
+    },
+    "overall": "PASS_ON_REPEAT_WITH_OPEN_TIMING_REPRODUCIBILITY",
+    "initial_timeout_cause": "NOT_DETERMINED",
+    "thresholds_changed": false
+  },
+  "ctest": {
+    "status": "PASS_SUBSET_ONLY",
+    "passed": 10,
+    "total_selected": 10,
+    "scope": "Python SIL suites only",
+    "full_native_suite": "NOT_RUN",
+    "inherited_native_windows_gate": "OPEN WinError4551; application policy unchanged",
+    "new_native_build": false,
+    "cmake_warning": "pre-existing MSVC object path length"
+  },
+  "server_tests": {
+    "status": "PASS",
+    "methods": 193,
+    "native_jsbsim_methods": 11,
+    "seconds": 20.221,
+    "host": "serverha",
+    "network": "NONE",
+    "capabilities": "ALL_DROPPED",
+    "source_runtime": "READ_ONLY",
+    "container_image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93",
+    "jsbsim": "1.3.3",
+    "numpy": "2.3.4",
+    "new_native_composition_test": "REAL_FDM_WITH_FIXTURE_CLOCK_AND_MEMORY_JOURNAL_NOT_REALTIME_ACCEPTANCE"
+  },
+  "independent_review": {
+    "mode": "READ_ONLY",
+    "concrete_bugs_found": 0,
+    "suggested_negative_cases_implemented": [
+      "foreign-thread attachment",
+      "mutated caller manifest",
+      "arm start frame backend finalization failure",
+      "no dispatch beyond expiry"
+    ]
+  },
+  "log_sha256": {
+    "async-isolated.txt": "56f85ef463dbeebefccb7905373173ed6a8a650777012ee869b41a5b328cb7da",
+    "cmake.txt": "95486a391b73eb87b182677ad66fc9ca646846bae2b6981662f0219b8e413d0f",
+    "ctest-python.txt": "ce003cd3f65ab7b83a79ea06d3de895abb156d44a6e01d14d38303e0070c93b8",
+    "local-regression-v2.txt": "f366aaed8e9b984ee06df0ef20f42d7c6f9150c6fa60073d667d275bf5c27a07",
+    "local-regression.txt": "06c1a42f0cd292fdd2ca691b4f2bc38ff63c3420a41a5c93d99f6d4031eeb67c",
+    "owner-tests-v2.txt": "c767b7ba0fb8e1edc70a288db8983b961ab751cc5d51dad569bb03f2cdf3e5b4",
+    "owner-tests.txt": "e601072afd59ec4896996b2fd875c81843b15e16226d6f0b218fdfa3e184bb92",
+    "server-regression.txt": "9d40847f758fd11a64ddec726852988e01686e4a4ac440be0ba95329b2583554"
+  },
+  "status_generator_check": "PASS",
+  "dashboard_check": "PASS",
+  "project_control_check": "PASS",
+  "deployment_performed": false,
+  "merge_performed": false,
+  "operational_services_changed": false,
+  "hardware_acceptance": "NOT_RUN",
+  "flight_approval": false,
+  "simulation_completion": "NOT_COMPLETE",
+  "open": [
+    "authenticated live transport and lifecycle commands",
+    "live executor capabilities readback and audit",
+    "new lease after resume and run-wide identity policy",
+    "interactive event durability and replay",
+    "multi-panel fanout and full systems/products",
+    "Windows timing repeatability and inherited native policy gate",
+    "actual hardware power touch HIL and flight acceptance"
+  ]
+}

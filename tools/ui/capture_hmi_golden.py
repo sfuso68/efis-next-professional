@@ -21,7 +21,8 @@ SIZES = SIZES_BY_ROLE["ems"]
 
 
 def png_size(path: Path) -> tuple[int, int]:
-    header = path.read_bytes()[:24]
+    with path.open("rb") as stream:
+        header = stream.read(24)
     if len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
         raise ValueError(f"not a PNG image: {path}")
     return struct.unpack(">II", header[16:24])
@@ -36,28 +37,64 @@ def sha256(path: Path) -> str:
 
 
 def png_pixels(path: Path) -> bytes:
-    data = path.read_bytes()
+    # Review files are inputs, not trusted merely because a manifest repeats
+    # their hashes. Bound encoded and decoded memory before inflating IDAT.
+    if path.stat().st_size > 8 * 1024 * 1024:
+        raise ValueError(f"PNG exceeds encoded size limit: {path}")
+    with path.open("rb") as stream:
+        data = stream.read(8 * 1024 * 1024 + 1)
+    if len(data) > 8 * 1024 * 1024:
+        raise ValueError(f"PNG exceeds encoded size limit: {path}")
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError(f"not a PNG image: {path}")
     offset = 8
     idat = bytearray()
     width = height = bit_depth = colour_type = 0
+    header_seen = end_seen = False
     while offset + 12 <= len(data):
         length = struct.unpack(">I", data[offset:offset + 4])[0]
+        if length > len(data) - offset - 12:
+            raise ValueError(f"truncated PNG chunk: {path}")
         kind = data[offset + 4:offset + 8]
         payload = data[offset + 8:offset + 8 + length]
+        checksum = struct.unpack(">I", data[offset + 8 + length:offset + 12 + length])[0]
+        if zlib.crc32(kind + payload) != checksum:
+            raise ValueError(f"PNG chunk CRC mismatch: {path}")
+        if kind in (b"acTL", b"fcTL", b"fdAT"):
+            raise ValueError(f"animated PNG is not a static golden: {path}")
         if kind == b"IHDR":
-            width, height, bit_depth, colour_type = struct.unpack(">IIBB", payload[:10])
+            if header_seen or offset != 8 or length != 13:
+                raise ValueError(f"invalid PNG IHDR: {path}")
+            width, height, bit_depth, colour_type, compression, filtering, interlace = struct.unpack(">IIBBBBB", payload)
+            if not width or not height or width * height > 4194304:
+                raise ValueError(f"PNG exceeds pixel size limit: {path}")
+            if compression != 0 or filtering != 0 or interlace != 0:
+                raise ValueError(f"unsupported PNG coding: {path}")
+            header_seen = True
         elif kind == b"IDAT":
+            if not header_seen:
+                raise ValueError(f"PNG IDAT precedes IHDR: {path}")
             idat.extend(payload)
         elif kind == b"IEND":
+            if length or offset + 12 != len(data):
+                raise ValueError(f"invalid PNG IEND/trailing bytes: {path}")
+            end_seen = True
             break
+        elif kind and not (kind[0] & 32):
+            raise ValueError(f"unsupported critical PNG chunk: {path}")
         offset += 12 + length
     channels = {2: 3, 6: 4}.get(colour_type)
-    if bit_depth != 8 or channels is None or not idat:
+    if not header_seen or not end_seen or bit_depth != 8 or channels is None or not idat:
         raise ValueError(f"unsupported PNG format for pixel digest: {path}")
-    decoded = zlib.decompress(bytes(idat))
     stride = width * channels
     expected = height * (stride + 1)
-    if len(decoded) != expected:
+    try:
+        inflater = zlib.decompressobj()
+        decoded = inflater.decompress(bytes(idat), expected + 1)
+    except zlib.error as error:
+        raise ValueError(f"invalid PNG deflate stream: {path}") from error
+    if (len(decoded) != expected or not inflater.eof or inflater.unconsumed_tail
+            or inflater.unused_data):
         raise ValueError(f"unexpected PNG scanline length: {path}")
     previous = bytearray(stride)
     pixels = bytearray()

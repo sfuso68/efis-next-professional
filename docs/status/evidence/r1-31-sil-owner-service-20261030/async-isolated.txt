@@ -1,0 +1,14 @@
+test_byte_capacity_and_oversize_record (tests.test_async_journal.AsyncJournalTests.test_byte_capacity_and_oversize_record) ... ok
+test_closed_journal_cannot_accept_more (tests.test_async_journal.AsyncJournalTests.test_closed_journal_cannot_accept_more) ... ok
+test_engine_checks_watchdog_between_output_frames (tests.test_async_journal.AsyncJournalTests.test_engine_checks_watchdog_between_output_frames) ... ok
+test_existing_run_and_result_not_overwritten (tests.test_async_journal.AsyncJournalTests.test_existing_run_and_result_not_overwritten) ... ok
+test_hang_is_not_a_blocking_append_and_times_out (tests.test_async_journal.AsyncJournalTests.test_hang_is_not_a_blocking_append_and_times_out) ... ok
+test_real_writer_hash_and_publication (tests.test_async_journal.AsyncJournalTests.test_real_writer_hash_and_publication) ... ok
+test_record_capacity_is_bounded (tests.test_async_journal.AsyncJournalTests.test_record_capacity_is_bounded) ... ok
+test_writer_crash_is_reported_without_success (tests.test_async_journal.AsyncJournalTests.test_writer_crash_is_reported_without_success) ... ok
+test_writer_io_error_is_not_acknowledged_durable (tests.test_async_journal.AsyncJournalTests.test_writer_io_error_is_not_acknowledged_durable) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.975s
+
+OK

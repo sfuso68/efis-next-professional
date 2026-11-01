@@ -1,0 +1,177 @@
+{
+  "schema": "avionix-next.r1-12-verification.v1",
+  "date": "2026-10-24",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "base_commit": "2b48c57c300aba8b41c8fd249e927ba562245ccc",
+  "requirements": [
+    "PRJ-004",
+    "EMS-002",
+    "VER-001"
+  ],
+  "backlog": "AVX-G5-02",
+  "pull_request": 59,
+  "status": "PARTIAL_AUTONOMOUS_KINEMATIC_REFERENCE_VERIFIED_SOFTWARE",
+  "profile_status": "SYNTHETIC_UNVALIDATED",
+  "flight_approval": false,
+  "hardware_verification": "NOT_RUN",
+  "avionics_nodes_contacted": false,
+  "deploy": "NOT_RUN",
+  "merge": "NOT_RUN",
+  "simulator_scope": {
+    "new_core": "MissionSimulator, MissionProfile, SimulationClock",
+    "legacy": "SystemSimulator demo preserved, old scenario IDs remain valid",
+    "pfd": "four opt-in mission-* scenarios and shared local clock",
+    "cli": "offline JSONL with 18 engine samples and explicit validity/unit/raw/SIM; describe with 18 parameters",
+    "new_transport": "NONE",
+    "external_simulator": "NONE",
+    "weather": "UNAVAILABLE"
+  },
+  "tests": {
+    "native": {
+      "status": "PASS",
+      "compiler": "GCC 14.2, C++20 -Wall -Wextra -Wpedantic -Wconversion",
+      "checks": [
+        "position derivative equals ground speed",
+        "altitude derivative equals VS",
+        "tank depletion derivative equals fuel flow",
+        "cold-and-dark stationary and ambient",
+        "integer scenario milliseconds exact",
+        "one sequence per frame",
+        "reset, seek and host/poll-history independence",
+        "pause, rate, nanosecond deltas and time clamping",
+        "finite profile/clock/window validation",
+        "engine, electrical, sensor and airframe fault/recovery",
+        "fuel starvation and finite nonnegative quantities",
+        "wind/crab and thermal response"
+      ],
+      "log": "native.txt"
+    },
+    "sanitizers": {
+      "status": "PASS",
+      "tools": [
+        "AddressSanitizer",
+        "UndefinedBehaviorSanitizer"
+      ],
+      "scope": "mission core test executable, not full product or hardware",
+      "log": "native.txt"
+    },
+    "cli": {
+      "status": "PASS",
+      "count": 6,
+      "mode": "black-box built Linux executable",
+      "log": "native.txt"
+    },
+    "pfd_controller": {
+      "status": "PASS",
+      "mode": "real PfdController Qt6.8.2 Core/Network, headless executable, legacy and mission start/stop/duration plus invalid control guards",
+      "not_tested": "hardware renderer/touch/deployment or live network",
+      "log": "native.txt"
+    },
+    "mutation": {
+      "status": "REJECTED_AS_EXPECTED",
+      "change": "VS output +100 ft/min in isolated source copy",
+      "failing_assertion": "altitude derivative must agree with VS",
+      "log": "native.txt"
+    },
+    "qml": {
+      "status": "PASS",
+      "outcomes": 88,
+      "includes_init_cleanup": true,
+      "new_console_outcomes": 7,
+      "platform": "Windows Qt6.11.1 offscreen/software with explicit fontdir",
+      "controller_for_console": "QML fixture verifies actual overlay bindings and input, separate from native controller test",
+      "log": "qml.txt"
+    },
+    "python_regression": {
+      "status": "PASS",
+      "count": 47,
+      "log": "python.txt"
+    },
+    "build": {
+      "status": "PASS",
+      "compiler": "MSVC 14.43 Release",
+      "targets": [
+        "efis_mission_simulator_tests",
+        "efis-mission-simulator",
+        "efis_system_simulator_tests",
+        "efis-pfd-qt",
+        "efis-ems-qt",
+        "efis_pfd_aircraft_profile_tests"
+      ],
+      "qml_aot": true,
+      "logs": [
+        "build-integration.txt",
+        "build-final.txt"
+      ],
+      "windows_native_execution": "NOT_RUN_POLICY",
+      "local_cli_ctest": "NOT_REGISTERED_IN_EXISTING_BUILD_PYTHON_DISCOVERY"
+    }
+  },
+  "isolation": {
+    "host": "serverha software test only",
+    "image": "avionix-profile-verification:20261017",
+    "network": "none",
+    "root_filesystem": "read-only",
+    "source_mount": "read-only",
+    "build": "ephemeral tmpfs exec",
+    "staging_preserved": "/home/sfuso/avionix-r112-mission-20261024-a/v5",
+    "source_archive_sha256": "3d34c0752dfd3d28569d22554246bb0dc28c255dd3086813c3c9f212b515d958",
+    "remote_checksum_match": true
+  },
+  "warnings": [
+    "GCC -Wfree-nonheap-object in unchanged src/protocol/ddp_v2.cpp observed during full core build; not resolved or asserted harmless",
+    "Temporary native helper enables AUTOMOC before adding non-Qt core, generating CMake AUTOGEN warnings; production core remains Qt-free"
+  ],
+  "previous_ci": {
+    "source": "2b48c57c300aba8b41c8fd249e927ba562245ccc",
+    "project_control": {
+      "run": 40120746821,
+      "status": "SUCCESS"
+    },
+    "core": {
+      "run": 40120746818,
+      "status": "FAILURE",
+      "core_and_sanitizers": "SUCCESS",
+      "qt_build_qml_weather": "SUCCESS",
+      "failure": "Linux golden pixel comparison"
+    }
+  },
+  "not_complete": [
+    "6DoF/forces/moments/stall/glide or validated aircraft/engine performance",
+    "real profiles for both engines and aircraft variants",
+    "distributed SIL publisher and central clock for standalone EMS/Blackbox",
+    "server/NAS model/dataset catalog, ingestion, immutable runs and transport replay",
+    "terrain/obstacle physical clearance and real airport ground geometry",
+    "operational weather/radar/METAR/TAF and realistic radionavigation",
+    "ARM64 hardware/render/touch/power qualification and approved Linux golden"
+  ],
+  "external_research": {
+    "date": "2026-10-24",
+    "sources": [
+      "https://jsbsim-team.github.io/jsbsim-reference-manual/",
+      "https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simconnect/simconnect-sdk/",
+      "https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simvars/simulation-variables/"
+    ],
+    "implementation": "documentation reconnaissance only; no SDK/library/model installed",
+    "msfs_user_availability": "Will install later; autonomous simulator must not depend on it"
+  },
+  "digest_format": "sha256 UTF-8 text normalized LF, evidence file excluded",
+  "sha256": {
+    "CMakeLists.txt": "37627d1dbf0f2ca4f232a9b06c4d617a0fe4eda123c43433f0c9612778d97324",
+    "include/efis/simulation/mission_simulator.hpp": "47598bf5541692bf9b85f979b2065c30c22e1ac541019f9af5ad2ab3fb8d5381",
+    "src/simulation/mission_simulator.cpp": "75377fafdb4ba8fcf4d7c1ad6d9586fba926acec2158071e7009097249c21bb9",
+    "src/apps/mission_simulator_main.cpp": "860b98e948b73782e53028a642c2d7a3a6943bcc7aa9993ec66bb30c34fe5c7c",
+    "src/renderers/qt/pfd_controller.cpp": "02ca2cca146e2ff6a142134ccf2379c3ac80f783121aaf05264453c6163dc99c",
+    "src/renderers/qt/pfd_controller.hpp": "90cac24a4ec514b6f2ecc502eb8320af7534b9072a09f9d452f29d3d50d537fb",
+    "qml/SystemSimulatorOverlay.qml": "430977284c7854dcc84791593d071ff14f5df4367d2669662d8f9110870f5f55",
+    "tests/mission_simulator_tests.cpp": "2609185a0e07fc54333bf968a8999ae221b9ffe0d3b11621aae2e62749d2718b",
+    "tests/mission_simulator_cli_tests.py": "67428a347be05faaf84b1c8836039acd0520bb15797a0bbaaaaf712360d544f2",
+    "tests/qml/tst_mission_controls.qml": "583bcf1f1d51314c16b3ef491b4c871ae774a1b096af2b2c36f4a4d23cb15f96",
+    "tests/pfd_aircraft_profile_tests.cpp": "bb5d1aceefff3c989416381c4eb83e2b497d3d652530e366e73749538e104957",
+    "docs/status/evidence/r1-12-autonomous-mission-20261024/build-final.txt": "a7ae941f740c1ac1d503c65966c4b0b2dbffc95cd985b6b28f76d94b4638f107",
+    "docs/status/evidence/r1-12-autonomous-mission-20261024/build-integration.txt": "41d06cd4270e0b075502d1d7376792835201b522694aef2c3c8ac322e347009e",
+    "docs/status/evidence/r1-12-autonomous-mission-20261024/native.txt": "2c5e5cd545a99476661a49096240ccf589987cfa0a51a95163b46ea1e6adf2c4",
+    "docs/status/evidence/r1-12-autonomous-mission-20261024/python.txt": "2b4ae9fa4366f8b53279b9c7ff4b6b45a1bc8f1180dd2c51ebdd78c221272aff",
+    "docs/status/evidence/r1-12-autonomous-mission-20261024/qml.txt": "849a0a6bc4d3ea5eca231111f485e55632727bdc58a32d3b9439672d7b65cf22"
+  }
+}

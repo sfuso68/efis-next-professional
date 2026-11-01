@@ -1,0 +1,19 @@
+44c64368a1a2e30228738dee092132ae735046a489d31db0f29a90bc36e2fe9c  r126-command-source-v1.tar
+test_admission_and_one_time_immutable_dispatch (test_command_queue.CommandQueueTests.test_admission_and_one_time_immutable_dispatch) ... ok
+test_byte_limit_fails_closed (test_command_queue.CommandQueueTests.test_byte_limit_fails_closed) ... ok
+test_conflict_and_sequence_reuse (test_command_queue.CommandQueueTests.test_conflict_and_sequence_reuse) ... ok
+test_history_limit_no_eviction_fails_closed (test_command_queue.CommandQueueTests.test_history_limit_no_eviction_fails_closed) ... ok
+test_lease_tick_boundary_and_duration_bounds (test_command_queue.CommandQueueTests.test_lease_tick_boundary_and_duration_bounds) ... ok
+test_order_and_closed_queue (test_command_queue.CommandQueueTests.test_order_and_closed_queue) ... ok
+test_owner_thread_enforced (test_command_queue.CommandQueueTests.test_owner_thread_enforced) ... ok
+test_pending_capacity_and_revoke_independent_of_capacity (test_command_queue.CommandQueueTests.test_pending_capacity_and_revoke_independent_of_capacity) ... ok
+test_retry_before_and_after_dispatch_never_requeues (test_command_queue.CommandQueueTests.test_retry_before_and_after_dispatch_never_requeues) ... ok
+test_tick_and_clock_reversal_rejected (test_command_queue.CommandQueueTests.test_tick_and_clock_reversal_rejected) ... ok
+test_tick_expiry_and_horizon (test_command_queue.CommandQueueTests.test_tick_expiry_and_horizon) ... ok
+test_wall_lease_expires_even_without_simulation_ticks (test_command_queue.CommandQueueTests.test_wall_lease_expires_even_without_simulation_ticks) ... ok
+test_wrong_identity_epoch_lease_or_json_never_queues (test_command_queue.CommandQueueTests.test_wrong_identity_epoch_lease_or_json_never_queues) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.018s
+
+OK

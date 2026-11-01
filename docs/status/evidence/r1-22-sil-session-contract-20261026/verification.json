@@ -1,0 +1,22 @@
+{
+  "schema":"fuso-avionics.sil-session-contract-evidence.v1",
+  "date":"2026-10-26",
+  "source_parent_commit":"0c3293e4728c06a30cb54836917805acf7fa66c1",
+  "status":"PARTIAL",
+  "scope":"P01_OFFLINE_CONTRACT_VALIDATION",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "contract":"config/protocols/sil-session-icd-v1.json",
+  "vectors":"tests/data/protocols/sil-session-v1-vectors.json",
+  "documentation":"docs/protocols/SIL_SESSION_ICD_V1.md",
+  "software":{"python_methods":82,"new_methods":14,"regression_methods":68,"python_status":"PASS","ctest_targets":6,"ctest_status":"PASS","cmake_configure":"PASS","native_binaries":"PREEXISTING_NOT_REBUILT"},
+  "hardware_this_increment":"NOT_RUN_NO_NODES_CONTACTED",
+  "wire_protocol_changes":false,
+  "runtime_producer_changes":false,
+  "command_application":"NOT_IMPLEMENTED",
+  "validation_is_authentication":false,
+  "old_live_protocol_changed":false,
+  "warnings":["Existing MSVC object path warning retained"],
+  "open":["contract review and adapter semantics","P02 lifecycle cross-frame continuity and producer","P03 authenticated command queue dedup lease and application","P04 canonical codec mappings and fanout","model-specific control capability and physical fidelity","power touch golden and hardware acceptance"],
+  "requirements_promoted_to_done":[]
+}

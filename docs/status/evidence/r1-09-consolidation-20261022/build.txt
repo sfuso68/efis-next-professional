@@ -1,0 +1,14 @@
+[1/14] Copying efis-ems-qt qml sources into build dir
+[2/14] Copying efis-pfd-qt qml sources into build dir
+[3/14] Running qmlimportscanner for efis-pfd-qt
+[4/14] Running qmlimportscanner for efis-ems-qt
+[5/14] Running rcc for resource efis-pfd-qt_raw_qml_0
+[6/14] Running rcc for resource efis-ems-qt_raw_qml_0
+[7/14] Generating .rcc/qmlcache/efis-ems-qt_qml/AdaptiveEmsView_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/AdaptiveEmsView_qml.cpp.aotstats
+[8/14] Generating .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveEmsView_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveEmsView_qml.cpp.aotstats
+[9/14] Building CXX object CMakeFiles\efis-ems-qt.dir\build-ems-state-review\.qt\rcc\qrc_efis-ems-qt_raw_qml_0.cpp.obj
+[10/14] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.qt\rcc\qrc_efis-pfd-qt_raw_qml_0.cpp.obj
+[11/14] Building CXX object CMakeFiles\efis-ems-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-ems-qt_qml\AdaptiveEmsView_qml.cpp.obj
+[12/14] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\AdaptiveEmsView_qml.cpp.obj
+[13/14] Linking CXX executable efis-ems-qt.exe
+[14/14] Linking CXX executable efis-pfd-qt.exe

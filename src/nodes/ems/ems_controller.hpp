@@ -65,6 +65,11 @@ class EmsController : public QObject {
     Q_PROPERTY(bool landingGearInstalled READ landingGearInstalled CONSTANT)
     Q_PROPERTY(bool retractableGear READ retractableGear CONSTANT)
     Q_PROPERTY(bool gearNoseLocked READ gearNoseLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(QString airframeSourceState READ airframeSourceState NOTIFY snapshotChanged)
+    Q_PROPERTY(int airframeDataAgeMs READ airframeDataAgeMs NOTIFY snapshotChanged)
+    Q_PROPERTY(bool gearDataValid READ gearDataValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flapAngleValid READ flapAngleValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flapCommandedValid READ flapCommandedValid NOTIFY snapshotChanged)
     Q_PROPERTY(bool gearLeftLocked READ gearLeftLocked NOTIFY snapshotChanged)
     Q_PROPERTY(bool gearRightLocked READ gearRightLocked NOTIFY snapshotChanged)
     Q_PROPERTY(QString gearState READ gearState NOTIFY snapshotChanged)
@@ -167,6 +172,12 @@ public:
         return static_cast<qulonglong>(engine_snapshot_.sequence);
     }
     [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
+    // EDP v1 carries engine samples, not gear/flap feedback (ADR-011).
+    [[nodiscard]] QString airframeSourceState() const { return QStringLiteral("LOST"); }
+    [[nodiscard]] int airframeDataAgeMs() const { return -1; }
+    [[nodiscard]] bool gearDataValid() const { return false; }
+    [[nodiscard]] bool flapAngleValid() const { return false; }
+    [[nodiscard]] bool flapCommandedValid() const { return false; }
     [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
     [[nodiscard]] bool gearNoseLocked() const { return gear_nose_locked_; }
     [[nodiscard]] bool gearLeftLocked() const { return gear_left_locked_; }
@@ -308,13 +319,13 @@ private:
     qulonglong black_box_records_{};
     bool landing_gear_installed_{};
     bool retractable_gear_{};
-    bool gear_nose_locked_{true};
-    bool gear_left_locked_{true};
-    bool gear_right_locked_{true};
+    bool gear_nose_locked_{};
+    bool gear_left_locked_{};
+    bool gear_right_locked_{};
     bool flaps_installed_{};
     QVariantList flap_detents_;
-    double flap_angle_{15.0};
-    double flap_commanded_angle_{15.0};
+    double flap_angle_{std::numeric_limits<double>::quiet_NaN()};
+    double flap_commanded_angle_{std::numeric_limits<double>::quiet_NaN()};
     QString engine_profile_name_{QStringLiteral("UNCONFIGURED")};
     QString engine_serial_number_{QStringLiteral("TO BE ENTERED")};
     QVariantMap engine_limits_;

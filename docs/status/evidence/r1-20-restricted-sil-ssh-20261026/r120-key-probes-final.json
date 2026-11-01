@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "case": "command:",
+      "returncode": 126,
+      "pass": true,
+      "stderr": "SIL_ACCESS_DENIED\n"
+    },
+    {
+      "case": "command:id",
+      "returncode": 126,
+      "pass": true,
+      "stderr": "SIL_ACCESS_DENIED\n"
+    },
+    {
+      "case": "command:SIL_CHECK_V1; id",
+      "returncode": 126,
+      "pass": true,
+      "stderr": "SIL_ACCESS_DENIED\n"
+    },
+    {
+      "case": "command:SIL_CHECK_V1 extra",
+      "returncode": 126,
+      "pass": true,
+      "stderr": "SIL_ACCESS_DENIED\n"
+    },
+    {
+      "case": "command:internal-sftp",
+      "returncode": 126,
+      "pass": true,
+      "stderr": "SIL_ACCESS_DENIED\n"
+    },
+    {
+      "case": "PTY",
+      "returncode": 255,
+      "pass": true,
+      "stderr": "PTY allocation request failed on channel 0\r\n"
+    },
+    {
+      "case": "TCP_FORWARD",
+      "returncode": 255,
+      "pass": true,
+      "stderr": "channel 0: open failed: administratively prohibited: open failed\r\nstdio forwarding failed\r\n"
+    },
+    {
+      "case": "REMOTE_FORWARD",
+      "returncode": 255,
+      "pass": true,
+      "stderr": "Error: remote port forwarding failed for listen port 0\r\n"
+    }
+  ],
+  "private_key_transferred": false,
+  "configuration_changed": false
+}

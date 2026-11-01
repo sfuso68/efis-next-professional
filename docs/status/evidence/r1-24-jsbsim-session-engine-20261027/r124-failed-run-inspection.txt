@@ -1,0 +1,5 @@
+totale 5,5M
+-rw-r--r-- 1 sfuso sfuso 5,5M 27 ott 00.15 truth.jsonl
+512 /home/sfuso/avionix-sil-r114-20261025/runs/r124-physical-60s-pause-v1/truth.jsonl
+m_time_ns":12600000000,"simulated":true,"tick":1260},"kind":"SESSION_EVENT","session_id":"r124-physical-60s-pause-v1","simulated":true,"total_frames":252,"total_ticks":1260}
+{"epoch":0,"event":"FAILED","flight_approval":false,"kind":"SESSION_EVENT","reason":"ValueError","session_id":"r124-physical-60s-pause-v1","simulated":true,"total_ticks":1260}

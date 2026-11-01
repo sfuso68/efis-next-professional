@@ -1,0 +1,3 @@
+{"status": "PASS", "frames": 1202, "total_ticks": 6000, "epochs": 2, "scope": "TRACE_INTEGRITY_NOT_MODEL_VALIDATION", "flight_approval": false}
+63de4cf30c2e2d7fa4cea80f2bb347004548db0742f4227bb8f0cbae844f2204  /srv/data/avionix-sil-test/r125-second-ssd-60s-v1/truth.jsonl
+5781e1ee5e996c94867d4e7c7d4dfa5257994443757458ca64cfef2cfd662e0f  /srv/data/avionix-sil-test/r125-second-ssd-60s-v1/result.json

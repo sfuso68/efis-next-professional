@@ -1,0 +1,14 @@
+BENCH_REPLAY_PREFLIGHT=PASS frames=1201 source_node=65000 mode=CHECK_ONLY
+PFD_BENCH_PREFLIGHT=PASS
+Oct 25 01:18:08 efis-pfd-01 systemd[1]: Started efis-sil-panel-restore.service - [systemd-run] /bin/bash /home/efis/efis-sil-panel-r117/run_pfd_sil_bench_r117.sh --root-restore.
+Oct 25 01:18:09 efis-pfd-01 runuser[1617263]: pam_unix(runuser:session): session opened for user efis(uid=1000) by (uid=0)
+Oct 25 01:18:09 efis-pfd-01 runuser[1617263]: pam_unix(runuser:session): session closed for user efis
+Oct 25 01:18:09 efis-pfd-01 runuser[1617265]: pam_unix(runuser:session): session opened for user efis(uid=1000) by (uid=0)
+Oct 25 01:18:09 efis-pfd-01 runuser[1617265]: pam_unix(runuser:session): session closed for user efis
+Oct 25 01:18:09 efis-pfd-01 bash[1617241]: PFD_ORIGINAL_RESTORED=PASS
+Oct 25 01:18:09 efis-pfd-01 systemd[1]: efis-sil-panel-restore.service: Deactivated successfully.
+MainPID=1617260
+ActiveState=active
+
+MainPID=1419
+ActiveState=active

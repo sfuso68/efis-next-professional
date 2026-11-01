@@ -1,0 +1,65 @@
+test_admission_latency_counts_against_deadline_before_step (tests.test_session_control.SessionControlTests.test_admission_latency_counts_against_deadline_before_step) ... ok
+test_admitted_commands_are_not_dispatched_by_engine (tests.test_session_control.SessionControlTests.test_admitted_commands_are_not_dispatched_by_engine) ... FAIL
+test_arm_start_frame_and_finalization_failure_revoke (tests.test_session_control.SessionControlTests.test_arm_start_frame_and_finalization_failure_revoke) ... ok
+test_attachment_exact_manifest_single_owner_and_created_only (tests.test_session_control.SessionControlTests.test_attachment_exact_manifest_single_owner_and_created_only) ... ok
+test_cross_thread_owner_operations_rejected (tests.test_session_control.SessionControlTests.test_cross_thread_owner_operations_rejected) ... ok
+test_failed_pump_does_not_check_closed_writer_again (tests.test_session_control.SessionControlTests.test_failed_pump_does_not_check_closed_writer_again) ... ok
+test_foreign_owner_attachment_and_mutated_manifest_rejected (tests.test_session_control.SessionControlTests.test_foreign_owner_attachment_and_mutated_manifest_rejected) ... ok
+test_lifecycle_journal_failure_leaves_no_lease (tests.test_session_control.SessionControlTests.test_lifecycle_journal_failure_leaves_no_lease) ... ok
+test_owner_pump_admits_before_due_tick_without_executing (tests.test_session_control.SessionControlTests.test_owner_pump_admits_before_due_tick_without_executing) ... ok
+test_pause_revokes_pending_before_journal_write (tests.test_session_control.SessionControlTests.test_pause_revokes_pending_before_journal_write) ... ok
+test_post_service_watchdog_checked_before_step_and_while_paused (tests.test_session_control.SessionControlTests.test_post_service_watchdog_checked_before_step_and_while_paused) ... ok
+test_resume_never_rearms_old_epoch_or_reverses_command_tick (tests.test_session_control.SessionControlTests.test_resume_never_rearms_old_epoch_or_reverses_command_tick) ... ok
+test_service_budget_and_immutable_replies (tests.test_session_control.SessionControlTests.test_service_budget_and_immutable_replies) ... ok
+test_signal_revoke_is_serviced_before_next_step (tests.test_session_control.SessionControlTests.test_signal_revoke_is_serviced_before_next_step) ... ok
+test_stop_and_automatic_completion_revoke_and_terminal_pump_is_noop (tests.test_session_control.SessionControlTests.test_stop_and_automatic_completion_revoke_and_terminal_pump_is_noop) ... ok
+test_wall_lease_expires_without_due_physics_tick (tests.test_session_control.SessionControlTests.test_wall_lease_expires_without_due_physics_tick) ... ok
+test_backend_stall_is_failure_before_frame_delivery (tests.test_sil_session_engine.SessionEngineTests.test_backend_stall_is_failure_before_frame_delivery) ... ok
+test_bounded_owner_loop_without_display_requests (tests.test_sil_session_engine.SessionEngineTests.test_bounded_owner_loop_without_display_requests) ... ok
+test_busy_consumer_lock_drops_only_that_slot (tests.test_sil_session_engine.SessionEngineTests.test_busy_consumer_lock_drops_only_that_slot) ... ok
+test_clock_reverse_and_wrong_frame_fail_closed (tests.test_sil_session_engine.SessionEngineTests.test_clock_reverse_and_wrong_frame_fail_closed) ... ok
+test_consumer_absent_or_slow_does_not_stop_producer (tests.test_sil_session_engine.SessionEngineTests.test_consumer_absent_or_slow_does_not_stop_producer) ... ok
+test_disk_run_final_result_hash_matches_truth (tests.test_sil_session_engine.SessionEngineTests.test_disk_run_final_result_hash_matches_truth) ... ok
+test_existing_result_never_overwritten (tests.test_sil_session_engine.SessionEngineTests.test_existing_result_never_overwritten) ... ok
+test_journal_exclusive_durable_and_hash (tests.test_sil_session_engine.SessionEngineTests.test_journal_exclusive_durable_and_hash) ... ok
+test_late_tick_does_not_burst_or_skip_steps (tests.test_sil_session_engine.SessionEngineTests.test_late_tick_does_not_burst_or_skip_steps) ... ok
+test_lifecycle_nominal_and_terminal (tests.test_sil_session_engine.SessionEngineTests.test_lifecycle_nominal_and_terminal) ... ok
+test_manifest_is_frozen_and_consumers_bounded (tests.test_sil_session_engine.SessionEngineTests.test_manifest_is_frozen_and_consumers_bounded) ... ok
+test_no_consumers_still_runs (tests.test_sil_session_engine.SessionEngineTests.test_no_consumers_still_runs) ... ok
+test_old_epoch_packet_not_returned_after_busy_resume (tests.test_sil_session_engine.SessionEngineTests.test_old_epoch_packet_not_returned_after_busy_resume) ... ok
+test_overrun_fails_before_any_step_no_catchup (tests.test_sil_session_engine.SessionEngineTests.test_overrun_fails_before_any_step_no_catchup) ... ok
+test_owner_thread_and_immutable_packet (tests.test_sil_session_engine.SessionEngineTests.test_owner_thread_and_immutable_packet) ... ok
+test_pause_no_frames_no_steps_resume_new_epoch (tests.test_sil_session_engine.SessionEngineTests.test_pause_no_frames_no_steps_resume_new_epoch) ... ok
+test_result_only_after_successful_finalization (tests.test_sil_session_engine.SessionEngineTests.test_result_only_after_successful_finalization) ... ok
+test_sleep_jitter_does_not_accumulate_every_tick (tests.test_sil_session_engine.SessionEngineTests.test_sleep_jitter_does_not_accumulate_every_tick) ... ok
+test_storage_failure_stops_before_publishing (tests.test_sil_session_engine.SessionEngineTests.test_storage_failure_stops_before_publishing) ... ok
+test_wrong_transitions_no_side_effects (tests.test_sil_session_engine.SessionEngineTests.test_wrong_transitions_no_side_effects) ... ok
+test_authentication_is_trusted_caller_context_not_payload (tests.test_control_inbox.ControlInboxTests.test_authentication_is_trusted_caller_context_not_payload) ... ok
+test_cached_applied_outcome_retry_does_not_requeue (tests.test_control_inbox.ControlInboxTests.test_cached_applied_outcome_retry_does_not_requeue) ... ok
+test_contended_lock_never_blocks_owner_or_producer (tests.test_control_inbox.ControlInboxTests.test_contended_lock_never_blocks_owner_or_producer) ... ok
+test_cross_thread_offer_owner_admission_and_batch_budget (tests.test_control_inbox.ControlInboxTests.test_cross_thread_offer_owner_admission_and_batch_budget) ... ok
+test_dispatched_request_expiry_cannot_become_applied (tests.test_control_inbox.ControlInboxTests.test_dispatched_request_expiry_cannot_become_applied) ... ok
+test_idle_pause_service_expires_wall_lease_without_tick_advance (tests.test_control_inbox.ControlInboxTests.test_idle_pause_service_expires_wall_lease_without_tick_advance) ... ok
+test_immutable_types_and_sizes_only (tests.test_control_inbox.ControlInboxTests.test_immutable_types_and_sizes_only) ... ok
+test_inbox_service_on_wrong_thread_is_forbidden (tests.test_control_inbox.ControlInboxTests.test_inbox_service_on_wrong_thread_is_forbidden) ... ok
+test_item_and_byte_full_diagnostics_do_not_drop_old_commands (tests.test_control_inbox.ControlInboxTests.test_item_and_byte_full_diagnostics_do_not_drop_old_commands) ... ok
+test_outcome_advances_monotonic_tick (tests.test_control_inbox.ControlInboxTests.test_outcome_advances_monotonic_tick) ... ok
+test_pending_plus_dispatched_share_capacity (tests.test_control_inbox.ControlInboxTests.test_pending_plus_dispatched_share_capacity) ... ok
+test_priority_revoke_with_full_and_contended_fifo (tests.test_control_inbox.ControlInboxTests.test_priority_revoke_with_full_and_contended_fifo) ... ok
+test_rejected_lookup_survives_revocation (tests.test_control_inbox.ControlInboxTests.test_rejected_lookup_survives_revocation) ... ok
+test_revoke_after_dispatch_prevents_authorization (tests.test_control_inbox.ControlInboxTests.test_revoke_after_dispatch_prevents_authorization) ... ok
+test_terminal_lookup_survives_expiry_and_revocation_without_admission (tests.test_control_inbox.ControlInboxTests.test_terminal_lookup_survives_expiry_and_revocation_without_admission) ... ok
+test_unearned_and_duplicate_outcomes_rejected (tests.test_control_inbox.ControlInboxTests.test_unearned_and_duplicate_outcomes_rejected) ... ok
+
+======================================================================
+FAIL: test_admitted_commands_are_not_dispatched_by_engine (tests.test_session_control.SessionControlTests.test_admitted_commands_are_not_dispatched_by_engine)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tests\test_session_control.py", line 255, in test_admitted_commands_are_not_dispatched_by_engine
+    self.assertEqual(self.control.commands.counts["pending"], 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 52 tests in 0.677s
+
+FAILED (failures=1)

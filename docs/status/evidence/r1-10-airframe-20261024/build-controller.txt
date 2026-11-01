@@ -1,0 +1,133 @@
+[1/133] Copying efis-ems-qt qml sources into build dir
+[2/133] Copying efis-pfd-qt qml sources into build dir
+[3/133] Automatic MOC and UIC for target efis_pfd_aircraft_profile_tests
+[4/133] Building CXX object CMakeFiles\efis_pfd_aircraft_profile_tests.dir\tests\pfd_aircraft_profile_tests.cpp.obj
+[5/133] Building CXX object CMakeFiles\efis_pfd_aircraft_profile_tests.dir\efis_pfd_aircraft_profile_tests_autogen\mocs_compilation.cpp.obj
+[6/133] Running qmlimportscanner for efis-ems-qt
+[7/133] Running qmlimportscanner for efis-pfd-qt
+[8/133] Running rcc for resource efis-ems-qt_raw_qml_0
+[9/133] Generating .rcc/qmlcache/efis-ems-qt_qml/HmiAirframePanel_qml.cpp, .rcc/qmlcache/efis-ems-qt_qml/HmiAirframePanel_qml.cpp.aotstats
+[10/133] Building CXX object CMakeFiles\efis-ems-qt.dir\build-ems-state-review\.qt\rcc\qrc_efis-ems-qt_raw_qml_0.cpp.obj
+[11/133] Automatic MOC and UIC for target efis-pfd-qt
+[12/133] Running AUTOMOC file extraction for target efis-pfd-qt
+[13/133] Running rcc for resource efis-pfd-qt_raw_qml_0
+[14/133] Running moc --collect-json for target efis-pfd-qt
+[15/133] Automatic QML type registration for target efis-pfd-qt
+[16/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/DataTape_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/DataTape_qml.cpp.aotstats
+[17/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/Hsi_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/Hsi_qml.cpp.aotstats
+[18/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/Main_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/Main_qml.cpp.aotstats
+[19/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/SensorBenchPanel_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/SensorBenchPanel_qml.cpp.aotstats
+[20/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/MaintenanceOverlay_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/MaintenanceOverlay_qml.cpp.aotstats
+[21/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/FlightModeAnnunciator_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/FlightModeAnnunciator_qml.cpp.aotstats
+[22/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/SystemStatusStrip_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/SystemStatusStrip_qml.cpp.aotstats
+[23/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HeadingTape_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HeadingTape_qml.cpp.aotstats
+[24/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/SystemMfd_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/SystemMfd_qml.cpp.aotstats
+[25/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/CommandRail_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/CommandRail_qml.cpp.aotstats
+[26/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/ContextLane_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/ContextLane_qml.cpp.aotstats
+[27/133] Building CXX object CMakeFiles\efis-ems-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-ems-qt_qml\HmiAirframePanel_qml.cpp.obj
+[28/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/MissionDock_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/MissionDock_qml.cpp.aotstats
+[29/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/FlightCanvas_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/FlightCanvas_qml.cpp.aotstats
+[30/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/PageSelector_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/PageSelector_qml.cpp.aotstats
+[31/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveMissionView_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveMissionView_qml.cpp.aotstats
+[32/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/AdaptivePfd_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/AdaptivePfd_qml.cpp.aotstats
+[33/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveNavigationView_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveNavigationView_qml.cpp.aotstats
+[34/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveFpvView_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveFpvView_qml.cpp.aotstats
+[35/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveShell_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveShell_qml.cpp.aotstats
+[36/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/EmsStatusHeader_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/EmsStatusHeader_qml.cpp.aotstats
+[37/133] Building CXX object CMakeFiles\efis_pfd_aircraft_profile_tests.dir\src\renderers\qt\pfd_controller.cpp.obj
+[38/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/EfisTouchKeyboard_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/EfisTouchKeyboard_qml.cpp.aotstats
+[39/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveEmsView_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveEmsView_qml.cpp.aotstats
+[40/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/Theme_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/Theme_qml.cpp.aotstats
+[41/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiTokens_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiTokens_qml.cpp.aotstats
+[42/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/OperationalProfileSetup_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/OperationalProfileSetup_qml.cpp.aotstats
+[43/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/EmsSetupOverlay_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/EmsSetupOverlay_qml.cpp.aotstats
+[44/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiDataStateBadge_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiDataStateBadge_qml.cpp.aotstats
+[45/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiAirframePanel_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiAirframePanel_qml.cpp.aotstats
+[46/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiArcGaugeV4_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiArcGaugeV4_qml.cpp.aotstats
+[47/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiCylinderMatrixV2_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiCylinderMatrixV2_qml.cpp.aotstats
+[48/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiFuelStatus_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiFuelStatus_qml.cpp.aotstats
+[49/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiElectricalSynoptic_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiElectricalSynoptic_qml.cpp.aotstats
+[50/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/SkyViewCompassArc_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/SkyViewCompassArc_qml.cpp.aotstats
+[51/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiGoldenController_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiGoldenController_qml.cpp.aotstats
+[52/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiComponentShowcase_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiComponentShowcase_qml.cpp.aotstats
+[53/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/HmiGoldenMain_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/HmiGoldenMain_qml.cpp.aotstats
+[54/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/GpuMapSurface_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/GpuMapSurface_qml.cpp.aotstats
+[55/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/WeatherRadarOverlay_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/WeatherRadarOverlay_qml.cpp.aotstats
+[56/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/SkyViewGoldenMain_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/SkyViewGoldenMain_qml.cpp.aotstats
+[57/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalTape_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalTape_qml.cpp.aotstats
+[58/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalFma_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalFma_qml.cpp.aotstats
+[59/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/Terrain3DSurface_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/Terrain3DSurface_qml.cpp.aotstats
+[60/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/TerrainTile3D_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/TerrainTile3D_qml.cpp.aotstats
+[61/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalCircularGauge_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalCircularGauge_qml.cpp.aotstats
+[62/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalVisionSurface_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalVisionSurface_qml.cpp.aotstats
+[63/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalSystemsDeck_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/ProfessionalSystemsDeck_qml.cpp.aotstats
+[64/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/EmsGaugeV3_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/EmsGaugeV3_qml.cpp.aotstats
+[65/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/EmsVectorIcon_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/EmsVectorIcon_qml.cpp.aotstats
+[66/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/EngineTemperatureBars_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/EngineTemperatureBars_qml.cpp.aotstats
+[67/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/SystemSimulatorOverlay_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/SystemSimulatorOverlay_qml.cpp.aotstats
+[68/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveCanvasView_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/AdaptiveCanvasView_qml.cpp.aotstats
+[69/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/EmergencyFlightSupport_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/EmergencyFlightSupport_qml.cpp.aotstats
+[70/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/EmergencyAssistView_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/EmergencyAssistView_qml.cpp.aotstats
+[71/133] Generating .rcc/qmlcache/efis-pfd-qt_qml/RadioAssistView_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/RadioAssistView_qml.cpp.aotstats
+[72/133] Linking CXX executable efis_pfd_aircraft_profile_tests.exe
+[73/133] Linking CXX executable efis-ems-qt.exe
+[74/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\efis-pfd-qt_qmltyperegistrations.cpp.obj
+[75/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\src\renderers\qt\main.cpp.obj
+[76/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\efis-pfd-qt_autogen\mocs_compilation.cpp.obj
+[77/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\src\renderers\qt\pfd_controller.cpp.obj
+[78/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\Main_qml.cpp.obj
+[79/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\DataTape_qml.cpp.obj
+[80/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\Hsi_qml.cpp.obj
+[81/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\SensorBenchPanel_qml.cpp.obj
+[82/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\FlightModeAnnunciator_qml.cpp.obj
+[83/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\SystemStatusStrip_qml.cpp.obj
+[84/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HeadingTape_qml.cpp.obj
+[85/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\SystemMfd_qml.cpp.obj
+[86/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\CommandRail_qml.cpp.obj
+[87/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\MaintenanceOverlay_qml.cpp.obj
+[88/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\ContextLane_qml.cpp.obj
+[89/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\MissionDock_qml.cpp.obj
+[90/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\FlightCanvas_qml.cpp.obj
+[91/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\PageSelector_qml.cpp.obj
+[92/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\AdaptivePfd_qml.cpp.obj
+[93/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\AdaptiveMissionView_qml.cpp.obj
+[94/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\AdaptiveFpvView_qml.cpp.obj
+[95/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\AdaptiveShell_qml.cpp.obj
+[96/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\AdaptiveNavigationView_qml.cpp.obj
+[97/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\EmsStatusHeader_qml.cpp.obj
+[98/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\EfisTouchKeyboard_qml.cpp.obj
+[99/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\EmsSetupOverlay_qml.cpp.obj
+[100/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\AdaptiveEmsView_qml.cpp.obj
+[101/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\OperationalProfileSetup_qml.cpp.obj
+[102/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\Theme_qml.cpp.obj
+[103/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiTokens_qml.cpp.obj
+[104/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiDataStateBadge_qml.cpp.obj
+[105/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiArcGaugeV4_qml.cpp.obj
+[106/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiCylinderMatrixV2_qml.cpp.obj
+[107/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiAirframePanel_qml.cpp.obj
+[108/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiFuelStatus_qml.cpp.obj
+[109/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiElectricalSynoptic_qml.cpp.obj
+[110/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\SkyViewCompassArc_qml.cpp.obj
+[111/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiComponentShowcase_qml.cpp.obj
+[112/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiGoldenController_qml.cpp.obj
+[113/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\HmiGoldenMain_qml.cpp.obj
+[114/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\SkyViewGoldenMain_qml.cpp.obj
+[115/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\GpuMapSurface_qml.cpp.obj
+[116/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\WeatherRadarOverlay_qml.cpp.obj
+[117/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\ProfessionalTape_qml.cpp.obj
+[118/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\ProfessionalFma_qml.cpp.obj
+[119/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\Terrain3DSurface_qml.cpp.obj
+[120/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\TerrainTile3D_qml.cpp.obj
+[121/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\ProfessionalVisionSurface_qml.cpp.obj
+[122/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\ProfessionalSystemsDeck_qml.cpp.obj
+[123/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\ProfessionalCircularGauge_qml.cpp.obj
+[124/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\EmsGaugeV3_qml.cpp.obj
+[125/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\EngineTemperatureBars_qml.cpp.obj
+[126/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\EmsVectorIcon_qml.cpp.obj
+[127/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\AdaptiveCanvasView_qml.cpp.obj
+[128/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\SystemSimulatorOverlay_qml.cpp.obj
+[129/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.qt\rcc\qrc_efis-pfd-qt_raw_qml_0.cpp.obj
+[130/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\EmergencyFlightSupport_qml.cpp.obj
+[131/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\EmergencyAssistView_qml.cpp.obj
+[132/133] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\RadioAssistView_qml.cpp.obj
+[133/133] Linking CXX executable efis-pfd-qt.exe

@@ -1,0 +1,15 @@
+Test project C:/Users/stefa/.codex/.chatgpt-projects/g-p-6a8162f124ac8191abb9a466a8cdcd25/tmp/efis-next-main-integration/build-ems-state-review
+    Start 28: efis_jsbsim_session_tests
+1/5 Test #28: efis_jsbsim_session_tests .........   Passed    0.47 sec
+    Start 29: efis_sil_world_tests
+2/5 Test #29: efis_sil_world_tests ..............   Passed    0.41 sec
+    Start 30: efis_sil_development_plan_tests
+3/5 Test #30: efis_sil_development_plan_tests ...   Passed    0.17 sec
+    Start 75: efis_jsbsim_wire_check_tests
+4/5 Test #75: efis_jsbsim_wire_check_tests ......   Passed    0.64 sec
+    Start 76: efis_sil_panel_replay_tests
+5/5 Test #76: efis_sil_panel_replay_tests .......   Passed    0.88 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   2.59 sec

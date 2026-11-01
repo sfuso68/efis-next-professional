@@ -1,0 +1,41 @@
+test_authentication_is_trusted_caller_context_not_payload (tests.test_control_inbox.ControlInboxTests.test_authentication_is_trusted_caller_context_not_payload) ... ok
+test_cached_applied_outcome_retry_does_not_requeue (tests.test_control_inbox.ControlInboxTests.test_cached_applied_outcome_retry_does_not_requeue) ... ok
+test_contended_lock_never_blocks_owner_or_producer (tests.test_control_inbox.ControlInboxTests.test_contended_lock_never_blocks_owner_or_producer) ... ok
+test_cross_thread_offer_owner_admission_and_batch_budget (tests.test_control_inbox.ControlInboxTests.test_cross_thread_offer_owner_admission_and_batch_budget) ... ok
+test_dispatched_request_expiry_cannot_become_applied (tests.test_control_inbox.ControlInboxTests.test_dispatched_request_expiry_cannot_become_applied) ... ok
+test_idle_pause_service_expires_wall_lease_without_tick_advance (tests.test_control_inbox.ControlInboxTests.test_idle_pause_service_expires_wall_lease_without_tick_advance) ... ok
+test_immutable_types_and_sizes_only (tests.test_control_inbox.ControlInboxTests.test_immutable_types_and_sizes_only) ... ok
+test_inbox_service_on_wrong_thread_is_forbidden (tests.test_control_inbox.ControlInboxTests.test_inbox_service_on_wrong_thread_is_forbidden) ... ok
+test_item_and_byte_full_diagnostics_do_not_drop_old_commands (tests.test_control_inbox.ControlInboxTests.test_item_and_byte_full_diagnostics_do_not_drop_old_commands) ... ok
+test_outcome_advances_monotonic_tick (tests.test_control_inbox.ControlInboxTests.test_outcome_advances_monotonic_tick) ... ok
+test_pending_plus_dispatched_share_capacity (tests.test_control_inbox.ControlInboxTests.test_pending_plus_dispatched_share_capacity) ... ok
+test_priority_revoke_with_full_and_contended_fifo (tests.test_control_inbox.ControlInboxTests.test_priority_revoke_with_full_and_contended_fifo) ... ok
+test_rejected_lookup_survives_revocation (tests.test_control_inbox.ControlInboxTests.test_rejected_lookup_survives_revocation) ... ok
+test_revoke_after_dispatch_prevents_authorization (tests.test_control_inbox.ControlInboxTests.test_revoke_after_dispatch_prevents_authorization) ... ok
+test_terminal_lookup_survives_expiry_and_revocation_without_admission (tests.test_control_inbox.ControlInboxTests.test_terminal_lookup_survives_expiry_and_revocation_without_admission) ... ok
+test_unearned_and_duplicate_outcomes_rejected (tests.test_control_inbox.ControlInboxTests.test_unearned_and_duplicate_outcomes_rejected) ... ok
+test_admission_and_one_time_immutable_dispatch (tests.test_command_queue.CommandQueueTests.test_admission_and_one_time_immutable_dispatch) ... ok
+test_byte_limit_fails_closed (tests.test_command_queue.CommandQueueTests.test_byte_limit_fails_closed) ... ok
+test_conflict_and_sequence_reuse (tests.test_command_queue.CommandQueueTests.test_conflict_and_sequence_reuse) ... ok
+test_history_limit_no_eviction_fails_closed (tests.test_command_queue.CommandQueueTests.test_history_limit_no_eviction_fails_closed) ... ok
+test_lease_tick_boundary_and_duration_bounds (tests.test_command_queue.CommandQueueTests.test_lease_tick_boundary_and_duration_bounds) ... ok
+test_order_and_closed_queue (tests.test_command_queue.CommandQueueTests.test_order_and_closed_queue) ... ok
+test_owner_thread_enforced (tests.test_command_queue.CommandQueueTests.test_owner_thread_enforced) ... ok
+test_pending_capacity_and_revoke_independent_of_capacity (tests.test_command_queue.CommandQueueTests.test_pending_capacity_and_revoke_independent_of_capacity) ... ok
+test_retry_before_and_after_dispatch_never_requeues (tests.test_command_queue.CommandQueueTests.test_retry_before_and_after_dispatch_never_requeues) ... ok
+test_tick_and_clock_reversal_rejected (tests.test_command_queue.CommandQueueTests.test_tick_and_clock_reversal_rejected) ... ok
+test_tick_expiry_and_horizon (tests.test_command_queue.CommandQueueTests.test_tick_expiry_and_horizon) ... ok
+test_wall_lease_expires_even_without_simulation_ticks (tests.test_command_queue.CommandQueueTests.test_wall_lease_expires_even_without_simulation_ticks) ... ok
+test_wrong_identity_epoch_lease_or_json_never_queues (tests.test_command_queue.CommandQueueTests.test_wrong_identity_epoch_lease_or_json_never_queues) ... ok
+test_audit_rejects_duplicate_missing_and_modified_application (tests.test_pilot_fixture.PilotFixtureTests.test_audit_rejects_duplicate_missing_and_modified_application) ... ok
+test_expired_lease_releases_controls_before_step (tests.test_pilot_fixture.PilotFixtureTests.test_expired_lease_releases_controls_before_step) ... ok
+test_invalid_plan_limits_and_capabilities (tests.test_pilot_fixture.PilotFixtureTests.test_invalid_plan_limits_and_capabilities) ... ok
+test_journal_failure_prevents_input_write (tests.test_pilot_fixture.PilotFixtureTests.test_journal_failure_prevents_input_write) ... ok
+test_readback_mismatch_never_claims_applied (tests.test_pilot_fixture.PilotFixtureTests.test_readback_mismatch_never_claims_applied) ... ok
+test_slow_intent_journal_expires_lease_before_input_write (tests.test_pilot_fixture.PilotFixtureTests.test_slow_intent_journal_expires_lease_before_input_write) ... ok
+test_tick_order_readback_and_ack (tests.test_pilot_fixture.PilotFixtureTests.test_tick_order_readback_and_ack) ... ok
+
+----------------------------------------------------------------------
+Ran 36 tests in 0.030s
+
+OK

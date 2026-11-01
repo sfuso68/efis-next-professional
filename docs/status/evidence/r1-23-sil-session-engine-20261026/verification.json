@@ -1,0 +1,20 @@
+{
+  "schema":"fuso-avionics.sil-session-engine-evidence.v1",
+  "date":"2026-10-26",
+  "source_parent_commit":"b77fc1b091d9fbcd56e9521c68e60e67605b1091",
+  "scope":"P02_SOFTWARE_LIFECYCLE_SCHEDULER_MAILBOX_JOURNAL",
+  "status":"PARTIAL",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "software":{"python_methods":101,"new_methods":19,"regression_methods":82,"python_status":"PASS","ctest_targets":7,"ctest_status":"PASS","cmake_configure":"PASS","native_binaries":"PREEXISTING_NOT_REBUILT"},
+  "backend":"COUNTER_FIXTURE_NOT_FLIGHT_DYNAMICS",
+  "timing":"VIRTUAL_CLOCK_NOT_REALTIME_MEASUREMENT",
+  "hardware_this_increment":"NOT_RUN_NO_NODES_CONTACTED",
+  "retained_failure":{"log":"r123-initial-hardlink-denied.txt","cause":"Windows sandbox denied hardlink; state FAILED as required","correction":"Windows exclusive rename; POSIX exclusive hardlink remains untested"},
+  "positive_cases":["slow absent and busy consumers cannot block pump","bounded eight single-slot consumers","immutable packet and manifest copies","owner-thread lifecycle","pause no new samples; resume new epoch with physical counter preserved","one step per pump no catchup; overrun and backend stall fail","clock reverse and invalid backend frame fail","journal storage/finalization failure does not complete","existing output and result never overwritten","real temporary-file truth hash matches final result"],
+  "open":["JSBSim adapter and physical mapping","real monotonic timed run","POSIX publication path","storage watchdog process isolation and directory durability","new journal replay","P03 authenticated command queue dedup and application","P04 canonical codecs fanout and actual panels","power touch golden and endurance"],
+  "operational_wire_changed":false,
+  "new_renderer_build":false,
+  "warnings":["Preexisting MSVC object path warning remains"],
+  "requirements_promoted_to_done":[]
+}

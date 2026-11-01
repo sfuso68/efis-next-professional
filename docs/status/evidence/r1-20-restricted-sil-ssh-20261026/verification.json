@@ -1,0 +1,33 @@
+{
+  "schema": "fuso-avionics.restricted-sil-verification.v1",
+  "status": "PARTIAL",
+  "access_subgate": "VERIFIED_ON_REAL_NODES",
+  "flight_approval": false,
+  "date_utc": "2026-10-26",
+  "source": "serverha 192.168.1.6",
+  "target": "PFD 192.168.1.45",
+  "key_fingerprint": "SHA256:iSzl9PBvc3VvDrf+lrosgifo1y/WgAxg8n3AAqQHU0k",
+  "private_key_copied": false,
+  "windows_in_data_path": false,
+  "allowed_commands": ["SIL_CHECK_V1", "SIL_FEED_V1"],
+  "negative_probes_passed": 8,
+  "software": {"windows_tests": 60, "serverha_tests": 70, "targeted_ctest": "4/4 PASS"},
+  "hardware_sessions": [
+    {"seconds": 60, "frames_forwarded": 1201, "maximum_rtt_ms": 61.275209, "report": "r120-bridge-report.json"},
+    {"seconds": 60, "frames_forwarded": 1201, "maximum_rtt_ms": 61.274087, "source_max_lateness_ms": 11.829300783574581, "resource_caps_observed": true, "report": "r120-bridge-limited.json"}
+  ],
+  "sandbox": {"observed_uid": 63330, "effective_capabilities": 0, "no_new_privileges": true, "network": "PRIVATE_LOOPBACK_ONLY", "memory_bytes": 134217728, "swap_bytes": 0, "tasks_max": 16, "cpu_quota_percent": 50},
+  "sha256": {
+    "dispatcher": "16feeee17dc26e0762798998be9253398542ca492b9119628cf875787f5d3d95",
+    "runner": "49b14bfd10abb55b6aa464952eb4d83077e0acfd4a83680e55b6a5d90ea1b298",
+    "adapter_arm64": "7d1c5880e6e06d69f71b6c3fe26a8f67860a65fe2259f661c49ad960066f6167",
+    "renderer_unchanged": "a64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854",
+    "final_source_frames": "8b08fbad9d813e09e3f333f0a127584f439e1da0ffd6b2771a5280e75e743334",
+    "control_source_archive_v3": "761fe51af39e3598461cbae0b5b3a438b95648149e9a88475e6acfc6842d1f8a"
+  },
+  "restoration": {"verified_utc": "2026-10-26T21:39:46Z", "pfd_active_pid": 1745346, "recorder_unchanged_pid": 1419, "throttled": "0x0", "bench_left_active": false},
+  "gui_last_window": {"hz": 20, "accepted": 1185, "rejected": 0, "gaps": 0, "socket_errors": 0, "all_forwarded_frames_rendered_proven": false},
+  "open": ["independent continuous producer", "interactive pilot inputs", "multi-panel fanout", "complete EMS airframe weather NAV GUI consumers", "validated aircraft models", "PFD touch", "endurance golden and other-node power acceptance"],
+  "retained_failed_attempts": ["installer backup directory preflight before mutation", "Windows path representation test fixed", "server source-v2 missing world fixture; fresh v3 passed"],
+  "not_claimed": ["agent or X11 functional probe", "new ARM64 build", "flight approval", "full simulator completion"]
+}

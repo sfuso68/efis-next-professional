@@ -1,0 +1,2 @@
+sfuso sfuso 600 /home/sfuso/.ssh/efis_sil_pfd_ed25519
+256 SHA256:iSzl9PBvc3VvDrf+lrosgifo1y/WgAxg8n3AAqQHU0k efis-sil-serverha-to-pfd-r120 (ED25519)

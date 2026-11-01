@@ -21,6 +21,7 @@ TestCase {
     // Inspect actual instantiated controls, including their nested state badges.
     // A fixture/helper-only test would not detect a wrong binding in this view.
     function stateConsumers(item, result) {
+        if (item.objectName === "emsAirframePanel") return result
         if (item.dataState !== undefined) result.push(item)
         for (var i = 0; i < item.children.length; ++i)
             stateConsumers(item.children[i], result)

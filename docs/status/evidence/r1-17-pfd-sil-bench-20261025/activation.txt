@@ -1,0 +1,49 @@
+BENCH_REPLAY_PREFLIGHT=PASS frames=1201 source_node=65000 mode=CHECK_ONLY
+PFD_BENCH_PREFLIGHT=PASS
+Running timer as unit: efis-sil-panel-restore.timer
+Will run service as unit: efis-sil-panel-restore.service
+Running as unit: efis-sil-panel-screen.service; invocation ID: 72ae19fe5c5e47a5a6541a63649ad357
+Running as unit: efis-sil-panel-feed.service; invocation ID: 0671de5f024b4ded91b093132fc4ec3d
+PFD_BENCH_ACTIVE=TEMPORARY_15_MINUTES
+SOURCE=REPLAY_JSBSIM_SIM_NODE_65000_LOOPBACK_49152
+EMS_WEATHER_AIRFRAME=NOT_CONNECTED
+FLIGHT_APPROVAL=false
+FEED_FAILURE_AUTO_RESTORE=PASS
+BENCH_REPLAY_PREFLIGHT=PASS frames=1201 source_node=65000 mode=CHECK_ONLY
+PFD_BENCH_PREFLIGHT=PASS
+Running timer as unit: efis-sil-panel-restore.timer
+Will run service as unit: efis-sil-panel-restore.service
+Running as unit: efis-sil-panel-screen.service; invocation ID: 629861c82e244e4dab092b2857e28465
+Running as unit: efis-sil-panel-feed.service; invocation ID: 6f3eacc2c07f48c9bcfad9ab1b1eeca3
+PFD_BENCH_ACTIVE=TEMPORARY_15_MINUTES
+SOURCE=REPLAY_JSBSIM_SIM_NODE_65000_LOOPBACK_49152
+EMS_WEATHER_AIRFRAME=NOT_CONNECTED
+FLIGHT_APPROVAL=false
+PRIVATE_SHARED_NAMESPACE=PASS
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
+UNCONN 0      0          127.0.0.1:49152      0.0.0.0:*
+UNCONN 0      0                  *:52629            *:*
+RECORDER_UNCHANGED=PASS
+Oct 25 01:22:35 efis-pfd-01 env[1617719]: 2026-10-25T01:22:35.957 event=navigation_index_loaded airports= 65 version= 0.2.0-ourairports-development path= /home/efis/efis-sil-panel-r117/work-v1/data/navigation/navigation-index.json
+Oct 25 01:22:35 efis-pfd-01 env[1617719]: 2026-10-25T01:22:35.957 event=radionavigation_index_loaded facilities= 0 version= 0.1.0-empty-development status= NO_DATA path= /home/efis/efis-sil-panel-r117/work-v1/data/navigation/radionavigation-index.json
+Oct 25 01:22:35 efis-pfd-01 env[1617719]: 2026-10-25T01:22:35.957 event=imagery_package_loaded state= OFFLINE_READY tiles= 1326 coverage_gaps= 27 path= /home/efis/efis-next/output/imagery/active-package.json
+Oct 25 01:22:36 efis-pfd-01 env[1617719]: 2026-10-25T01:22:36.148 event=terrain_projection_contract contract=ENU_LOCAL_V1 lod_basis=tile_footprint high_enter_m=18000 high_exit_m=24000 preload_m=45000
+Oct 25 01:22:36 efis-pfd-01 env[1617719]: 2026-10-25T01:22:36.173 event=startup product=efis-next component=pfd version=0.1.0 qt= 6.8.2 platform= wayland
+Oct 25 01:22:36 efis-pfd-01 efis-sil-panel-replay[1617723]: BENCH_REPLAY_PREFLIGHT=PASS frames=1201 source_node=65000 mode=LOOPBACK_900S
+Oct 25 01:22:37 efis-pfd-01 env[1617719]: 2026-10-25T01:22:37.502 event=callback_stall callback=pfd_update_snapshot duration_ms= 1181
+Oct 25 01:22:37 efis-pfd-01 env[1617719]: 2026-10-25T01:22:37.502 event=event_loop_stall duration_ms= 1328
+Oct 25 01:22:39 efis-pfd-01 env[1617719]: 2026-10-25T01:22:39.092 event=fuel_leak_monitor state= CALIBRATION REQUIRED excess_gph= 0
+Oct 25 01:22:39 efis-pfd-01 env[1617719]: 2026-10-25T01:22:39.097 event=event_loop_stall duration_ms= 1595
+Oct 25 01:22:40 efis-pfd-01 env[1617719]: 2026-10-25T01:22:40.923 event=render_health presentation_hz= 23.4 presentation_interval_ms= 42.78 snapshot_hz= 19.8 sequence= 95 ddp_state= LIVE ddp_hz= 19.6 ddp_accepted= 93 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 25 01:22:45 efis-pfd-01 env[1617719]: 2026-10-25T01:22:45.755 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.66 snapshot_hz= 50.1 sequence= 337 ddp_state= LIVE ddp_hz= 20.1 ddp_accepted= 190 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Sat 24 Oct 23:22:46 UTC 2026
+RuntimeMaxUSec=15min
+MainPID=1617719
+ActiveState=active
+ActiveEnterTimestamp=Sun 2026-10-25 01:22:35 CEST
+NextElapseUSecMonotonic=3w 3d 18h 42min 9.015171s
+ActiveState=active
+a64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854  /home/efis/efis-next-current/bin/efis-pfd-qt
+throttled=0x0
+bash: line 33: $'\r': command not found

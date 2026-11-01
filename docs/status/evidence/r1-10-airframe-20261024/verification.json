@@ -1,0 +1,117 @@
+{
+  "schema": "avionix-next.r1-10-verification.v1",
+  "date": "2026-10-24",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "base_commit": "f96b4838d2711c531b7ad359b7997b293f12b332",
+  "pull_request": 59,
+  "requirements": [
+    "PRJ-004",
+    "EMS-002",
+    "VER-001"
+  ],
+  "status": "VERIFIED_SOFTWARE_GOLDEN_AND_HARDWARE_OPEN",
+  "flight_approval": false,
+  "baseline_update_authorized": false,
+  "hardware_verification": "NOT_RUN",
+  "avionics_nodes_contacted": false,
+  "deploy": "NOT_RUN",
+  "merge": "NOT_RUN",
+  "tests": {
+    "qml": {
+      "status": "PASS",
+      "outcomes": 81,
+      "includes_init_cleanup": true,
+      "new_airframe_outcomes": 21,
+      "log": "qml.txt"
+    },
+    "mutation": {
+      "status": "REJECTED_AS_EXPECTED",
+      "mutation": "gearUsable no longer checks gearValid",
+      "exit_code": 1,
+      "failing_case": "AirframeValidity::test_independent_channels",
+      "log": "mutation.txt",
+      "source": "isolated copy under output, never production"
+    },
+    "python": {
+      "status": "PASS",
+      "count": 47,
+      "log": "python.txt"
+    },
+    "build": {
+      "status": "PASS",
+      "compiler": "MSVC 14.43 Release",
+      "qt": "6.11.1",
+      "targets": [
+        "efis-pfd-qt",
+        "efis-ems-qt",
+        "efis_pfd_aircraft_profile_tests"
+      ],
+      "aot": true,
+      "additional_logs": ["build-controller.txt", "build-overlay.txt"],
+      "log": "build.txt"
+    },
+    "native_cpp_runtime": {
+      "status": "NOT_RUN_LOCAL",
+      "reason": "Windows execution policy; new test compiled, native execution not claimed"
+    },
+    "captures": {
+      "status": "GENERATED_SOFTWARE_ONLY",
+      "images": 18,
+      "platform": "Windows offscreen/software, explicit Segoe UI/Symbol fontdir",
+      "log": "captures.txt",
+      "examples": [
+        "ems-800x480-lost.png",
+        "ems-1024x600-sim.png"
+      ],
+      "visual_review": "Two representative captures inspected; not complete Linux baseline approval"
+    }
+  },
+  "previous_commit_ci": {
+    "source": "f96b4838d2711c531b7ad359b7997b293f12b332",
+    "project_control": {
+      "run": 39752056068,
+      "status": "SUCCESS"
+    },
+    "core": {
+      "run": 39752055866,
+      "status": "FAILURE",
+      "blocking_job": "linux-qt-golden pixel comparison",
+      "core_sanitizers_build_qml": "SUCCESS"
+    },
+    "candidate_ci": "NOT_YET_RUN"
+  },
+  "open": [
+    "Linux candidate rerender and explicit 18-view golden review",
+    "native C++ runtime and ARM64/panel acceptance",
+    "power qualification before deployment",
+    "real airframe transport and per-leg validity adapter",
+    "real calibrated engine sensor/EDP vertical"
+  ],
+  "digest_format": "SHA256; UTF-8 text normalized LF, binary PNG raw bytes; verification file excluded",
+  "sha256": {
+    "qml/SystemSimulatorOverlay.qml": "95a3dbebe730dcbdf0143a7fad513e2faf714205b9423d04d010f2a694aa8551",
+    "docs/status/evidence/r1-10-airframe-20261024/build-controller.txt": "c7439bcfa3c0a6a48489febe5a0b99c5980ad8cf4e10d5661d12adc688e4c27e",
+    "docs/status/evidence/r1-10-airframe-20261024/build-overlay.txt": "b4e698259f7a917c9f82ed6ef612ab182bc7fdc55b6582c4016eb014286cfb84",
+    "qml/AdaptiveEmsView.qml": "aaa5f98deb4aa7b46e77926875b1288b254137c1bf11570fd13271512db3ac9c",
+    "qml/HmiAirframePanel.qml": "aadee98d99aa40b7f380517cae9214ad6f1f8758f35abd272f91e3e57e3b8c9c",
+    "qml/HmiComponentShowcase.qml": "15df0097c9f7ddac52730cb7c5bb1e96a6170b50f96a4eae442508b1d8f4cc93",
+    "qml/HmiGoldenController.qml": "f5bcce58f9b59cecaf60b40137d62a2a70ce1bd392199e6ffc28b0b807c313e4",
+    "qml/ProfessionalSystemsDeck.qml": "d663e14716e05463b832c202530558f1c8e9701dafa611934235d51dbc53963f",
+    "src/nodes/ems/ems_controller.cpp": "96eb8b7a408ee5747ba7c539ffa9c644fd061e9f344ef0f3e50d141321b002eb",
+    "src/nodes/ems/ems_controller.hpp": "21710fa4acb8bb675fc1cb2167bb92b9dd53ab3d1fee9b2564ac85b74a5c0e40",
+    "src/renderers/qt/pfd_controller.cpp": "a24c0dfc729db1b0b583ed52a8622810bef00db816fe90a8d475b8559b11ee69",
+    "src/renderers/qt/pfd_controller.hpp": "5ad0cb8427d644e570542f6ffa78bd786503d6e7ea12bfc41420f2e366684bee",
+    "tests/pfd_aircraft_profile_tests.cpp": "29b6fc979cb03873e4af102117a7fbd50da537065dedd1a7713275ce7b64d6fa",
+    "tests/qml-header-review/tst_review_capture.qml": "b8a2494822c4791a4c57162f6f164a3eb06ef7fa203e60304c1b37f67f0a485e",
+    "tests/qml/tst_ems_engine_state.qml": "38cb281eb13c796f4709f7e125f1e57daedef230ac3eb87ab5cf90e2b807c0e6",
+    "tests/test_avionix_hmi_contract.py": "bd110f33142706fd3aeeb5365f91617b8458dfa35d32a252b0df9d36f8668a1a",
+    "tests/qml/tst_airframe_validity.qml": "4c0ab0b3966f6ad8ac7f8c4eac5dfd53ca6599cfd29e96f559fe8ced5d3bd102",
+    "docs/status/evidence/r1-10-airframe-20261024/build.txt": "49f9ae715ce64501b88b3c95eae8ef35dc09c90b12084e56084c9f40dcac984e",
+    "docs/status/evidence/r1-10-airframe-20261024/captures.txt": "247d91718e3aa0157eb6c30e9ddacfaec8e1ae5ca178e639bdf059c4adfd3531",
+    "docs/status/evidence/r1-10-airframe-20261024/ems-1024x600-sim.png": "44ab178822df476972ca1bafbdfee56f24910604b638c155148f90deff4f177f",
+    "docs/status/evidence/r1-10-airframe-20261024/ems-800x480-lost.png": "937bd8b36d94342455d37fa53b3c2f80d67fb618af6b6f96fd5fddf054514fdf",
+    "docs/status/evidence/r1-10-airframe-20261024/mutation.txt": "af6a96cbc8146653dd99ca1258705548eb84a1dae92ea13092720950d61379d7",
+    "docs/status/evidence/r1-10-airframe-20261024/python.txt": "7fac059d159e7230048666567cdf92ec79ee67c3c6f531068bb71e3cefb04f5f",
+    "docs/status/evidence/r1-10-airframe-20261024/qml.txt": "a9863c157d6a6bded8ef79b8503014eb8576704bac050a9fbd182e573c00101e"
+  }
+}

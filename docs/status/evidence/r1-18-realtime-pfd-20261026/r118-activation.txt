@@ -1,0 +1,25 @@
+Mon 26 Oct 13:32:51 UTC 2026
+MainPID=1419
+ActiveState=active
+BENCH_REPLAY_PREFLIGHT=PASS frames=1201 source_node=65000 mode=CHECK_ONLY
+R118_PREFLIGHT=PASS
+R118_ACTIVE=TEMPORARY_15_MINUTES_TURN_REPLAY_NOT_LIVE
+EMS_WEATHER_AIRFRAME=NOT_CONNECTED
+FLIGHT_APPROVAL=false
+RuntimeMaxUSec=15min
+MainPID=1721569
+PrivateNetwork=yes
+ActiveState=active
+
+RuntimeMaxUSec=15min
+MainPID=1721574
+PrivateNetwork=yes
+ActiveState=active
+
+ActiveState=active
+Oct 25 01:43:26 efis-pfd-01 efis-sil-panel-replay[1618228]: BENCH_REPLAY_SENT=17800 loop=14 SIM=1 flight_approval=false
+Oct 25 01:43:36 efis-pfd-01 systemd[1]: efis-sil-panel-feed.service: Service reached runtime time limit. Stopping.
+Oct 25 01:43:36 efis-pfd-01 systemd[1]: efis-sil-panel-feed.service: Failed with result 'timeout'.
+Oct 25 01:43:36 efis-pfd-01 systemd[1]: efis-sil-panel-feed.service: Consumed 3.916s CPU time.
+Oct 26 14:32:52 efis-pfd-01 systemd[1]: Started efis-sil-panel-feed.service - [systemd-run] /home/efis/efis-sil-panel-r117/build-v3/efis-sil-panel-replay /home/efis/efis-sil-panel-r117/replay/r118-turn-v1 2bfa4f591e2d3ba607d9cbaef9e6f2d44118400913b96b3cd1af64c079323c80 --loopback-900s.
+throttled=0x0

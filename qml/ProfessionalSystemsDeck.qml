@@ -5,6 +5,8 @@ Rectangle {
     required property var controller
     property real uiScale: 1
     property string engineDataState: "FAIL"
+    readonly property bool airframeUsable: ["LIVE","SIM","SIM FORCED","DEGRADED"].indexOf(String(controller.airframeSourceState||""))>=0 && typeof controller.airframeDataAgeMs==="number" && isFinite(controller.airframeDataAgeMs) && controller.airframeDataAgeMs>=0
+    readonly property string flapReading: airframeUsable && controller.flapsInstalled===true && controller.flapAngleValid===true && typeof controller.flapAngle==="number" && isFinite(controller.flapAngle) ? Math.round(controller.flapAngle)+"°"+(String(controller.airframeSourceState).indexOf("SIM")===0?" SIM":"") : "—"
     readonly property bool dataUsable: ["LIVE","SIM","SIM FORCED","DEGRADED"].indexOf(String(controller.engineSourceState||""))>=0
     function reading(v,d,valid) { return dataUsable && valid===true && typeof v==="number" && isFinite(v) ? v.toFixed(d) : "—" }
     readonly property var engineLimits: controller.engineLimits||({})
@@ -78,9 +80,9 @@ Rectangle {
         Rectangle { width:96*deck.uiScale; height: parent.height; color: "#D9071119"; border.color: theme.border; radius: 3*deck.uiScale
             Text { x: 8*deck.uiScale; y: 5*deck.uiScale; text: "AIRCRAFT SYSTEMS"; color: theme.secondary; font.pixelSize: 7*deck.uiScale; font.bold: true }
             Grid { anchors.centerIn: parent; columns: 2; columnSpacing: 14*deck.uiScale; rowSpacing: 5*deck.uiScale
-                Repeater { model: [{n:"PITOT",v:"ON"},{n:"ICE",v:"OFF"},{n:"TRIM",v:"0.1"},{n:"FLAPS",v:"UP"},{n:"T/O",v:"OFF"},{n:"REC",v:controller.blackBoxState}]; delegate: Column { required property var modelData; spacing: 2*deck.uiScale
+                Repeater { model: [{n:"PITOT",v:"—"},{n:"ICE",v:"—"},{n:"TRIM",v:"—"},{n:"FLAPS",v:deck.flapReading},{n:"T/O",v:"—"},{n:"REC",v:controller.blackBoxState}]; delegate: Column { required property var modelData; spacing: 2*deck.uiScale
                         Text { anchors.horizontalCenter: parent.horizontalCenter; text: modelData.n; color: theme.secondary; font.pixelSize: 6*deck.uiScale; font.bold: true }
-                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: modelData.v; color: modelData.v==="OFF" ? theme.secondary : theme.green; font.pixelSize: 9*deck.uiScale; font.bold: true }
+                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: modelData.v; color: modelData.v==="—" || modelData.v==="OFF" ? theme.secondary : modelData.n==="FLAPS" ? theme.cyan : theme.green; font.pixelSize: 9*deck.uiScale; font.bold: true }
                 } }
             }
         }

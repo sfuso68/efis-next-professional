@@ -1,0 +1,7 @@
+[1/7] Copying efis-pfd-qt qml sources into build dir
+[2/7] Running qmlimportscanner for efis-pfd-qt
+[3/7] Running rcc for resource efis-pfd-qt_raw_qml_0
+[4/7] Generating .rcc/qmlcache/efis-pfd-qt_qml/SystemSimulatorOverlay_qml.cpp, .rcc/qmlcache/efis-pfd-qt_qml/SystemSimulatorOverlay_qml.cpp.aotstats
+[5/7] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.qt\rcc\qrc_efis-pfd-qt_raw_qml_0.cpp.obj
+[6/7] Building CXX object CMakeFiles\efis-pfd-qt.dir\build-ems-state-review\.rcc\qmlcache\efis-pfd-qt_qml\SystemSimulatorOverlay_qml.cpp.obj
+[7/7] Linking CXX executable efis-pfd-qt.exe

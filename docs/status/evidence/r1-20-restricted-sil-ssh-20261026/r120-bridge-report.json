@@ -1,0 +1,22 @@
+{
+  "schema": "fuso-avionics.sil-live.v1",
+  "status": "PASS",
+  "simulated": true,
+  "flight_approval": false,
+  "session_directory": "r120-direct-panel-1",
+  "frames_forwarded": 1201,
+  "mode": "LOOPBACK",
+  "transport": "DIRECT_SERVERHA_RESTRICTED_SSH",
+  "windows_in_data_path": false,
+  "panel_result": {
+    "flight_approval": false,
+    "frames": 1201,
+    "kind": "COMPLETE",
+    "maximum_rtt_ms": 61.275209,
+    "mode": "LIVE_LOOPBACK",
+    "schema": "fuso-avionics.sil-live.v1",
+    "simulated": true
+  },
+  "source_session_id": "5bc9185375604b649cdb431ab942bd9a",
+  "elapsed_seconds": 61.208247244823724
+}

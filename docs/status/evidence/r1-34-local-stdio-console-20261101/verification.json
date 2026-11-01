@@ -1,0 +1,71 @@
+{
+  "schema": "fuso-avionics.local-stdio-console-evidence.v1",
+  "date": "2026-11-01",
+  "status": "PARTIAL",
+  "source_commit": "0b079dfc004835895582ac46c18a5acd0c475e3f",
+  "source_archive_sha256": "ebea28c693dd775c77ff52bef9d8e16f0759ec6688b09f1217656d93415db3db",
+  "user_choice": "LOCAL_SSH_NO_NEW_NETWORK_SERVICES",
+  "implemented": [
+    "bounded local stdio owner console with three FDM controls and priority STOP",
+    "retained canonical identities including failed admission and uncertain outcome lookup",
+    "finite JSBSim runner with frozen policy and no lease renewal",
+    "bounded FD input, latest-only asynchronous output and combined reply/ingress snapshots",
+    "failed runner and transport paths never publish successful completion",
+    "partial thread startup and independent resource cleanup"
+  ],
+  "local_tests": {"new_methods": 24, "selected_methods": 247, "status": "PASS"},
+  "ctest": {
+    "selected_passed": 14,
+    "total_selected": 14,
+    "scope": "Python SIL only, excludes native panel replay",
+    "new_native_build": false,
+    "native_windows_gate": "INHERITED_WINERROR4551_OPEN",
+    "cmake_warning": "PREEXISTING_MSVC_OBJECT_PATH"
+  },
+  "server_tests": {
+    "methods": 261,
+    "native_jsbsim_methods": 14,
+    "status": "PASS",
+    "seconds": 23.036,
+    "new_native": "actual stdio pipe command, real JSBSim 100 ticks, audit verification, explicit V2 pack and restore",
+    "image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93",
+    "network": "NONE",
+    "source_runtime": "READ_ONLY",
+    "test_storage": "CONTAINER_TMPFS_NOT_POWER_LOSS_QUALIFIED"
+  },
+  "independent_review": {
+    "mode": "READ_ONLY",
+    "corrected": [
+      "unexpected exception incorrectly finalized successful result",
+      "partial thread startup could skip subsequent cleanup",
+      "rejected ingress was invisible",
+      "ingress snapshot overwrote owner reply in same iteration"
+    ],
+    "final_delta_blockers": 0
+  },
+  "log_sha256_scope": "COMMITTED_UTF8_LF_GIT_BLOBS_NOT_WINDOWS_CRLF_CHECKOUT",
+  "log_sha256": {
+    "cmake.txt": "f1cab0e54fe35b5e54e4aadb155a2be292f3ce8c07de3bbf62b67bf62911e008",
+    "ctest-python.txt": "fc936dba85e062dabfe1e70d14e893ffceb17d2938892e3ccc6ad640d2987d61",
+    "local-regression.txt": "0315794c3dfb172834199b367b608b4ebac75dedf2b39307fe03d4b16ea250fd",
+    "server-regression.txt": "93cf5802533b88f30824cc53d02626979c97f1a5947e34d5961cd5b13ea5de61"
+  },
+  "hardware_acceptance": "NOT_RUN",
+  "interactive_ssh_pilot_acceptance": "NOT_RUN",
+  "flight_approval": false,
+  "deploy_performed": false,
+  "merge_performed": false,
+  "new_network_services": false,
+  "simulation_completion": "NOT_COMPLETE",
+  "limitations": [
+    "trusted existing OS process/SSH context, no new remote authentication service",
+    "lifecycle pause/resume/rearm deliberately unsupported by console",
+    "5-second maximum control lease, no automatic renewal",
+    "cooperative wall cap cannot preempt blocked kernel calls",
+    "stdout is volatile latest-only diagnostic, not delivery or durable ACK proof",
+    "normal STOP and EOF can complete a shortened run, not full-duration acceptance",
+    "reference C172P not a validated aircraft/engine model",
+    "no executable physical replay, full-system qualification, fanout or NAS replication proof",
+    "Windows timing repeatability, power and real avionics display gates remain open"
+  ]
+}

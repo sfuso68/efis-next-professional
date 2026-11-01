@@ -1,0 +1,50 @@
+{
+  "schema": "fuso-avionics.development-verification.v1",
+  "date": "2026-10-25",
+  "block": "R1-16",
+  "base_commit": "3735429e156da01eb37baf98d260664f8d1b0d44",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "requirements": ["NAV-001", "NAV-002", "NAV-003", "WX-001", "WX-002", "VER-001"],
+  "backlog": "AVX-G5-02 IN_PROGRESS",
+  "status": "PARTIAL_OFFLINE_REFERENCE_IMPLEMENTED",
+  "flight_approval": false,
+  "tests": {
+    "windows": {"status": "PASS", "methods": 66, "world": 29, "session_regression": 18, "msfs_regression": 19},
+    "serverha": {"status": "PASS", "methods": 53, "world": 29, "session_regression": 18, "real_jsbsim_integration": 6},
+    "ctest": {"status": "PASS", "suites": "4/4", "scope": "Targeted, not full renderer/ARM64/CI acceptance"},
+    "runner": {"status": "PASS", "frames": 21, "duration_seconds": 1},
+    "checks": ["Analytic atmosphere/geodesy oracles", "Actual FDM wind changes GS and trajectory", "Actual FDM pressure drives altimeter model", "Same-environment byte-identical replay", "VOR CDI sign inbound/outbound and station declination", "Independent slant-range DME in VOR cone", "ILS front/back and needle directions", "GNSS loss does not remove radio", "Route sequencing/direct-to/XTK/ETA", "Weather age/UTC-month rollover/clock-skew", "Radar motion/georeferencing/PNG", "NAV mutation rejected even after frame digest recomputed"]
+  },
+  "runtime": {
+    "host": "sfuso@serverha 192.168.1.6",
+    "source": "/home/sfuso/avionix-sil-r114-20261025/world-source-v6",
+    "source_archive_sha256": "4d203624e81b77b4e82abf513c517e4d6f6c3aee8da7073f7828471e34183346",
+    "container_image": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93",
+    "jsbsim": "1.3.3",
+    "network": "NONE",
+    "limits": "2 CPU, 768 MiB, pids 64, cap-drop ALL, no-new-privileges, read-only source/runtime/root, writable new run folders only",
+    "runs": ["/home/sfuso/avionix-sil-r114-20261025/runs/world-weather-nav-reference-v3", "/home/sfuso/avionix-sil-r114-20261025/runs/world-weather-nav-engineout-v3"],
+    "frames_each": 1201,
+    "duration_seconds_each": 60,
+    "configuration_digest": "f9296942c9bab6f8738e3b0b3c6c55b49908b0a122805b5103155ede47dcf9bb"
+  },
+  "not_performed": ["Avionics hardware contact or acceptance", "Node activation/service restart", "New renderer integration/captures", "DDP/EDP mapping of the world groups", "Real weather parser/cache integration", "Network publisher", "RF or actuator output", "New ARM64 acceptance", "Merge", "Power or golden waiver"],
+  "remaining": ["Typed world-to-snapshot and actual renderer adapters", "SIM-only operational consumer/cache path", "Advanced TAF FM/TEMPO/BECMG", "Real NAV datasets/licensing/airports/alternates", "RNAV/procedures and complete guided mission", "Terrain masking/RF fidelity", "Stochastic weather/icing", "Catalog/NAS replication", "Power/release/golden gates and simultaneous panel acceptance"],
+  "limitations": ["C172P REFERENCE_UNVALIDATED, not Asso/Pioneer or either Rotax engine", "Fictional SIM stations and frequencies", "Dry troposphere and deterministic harmonic gust reference", "Simplified radio horizon, no DEM/refraction/antenna/interference", "Co-located ILS training geometry, not published service volume", "GNSS not certified integrity/RAIM", "Nearest only route points and ETA only waypoint current closure", "TAF persistence only, dewpoint not modeled", "Initial radar PNG only; moving field API not yet renderer overlay", "No full C++/QML rebuild claim; CMake configured and diagnostic target build/test only", "Exact replay across different libm/platforms not qualified"],
+  "initial_attempts": ["Archive v1 requested missing tests/__init__.py; v2 correct file list", "Native v2 failed closed: historic T-sl-dev-F absent; corrected using runtime catalog and documented delta-T Rankine", "First Windows cmd path used slashes and failed before CMake; corrected native path", "MSVC existing unrelated target object path-length warning retained"],
+  "digest_convention": "SHA256 UTF-8 with CRLF normalised to LF; source archive hash raw bytes. Integrity is not authentication.",
+  "artifacts": {
+    "tools/simulation/sil_world.py": "4b6c6e8ec8e83a4ce16622ac302a194aae78ae562ecff66a54cdf80ab13eaffc",
+    "tools/simulation/jsbsim_session.py": "462b0e958e50230d329d5a86f6f2410499d070c8b4d8c5291d7fcf6966cc1f4a",
+    "tools/simulation/run_serverha_world_sil.sh": "8af7fe7697966ec16e40b3fcceb04614778a22e1be254101a9ae8cd42aec15dc",
+    "tests/test_sil_world.py": "82e7a73c7b6d5309a64677ad49e5f9925fee3e0de1b49e9ac7dcecbaf72218ff",
+    "tests/jsbsim_world_integration.py": "955ae3abbae541f9e63f4479f7f48d879a94b95887835635d861e4946ac98c9e",
+    "config/simulation/treviso-belluno-world-reference.json": "ed4191bbb9845edf3843284e1b365e19b58dd4a73c2978106a9d1be56fb1787b",
+    "CMakeLists.txt": "ab828c73e4ccaac2a71d3115a3ab0ee90872dd0221dac7482fba17935ee8b976",
+    "docs/status/evidence/r1-16-sil-world-20261025/server.txt": "3bbee105f7ebb964ae49be63828478ee113998b66c4caf3b42bb30c32f86e5fb",
+    "docs/status/evidence/r1-16-sil-world-20261025/windows.txt": "ca2755b1e2c695f90a23471288740e699b1eca159f2823f2200dd22a805a0c75",
+    "docs/status/evidence/r1-16-sil-world-20261025/ctest.txt": "9e1e8739e928d3100120800a48ad71b5877bef1646e13b10236cb913ddf77b71",
+    "docs/status/evidence/r1-16-sil-world-20261025/runs.json": "ff757884fa985f5f7f2d7dbd892d3f2f2e534c8e3f30807900802f6dbb8e9d19",
+    "docs/status/evidence/r1-16-sil-world-20261025/runner.txt": "a3a558552af82d98271a44f0374f12dace72178611c42125e5b1aeb9db306c63"
+  }
+}

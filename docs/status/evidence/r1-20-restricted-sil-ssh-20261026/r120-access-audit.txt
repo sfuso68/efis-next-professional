@@ -1,0 +1,10 @@
+EXISTING_KEY_BYTES_PRESERVED=PASS
+12987ef363a71f8b411c159519cea097ba4c0f6014a86cb3d3b8ba545e71aff5  /var/lib/efis-next/sil-ssh-backup-r120-1793050156892054242/authorized_keys.before
+1
+root root 755 /usr/local/lib/efis-next/sil-r120
+root root 555 /usr/local/lib/efis-next/sil-r120/dispatch.sh
+root root 555 /usr/local/lib/efis-next/sil-r120/run-adapter.sh
+root root 555 /usr/local/lib/efis-next/sil-r120/adapter
+root root 440 /etc/sudoers.d/efis-sil-r120
+/etc/sudoers.d/efis-sil-r120: parsed OK
+R119_ORIGINAL_RESTORED=PASS

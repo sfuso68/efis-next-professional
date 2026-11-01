@@ -9,11 +9,13 @@
 #include "efis/core/derived_state.hpp"
 #include "efis/providers/engine_simulation_source.hpp"
 #include "efis/simulation/system_simulator.hpp"
+#include "efis/simulation/mission_simulator.hpp"
 #include "efis/emergency/emergency_assist.hpp"
 #include "../../setup/operational_profile_model.hpp"
 
 #include <memory>
 #include <cstddef>
+#include <limits>
 
 #include <QObject>
 #include <QTimer>
@@ -125,6 +127,11 @@ class PfdController final : public QObject {
     Q_PROPERTY(bool landingGearInstalled READ landingGearInstalled CONSTANT)
     Q_PROPERTY(bool retractableGear READ retractableGear CONSTANT)
     Q_PROPERTY(bool gearNoseLocked READ gearNoseLocked NOTIFY snapshotChanged)
+    Q_PROPERTY(QString airframeSourceState READ airframeSourceState NOTIFY snapshotChanged)
+    Q_PROPERTY(int airframeDataAgeMs READ airframeDataAgeMs NOTIFY snapshotChanged)
+    Q_PROPERTY(bool gearDataValid READ gearDataValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flapAngleValid READ flapAngleValid NOTIFY snapshotChanged)
+    Q_PROPERTY(bool flapCommandedValid READ flapCommandedValid NOTIFY snapshotChanged)
     Q_PROPERTY(bool gearLeftLocked READ gearLeftLocked NOTIFY snapshotChanged)
     Q_PROPERTY(bool gearRightLocked READ gearRightLocked NOTIFY snapshotChanged)
     Q_PROPERTY(QString gearState READ gearState NOTIFY snapshotChanged)
@@ -184,6 +191,7 @@ class PfdController final : public QObject {
     Q_PROPERTY(QString systemSimulationScenario READ systemSimulationScenario NOTIFY simulationChanged)
     Q_PROPERTY(QString systemSimulationPhase READ systemSimulationPhase NOTIFY simulationChanged)
     Q_PROPERTY(double systemSimulationProgress READ systemSimulationProgress NOTIFY simulationChanged)
+    Q_PROPERTY(double systemSimulationDurationSeconds READ systemSimulationDurationSeconds NOTIFY simulationChanged)
     Q_PROPERTY(double systemSimulationSpeed READ systemSimulationSpeed NOTIFY simulationChanged)
     Q_PROPERTY(QString systemSimulationLastEvent READ systemSimulationLastEvent NOTIFY simulationChanged)
     Q_PROPERTY(QString unitSystem READ unitSystem NOTIFY unitsChanged)
@@ -325,14 +333,20 @@ public:
     [[nodiscard]] QString maintenanceStatus() const;
     [[nodiscard]] bool landingGearInstalled() const { return landing_gear_installed_; }
     [[nodiscard]] bool retractableGear() const { return retractable_gear_; }
-    [[nodiscard]] bool gearNoseLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_nose_locked : true; }
-    [[nodiscard]] bool gearLeftLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_left_locked : true; }
-    [[nodiscard]] bool gearRightLocked() const { return system_simulation_active_ ? system_frame_.airframe.gear_right_locked : true; }
-    [[nodiscard]] QString gearState() const { return !landing_gear_installed_ ? QStringLiteral("NOT INSTALLED") : (gearNoseLocked() && gearLeftLocked() && gearRightLocked() ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("UP / TRANSIT")); }
+    // No real airframe transport is wired yet. Engine health is not evidence.
+    [[nodiscard]] QString airframeSourceState() const { return system_simulation_active_ ? QStringLiteral("SIM") : QStringLiteral("LOST"); }
+    [[nodiscard]] int airframeDataAgeMs() const { return system_simulation_active_ ? 0 : -1; }
+    [[nodiscard]] bool gearDataValid() const { return system_simulation_active_; }
+    [[nodiscard]] bool flapAngleValid() const { return system_simulation_active_; }
+    [[nodiscard]] bool flapCommandedValid() const { return system_simulation_active_; }
+    [[nodiscard]] bool gearNoseLocked() const { return gearDataValid() && system_frame_.airframe.gear_nose_locked; }
+    [[nodiscard]] bool gearLeftLocked() const { return gearDataValid() && system_frame_.airframe.gear_left_locked; }
+    [[nodiscard]] bool gearRightLocked() const { return gearDataValid() && system_frame_.airframe.gear_right_locked; }
+    [[nodiscard]] QString gearState() const { return !landing_gear_installed_ ? QStringLiteral("NOT INSTALLED") : !gearDataValid() ? QStringLiteral("NO DATA") : (gearNoseLocked() && gearLeftLocked() && gearRightLocked() ? QStringLiteral("DOWN & LOCKED") : QStringLiteral("UP / TRANSIT")); }
     [[nodiscard]] bool flapsInstalled() const { return flaps_installed_; }
     [[nodiscard]] QVariantList flapDetents() const { return flap_detents_; }
-    [[nodiscard]] double flapAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_angle_deg : 15.0; }
-    [[nodiscard]] double flapCommandedAngle() const { return system_simulation_active_ ? system_frame_.airframe.flap_command_deg : 15.0; }
+    [[nodiscard]] double flapAngle() const { return flapAngleValid() ? system_frame_.airframe.flap_angle_deg : std::numeric_limits<double>::quiet_NaN(); }
+    [[nodiscard]] double flapCommandedAngle() const { return flapCommandedValid() ? system_frame_.airframe.flap_command_deg : std::numeric_limits<double>::quiet_NaN(); }
     Q_INVOKABLE void cycleEngineFault();
     [[nodiscard]] QVariantMap aircraftSpeedProfile() const { return aircraft_speed_profile_; }
     [[nodiscard]] bool aircraftSpeedProfileAvailable() const { return aircraft_speed_profile_available_; }
@@ -420,6 +434,7 @@ public:
     [[nodiscard]] QString systemSimulationScenario() const;
     [[nodiscard]] QString systemSimulationPhase() const;
     [[nodiscard]] double systemSimulationProgress() const { return system_frame_.progress; }
+    [[nodiscard]] double systemSimulationDurationSeconds() const { return static_cast<double>((system_simulation_coherent_ ? mission_simulator_.duration() : system_simulator_.duration()).count())/1000.0; }
     [[nodiscard]] double systemSimulationSpeed() const { return system_simulation_speed_; }
     [[nodiscard]] QString systemSimulationLastEvent() const { return system_simulation_last_event_; }
     Q_INVOKABLE bool startSystemSimulation(const QString& scenario);
@@ -605,11 +620,13 @@ private:
     int imagery_coverage_gaps_{};
     QString imagery_atlas_source_;
     efis::simulation::SystemSimulator system_simulator_{};
+    efis::simulation::MissionSimulator mission_simulator_{};
+    efis::simulation::SimulationClock simulation_clock_{std::chrono::milliseconds{600000}};
+    bool system_simulation_coherent_{};
     efis::simulation::SimulationFrame system_frame_{};
     bool system_simulation_active_{};
     bool system_simulation_running_{};
     double system_simulation_speed_{1.0};
-    double system_simulation_elapsed_ms_{};
     efis::MonoTime system_simulation_last_tick_{};
     QString system_simulation_last_event_{QStringLiteral("READY")};
     QString unit_system_{QStringLiteral("AVIATION")};

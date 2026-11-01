@@ -1,0 +1,16 @@
+{
+  "schema":"fuso-avionics.sil-run-restore-evidence.v1",
+  "date":"2026-10-28",
+  "status":"PARTIAL",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "local_tests":{"new_methods":15,"total_methods":149,"status":"PASS"},
+  "source_commit":"75d46dde318e0a42ecf8554c46a9bfaa966e33b9",
+  "source_archive_sha256":"0ac6edd46b94c00d810814a0f77fc966617cc2228ed382c45fc47143f7be157e",
+  "server_tests":{"methods":159,"native_jsbsim_methods":10,"status":"PASS","network":"NONE","source_runtime":"READ_ONLY"},
+  "ctest":{"passed":11,"total":12,"status":"FAIL","blocked_target":"efis_sil_panel_replay_tests","cause":"WinError4551 application control blocked native launch","posix_cases_skipped_on_windows":4,"policy_changed":false,"new_native_build":false},
+  "actual_run_restore":{"status":"PASS_SOFTWARE_ONLY","source":"/srv/data/avionix-sil-test/r127-pilot-60s-v2","server_destination":"/srv/data/avionix-sil-test/r128-r127-restored-v1","independent_windows_copy_restore":"PASS","ticks":6000,"frames":1201,"pilot_commands_applied":3,"archive_sha256":"d70e5da8c71e8672c7942b8782c4a2c4ccd15a4e2ed7f4c8532b8377cc9ab5a5","truth_sha256":"ad860282513963e5234dad3185193fec55020accbce15dafb159305634544b2b","result_sha256":"408158a996efd851f62241b7af5bc54a6ed26425d3b0a724ecc179b7bb10e4e6"},
+  "nas_replication":"NOT_PERFORMED",
+  "hardware_acceptance":false,
+  "open":["catalogue licences provenance and datasets","independent NAS restore","runtime and model dependency restore","authentication signatures and power-loss","live console fanout complete systems and actual panel acceptance"]
+}

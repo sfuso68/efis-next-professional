@@ -1,0 +1,2 @@
+/usr/local/lib/efis-next/sil-r120/sudoers.candidate: parsed OK
+{"adapter_sha256": "7d1c5880e6e06d69f71b6c3fe26a8f67860a65fe2259f661c49ad960066f6167", "authorized_keys_before_sha256": "12987ef363a71f8b411c159519cea097ba4c0f6014a86cb3d3b8ba545e71aff5", "backup": "/var/lib/efis-next/sil-ssh-backup-r120-1793050156892054242", "commands": ["SIL_CHECK_V1", "SIL_FEED_V1"], "entry_sha256": "f0db9e2939d25145b06acd7efadd0069063c463f20185a1f4cf8ecbba3edc191", "existing_keys_preserved": true, "private_key_transferred": false, "sshd_restarted": false, "status": "PASS"}

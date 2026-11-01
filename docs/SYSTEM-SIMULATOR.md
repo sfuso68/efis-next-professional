@@ -1,5 +1,10 @@
 # EFIS NEXT system simulator
 
+Current integrated simulator definition: [Simulator master specification](development/SIMULATOR_MASTER_SPEC_V1.md).
+The sections below describe the deterministic demonstration source, not a
+validated aircraft model or the distributed JSBSim SIL. R1-20 proved bounded
+direct live delivery to one PFD; complete multi-panel integration is still open.
+
 The simulator is a deterministic, non-flight test source for the complete EFIS
 data path. Every generated sample retains `Validity::simulated` and
 `origin.simulated=true`. Its output must never be used for calibration, engine

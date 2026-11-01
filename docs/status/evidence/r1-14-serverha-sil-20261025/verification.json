@@ -1,0 +1,134 @@
+{
+  "schema": "fuso-avionics.r1-14-verification.v1",
+  "date": "2026-10-25",
+  "base_commit": "4bc7cb9",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "requirements": [
+    "PRJ-004",
+    "EMS-002",
+    "VER-001"
+  ],
+  "backlog": "AVX-G5-02",
+  "status": "PARTIAL_HEADLESS_FDM_AND_OFFLINE_SHARED_SESSION_VERIFIED",
+  "flight_approval": false,
+  "user_direction": "Real EFIS NEXT graphics on simultaneous displays; no external graphical simulator prerequisite; use serverha.",
+  "server": {
+    "host": "serverha",
+    "user": "sfuso",
+    "ip": "192.168.1.6",
+    "arch": "x86_64",
+    "area": "/home/sfuso/avionix-sil-r114-20261025",
+    "services_changed": false,
+    "global_packages_changed": false,
+    "simulator_autostart": false,
+    "observed_memory_total_gib": 15,
+    "observed_memory_available_gib": 11,
+    "observed_disk_available_gib": 111
+  },
+  "runtime": {
+    "jsbsim": "1.3.3",
+    "numpy": "2.3.4",
+    "python": "CPython 3.11",
+    "image_id": "sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93",
+    "network": "none",
+    "cpu_limit": 2,
+    "memory_limit_mib": 768,
+    "pids_limit": 64,
+    "rootfs_source_runtime": "read-only",
+    "privileges": "uid/gid user, cap-drop ALL, no-new-privileges",
+    "wheel_hash_check": "PASS pip --dry-run --require-hashes --no-index",
+    "no_third_party_binaries_in_git": true
+  },
+  "source_archive": {
+    "name": "source-v3.tar",
+    "sha256": "7290bbcf00c982ac40818dc810797df1d4f0c65197cff4dc25ddf2718113fcba",
+    "local_remote_match": true
+  },
+  "model": {
+    "name": "c172p",
+    "status": "REFERENCE_UNVALIDATED",
+    "tree_xml_files": 348,
+    "tree_sha256": "5d635503a63b58f37aa466d4f5596fbb8f079ee1f431caed443c8a5ed3af0a8b",
+    "aircraft_target_profiles_validated": false,
+    "pose_prescribed": false,
+    "bench_pilot": "FDM control inputs only, not real actuators"
+  },
+  "tests": {
+    "windows": {
+      "status": "PASS",
+      "count": 37,
+      "new_offline": 18,
+      "msfs_regression": 19
+    },
+    "serverha": {
+      "status": "PASS",
+      "count": 26,
+      "offline": 18,
+      "real_fdm": 8
+    },
+    "ctest": {
+      "status": "PASS",
+      "registered_executed": 2
+    },
+    "permanent_sessions": {
+      "status": "PASS",
+      "count": 4,
+      "seconds_each": 60,
+      "frames_each": 1201,
+      "format": "physics-sil.v1 JSONL + manifest",
+      "clock": "100Hz integration / 20Hz common frames"
+    },
+    "mutation_replay": "REJECTED",
+    "repeatability": "BYTE_IDENTICAL_SAME_ENVIRONMENT_VERSION_AND_SESSION_ID",
+    "physical_coherence": [
+      "altitude derivative vs VS",
+      "fuel depletion vs integrated flow",
+      "turn response",
+      "engine cutoff changes trajectory",
+      "CAS loss/recovery"
+    ],
+    "three_role_views": "OFFLINE_TEST_VIEWS_ONLY_NOT_ACTUAL_RENDERERS"
+  },
+  "observations": {
+    "nominal_max_altitude_error_ft": 0.5876624174416065,
+    "turn_bank_at_35s_deg": 18.782200015220518,
+    "engine_out_final_altitude_ft": 4518.423053994775,
+    "engine_out_final_flow_gph": 0
+  },
+  "not_implemented": [
+    "canonical FDM-to-core airdata altitude heading mapping",
+    "DDP EDP airframe SIL publisher and physical-source isolation",
+    "simultaneous real EFIS display integration",
+    "validated Asso/Pioneer and both engine profiles",
+    "per-cylinder probes/electrical system model",
+    "complete takeoff-to-landing mission",
+    "terrain/weather/radio coupling",
+    "server catalog/NAS replication",
+    "endurance and avionics hardware acceptance"
+  ],
+  "initial_attempts": [
+    "NumPy dependency missing, installed only isolated target",
+    "explicit model root required for pip --target install",
+    "raw trim drift detected, not accepted as nominal; bench pilot tested",
+    "diagnostic inspect.py shadowed stdlib, preserved source dir and moved to source-v2/v3"
+  ],
+  "avionics_nodes_contacted": false,
+  "display_deploy": "NOT_RUN",
+  "avionics_hardware_verification": "NOT_RUN",
+  "merge": "NOT_RUN",
+  "digest_convention": "SHA256 UTF-8 with CRLF normalized to LF",
+  "sha256": {
+    "tools/simulation/jsbsim_session.py": "915094dd1edb7645a438ff5956583530f162159724a7eda322a4f2e57bba379e",
+    "tools/simulation/requirements-serverha.lock": "6059bfbdf71e9f7ffc5de7295d7036ea0ce99ae575dbbb6ce716fa1d5647cf84",
+    "tools/simulation/run_serverha_sil.sh": "9cd97c43228e74e4166fbf6395fec78e11298ba04433afd317ba8aa3cdbd7fb5",
+    "tests/test_jsbsim_session.py": "bb5997214ac0eb6946116bac75838a99ba18557d8b0d97d8436ef70c09bb9d5c",
+    "tests/jsbsim_native_tests.py": "33305ce47a90391cc3590c87fd6be5e74f69723f9d82f267d1f9f30babfec985",
+    "CMakeLists.txt": "ea238b9f7b7300f05a16272b7773d5438107c4d7913d7f70203575779d48741b",
+    "docs/development/SERVERHA_HEADLESS_SIL_V1.md": "b478908549a09f138d87d4a959831360e8e82ef08f7fb2e9a86d0a15ceb1084f",
+    "docs/status/evidence/r1-14-serverha-sil-20261025/unit.txt": "6d019780cbd36cd487bcc356ee1ca164e3c2883418d1c00af4ae3d70af302308",
+    "docs/status/evidence/r1-14-serverha-sil-20261025/native.txt": "2411b2622ba4b43712e1c8769154d295ae2103475232057f5633e574ab7fb05a",
+    "docs/status/evidence/r1-14-serverha-sil-20261025/runs.txt": "644e2ae4a227ae53dec8be54d412060c30ff90e48a29256df1c160d67e537a33",
+    "docs/status/evidence/r1-14-serverha-sil-20261025/audit.txt": "9df5e12a891452cc76f267bb71afdadc4e8b8e26241f80f931e3ad629f683330",
+    "docs/status/evidence/r1-14-serverha-sil-20261025/ctest.txt": "dc0ffe812302b7344e683f686c8b5f808a462b74a7d77349f7346f4eff1ff46b"
+  }
+}

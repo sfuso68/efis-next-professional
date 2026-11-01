@@ -1,0 +1,7 @@
+Mon 26 Oct 13:37:31 UTC 2026
+Oct 26 14:37:16 efis-pfd-01 env[1721831]: 2026-10-26T14:37:16.755 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.67 snapshot_hz= 50.0 sequence= 5891 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 2506 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 14:37:21 efis-pfd-01 env[1721831]: 2026-10-26T14:37:21.756 event=render_health presentation_hz= 60.2 presentation_interval_ms= 16.61 snapshot_hz= 50.0 sequence= 6141 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 2606 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 14:37:26 efis-pfd-01 env[1721831]: 2026-10-26T14:37:26.755 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.66 snapshot_hz= 50.0 sequence= 6391 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 2706 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+MainPID=1419
+ActiveState=active
+throttled=0x0

@@ -1,0 +1,191 @@
+{
+  "schema": "avionix-next.r1-08-verification.v1",
+  "date": "2026-10-22",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "base_commit": "306d145491a71406516832e23377f1f4f31ff447",
+  "stack": "PR53 -> PR56 -> R1-08, not the weather/control stack",
+  "requirements": [
+    "PRJ-004",
+    "EMS-002",
+    "VER-001"
+  ],
+  "status": "VERIFIED_SOFTWARE_CANDIDATE_PENDING_LINUX_REVIEW",
+  "flight_approval": false,
+  "execution_authorized": false,
+  "hardware_verification": "NOT_RUN",
+  "deployment": "NOT_RUN",
+  "merge": "NOT_RUN",
+  "ci_separate_pr58": {
+    "head": "2f1251a4ce05cd412a9066cce10679fe86d50d63",
+    "core_run": 39743278411,
+    "project_control_run": 39743278359,
+    "conclusion": "success",
+    "included_in_this_stack": false
+  },
+  "tests": {
+    "qml": {
+      "qt": "6.11.1",
+      "platform": "Windows offscreen",
+      "backend": "software",
+      "reported_outcomes": 54,
+      "failed": 0,
+      "skipped": 0,
+      "includes_init_cleanup": true,
+      "header_cases": 18,
+      "additional_header_checks": [
+        "maximum age / SIM FORCED",
+        "no fabricated OAT/QNH",
+        "clock override after timer",
+        "short tap does not open setup",
+        "long press opens actual setup"
+      ],
+      "log": "qml.txt"
+    },
+    "python": {
+      "count": 37,
+      "status": "PASS",
+      "log": "python.txt"
+    },
+    "build": {
+      "toolchain": "MSVC Release / Qt 6.11.1",
+      "targets": [
+        "efis-pfd-qt",
+        "efis-ems-qt",
+        "efis_pfd_aircraft_profile_tests"
+      ],
+      "compile_link": "PASS",
+      "qml_aot": "PASS",
+      "new_native_executables_launched": false,
+      "confirmation_log": "build-confirmation.txt",
+      "limitations": [
+        "Full local golden rerender gate NOT REGISTERED (Python detection)",
+        "Existing CMake object-path-length warning; build nevertheless completed",
+        "Windows fresh native executable launch restricted by OS; not bypassed"
+      ]
+    }
+  },
+  "capture": {
+    "count": 18,
+    "platform": "Windows offscreen",
+    "backend": "software",
+    "font_environment": "Isolated local copies of installed Segoe UI regular/bold and Segoe UI Symbol, QT_QPA_FONTDIR; no global font changes; font binaries not committed",
+    "first_attempt": "Missing glyphs without font dir; condensed default when entire Windows Fonts directory used; excluded from review",
+    "fixture": "tests/qml-header-review/tst_review_capture.qml",
+    "local_output": "output/ems-header-review",
+    "log": "captures.txt",
+    "representatives_committed": [
+      "ems-800x480-live.png",
+      "ems-800x480-stale.png",
+      "ems-1280x800-lost.png"
+    ],
+    "images": [
+      {
+        "file": "ems-1024x600-degraded.png",
+        "sha256": "3fae88fcd1ea7f7482382c24724afb42da0943fdcb8aa973230a39ec04085b00"
+      },
+      {
+        "file": "ems-1024x600-fail.png",
+        "sha256": "5ea7a2c61e6242422466b7d0329d2f8c0d4ecd2790b362d205555a41d88b4510"
+      },
+      {
+        "file": "ems-1024x600-live.png",
+        "sha256": "1e82c0fcb872d17601f08ebcc6543b72f84a805a10a13772c0a819a44af6d9fe"
+      },
+      {
+        "file": "ems-1024x600-lost.png",
+        "sha256": "14178929dcabeafc0d230a648f1f1a1e6877fe1560b56b865b8647aef977493b"
+      },
+      {
+        "file": "ems-1024x600-sim.png",
+        "sha256": "87a5b57d2466de98a19dc21ead4b2107051c1bd81721996e6a5434e1dae14020"
+      },
+      {
+        "file": "ems-1024x600-stale.png",
+        "sha256": "745c4000e4a4e2ba7313631e1adf3bf961708015a1acd4b66a8fad3c0797d56a"
+      },
+      {
+        "file": "ems-1280x800-degraded.png",
+        "sha256": "d8e267290c4f60cf3b1b8520d275acb78913eb071bd75ae80c3cb74ce3aa8f95"
+      },
+      {
+        "file": "ems-1280x800-fail.png",
+        "sha256": "d457ca43d4fd147bc63e1517d28304569a4a24415a473622359a44bc8c263baa"
+      },
+      {
+        "file": "ems-1280x800-live.png",
+        "sha256": "7669279251f9e0eb855495c69726d451089363653f683928d40a25013a23a264"
+      },
+      {
+        "file": "ems-1280x800-lost.png",
+        "sha256": "b6ba2fed6f48ab22966dc699c03ee2a2f95bd10d0f07ea36b7a80edf6e4ef1d4"
+      },
+      {
+        "file": "ems-1280x800-sim.png",
+        "sha256": "0971597117c0e4a24e5d0d80ad0a11a995cce6986e54391fb6ef83ce536059bd"
+      },
+      {
+        "file": "ems-1280x800-stale.png",
+        "sha256": "ddca53af6745b7212e945da053f974d328b6e2c27e79dbef8f29a7cf2c7920d8"
+      },
+      {
+        "file": "ems-800x480-degraded.png",
+        "sha256": "494adb25931d09127ee0fe0be277ecbc65f2c19454db106c07a87279e9a9ba4d"
+      },
+      {
+        "file": "ems-800x480-fail.png",
+        "sha256": "992c0182ec829d1887c953bb0f74123d519cdd3988aa77c13b10e0a8ffb91362"
+      },
+      {
+        "file": "ems-800x480-live.png",
+        "sha256": "d17ba423f5edcd2b2a1f29b08cfe73b9cd826ecc3628334a29e7c83d6d152aeb"
+      },
+      {
+        "file": "ems-800x480-lost.png",
+        "sha256": "f7afd535298c2ec04ac414bf9cb9caea8f62ea3dbb82e8ac95752741fb312b81"
+      },
+      {
+        "file": "ems-800x480-sim.png",
+        "sha256": "8084092716a4158e7c1704d7f9edb89231a291a726a45e52cd16222341b77da8"
+      },
+      {
+        "file": "ems-800x480-stale.png",
+        "sha256": "2cd24a33830cba5cd260b78b197594c6532a4c268035cc28c09da42abd57ee3f"
+      }
+    ],
+    "baseline_approved": false,
+    "committed_golden_images_changed": false,
+    "tolerances_changed": false,
+    "scope": "Header visual inspection and geometry; not full HMI acceptance, Linux reference or hardware approval"
+  },
+  "limitations": [
+    "No new hardware/node contact or functional verification",
+    "Clock LOCAL is OS local time, not qualified UTC/GNSS time",
+    "OAT/QNH removed until a valid explicit flight-data adapter exists, not newly implemented",
+    "New header changes pixels in all states; Linux rerender/review still required",
+    "PR56 golden remains open; no automatic baseline replacement",
+    "Power qualification, target font rendering, sunlight/night, physical touch and ARM64 remain open",
+    "Existing full-page scales, units and airframe behavior not newly accepted"
+  ],
+  "artifacts": [
+    {
+      "path": "qml/EmsStatusHeader.qml",
+      "sha256_lf_text": "fe3ccc539305886ed9a8ecd32131084c3e7d11cff34484a1165e73fc47ceba40"
+    },
+    {
+      "path": "qml/AdaptiveEmsView.qml",
+      "sha256_lf_text": "aff565459fc08b24329316ed2750a2dafb069f5f0ec5b8f7b828c33b00a70002"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "sha256_lf_text": "a40c6412c297aa6b886a7f211bc2d034a9c0fa0fa554d2833a66dd0186500346"
+    },
+    {
+      "path": "tests/qml/tst_ems_header_layout.qml",
+      "sha256_lf_text": "c841aa4f2ce57556460e398641d8da1b0e9b59968de533581c0093f99bf3b350"
+    },
+    {
+      "path": "tests/qml-header-review/tst_review_capture.qml",
+      "sha256_lf_text": "1603bc38357629de271095f1612b7d736beb35645289fa57dcf975c1bce410b4"
+    }
+  ]
+}

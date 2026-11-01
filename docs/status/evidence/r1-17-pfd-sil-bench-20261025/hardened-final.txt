@@ -1,0 +1,28 @@
+BENCH_REPLAY_PREFLIGHT=PASS frames=1201 source_node=65000 mode=CHECK_ONLY
+PFD_BENCH_PREFLIGHT=PASS
+Running timer as unit: efis-sil-panel-restore.timer
+Will run service as unit: efis-sil-panel-restore.service
+Running as unit: efis-sil-panel-screen.service; invocation ID: 933608176e5847b2bd49c325e6ae0aa6
+Running as unit: efis-sil-panel-feed.service; invocation ID: d95ff03cc413485b91e01c1260bbb0b6
+PFD_BENCH_ACTIVE=TEMPORARY_15_MINUTES
+SOURCE=REPLAY_JSBSIM_SIM_NODE_65000_LOOPBACK_49152
+EMS_WEATHER_AIRFRAME=NOT_CONNECTED
+FLIGHT_APPROVAL=false
+RuntimeMaxUSec=15min
+MainPID=1618223
+ActiveState=active
+ActiveEnterTimestamp=Sun 2026-10-25 01:28:36 CEST
+
+RuntimeMaxUSec=15min
+MainPID=1618228
+ActiveState=active
+ActiveEnterTimestamp=Sun 2026-10-25 01:28:36 CEST
+root:root:700
+root:root:500
+ExecStart={ path=/bin/bash ; argv[]=/bin/bash /run/efis-sil-r117/guard.sh --root-restore ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+Oct 25 01:28:38 efis-pfd-01 env[1618223]: 2026-10-25T01:28:38.068 event=event_loop_stall duration_ms= 1344
+Oct 25 01:28:39 efis-pfd-01 env[1618223]: 2026-10-25T01:28:39.644 event=fuel_leak_monitor state= CALIBRATION REQUIRED excess_gph= 0
+Oct 25 01:28:39 efis-pfd-01 env[1618223]: 2026-10-25T01:28:39.649 event=event_loop_stall duration_ms= 1581
+Oct 25 01:28:41 efis-pfd-01 env[1618223]: 2026-10-25T01:28:41.755 event=render_health presentation_hz= 25.6 presentation_interval_ms= 39.00 snapshot_hz= 21.5 sequence= 109 ddp_state= LIVE ddp_hz= 19.7 ddp_accepted= 99 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+throttled=0x0
+Sat 24 Oct 23:28:46 UTC 2026

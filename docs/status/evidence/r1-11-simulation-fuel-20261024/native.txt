@@ -1,0 +1,7 @@
+11da8ac976ae84a0e4c2a2bba0718f3c92cbd092d85355c5afbce6099e8cc1da  /home/sfuso/avionix-r111-fuel-20261024-a/source-v2.tar
+system simulator tests passed
+SYSTEM_SIMULATOR_NATIVE=PASS
+terminate called after throwing an instance of 'std::runtime_error'
+  what():  tank depletion must equal integrated scenario fuel flow across phase boundaries
+Aborted
+FUEL_INTEGRAL_MUTATION=REJECTED

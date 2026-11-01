@@ -1,0 +1,99 @@
+{
+  "schema": "avionix-next.r1-11-verification.v1",
+  "date": "2026-10-24",
+  "base_commit": "1a47068e58d5e68e26a51d0debad898a9b4b8479",
+  "branch": "fix/ems-responsive-header-r108-v1",
+  "requirements": [
+    "VER-001"
+  ],
+  "backlog": "AVX-G5-02",
+  "status": "PARTIAL_SOFTWARE_VERIFIED",
+  "scope": "SystemSimulator fuel schedule/integral only; not a validated flight model",
+  "flight_approval": false,
+  "hardware_verification": "NOT_RUN",
+  "avionics_nodes_contacted": false,
+  "deploy": "NOT_RUN",
+  "merge": "NOT_RUN",
+  "tests": {
+    "native": {
+      "status": "PASS",
+      "type": "C++ system_simulator_tests",
+      "scenarios": 4,
+      "dense_samples_per_scenario": 601,
+      "checks": [
+        "stopped engine zero flow and no depletion",
+        "independent hand integral across phase boundaries",
+        "indicated flow equals tank depletion",
+        "backward seek and host-clock independence",
+        "sparse/dense polling independence",
+        "reset and elapsed clamping",
+        "SIM provenance and raw quantity"
+      ],
+      "environment": "existing serverha isolated container avionix-profile-verification:20261017; --network none --read-only; source ro; tmpfs build",
+      "log": "native.txt"
+    },
+    "mutation": {
+      "status": "REJECTED_AS_EXPECTED",
+      "mutation": "fuel_used_at returns 0 instead of integrated gallons",
+      "failing_assertion": "tank depletion must equal integrated scenario fuel flow across phase boundaries",
+      "log": "native.txt"
+    },
+    "build": {
+      "status": "PASS",
+      "compiler": "MSVC 14.43 Release",
+      "targets": [
+        "efis_system_simulator_tests",
+        "efis-pfd-qt",
+        "efis-ems-qt"
+      ],
+      "logs": [
+        "build.txt",
+        "build-final.txt"
+      ],
+      "windows_native_execution": "NOT_RUN_POLICY"
+    },
+    "qml": {
+      "status": "PASS",
+      "outcomes": 81,
+      "includes_init_cleanup": true,
+      "log": "qml.txt"
+    }
+  },
+  "source_archive": {
+    "sha256": "11da8ac976ae84a0e4c2a2bba0718f3c92cbd092d85355c5afbce6099e8cc1da",
+    "remote_checksum_match": true,
+    "remote_staging": "/home/sfuso/avionix-r111-fuel-20261024-a",
+    "existing_files_removed": false
+  },
+  "previous_ci": {
+    "commit": "dfad7fcb2fec1c6d3075db06f8a37163d946e602",
+    "project_control": {
+      "run": 40117795920,
+      "status": "SUCCESS"
+    },
+    "core": {
+      "run": 40117795910,
+      "status": "FAILURE",
+      "blocking_step": "Linux golden pixel comparison",
+      "other_jobs": "linux-core and linux-sanitizers SUCCESS",
+      "qt_build_and_qml": "SUCCESS"
+    }
+  },
+  "not_implemented": [
+    "unified PFD/EMS/Blackbox scenario clock",
+    "physically coherent trajectory/GS/IAS/VS/datum",
+    "validated aircraft and engine dynamics",
+    "aircraft fuel selector and starvation model",
+    "server dataset/model catalog and ingestion",
+    "FS2024 or other external simulator bridge/data acquisition"
+  ],
+  "digest_format": "sha256 UTF8 text normalized LF",
+  "sha256": {
+    "src/simulation/system_simulator.cpp": "518446a872b50ade0284add7e8281cace1693cc0f6870b2d8ee4cce8b4fe2628",
+    "tests/system_simulator_tests.cpp": "d846c9be92549c304cef08e8ace88c0a6cac27fbda32d1fc3759814ad571da50",
+    "docs/status/evidence/r1-11-simulation-fuel-20261024/build-final.txt": "28490cb86131eeac04cde8638c6aaa58de78bd3e829f4f0e75ca0f2ae81f79b9",
+    "docs/status/evidence/r1-11-simulation-fuel-20261024/build.txt": "d3f408a306e73913add7b32a37f6c0e6aa00eae6909dfe3e8caa7c755688a3e6",
+    "docs/status/evidence/r1-11-simulation-fuel-20261024/native.txt": "c495f423582c5f905c42cb20d213517a654aae43d257f0ad0598219388540da3",
+    "docs/status/evidence/r1-11-simulation-fuel-20261024/qml.txt": "16be8d1a4527151a1b1baebd4ea8ec6ac66238fa6a2c2a3c663bf497b91acda4"
+  }
+}

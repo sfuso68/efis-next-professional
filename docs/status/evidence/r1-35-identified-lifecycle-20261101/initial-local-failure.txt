@@ -1,0 +1,47 @@
+....................................................................................................................................................................................................................................................EE..................
+======================================================================
+ERROR: test_channel_factory_error_cannot_finalize_success (tests.test_console_runner.ConsoleRunnerTests.test_channel_factory_error_cannot_finalize_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tests\test_console_runner.py", line 33, in test_channel_factory_error_cannot_finalize_success
+    with self.assertRaisesRegex(OSError,"factory failure"):self.attempt(factory)
+                                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tests\test_console_runner.py", line 21, in attempt
+    return run(self.root,self.world,session_id="runner-test",source_commit="0"*40,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\owner_console.py", line 140, in run
+    engine.validate();engine.arm_software_test();engine.start()
+                                                 ^^^^^^^^^^^^^^
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\session_engine.py", line 248, in start
+    self._begin_epoch()
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\session_engine.py", line 241, in _begin_epoch
+    self._emit(now)
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\session_engine.py", line 226, in _emit
+    raise ValueError("frame persistence deadline exceeded")
+ValueError: frame persistence deadline exceeded
+
+======================================================================
+ERROR: test_channel_start_publish_and_keyboard_failure_leave_incomplete_evidence (tests.test_console_runner.ConsoleRunnerTests.test_channel_start_publish_and_keyboard_failure_leave_incomplete_evidence) (boundary='interrupt')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tests\test_console_runner.py", line 51, in test_channel_start_publish_and_keyboard_failure_leave_incomplete_evidence
+    with self.assertRaises((OSError,KeyboardInterrupt)):self.attempt(Channel)
+                                                        ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tests\test_console_runner.py", line 21, in attempt
+    return run(self.root,self.world,session_id="runner-test",source_commit="0"*40,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\owner_console.py", line 140, in run
+    engine.validate();engine.arm_software_test();engine.start()
+                                                 ^^^^^^^^^^^^^^
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\session_engine.py", line 248, in start
+    self._begin_epoch()
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\session_engine.py", line 241, in _begin_epoch
+    self._emit(now)
+  File "C:\Users\stefa\.codex\.chatgpt-projects\g-p-6a8162f124ac8191abb9a466a8cdcd25\tmp\efis-next-main-integration\tools\simulation\session_engine.py", line 226, in _emit
+    raise ValueError("frame persistence deadline exceeded")
+ValueError: frame persistence deadline exceeded
+
+----------------------------------------------------------------------
+Ran 264 tests in 12.824s
+
+FAILED (errors=2)

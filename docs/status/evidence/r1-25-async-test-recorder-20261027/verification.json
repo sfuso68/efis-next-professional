@@ -1,0 +1,17 @@
+{
+  "schema":"fuso-avionics.async-test-recorder-evidence.v1",
+  "date":"2026-10-27",
+  "status":"PARTIAL",
+  "flight_approval":false,
+  "deployment_authorized":false,
+  "local_tests":{"methods":115,"new_methods":9,"status":"PASS"},
+  "source_commit":"7276a156202a400e73fb2dc7760734cddeb948cc",
+  "server_tests":{"methods":121,"native_jsbsim_methods":6,"status":"PASS"},
+  "ctest":{"passed":9,"total":9,"renderer_rebuilt":false},
+  "timed_direct_disk_run":{"system_ssd":{"status":"FAIL","last_physics_tick":240,"reason":"durability acknowledgement deadline exceeded","public_success_present":false},"second_ssd":{"status":"PASS_SOFTWARE_ONLY","directory":"/srv/data/avionix-sil-test/r125-second-ssd-60s-v1","device":"/dev/sdb","model":"FIKWOT FX815 1TB","filesystem":"btrfs","elapsed_s":60.32808113191277,"ticks":6000,"frames":1202,"epochs":2,"maximum_lag_ms":5.036858,"maximum_pending_records":5,"maximum_observed_ack_age_ms":24.870313238352537,"durable_records":2414,"trace_integrity":"PASS","truth_sha256":"63de4cf30c2e2d7fa4cea80f2bb347004548db0742f4227bb8f0cbae844f2204","result_sha256":"5781e1ee5e996c94867d4e7c7d4dfa5257994443757458ca64cfef2cfd662e0f"}},
+  "policy":{"mode":"ASYNC_TEST_V1","acceptance":"QUEUED_NOT_DURABLE","records":16,"bytes":524288,"ack_timeout_ms":100,"default_changed":false},
+  "operational_recorder_modified":false,
+  "panels_connected":false,
+  "storage_scope":"User-authorized isolated test directory only; existing map/archive directories unchanged. No storage root-cause attribution from one comparison.",
+  "open":["repeatability and long soak","parent finalization I/O watchdog","kernel uninterruptible I/O","power-loss directory durability and endurance","product policy review","P03 commands and P04 fanout"]
+}

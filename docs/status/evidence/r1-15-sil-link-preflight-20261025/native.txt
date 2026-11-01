@@ -1,0 +1,69 @@
+-- The CXX compiler identification is GNU 14.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Performing Test HAVE_STDATOMIC
+-- Performing Test HAVE_STDATOMIC - Success
+-- Found WrapAtomic: TRUE
+-- Configuring done (0.9s)
+-- Generating done (0.0s)
+-- Build files have been written to: /build/cmake-v3
+[1/6] Building CXX object CMakeFiles/efis-sil-wire-check.dir/source/src/core/signal_access.cpp.o
+[2/6] Building CXX object CMakeFiles/efis-sil-wire-check.dir/source/src/protocol/ddp_v2.cpp.o
+In file included from /usr/include/x86_64-linux-gnu/c++/14/bits/c++allocator.h:33,
+                 from /usr/include/c++/14/bits/allocator.h:46,
+                 from /usr/include/c++/14/string:43,
+                 from /usr/include/c++/14/bits/locale_classes.h:40,
+                 from /usr/include/c++/14/bits/ios_base.h:41,
+                 from /usr/include/c++/14/ios:44,
+                 from /usr/include/c++/14/istream:40,
+                 from /usr/include/c++/14/sstream:40,
+                 from /usr/include/c++/14/chrono:45,
+                 from /source/include/efis/core/types.hpp:3,
+                 from /source/include/efis/core/sample.hpp:3,
+                 from /source/include/efis/core/flight_snapshot.hpp:3,
+                 from /source/include/efis/protocol/ddp_v2.hpp:3,
+                 from /source/src/protocol/ddp_v2.cpp:1:
+In member function ‘void std::__new_allocator<_Tp>::deallocate(_Tp*, size_type) [with _Tp = unsigned char]’,
+    inlined from ‘constexpr void std::allocator< <template-parameter-1-1> >::deallocate(_Tp*, std::size_t) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/allocator.h:208:35,
+    inlined from ‘static constexpr void std::allocator_traits<std::allocator<_CharT> >::deallocate(allocator_type&, pointer, size_type) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/alloc_traits.h:550:23,
+    inlined from ‘constexpr std::vector<_Tp, _Alloc>::_M_realloc_append(_Args&& ...)::_Guard::~_Guard() [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:616:18,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::_M_realloc_append(_Args&& ...) [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:688:7,
+    inlined from ‘constexpr std::vector<_Tp, _Alloc>::reference std::vector<_Tp, _Alloc>::emplace_back(_Args&& ...) [with _Args = {unsigned char}; _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:123:21,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::push_back(value_type&&) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/stl_vector.h:1301:21,
+    inlined from ‘std::vector<unsigned char> efis::protocol::ddp::encode_snapshot(const efis::FlightSnapshot&, Profile, uint32_t, uint64_t, efis::MonoTime)’ at /source/src/protocol/ddp_v2.cpp:157:22:
+/usr/include/c++/14/bits/new_allocator.h:172:33: warning: ‘void operator delete(void*, std::size_t)’ called on pointer ‘<unknown>’ with nonzero offset [1, 5764607523034234885] [-Wfree-nonheap-object]
+  172 |         _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
+      |                                 ^
+In member function ‘_Tp* std::__new_allocator<_Tp>::allocate(size_type, const void*) [with _Tp = unsigned char]’,
+    inlined from ‘constexpr _Tp* std::allocator< <template-parameter-1-1> >::allocate(std::size_t) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/allocator.h:196:40,
+    inlined from ‘static constexpr _Tp* std::allocator_traits<std::allocator<_CharT> >::allocate(allocator_type&, size_type) [with _Tp = unsigned char]’ at /usr/include/c++/14/bits/alloc_traits.h:515:28,
+    inlined from ‘constexpr std::_Vector_base<_Tp, _Alloc>::pointer std::_Vector_base<_Tp, _Alloc>::_M_allocate(std::size_t) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/stl_vector.h:380:33,
+    inlined from ‘constexpr void std::vector<_Tp, _Alloc>::reserve(size_type) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>]’ at /usr/include/c++/14/bits/vector.tcc:79:33,
+    inlined from ‘std::vector<unsigned char> efis::protocol::ddp::encode_snapshot(const efis::FlightSnapshot&, Profile, uint32_t, uint64_t, efis::MonoTime)’ at /source/src/protocol/ddp_v2.cpp:156:20:
+/usr/include/c++/14/bits/new_allocator.h:151:55: note: returned from ‘void* operator new(std::size_t)’
+  151 |         return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp)));
+      |                                                       ^
+[3/6] Building CXX object CMakeFiles/efis-sil-wire-check.dir/source/tools/simulation/jsbsim_wire_check.cpp.o
+[4/6] Building CXX object CMakeFiles/efis-sil-wire-check.dir/source/src/protocol/ddp_session.cpp.o
+[5/6] Building CXX object CMakeFiles/efis-sil-wire-check.dir/source/src/protocol/edp_v1.cpp.o
+[6/6] Linking CXX executable efis-sil-wire-check
+test_complete_fixture_and_canonical_consumer_guards (__main__.WireCheckTests.test_complete_fixture_and_canonical_consumer_guards) ... ok
+test_non_sim_data_and_approval_rejected (__main__.WireCheckTests.test_non_sim_data_and_approval_rejected) ... ok
+test_unavailable_cylinder_cannot_become_zero_valid (__main__.WireCheckTests.test_unavailable_cylinder_cannot_become_zero_valid) ... ok
+test_wrong_clock_or_profile_rejected (__main__.WireCheckTests.test_wrong_clock_or_profile_rejected) ... ok
+test_wrong_unit_and_missing_sample_rejected (__main__.WireCheckTests.test_wrong_unit_and_missing_sample_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.129s
+
+OK
+SIL_CANONICAL_CONSUMERS=PASS frames=1201 source_node=65000 PFD_MFD_DDP=PASS EMS_EDP=PASS SIM=PASS CRC_DUP_ID_TIMEOUT=PASS AIRDATA_HEADING_MAPPING=UNAVAILABLE SOCKETS=NONE flight_approval=false
+SIL_CANONICAL_CONSUMERS=PASS frames=1201 source_node=65000 PFD_MFD_DDP=PASS EMS_EDP=PASS SIM=PASS CRC_DUP_ID_TIMEOUT=PASS AIRDATA_HEADING_MAPPING=UNAVAILABLE SOCKETS=NONE flight_approval=false
+SIL_CANONICAL_CONSUMERS=PASS frames=1201 source_node=65000 PFD_MFD_DDP=PASS EMS_EDP=PASS SIM=PASS CRC_DUP_ID_TIMEOUT=PASS AIRDATA_HEADING_MAPPING=UNAVAILABLE SOCKETS=NONE flight_approval=false
+SIL_CANONICAL_CONSUMERS=PASS frames=1201 source_node=65000 PFD_MFD_DDP=PASS EMS_EDP=PASS SIM=PASS CRC_DUP_ID_TIMEOUT=PASS AIRDATA_HEADING_MAPPING=UNAVAILABLE SOCKETS=NONE flight_approval=false

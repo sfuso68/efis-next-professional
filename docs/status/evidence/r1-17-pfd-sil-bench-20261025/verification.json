@@ -1,0 +1,83 @@
+{
+  "schema": "fuso-avionics.development-verification.v1",
+  "date": "2026-10-25",
+  "block": "R1-17",
+  "base_commit": "e40de40184a2e938f829f66de43e2cff8387a4c3",
+  "status": "PARTIAL_REAL_PANEL_TEMPORARY_BENCH",
+  "flight_approval": false,
+  "requirements": ["PRJ-004", "NAV-002", "NAV-003", "VER-001"],
+  "software": {
+    "arm64_build": "PASS",
+    "arm64_black_box_methods": "6 PASS, check-only no sockets",
+    "msvc_build": "PASS",
+    "ctest_targeted": "5/5 PASS; not full QML/golden/ARM64 product acceptance",
+    "ci_syntax": "PASS",
+    "tool_binary_arm64_sha256": "81bc503f6063e07ec57415a6fe8a4f383f5966411aaf5a994198f79a8f440d37",
+    "source_archive_sha256": "1dd208350a3008f35866236c21e5b74c666ec56e1694ccfa0f38b073c93b92a7",
+    "wire_changes": false,
+    "renderer_changes": false
+  },
+  "panel_observation": {
+    "node": "efis@192.168.1.45 efis-pfd-01",
+    "observed_utc": "2026-10-24T23:28:46Z",
+    "temporary_screen_pid": 1618223,
+    "temporary_feed_pid": 1618228,
+    "renderer_release": "pfdrec-7051a47-retention-v1",
+    "renderer_source_commit": "7051a47839389f739f2d1e0ad22b385173299f61",
+    "renderer_sha256_unchanged": "a64edcf2d0fcf5f64f30d771926a60d4e0c2854763a2f082375c7630df828854",
+    "permanent_release_pointer_changed": false,
+    "normal_pfd_unit": "Temporarily stopped during bench; restored in drills",
+    "recorder_pid_unchanged": 1419,
+    "throttled": "0x0 before/after build and observed running bench",
+    "private_network": "Shared screen/feed namespace different from host; only lo; 127.0.0.1:49152",
+    "source_node": 65000,
+    "physical_stream_node47": "Not impersonated or injected into; Blackbox/Pixhawk unchanged",
+    "receive_evidence": "20 Hz DDP, accepted increasing, zero rejected/gaps/socket_errors in observed windows",
+    "render_evidence": "Actual compositor screenshot 1024x600, SIMULATION ACTIVE, local terrain/texture displayed",
+    "timing": "Startup callback/event-loop stalls up to about1.6s, later observed60Hz windows; worst-case/endurance not qualified",
+    "touch": "Human confirmation requested; NOT_VERIFIED at evidence creation"
+  },
+  "replay": {
+    "mode": "60-second precomputed nominal session repeated, NOT live server streaming or manual piloting",
+    "server_path": "/home/sfuso/avionix-sil-r114-20261025/runs/world-panel-nominal-r117-v1",
+    "panel_path": "/home/efis/efis-sil-panel-r117/replay/nominal-v1",
+    "frames": 1201,
+    "frames_sha256": "697ffb68a76d0b20c448e4d3b05194f1d3016f5615a95247f4589c900d4d8b80",
+    "world_config_sha256": "85cd161536b57be42ca19aa75ab0ce0df595bdb477cc017c277cf7766913bc7f",
+    "generation": "Bound world-source-v6, original reference fixture with faults=[] and explicit nominal dataset_id; server verifier PASS then native expected SHA PASS",
+    "profile": "C172P REFERENCE_UNVALIDATED, V-speeds deliberately absent, no Asso/Rotax limits substituted",
+    "emission": "New random instance, live monotonic clock and sequence, 20Hz, stop if >100ms late instead of burst catchup; bounded900s"
+  },
+  "restore": {
+    "manual_restore": "PASS",
+    "scheduled_restore_service_invoked_explicitly": "PASS",
+    "feed_stop_auto_restores_normal_pfd": "PASS",
+    "runtime_max_seconds": 900,
+    "backup_timer_seconds": 930,
+    "protected_timer_code": "/run/efis-sil-r117/guard.sh root:root0500, parent root:root0700; no deferred root execution of user-writable script",
+    "natural_full_lease_expiry": "NOT_OBSERVED in this evidence",
+    "state": "Transient units only, isolated work/settings/cache, original unit/drop-ins/pointer unchanged; active observation is a lease, not persistent deployment"
+  },
+  "open_defects_and_limits": [
+    "Installed legacy UI has static GPS1/airframe labels and zeros under ENGINE FAIL, not connected feedback",
+    "EMS, airframe, independent VS, world METAR/TAF/radar and full NAV identity/page/plan are not connected",
+    "Pilot altimeter setting follows existing controller semantics, not silently forced from weather truth",
+    "Initial terrain path absent; corrected bench-only environment to existing terrain GPU/active texture paths, no asset download or global pointer change",
+    "Imagery1326 tiles with27 known coverage gaps; no complete coverage or obstacle validation",
+    "Startup/callback stalls, exact frametime budgets and endurance remain open",
+    "MFD/Blackbox power gates unchanged and those nodes not modified",
+    "Golden/new product release and flight approval remain open",
+    "First diagnostic stdin driver ended with trailing CR command after successful checks; fresh SSH reconfirmed actual active screen/feed/timer and recorder, not treated as a failed activation or hidden"
+  ],
+  "not_performed": ["Merge", "Permanent release activation", "Firmware or actuator changes", "Host firewall/routing/NAT modifications", "New renderer on node", "MFD/EMS/Blackbox change", "Full human HMI acceptance"],
+  "digest_convention": "Text SHA256 over UTF-8 with CRLF normalised to LF; binary/screenshot/archive hashes raw bytes",
+  "artifacts": {
+    "tools/simulation/sil_panel_replay.cpp": "8bce5b787dd2f4772a4615f05936d9f01c61cc26ee4d4ab9a86e2a5f083c748d",
+    "tests/sil_panel_replay_tests.py": "8fed4574ef0abb568152324fc1a7f3a83f0b2c5dc4a54020773b1ea9f6cad9d6",
+    "deploy/scripts/run_pfd_sil_bench_r117.sh": "bc4384ac2067697c2d81965f9fbf1eb0161908efc9a206bcc58c0c3328a6c856",
+    "config/simulation/panel-c172p-unvalidated.json": "b2956966e31341f033dd1031145a986c69389783c752be220ac20b6103f656e0",
+    "CMakeLists.txt": "ed677102d0dd6b4c52e95482e5f303c7a4bd51614965e711f82fafdc37e54839",
+    ".github/workflows/efis-core-ci.yml": "6c077ad853c5fe272e9e1e7356698e8f6ce35800844691cc6c6a25e91c7ad7bf"
+  },
+  "screenshot_sha256": "7e3922cda7f8cad2dc5d457066823d2b4948815f33bcff31245a3c070bc56bd4"
+}

@@ -42,9 +42,18 @@ jobs:
           -DEFIS_BUILD_QT_RENDERER=ON
           -DEFIS_REQUIRE_QT_RENDERER=ON
           -DEFIS_BUILD_TESTS=ON
+          -DEFIS_BUILD_SIL_WIRE_CHECK=ON
 
       - name: Build PFD and standalone EMS renderers
         run: cmake --build build/linux-qt --target efis-pfd-qt efis-ems-qt --parallel 4
+
+      - name: Build offline SIL canonical adapter check
+        run: cmake --build build/linux-qt --target efis-sil-wire-check efis-sil-panel-replay --parallel 4
+
+      - name: Test SIL canonical adapter and consumer guards
+        run: >-
+          ctest --test-dir build/linux-qt --output-on-failure --timeout 60
+          --no-tests=error -R '^efis_(jsbsim_wire_check|sil_panel_replay)_tests$'
 
       - name: Test actual EMS QML state isolation
         run: >-

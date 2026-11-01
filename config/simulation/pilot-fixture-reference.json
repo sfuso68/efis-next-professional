@@ -1,0 +1,5 @@
+[
+  {"apply_tick":10,"control":"aileron","value":0.25},
+  {"apply_tick":50,"control":"throttle","value":0.5},
+  {"apply_tick":80,"control":"aileron","value":0}
+]

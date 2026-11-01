@@ -1,0 +1,7 @@
+SOURCE    FSTYPE OPTIONS
+/dev/sda2 ext4   rw,relatime,errors=remount-ro
+totale 6,1M
+-rw-r--r-- 1 sfuso sfuso 6,1M 27 ott 00.16 truth.jsonl
+0},"kind":"SESSION_EVENT","session_id":"r124-physical-60s-pause-v2","simulated":true,"total_frames":280,"total_ticks":1400}
+{"epoch":0,"event":"FAILED","flight_approval":false,"kind":"SESSION_EVENT","reason":"ValueError","session_id":"r124-physical-60s-pause-v2","simulated":true,"total_ticks":1400}
+ 00:17:28 up 41 days, 16:59,  1 user,  load average: 0,37, 0,30, 0,27

@@ -1,0 +1,15 @@
+Oct 26 14:32:55 efis-pfd-01 env[1721569]: 2026-10-26T14:32:55.620 event=event_loop_stall duration_ms= 1680
+Oct 26 14:32:57 efis-pfd-01 env[1721569]: 2026-10-26T14:32:57.755 event=render_health presentation_hz= 24.8 presentation_interval_ms= 40.34 snapshot_hz= 20.9 sequence= 109 ddp_state= LIVE ddp_hz= 19.8 ddp_accepted= 102 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 14:33:02 efis-pfd-01 env[1721569]: 2026-10-26T14:33:02.755 event=render_health presentation_hz= 59.6 presentation_interval_ms= 16.78 snapshot_hz= 49.6 sequence= 357 ddp_state= LIVE ddp_hz= 19.8 ddp_accepted= 201 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 14:33:07 efis-pfd-01 env[1721569]: 2026-10-26T14:33:07.755 event=render_health presentation_hz= 58.8 presentation_interval_ms= 17.01 snapshot_hz= 49.2 sequence= 603 ddp_state= LIVE ddp_hz= 20.2 ddp_accepted= 302 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 14:33:12 efis-pfd-01 env[1721569]: 2026-10-26T14:33:12.756 event=render_health presentation_hz= 60.0 presentation_interval_ms= 16.67 snapshot_hz= 50.0 sequence= 853 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 402 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+Oct 26 14:33:17 efis-pfd-01 env[1721569]: 2026-10-26T14:33:17.756 event=render_health presentation_hz= 50.4 presentation_interval_ms= 19.84 snapshot_hz= 50.0 sequence= 1103 ddp_state= LIVE ddp_hz= 20.0 ddp_accepted= 502 ddp_rejected= 0 ddp_gaps= 0 ddp_socket_errors= 0
+MainPID=1721658
+ActiveState=active
+
+MainPID=1419
+ActiveState=active
+Result=success
+ExecMainStatus=0
+active
+throttled=0x0

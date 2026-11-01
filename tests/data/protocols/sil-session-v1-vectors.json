@@ -1,0 +1,23 @@
+{
+  "manifest":{
+    "schema":"fuso-avionics.sil-session.v1","kind":"MANIFEST","session_id":"fixture-sil-001","epoch":0,
+    "simulated":true,"flight_approval":false,"mode":"LIVE","epoch_utc":"2026-10-26T10:00:00Z",
+    "integration_hz":100,"output_hz":20,"source_node":65000,
+    "config_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "model_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "source_commit":"0c3293e4728c06a30cb54836917805acf7fa66c1",
+    "profile_status":"REFERENCE_UNVALIDATED","event_ids":["engine-out","wx-offline","flap-jam"],
+    "station_ids":["SIMVOR"],"route_hashes":["cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]
+  },
+  "command":{
+    "schema":"fuso-avionics.sil-session.v1","kind":"COMMAND","session_id":"fixture-sil-001","epoch":0,
+    "simulated":true,"flight_approval":false,"command_id":"cmd-001","sequence":1,
+    "authority_id":"instructor","lease_id":"lease-001","apply_tick":1,"expires_tick":20,
+    "action":"SET_CONTROL","args":{"control":"aileron","value":0.25}
+  },
+  "sample":{
+    "value":null,"raw":null,"unit":"deg","validity":"UNAVAILABLE","simulated":true,
+    "source_node":65000,"channel":1,"sample_tick":0,"age_ms":0,"quality":0,
+    "calibration_revision":"fixture-v1","profile_revision":"unvalidated-v1"
+  }
+}

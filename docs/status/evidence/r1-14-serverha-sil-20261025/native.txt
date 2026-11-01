@@ -1,0 +1,31 @@
+test_complete_fixture_verifies_and_byte_mutation_fails (tests.test_jsbsim_session.SessionTests.test_complete_fixture_verifies_and_byte_mutation_fails) ... ok
+test_controller_finite_and_bounded (tests.test_jsbsim_session.SessionTests.test_controller_finite_and_bounded) ... ok
+test_duplicate_and_nonfinite_json_rejected (tests.test_jsbsim_session.SessionTests.test_duplicate_and_nonfinite_json_rejected) ... ok
+test_empty_model_tree_rejected (tests.test_jsbsim_session.SessionTests.test_empty_model_tree_rejected) ... ok
+test_empty_or_extra_fields_not_accepted_as_full_flight (tests.test_jsbsim_session.SessionTests.test_empty_or_extra_fields_not_accepted_as_full_flight) ... ok
+test_existing_session_preserved (tests.test_jsbsim_session.SessionTests.test_existing_session_preserved) ... ok
+test_failure_never_creates_complete_manifest (tests.test_jsbsim_session.SessionTests.test_failure_never_creates_complete_manifest) ... ok
+test_fault_changes_validity_not_physics_or_other_fields (tests.test_jsbsim_session.SessionTests.test_fault_changes_validity_not_physics_or_other_fields) ... ok
+test_fdm_clock_drift_and_missing_required_data_fail (tests.test_jsbsim_session.SessionTests.test_fdm_clock_drift_and_missing_required_data_fail) ... ok
+test_invalid_inputs_do_not_create_session (tests.test_jsbsim_session.SessionTests.test_invalid_inputs_do_not_create_session) ... ok
+test_manifest_duration_and_failure_marker_rejected (tests.test_jsbsim_session.SessionTests.test_manifest_duration_and_failure_marker_rejected) ... ok
+test_manifest_not_object_or_missing_data_rejected (tests.test_jsbsim_session.SessionTests.test_manifest_not_object_or_missing_data_rejected) ... ok
+test_missing_property_not_zero_or_created (tests.test_jsbsim_session.SessionTests.test_missing_property_not_zero_or_created) ... ok
+test_same_frame_clock_and_no_fake_cylinders (tests.test_jsbsim_session.SessionTests.test_same_frame_clock_and_no_fake_cylinders) ... ok
+test_sample_conversion_and_unavailable (tests.test_jsbsim_session.SessionTests.test_sample_conversion_and_unavailable) ... ok
+test_semantic_mutations_rejected_even_with_updated_digest (tests.test_jsbsim_session.SessionTests.test_semantic_mutations_rejected_even_with_updated_digest) ... ok
+test_step_uses_commands_not_pose_setters (tests.test_jsbsim_session.SessionTests.test_step_uses_commands_not_pose_setters) ... ok
+test_views_share_identity_sequence_time (tests.test_jsbsim_session.SessionTests.test_views_share_identity_sequence_time) ... ok
+test_01_repeatable_complete_sessions (tests.jsbsim_native_tests.NativeTests.test_01_repeatable_complete_sessions) ... ok
+test_02_cruise_and_turn_are_dynamically_distinct (tests.jsbsim_native_tests.NativeTests.test_02_cruise_and_turn_are_dynamically_distinct) ... ok
+test_03_engine_out_changes_fuel_and_trajectory (tests.jsbsim_native_tests.NativeTests.test_03_engine_out_changes_fuel_and_trajectory) ... ok
+test_04_sensor_loss_and_recovery (tests.jsbsim_native_tests.NativeTests.test_04_sensor_loss_and_recovery) ... ok
+test_05_altitude_derivative_matches_vertical_speed (tests.jsbsim_native_tests.NativeTests.test_05_altitude_derivative_matches_vertical_speed) ... ok
+test_06_fuel_conservation (tests.jsbsim_native_tests.NativeTests.test_06_fuel_conservation) ... ok
+test_07_three_offline_views_share_exact_clock (tests.jsbsim_native_tests.NativeTests.test_07_three_offline_views_share_exact_clock) ... ok
+test_08_tampered_replay_not_accepted (tests.jsbsim_native_tests.NativeTests.test_08_tampered_replay_not_accepted) ... ok
+
+----------------------------------------------------------------------
+Ran 26 tests in 6.107s
+
+OK
